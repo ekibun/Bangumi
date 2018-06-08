@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools"
+      tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+                android:id="@+id/nav_chase"
+                android:icon="@drawable/ic_heart"
+                android:title="@string/chase_bangumi"/>
+        <item
+                android:id="@+id/nav_calendar"
+                android:icon="@drawable/ic_calendar"
+                android:title="@string/calendar"/>
+        <!--
+        <item
+                android:id="@+id/nav_download"
+                android:icon="@drawable/ic_cloud_download"
+                android:title="@string/download_cache"/>-->
+    </group>
+
+    <group  android:id="@+id/group_settings">
+        <item android:id="@+id/nav_search"
+              android:icon="@drawable/ic_search"
+              android:title="@string/search"
+              app:showAsAction="ifRoom"/>
+        <item
+                android:id="@+id/nav_night"
+                android:icon="@drawable/ic_night"
+                android:title="@string/night_mode"
+                app:actionLayout="@layout/switch_item"/>
+        <!--<item
+                android:id="@+id/nav_setting"
+                android:icon="@drawable/ic_settings"
+                android:title="@string/settings"/>-->
+    </group>
+
+</menu>

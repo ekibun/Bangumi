@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:padding="12dp"
+        android:id="@+id/item_detail"
+        android:layout_height="wrap_content"
+        android:transitionName="container"
+        android:clickable="true"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:focusable="true">
+    <ImageView
+            android:id="@+id/item_cover"
+            android:transitionName="cover"
+            android:layout_width="75dp"
+            android:layout_height="100dp"
+            android:scaleType="centerCrop"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:contentDescription="@string/desc_cover"/>
+    <TextView
+            android:id="@+id/item_score_pt"
+            android:textColor="?attr/colorAccent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:paddingLeft="2dp"
+            android:paddingBottom="2dp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintBottom_toBottomOf="@+id/item_score"
+            tools:ignore="RtlSymmetry"/>
+    <TextView
+            android:id="@+id/item_score"
+            android:textColor="?attr/colorAccent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            app:layout_constraintRight_toLeftOf="@+id/item_score_pt"
+            app:layout_constraintTop_toTopOf="parent"
+            android:paddingLeft="8dp"
+            tools:ignore="RtlSymmetry"/>
+    <TextView
+            android:id="@+id/item_score_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/item_score"
+            android:paddingLeft="8dp"
+            tools:ignore="RtlSymmetry"/>
+
+    <TextView
+            android:id="@+id/item_info"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:lineSpacingExtra="8dp"
+            app:layout_constraintLeft_toRightOf="@+id/item_cover"
+            app:layout_constraintRight_toLeftOf="@+id/item_score"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginLeft="8dp" app:layout_constraintTop_toTopOf="parent" android:layout_marginTop="8dp"/>
+</android.support.constraint.ConstraintLayout>

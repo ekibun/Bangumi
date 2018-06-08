@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/root_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    <android.support.design.widget.AppBarLayout
+            android:id="@+id/app_bar"
+            android:layout_height="wrap_content"
+            app:layout_behavior="soko.ekibun.bangumi.util.FixAppBarLayoutBehavior"
+            android:layout_width="match_parent"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+        <android.support.design.widget.CollapsingToolbarLayout
+                android:id="@+id/toolbar_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
+                app:titleEnabled="false"
+                app:contentScrim="?attr/colorPrimary">
+            <include
+                    layout="@layout/video_player"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_collapseMode="parallax"
+                    app:layout_collapseParallaxMultiplier="0.7" />
+            <FrameLayout
+                    android:transitionName="container"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/controller_frame"
+                    android:visibility="invisible"
+                    android:background="@android:color/transparent"
+                    app:layout_collapseMode="pin"/>
+            <android.support.v7.widget.Toolbar
+                    android:id="@+id/toolbar"
+                    android:transitionName="title"
+                    android:layout_height="?attr/actionBarSize"
+                    android:layout_width="match_parent"
+                    app:popupTheme="@style/AppTheme.PopupOverlay"
+                    app:contentInsetStart="0dp"
+                    app:contentInsetStartWithNavigation="0dp"
+                    app:layout_collapseMode="pin">
+                <TextView
+                        android:id="@+id/title_site"
+                        android:textSize="12sp"
+                        android:gravity="center_vertical"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"/>
+                <TextView
+                        android:id="@+id/title_text"
+                        android:textColor="?android:textColorPrimary"
+                        android:textSize="18sp"
+                        android:padding="8dp"
+                        android:gravity="center_vertical"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+            </android.support.v7.widget.Toolbar>
+        </android.support.design.widget.CollapsingToolbarLayout>
+    </android.support.design.widget.AppBarLayout>
+
+    <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/subject_swipe"
+            android:layout_marginTop="48dp"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <android.support.v4.widget.NestedScrollView
+                android:id="@+id/nested_scroll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+            <LinearLayout
+                    android:id="@+id/data_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:divider="@drawable/divider"
+                    android:showDividers="middle">
+                <include layout="@layout/subject_detail"/>
+                <android.support.v7.widget.RecyclerView
+                        android:id="@+id/episode_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"/>
+            </LinearLayout>
+        </android.support.v4.widget.NestedScrollView>
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            android:orientation="vertical">
+        <include layout="@layout/video_buttons"
+                 android:layout_height="48dp"
+                 android:layout_width="match_parent"/>
+        <View android:layout_width="match_parent"
+              android:layout_height="1dp"
+              android:background="?android:attr/colorControlHighlight"/>
+    </LinearLayout>
+
+</android.support.design.widget.CoordinatorLayout>

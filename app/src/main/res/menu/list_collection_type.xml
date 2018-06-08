@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@+id/collection_type_anime"
+          android:title="动画"/>
+    <item android:id="@+id/collection_type_book"
+          android:title="图书"/>
+    <item android:id="@+id/collection_type_game"
+          android:title="游戏"/>
+    <item android:id="@+id/collection_type_music"
+          android:title="音乐"/>
+    <item android:id="@+id/collection_type_real"
+          android:title="三次元"/>
+</menu>

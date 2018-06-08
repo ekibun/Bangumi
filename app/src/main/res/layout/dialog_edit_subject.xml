@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="8dp"
+        android:orientation="vertical">
+    <TextView android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:padding="8dp"
+              android:textAppearance="@android:style/TextAppearance.Material.Subhead"
+              android:text="状态"/>
+    <Spinner
+            android:id="@+id/item_status"
+            android:layout_margin="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:entries="@array/collection_status"/>
+    <TextView android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:padding="8dp"
+              android:textAppearance="@android:style/TextAppearance.Material.Subhead"
+              android:text="评分"/>
+    <RatingBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:id="@+id/item_rating"
+            android:layout_gravity="center"
+            android:isIndicator="false"
+            android:numStars="10" android:rating="0"
+            android:stepSize="1.0" style="@style/Widget.AppCompat.RatingBar.Indicator"/>
+    <TextView android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:padding="8dp"
+              android:textAppearance="@android:style/TextAppearance.Material.Subhead"
+              android:text="吐槽"/>
+    <soko.ekibun.bangumi.ui.view.ClearableEditText
+            android:id="@+id/item_comment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+    <Switch
+            android:id="@+id/item_private"
+            android:text="仅自己可见"
+            android:padding="8dp"
+            android:textAppearance="@android:style/TextAppearance.Material.Subhead"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+</LinearLayout>
