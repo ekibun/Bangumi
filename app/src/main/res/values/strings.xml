@@ -32,6 +32,7 @@
     <string name="login_auth">登录</string>
     <string name="search">搜索</string>
     <string name="lines">线路</string>
+    <string name="logout">注销</string>
 
     <string-array name="collection_status">
         <item>想看</item>

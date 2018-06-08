@@ -14,7 +14,10 @@ class ParseInfoModel(context: Context){
     fun saveInfo(subject: Subject, info: ParseInfo) {
         val editor = sp.edit()
         val list = JsonUtil.toEntity<Map<Int, ParseInfo>>(sp.getString(PREF_PARSE_INFO, JsonUtil.toJson(HashMap<Int, ParseInfo>())), object: TypeToken<Map<Int, ParseInfo>>(){}.type).toMutableMap()
-        list[subject.id] = info
+        if(info.api.isNullOrEmpty() && info.video?.id.isNullOrEmpty() && info.danmaku?.id.isNullOrEmpty())
+            list.remove(subject.id)
+        else
+            list[subject.id] = info
         editor.putString(PREF_PARSE_INFO, JsonUtil.toJson(list))
         editor.apply()
     }

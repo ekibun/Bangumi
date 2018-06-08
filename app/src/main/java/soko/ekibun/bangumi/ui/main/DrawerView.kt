@@ -15,7 +15,7 @@ import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarFragment
 import soko.ekibun.bangumi.ui.main.fragment.collection.CollectionFragment
 import soko.ekibun.bangumi.ui.search.SearchActivity
 
-class DrawerView(private val context: MainActivity, onCheckedChangeListener: CompoundButton.OnCheckedChangeListener){
+class DrawerView(private val context: MainActivity, onNightModeChange: CompoundButton.OnCheckedChangeListener, onLogout: ()->Unit){
     private var checkedId = R.id.nav_chase
     private val fragments: Map<Int, DrawerFragment> = mapOf(
             R.id.nav_chase to CollectionFragment(),
@@ -34,7 +34,7 @@ class DrawerView(private val context: MainActivity, onCheckedChangeListener: Com
         context.drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
 
-        switch.setOnCheckedChangeListener(onCheckedChangeListener)
+        switch.setOnCheckedChangeListener(onNightModeChange)
 
         context.nav_view.setNavigationItemSelectedListener {
             context.drawer_layout.closeDrawers()
@@ -43,7 +43,8 @@ class DrawerView(private val context: MainActivity, onCheckedChangeListener: Com
             else{
                 when(it.itemId){
                     R.id.nav_search -> SearchActivity.startActivity(context)
-                    R.id.nav_night -> onCheckedChangeListener.onCheckedChanged(switch, !switch.isChecked)
+                    R.id.nav_night -> onNightModeChange.onCheckedChanged(switch, !switch.isChecked)
+                    R.id.nav_logout -> onLogout()
                     //R.id.nav_setting -> {}//SettingsActivity.startActivity(context)
                 }
             }
@@ -53,6 +54,7 @@ class DrawerView(private val context: MainActivity, onCheckedChangeListener: Com
 
     fun setUser(user: UserInfo?){
         (fragments[R.id.nav_chase] as? CollectionFragment)?.user = user
+        context.nav_view.menu.findItem(R.id.nav_logout).isVisible = user != null
     }
 
     fun resetCollection(){

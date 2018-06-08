@@ -2,7 +2,9 @@ package soko.ekibun.bangumi.ui.main
 
 import android.content.DialogInterface
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.support.customtabs.CustomTabsIntent
 import android.support.design.widget.Snackbar
 //import android.util.Log
 import android.view.Menu
@@ -31,20 +33,21 @@ class MainPresenter(private val context: MainActivity){
             token == null -> {
                 AuthActivity.startActivityForResult(context)}
             user == null -> refreshUser() //retry
-            else ->{
-                //log out
-                userModel.saveToken(null)
-                setUser(null)
-                drawerView.resetCollection()
-                refreshUser()
-            }
+            else -> CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(user?.url))
         }
     })
+
+    private val onLogout: ()->Unit = {
+        userModel.saveToken(null)
+        setUser(null)
+        drawerView.resetCollection()
+        refreshUser()
+    }
 
     private val drawerView = DrawerView(context, CompoundButton.OnCheckedChangeListener { view, isChecked ->
         themeModel.saveTheme(isChecked)
         ThemeModel.setTheme(context, isChecked)
-    })
+    }, onLogout)
 
     init{
         drawerView.switch.isChecked = themeModel.getTheme()

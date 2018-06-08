@@ -47,13 +47,16 @@ class SubjectPresenter(private val context: VideoActivity){
         }
 
         context.videoPresenter.playNext = {position: Int ->
+            val episode = subjectView.episodeAdapter.data[position].t
             parseInfoModel.getInfo(subject)?.let{
-                if(it.video?.id.isNullOrEmpty()) return@let
-                val episode = subjectView.episodeAdapter.data[position].t
+                if(it.video?.id.isNullOrEmpty()) {
+                    episode?.url?.let{ CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(it)) }
+                    return@let
+                }
                 val episodeNext = subjectView.episodeAdapter.data[position+1].t
                 context.videoPresenter.next = if(episodeNext == null || (episodeNext.status?:"") !in listOf("Air")) null else position + 1
                 context.runOnUiThread { context.videoPresenter.play(episode, it) }
-            }
+            }?:episode?.url?.let{ CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(it)) }
         }
 
         subjectView.episodeAdapter.setOnItemClickListener { _, _, position ->
@@ -106,7 +109,7 @@ class SubjectPresenter(private val context: VideoActivity){
 
     fun refreshLines(subject: Subject){
         val info = parseInfoModel.getInfo(subject)
-        context.tv_lines.text = info?.video?.let{ context.resources.getStringArray(R.array.parse_type)[it.type]}?:context.tv_lines.text
+        context.tv_lines.text = info?.video?.let{ context.resources.getStringArray(R.array.parse_type)[it.type]}?:context.resources.getString(R.string.lines)
 
         context.cl_lines.setOnClickListener {
             val view = context.layoutInflater.inflate(R.layout.dialog_edit_lines, context.cl_lines, false)
