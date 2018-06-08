@@ -7,8 +7,8 @@ import kotlinx.android.synthetic.main.video_player.*
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.model.ParseModel
 import soko.ekibun.bangumi.model.VideoModel
-import soko.ekibun.bangumi.parser.ParseInfo
-import soko.ekibun.bangumi.parser.Parser
+import soko.ekibun.bangumi.api.parser.ParseInfo
+import soko.ekibun.bangumi.api.parser.Parser
 import soko.ekibun.bangumi.ui.view.BackgroundWebView
 import soko.ekibun.bangumi.ui.view.VideoController
 import soko.ekibun.bangumi.ui.view.controller.Controller

@@ -1,22 +1,17 @@
 package soko.ekibun.bangumi.ui.main.fragment.collection
 
 import android.os.Bundle
-import android.support.design.widget.Snackbar
 import android.support.design.widget.TabLayout
 import android.support.v4.view.ViewPager
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.PopupMenu
 import android.support.v7.widget.RecyclerView
-import android.util.Log
-//import android.util.Log
 import android.view.Menu
 import android.view.View
 import com.google.gson.reflect.TypeToken
 import kotlinx.android.synthetic.main.content_collection.*
 import retrofit2.Call
-//import retrofit2.Callback
-import retrofit2.Response
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiCallback
 import soko.ekibun.bangumi.api.bangumi.Bangumi
@@ -27,7 +22,6 @@ import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
 import soko.ekibun.bangumi.api.bangumi.bean.UserInfo
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
 import soko.ekibun.bangumi.ui.video.VideoActivity
-//import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.util.JsonUtil
 
 class CollectionFragment: DrawerFragment(R.layout.content_collection){
@@ -36,11 +30,9 @@ class CollectionFragment: DrawerFragment(R.layout.content_collection){
         super.onSaveInstanceState(outState)
         outState.putIntArray("CollectionPageIndex", pageIndex.toIntArray())
         collection_pager?.let{ outState.putInt("CollectionPage", it.currentItem) }
-        Log.v("savePageIndex", pageIndex.joinToString { it.toString() })
         viewList.forEachIndexed { index, swipeRefreshLayout -> (swipeRefreshLayout.tag as? RecyclerView)?.let {
             outState.putString("CollectionData$index", JsonUtil.toJson((it.adapter as CollectionListAdapter).data))
             outState.putParcelable("Collection$index", it.layoutManager.onSaveInstanceState())
-            Log.v("saveTag", (it.tag != null).toString() + index)
             outState.putBoolean("CollectionStatus$index", it.tag != null)
         } }
     }
@@ -54,7 +46,7 @@ class CollectionFragment: DrawerFragment(R.layout.content_collection){
             R.id.collection_type_game to Pair(SubjectType.GAME, SubjectType.NAME_GAME),
             R.id.collection_type_music to Pair(SubjectType.MUSIC, SubjectType.NAME_MUSIC),
             R.id.collection_type_real to Pair(SubjectType.REAL, SubjectType.NAME_REAL))
-    var selectedType = R.id.collection_type_anime
+    private var selectedType = R.id.collection_type_anime
 
     private val web by lazy { Bangumi.createInstance(false, SubjectCollectionConverterTerFactory()) }
     private val api by lazy { Bangumi.createInstance() }
@@ -92,11 +84,9 @@ class CollectionFragment: DrawerFragment(R.layout.content_collection){
         if(this.savedInstanceState != null){
             collection_pager.currentItem = this.savedInstanceState!!.getInt("CollectionPage", 2)
             pageIndex = this.savedInstanceState!!.getIntArray("CollectionPageIndex").toTypedArray()
-            Log.v("pageIndex", pageIndex.joinToString { it.toString() })
             viewList.forEachIndexed { index, swipeRefreshLayout -> (swipeRefreshLayout.tag as? RecyclerView)?.let {
                 it.layoutManager.onRestoreInstanceState(this.savedInstanceState!!.getParcelable("Collection$index"))
                 (it.adapter as CollectionListAdapter).setNewData(JsonUtil.toEntity(this.savedInstanceState!!.getString("CollectionData$index"), object: TypeToken<List<SubjectCollection>>(){}.type))
-                Log.v("tag", this.savedInstanceState!!.getBoolean("CollectionStatus$index").toString() + index)
                 it.tag = if(this.savedInstanceState!!.getBoolean("CollectionStatus$index")) true else null
             } }
         }

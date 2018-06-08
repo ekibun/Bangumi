@@ -1,7 +1,6 @@
-package soko.ekibun.bangumi.parser
+package soko.ekibun.bangumi.api.parser
 
 import android.util.Log
-import com.google.gson.JsonNull
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
@@ -12,21 +11,23 @@ import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.JsonUtil
 import java.io.IOException
 
-class PptvParser: Parser{
-    override val siteId: Int = ParseInfo.PPTV
+class TencentParser: Parser{
+    override val siteId: Int = ParseInfo.TENCENT
 
     override fun getVideoInfo(id: String, video: Episode, callback: (Parser.VideoInfo?) -> Unit) {
-        HttpUtil.get("http://apis.web.pptv.com/show/videoList?format=jsonp&pid=$id", header, object: Callback{
+        HttpUtil.get("https://s.video.qq.com/get_playsource?id=$id&type=4&range=${video.sort.toInt()}-${video.sort.toInt()+1}&otype=json", header, object: Callback {
             override fun onResponse(call: Call, response: Response) {
                 try{
-                    val src = JsonUtil.toJsonObject(response.body()?.string()?:"")
-                    src.get("data").asJsonObject.get("list").asJsonArray?.map{it.asJsonObject}?.forEach {
+                    var json = response.body()?.string()?:""
+                    json = json.substring(json.indexOf('{'), json.lastIndexOf('}') + 1)
+                    JsonUtil.toJsonObject(json).getAsJsonObject("PlaylistItem")
+                            .getAsJsonArray("videoPlayList").map{it.asJsonObject}.forEach {
                         Log.v("obj", it.toString())
-                        if(it.get("title").asString.toFloatOrNull() == video.sort){
+                        if(it.get("episode_number").asString.toFloatOrNull() == video.sort && it.get("type").asString == "1"){
                             val info = Parser.VideoInfo(
                                     it.get("id").asString,
                                     siteId,
-                                    it.get("url").asString
+                                    it.get("playUrl").asString
                             )
                             Log.v("video", info.toString())
                             callback(info)
@@ -46,18 +47,18 @@ class PptvParser: Parser{
     override fun getVideo(webView: BackgroundWebView, api: String, video: Parser.VideoInfo, callback: (String?) -> Unit) {
         webView.onCatchVideo={
             Log.v("video", it.url.toString())
-            if(it.url.toString().contains("mdparse.duapp.com/404.mp4")){
+            if(it.url.toString().contains("/404.mp4")){
                 callback(it.url.toString())
             }else{
                 callback(it.url.toString())
             }
             webView.onCatchVideo={}
         }
-        var url = api//parseModel.sharedPreferences.getString("api_pptv", "")
+        var url = api
         if(url.isEmpty())
-            url = "https://jx.maoyun.tv/?id="
+            url = "http://jx.myxit.cn/vip/?url="
         if(url.endsWith("="))
-            url += video.url.split("?")[0]
+            url += video.url.split(".html?")[0] + "/${video.id}.html"
 
         val map = HashMap<String, String>()
         map["referer"]=url
@@ -65,28 +66,41 @@ class PptvParser: Parser{
     }
 
     override fun getDanmakuKey(video: Parser.VideoInfo, callback: (String?) -> Unit) {
-        callback("OK")
+        HttpUtil.get("http://bullet.video.qq.com/fcgi-bin/target/regist?vid=${video.id}", header, object: Callback {
+            override fun onResponse(call: Call, response: Response) {
+                try{
+                    val doc = Jsoup.parse(response.body()?.string()?:"")
+                    val key = doc.selectFirst("targetid").text()
+                    callback(key)
+                    return
+                }catch (e: Exception){ e.printStackTrace() }
+                callback(null)
+            }
+
+            override fun onFailure(call: Call, e: IOException) {
+                e.printStackTrace()
+                callback(null)
+            }
+        })
     }
 
     override fun getDanmaku(video: Parser.VideoInfo, key: String, pos: Int, callback: (Map<Int, List<Parser.Danmaku>>?) -> Unit) {
-        val pageStart = pos / 300 * 3
-        for(i in 0..5)
-            getDanmaku(video, pageStart + i, callback)
+        val pageStart = pos / 300 * 10
+        for(i in 0..19)
+            getDanmakuAt(video, key, pageStart + i, callback)
     }
 
-    private fun getDanmaku(video: Parser.VideoInfo, page: Int, callback: (Map<Int, List<Parser.Danmaku>>?) -> Unit) {
+    fun getDanmakuAt(video: Parser.VideoInfo, key: String, page: Int, callback: (Map<Int, List<Parser.Danmaku>>?) -> Unit) {
         val map: MutableMap<Int, MutableList<Parser.Danmaku>>? = HashMap()
-        HttpUtil.get("http://apicdn.danmu.pptv.com/danmu/v4/pplive/ref/vod_${video.id}/danmu?pos=${page* 1000}", header, object: Callback {
+        HttpUtil.get("https://mfm.video.qq.com/danmu?timestamp=${page*30}&target_id=$key", header, object: Callback {
             override fun onResponse(call: Call, response: Response) {
                 try{
-                    val result = JsonUtil.toJsonObject(response.body()!!.string()).getAsJsonObject("data").getAsJsonArray("infos")
+                    val result = JsonUtil.toJsonObject(response.body()?.string()?:"").getAsJsonArray("comments")
                     result.map{ it.asJsonObject}
-                            .filter { it.get("id").asLong != 0L }
                             .forEach {
-                                val time = it.get("play_point").asInt / 10
-                                val fontclr = it.get("font_color")
-                                val color = if(fontclr is JsonNull) "#FFFFFF" else fontclr.asString
-                                val context = Jsoup.parse(it.get("content").asString).text()
+                                val time = it.get("timepoint").asInt
+                                val color = "#" + (it.get("bb_bcolor")?.asString?.replace("0x","")?:"FFFFFF")
+                                val context = it.get("content").asString
                                 val list: MutableList<Parser.Danmaku> = map?.get(time) ?: ArrayList()
                                 val danmaku = Parser.Danmaku(context, time, color)
                                 Log.v("danmaku", danmaku.toString())
@@ -108,7 +122,6 @@ class PptvParser: Parser{
         private val header: Map<String, String> by lazy {
             val map = HashMap<String, String>()
             map["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.36"
-            map["Cookie"] = "PUID=616193bbc9804a7dde16-12845cf9388b; __crt=1474886744633; ppi=302c3638; Hm_lvt_7adaa440f53512a144c13de93f4c22db=1475285458,1475556666,1475752293,1475913662"
             map
         }
     }

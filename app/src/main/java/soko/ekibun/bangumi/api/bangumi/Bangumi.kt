@@ -1,5 +1,6 @@
 package soko.ekibun.bangumi.api.bangumi
 
+import com.google.gson.GsonBuilder
 import retrofit2.Call
 import retrofit2.Converter
 import retrofit2.Retrofit
@@ -14,7 +15,8 @@ interface Bangumi {
     fun search(@Path("keywords") keywords: String,
                @SubjectType.SubjectType @Query("type") type: Int = SubjectType.ALL,
                @Query("start")start: Int = 0,
-               @Query("max_results")max_results: Int = 10
+               @Query("max_results")max_results: Int = 10,
+               @Header("cookie") cookie: String = "chii_searchDateLine=0"
     ): Call<SearchResult>
 
     @GET("/subject/{id}")

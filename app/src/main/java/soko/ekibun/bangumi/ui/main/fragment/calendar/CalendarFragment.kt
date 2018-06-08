@@ -1,27 +1,19 @@
 package soko.ekibun.bangumi.ui.main.fragment.calendar
 
 import android.os.Bundle
-import android.support.design.widget.Snackbar
 import android.support.v7.widget.LinearLayoutManager
-import android.util.Log
-//import android.util.Log
 import android.view.Menu
 import android.view.View
 import com.google.gson.reflect.TypeToken
 import com.oushangfeng.pinnedsectionitemdecoration.SmallPinnedHeaderItemDecoration
 import kotlinx.android.synthetic.main.content_calendar.*
 import retrofit2.Call
-//import retrofit2.Callback
-import retrofit2.Response
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiCallback
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Calendar
-import soko.ekibun.bangumi.api.bangumi.bean.SubjectCollection
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
-import soko.ekibun.bangumi.ui.main.fragment.collection.CollectionListAdapter
 import soko.ekibun.bangumi.ui.video.VideoActivity
-//import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.util.JsonUtil
 
 class CalendarFragment: DrawerFragment(R.layout.content_calendar) {
@@ -66,7 +58,6 @@ class CalendarFragment: DrawerFragment(R.layout.content_calendar) {
             calendar_list.layoutManager.onRestoreInstanceState(
                     this.savedInstanceState!!.getParcelable("CalendarList"))
             val json = this.savedInstanceState!!.getString("CalendarData","")
-            Log.v("json", json)
             calendarListAdapter.setNewData(JsonUtil.toEntity(json, object: TypeToken<List<CalendarAdapter.CalendarSection>>(){}.type))
             this.savedInstanceState = null
         }

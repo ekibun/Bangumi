@@ -1,4 +1,4 @@
-package soko.ekibun.bangumi.parser
+package soko.ekibun.bangumi.api.parser
 
 import android.util.Log
 import okhttp3.Call
@@ -57,7 +57,7 @@ class YoukuParser: Parser{
         }
         var url = api
         if(url.isEmpty())
-            url = "http://jx.myxit.cn/vip/?url="
+            url = "http://mlxztz.com/vip/index.php?url="
         if(url.endsWith("="))
             url += video.url
 
@@ -71,7 +71,7 @@ class YoukuParser: Parser{
             override fun onResponse(call: Call, response: Response) {
                 try{
                     val doc = response.body()?.string()?:""
-                    val iid = Regex("""videoId: &#39;([0-9]+)&#39""").find(doc)!!.groupValues[1]
+                    val iid = Regex("""videoId: '([0-9]+)'""").find(doc)!!.groupValues[1]
                     callback(iid)
                     return
                 }catch (e: Exception){ e.printStackTrace() }

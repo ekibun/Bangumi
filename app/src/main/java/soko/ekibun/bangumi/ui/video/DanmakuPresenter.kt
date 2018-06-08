@@ -1,7 +1,7 @@
 package soko.ekibun.bangumi.ui.video
 
 import soko.ekibun.bangumi.model.ParseModel
-import soko.ekibun.bangumi.parser.Parser
+import soko.ekibun.bangumi.api.parser.Parser
 import soko.ekibun.bangumi.ui.view.DanmakuView
 
 class DanmakuPresenter(val view: DanmakuView,

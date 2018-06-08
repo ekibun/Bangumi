@@ -11,7 +11,7 @@ import android.view.View
 import android.view.WindowManager
 import android.view.animation.LinearInterpolator
 import android.widget.RelativeLayout
-import soko.ekibun.bangumi.parser.Parser
+import soko.ekibun.bangumi.api.parser.Parser
 
 class DanmakuView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : RelativeLayout(context, attrs, defStyleAttr) {
     private var lastTime = 0

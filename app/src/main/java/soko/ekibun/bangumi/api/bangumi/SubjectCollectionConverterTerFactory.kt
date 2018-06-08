@@ -23,12 +23,15 @@ class SubjectCollectionConverterTerFactory: Converter.Factory() {
                     val nameCN = it.selectFirst("h3").selectFirst("a").text()
                     val name = it.selectFirst("h3").selectFirst("small")?.text()?:nameCN
                     val img = "http:" + it.selectFirst("img").attr("src").replace("cover/s/", "cover/m/")
+                    val info = it.selectFirst(".info").text()
+                    val airDate = Regex("""([0-9]{4}年[0-9]{1,2}月[0-9]{1,2})日""").find(info)?.groupValues?.get(1)?.replace("年","-")?.replace("月", "-")
                     val subject = Subject(id,
                             Bangumi.SERVER + it.selectFirst("a").attr("href"),
                             0,
                             name,
                             nameCN,
-                            it.selectFirst(".info").text(),
+                            info,
+                            air_date = airDate,
                             images = Images(img, img, img, img, img)
                     )
                     ret += SubjectCollection(name, id, -1, -1, subject = subject)

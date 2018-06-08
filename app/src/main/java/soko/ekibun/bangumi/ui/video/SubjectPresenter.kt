@@ -5,12 +5,14 @@ import android.net.Uri
 import android.support.customtabs.CustomTabsIntent
 import android.support.v4.widget.NestedScrollView
 import android.support.v7.app.AlertDialog
-import android.view.View
+import android.support.v7.widget.PopupMenu
+import android.util.Log
 import kotlinx.android.synthetic.main.activity_video.*
 import kotlinx.android.synthetic.main.dialog_edit_lines.view.*
 import kotlinx.android.synthetic.main.dialog_edit_subject.view.*
 import kotlinx.android.synthetic.main.subject_detail.*
 import kotlinx.android.synthetic.main.video_buttons.*
+import okhttp3.Response
 import retrofit2.Call
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiCallback
@@ -18,10 +20,21 @@ import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.CollectionStatusType
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectProgress
+import soko.ekibun.bangumi.api.bgmlist.Bgmlist
 import soko.ekibun.bangumi.model.ParseInfoModel
 import soko.ekibun.bangumi.model.UserModel
-import soko.ekibun.bangumi.parser.ParseInfo
+import soko.ekibun.bangumi.api.parser.ParseInfo
+import soko.ekibun.bangumi.api.parser.Parser
+import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.JsonUtil
+import java.io.IOException
+import android.app.Activity
+import android.view.*
+import android.widget.ArrayAdapter
+import android.widget.ListPopupWindow
+import android.widget.PopupWindow
+import soko.ekibun.bangumi.model.ParseModel
+
 
 class SubjectPresenter(private val context: VideoActivity){
     val api by lazy { Bangumi.createInstance() }
@@ -36,7 +49,7 @@ class SubjectPresenter(private val context: VideoActivity){
         refreshSubject(subject)
         refershCollection(subject)
         refreshProgress(subject)
-        refreshLines(subject)
+        //refreshLines(subject)
 
         context.subject_swipe.setOnRefreshListener{
             refreshSubject(subject)
@@ -103,15 +116,61 @@ class SubjectPresenter(private val context: VideoActivity){
         subjectCall?.cancel()
         subjectCall = api.subject(subject.id)
         subjectCall?.enqueue(ApiCallback.build(context, {
+            refreshLines(it)
             subjectView.updateSubject(it)
         }, { context.subject_swipe.isRefreshing = false }))
     }
 
+
+
     fun refreshLines(subject: Subject){
+        val dateList = subject.air_date?.split("-") ?: return
+        val year = dateList.getOrNull(0)?.toIntOrNull()?:2010
+        val month = ((dateList.getOrNull(1)?.toIntOrNull()?:1) - 1) / 3 * 3 + 1
+        Log.v("year", "$year,$month")
+        Bgmlist.createInstance().query(year, month).enqueue(ApiCallback.build(context,{
+            it.filter { it.value.bgmId == subject.id }.forEach {
+                Log.v("list", it.value.toString())
+                val list = it.value.onAirSite?:return@forEach
+                context.cl_lines.setOnClickListener {
+                    val poplist = ListPopupWindow(context)
+                    poplist.anchorView = context.cl_lines
+                    poplist.setAdapter(ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, list))
+                    poplist.show()
+
+                    poplist.listView.setOnItemClickListener { _, _, position, _ ->
+                        CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(list[position]))
+                        poplist.dismiss()
+                    }
+
+                    poplist.listView.setOnItemLongClickListener { _, _, position, _ ->
+                        ParseModel.processUrl(list[position]){context.runOnUiThread {
+                            val view = context.layoutInflater.inflate(R.layout.dialog_edit_lines, context.cl_lines, false)
+                            view.item_video_type.setSelection(it.type)
+                            view.item_video_id.setText(it.id)
+                            view.item_danmaku_type.setSelection(it.type)
+                            view.item_danmaku_id.setText(it.id)
+                            AlertDialog.Builder(context)
+                                    .setView(view)
+                                    .setPositiveButton("提交"){ _: DialogInterface, _: Int ->
+                                        val parseInfo = ParseInfo(view.item_api.text.toString(),
+                                                ParseInfo.ParseItem(view.item_video_type.selectedItemId.toInt(), view.item_video_id.text.toString()),
+                                                ParseInfo.ParseItem(view.item_danmaku_type.selectedItemId.toInt(), view.item_danmaku_id.text.toString()))
+                                        parseInfoModel.saveInfo(subject, parseInfo)
+                                        refreshLines(subject)
+                                    }.show()
+                        } }
+                        poplist.dismiss()
+                        true
+                    }
+                }
+            }
+        }))
+
         val info = parseInfoModel.getInfo(subject)
         context.tv_lines.text = info?.video?.let{ context.resources.getStringArray(R.array.parse_type)[it.type]}?:context.resources.getString(R.string.lines)
 
-        context.cl_lines.setOnClickListener {
+        context.cl_lines.setOnLongClickListener {
             val view = context.layoutInflater.inflate(R.layout.dialog_edit_lines, context.cl_lines, false)
             info?.let{
                 view.item_api.setText(it.api)
@@ -122,13 +181,14 @@ class SubjectPresenter(private val context: VideoActivity){
             }
             AlertDialog.Builder(context)
                     .setView(view)
-                    .setPositiveButton("提交"){ _: DialogInterface, i: Int ->
+                    .setPositiveButton("提交"){ _: DialogInterface, _: Int ->
                         val parseInfo = ParseInfo(view.item_api.text.toString(),
                                 ParseInfo.ParseItem(view.item_video_type.selectedItemId.toInt(), view.item_video_id.text.toString()),
                                 ParseInfo.ParseItem(view.item_danmaku_type.selectedItemId.toInt(), view.item_danmaku_id.text.toString()))
                         parseInfoModel.saveInfo(subject, parseInfo)
                         refreshLines(subject)
                     }.show()
+            true
         }
     }
 

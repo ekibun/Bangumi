@@ -1,4 +1,4 @@
-package soko.ekibun.bangumi.parser
+package soko.ekibun.bangumi.api.parser
 
 import android.support.annotation.IntDef
 

@@ -1,4 +1,4 @@
-package soko.ekibun.bangumi.parser
+package soko.ekibun.bangumi.api.parser
 
 import android.util.Log
 import okhttp3.Call

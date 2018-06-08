@@ -1,4 +1,4 @@
-package soko.ekibun.bangumi.parser
+package soko.ekibun.bangumi.api.parser
 
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.ui.view.BackgroundWebView

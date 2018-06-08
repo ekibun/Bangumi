@@ -1,12 +1,9 @@
 package soko.ekibun.bangumi.ui.main
 
-import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.support.customtabs.CustomTabsIntent
-import android.support.design.widget.Snackbar
-//import android.util.Log
 import android.view.Menu
 import android.view.View
 import android.widget.CompoundButton

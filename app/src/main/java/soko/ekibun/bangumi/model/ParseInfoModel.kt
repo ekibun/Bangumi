@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import android.preference.PreferenceManager
 import com.google.gson.reflect.TypeToken
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
-import soko.ekibun.bangumi.parser.ParseInfo
+import soko.ekibun.bangumi.api.parser.ParseInfo
 import soko.ekibun.bangumi.util.JsonUtil
 
 class ParseInfoModel(context: Context){
