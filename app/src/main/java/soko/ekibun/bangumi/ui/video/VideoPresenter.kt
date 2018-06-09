@@ -168,7 +168,7 @@ class VideoPresenter(private val context: VideoActivity){
         controller.doShowHide(true)
         controller.setTitle(episode.parseSort() + " - " + if(episode.name_cn.isNullOrEmpty()) episode.name else episode.name_cn)
         playLoopTask?.cancel()
-        context.nested_scroll.tag = true
+        //context.nested_scroll.tag = true
 
         videoCall?.cancel()
         videoCall = ParseModel.getVideoInfo(info.video?.type?:0, info.video?.id?:"", episode)

@@ -3,7 +3,6 @@ package soko.ekibun.bangumi.ui.video
 import android.content.DialogInterface
 import android.net.Uri
 import android.support.customtabs.CustomTabsIntent
-import android.support.v4.widget.NestedScrollView
 import android.support.v7.app.AlertDialog
 import android.util.Log
 import kotlinx.android.synthetic.main.activity_video.*
@@ -23,9 +22,9 @@ import soko.ekibun.bangumi.model.ParseInfoModel
 import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.api.parser.ParseInfo
 import soko.ekibun.bangumi.util.JsonUtil
-import android.view.*
 import android.widget.ArrayAdapter
 import android.widget.ListPopupWindow
+import kotlinx.android.synthetic.main.subject_detail.view.*
 import soko.ekibun.bangumi.model.ParseModel
 
 
@@ -48,7 +47,7 @@ class SubjectPresenter(private val context: VideoActivity){
             refreshSubject(subject)
         }
 
-        context.item_detail.setOnClickListener {
+        subjectView.headerView.item_detail.setOnClickListener {
             CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(subject.url))
         }
 
@@ -87,11 +86,11 @@ class SubjectPresenter(private val context: VideoActivity){
             true
         }
 
-        context.nested_scroll.setOnScrollChangeListener { v: NestedScrollView, _: Int, _: Int, oldScrollX: Int, oldScrollY: Int ->
+        /*context.nested_scroll.setOnScrollChangeListener { v: NestedScrollView, _: Int, _: Int, oldScrollX: Int, oldScrollY: Int ->
             if(v.tag == true){
                 v.tag = null
                 v.scrollTo(oldScrollX, oldScrollY)
-                v.smoothScrollTo(oldScrollX, oldScrollY) } }
+                v.smoothScrollTo(oldScrollX, oldScrollY) } }*/
     }
 
     private fun refreshProgress(subject: Subject){
@@ -104,7 +103,7 @@ class SubjectPresenter(private val context: VideoActivity){
 
     private var subjectCall : Call<Subject>? = null
     private fun refreshSubject(subject: Subject){
-        context.data_layout.visibility = View.GONE
+        //context.data_layout.visibility = View.GONE
         context.subject_swipe.isRefreshing = true
         subjectCall?.cancel()
         subjectCall = api.subject(subject.id)
@@ -129,6 +128,7 @@ class SubjectPresenter(private val context: VideoActivity){
                     val popList = ListPopupWindow(context)
                     popList.anchorView = context.cl_lines
                     popList.setAdapter(ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, list))
+                    popList.isModal = true
                     popList.show()
 
                     popList.listView.setOnItemClickListener { _, _, position, _ ->

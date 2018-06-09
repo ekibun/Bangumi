@@ -64,25 +64,11 @@
             android:layout_marginTop="48dp"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-        <android.support.v4.widget.NestedScrollView
-                android:id="@+id/nested_scroll"
+            android:layout_height="match_parent">
+        <android.support.v7.widget.RecyclerView
+                android:id="@+id/episode_list"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-            <LinearLayout
-                    android:id="@+id/data_layout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:divider="@drawable/divider"
-                    android:showDividers="middle">
-                <include layout="@layout/subject_detail"/>
-                <android.support.v7.widget.RecyclerView
-                        android:id="@+id/episode_list"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"/>
-            </LinearLayout>
-        </android.support.v4.widget.NestedScrollView>
+                android:layout_height="match_parent"/>
     </android.support.v4.widget.SwipeRefreshLayout>
 
     <LinearLayout

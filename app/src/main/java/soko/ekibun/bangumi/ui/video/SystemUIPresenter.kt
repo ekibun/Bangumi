@@ -21,7 +21,7 @@ class SystemUIPresenter(private val context: VideoActivity){
     }
 
     fun appbarCollapsible(enable:Boolean){
-        context.nested_scroll.tag = true
+        //context.nested_scroll.tag = true
         if(enable){
             //reactive appbar
             val params = context.toolbar_layout.layoutParams as AppBarLayout.LayoutParams
