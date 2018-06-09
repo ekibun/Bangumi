@@ -54,7 +54,7 @@ class VideoController(view: ViewGroup,
                 MotionEvent.ACTION_CANCEL,
                 MotionEvent.ACTION_UP-> {
                     if (doSkip) {
-                        onAction(Controller.Action.SEEKTO, downPos + (event.x - downX).toLong() * 66)
+                        onAction(Controller.Action.SEEK_TO, downPos + (event.x - downX).toLong() * 66)
                         doSkip = false
                     } else
                         if (!dblclick && System.currentTimeMillis() - lastTime < 200)
@@ -87,7 +87,7 @@ class VideoController(view: ViewGroup,
         }
         override fun onStopTrackingTouch(bar: SeekBar) {
             doSkip = false
-            onAction(Controller.Action.SEEKTO, bar.progress.toLong() * 10)
+            onAction(Controller.Action.SEEK_TO, bar.progress.toLong() * 10)
             resetTimeout()
         }
     }
@@ -135,7 +135,7 @@ class VideoController(view: ViewGroup,
 
     var duration = 0
     var buffedPosition = 0
-    var position = 0
+    private var position = 0
     fun updateProgress(posLong: Long, skip: Boolean = false){
         if(!doSkip || skip){
             position = Math.max(0, (posLong / 10).toInt())

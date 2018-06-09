@@ -1,6 +1,7 @@
 package soko.ekibun.bangumi.model
 
 import okhttp3.Response
+import retrofit2.Call
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.parser.*
 import soko.ekibun.bangumi.ui.view.BackgroundWebView
@@ -14,36 +15,36 @@ object ParseModel{
             PptvParser(),
             TencentParser(),
             DilidiliParser())
-    fun getVideoInfo(siteId:Int, id: String, video: Episode, callback: (Parser.VideoInfo?)->Unit){
+    fun getVideoInfo(siteId:Int, id: String, video: Episode): Call<Parser.VideoInfo> {
         parsers.forEach {
             if(it.siteId == siteId) {
-                it.getVideoInfo(id, video, callback)
-                return
+                return it.getVideoInfo(id, video)
             } }
+        throw Exception("no such parser")
     }
 
-    fun getVideo(siteId:Int, webView: BackgroundWebView, api: String, video: Parser.VideoInfo, callback: (String?) -> Unit){
+    fun getVideo(siteId:Int, webView: BackgroundWebView, api: String, video: Parser.VideoInfo) : Call<String>{
         parsers.forEach {
             if(it.siteId == siteId) {
-                it.getVideo(webView, api, video, callback)
-                return
+                return it.getVideo(webView, api, video)
             } }
+        throw Exception("no such parser")
     }
 
-    fun getDanmakuKey(siteId:Int, video: Parser.VideoInfo, callback: (String?) -> Unit){
+    fun getDanmakuKey(siteId:Int, video: Parser.VideoInfo) : Call<String>{
         parsers.forEach {
             if(it.siteId == siteId) {
-                it.getDanmakuKey(video, callback)
-                return
+                return it.getDanmakuKey(video)
             } }
+        throw Exception("no such parser")
     }
 
-    fun getDanmaku(siteId:Int, video: Parser.VideoInfo, key: String, pos: Int, callback: (Map<Int, List<Parser.Danmaku>>?) -> Unit){
+    fun getDanmaku(siteId:Int, video: Parser.VideoInfo, key: String, pos: Int): Call<Map<Int, List<Parser.Danmaku>>>{
         parsers.forEach {
             if(it.siteId == siteId) {
-                it.getDanmaku(video, key, pos, callback)
-                return
+                return it.getDanmaku(video, key, pos)
             } }
+        throw Exception("no such parser")
     }
 
     fun processUrl(url: String, callback: (ParseInfo.ParseItem)->Unit){

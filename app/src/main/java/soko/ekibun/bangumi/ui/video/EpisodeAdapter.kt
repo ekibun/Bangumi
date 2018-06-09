@@ -32,7 +32,7 @@ class EpisodeAdapter(data: MutableList<SectionEntity<Episode>>? = null) :
         helper.itemView.item_desc.alpha = alpha
     }
 
-    //val SECTION_HEADER = SECTION_HEADER_VIEW
+    //val sectionHeader = SECTION_HEADER_VIEW
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)

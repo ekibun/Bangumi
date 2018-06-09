@@ -1,12 +1,7 @@
-@file:Suppress("DEPRECATION")
-
 package soko.ekibun.bangumi.ui.main
 
-import android.app.ProgressDialog
-import android.content.DialogInterface
 import android.view.View
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.bumptech.glide.request.RequestOptions
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.nav_header.view.*
@@ -31,14 +26,6 @@ class UserView(private val context: MainActivity, onUserFigureClickListener: Vie
             headerView.user_name.text = user?.nickname
                     ?:context.getString(R.string.login_hint)
         }
-    }
-
-    fun createLoginProgressDialog(listener: DialogInterface.OnCancelListener): ProgressDialog{
-        val progressDialog = ProgressDialog(context)
-        progressDialog.setMessage(context.getString(R.string.loging))
-        progressDialog.setCanceledOnTouchOutside(false)
-        progressDialog.setOnCancelListener(listener)
-        return progressDialog
     }
 
 }

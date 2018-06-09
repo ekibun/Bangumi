@@ -1,9 +1,6 @@
 package soko.ekibun.bangumi.util
 
-import okhttp3.Callback
-import okhttp3.Headers
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import okhttp3.*
 
 object HttpUtil{
     private val okHttpClient = OkHttpClient()
@@ -14,5 +11,12 @@ object HttpUtil{
                 .headers(Headers.of(header))
                 .build())
                 .enqueue(callback)
+    }
+
+    fun getCall(url: String, header: Map<String, String> = HashMap()): Call {
+        return okHttpClient.newCall(Request.Builder()
+                .url(url)
+                .headers(Headers.of(header))
+                .build())
     }
 }

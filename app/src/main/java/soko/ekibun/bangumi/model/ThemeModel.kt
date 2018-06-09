@@ -1,7 +1,6 @@
 package soko.ekibun.bangumi.model
 
 import android.app.Activity
-import android.app.UiModeManager
 import android.content.Context
 import android.content.SharedPreferences
 import android.preference.PreferenceManager

@@ -1,5 +1,6 @@
 package soko.ekibun.bangumi.ui.main
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -8,7 +9,7 @@ import android.view.Menu
 import android.view.View
 import android.widget.CompoundButton
 import retrofit2.Call
-import soko.ekibun.bangumi.api.ApiCallback
+import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.AccessToken
 import soko.ekibun.bangumi.api.bangumi.bean.UserInfo
@@ -41,7 +42,7 @@ class MainPresenter(private val context: MainActivity){
         refreshUser()
     }
 
-    private val drawerView = DrawerView(context, CompoundButton.OnCheckedChangeListener { view, isChecked ->
+    private val drawerView = DrawerView(context, CompoundButton.OnCheckedChangeListener { _, isChecked ->
         themeModel.saveTheme(isChecked)
         ThemeModel.setTheme(context, isChecked)
     }, onLogout)
@@ -63,10 +64,10 @@ class MainPresenter(private val context: MainActivity){
             })
             progressDialog.show()*/
             userCall = api.user(token.user_id.toString())
-            userCall?.enqueue(ApiCallback.build(context, {
+            userCall?.enqueue(ApiHelper.buildCallback(context, {
                 setUser(it)
                 drawerView.resetCollection()
-                api.refreshToken(token.refresh_token?:"").enqueue(ApiCallback.build(null,{
+                api.refreshToken(token.refresh_token?:"").enqueue(ApiHelper.buildCallback(null,{
                     //userModel.saveToken(it)
                 }))
             },{ /*progressDialog.dismiss()*/ }))
@@ -98,22 +99,19 @@ class MainPresenter(private val context: MainActivity){
 
     private var tokenCall : Call<AccessToken>? = null
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when(requestCode) {
-            REQUEST_AUTH -> {
-                val code = data?.getStringExtra(AuthActivity.RESULT_CODE)
-                if (code != null){
-                    tokenCall?.cancel()
-                    tokenCall = auth.accessToken(code)
-
-                    /*val progressDialog = userView.createLoginProgressDialog(DialogInterface.OnCancelListener {
+        if (resultCode == Activity.RESULT_OK)
+            when (requestCode) {
+                REQUEST_AUTH -> {
+                    val code = data?.getStringExtra(AuthActivity.RESULT_CODE)
+                    if (code != null) {
                         tokenCall?.cancel()
-                    })
-                    progressDialog.show()*/
-                    tokenCall?.enqueue(ApiCallback.build(context, {
-                        userModel.saveToken(it)
-                        refreshUser()
-                    },{ /*progressDialog.dismiss()*/ }))
-                } }
-        }
+                        tokenCall = auth.accessToken(code)
+                        tokenCall?.enqueue(ApiHelper.buildCallback(context, {
+                            userModel.saveToken(it)
+                            refreshUser()
+                        }))
+                    }
+                }
+            }
     }
 }

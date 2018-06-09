@@ -11,15 +11,20 @@ import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 
 
-public class VideoModel(private val context: Context, private val onAction:(Action, Any)->Unit) {
+class VideoModel(private val context: Context, private val onAction: Listener) {
     //private val parseModel: ParseModel by lazy{ ParseModel(context) }
     //private val videoCacheModel: VideoCacheModel by lazy{ App.getVideoCacheModel(context) }
 
-    enum class Action {
-        READY, BUFFERING, ENDED, VIDEO_SIZE_CHANGE
+    interface Listener{
+        fun onReady(playWhenReady: Boolean)
+        fun onBuffering()
+        fun onEnded()
+        fun onVideoSizeChange(width: Int, height: Int, unappliedRotationDegrees: Int, pixelWidthHeightRatio: Float)
+        fun onError(error: ExoPlaybackException)
     }
 
     val player: SimpleExoPlayer by lazy{
@@ -31,7 +36,7 @@ public class VideoModel(private val context: Context, private val onAction:(Acti
             override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters?) {}
             override fun onSeekProcessed() {}
             override fun onTracksChanged(trackGroups: TrackGroupArray?, trackSelections: TrackSelectionArray?) {}
-            override fun onPlayerError(error: ExoPlaybackException?) {}
+            override fun onPlayerError(error: ExoPlaybackException) { onAction.onError(error) }
             override fun onLoadingChanged(isLoading: Boolean) {}
             override fun onPositionDiscontinuity(reason: Int) {}
             override fun onRepeatModeChanged(repeatMode: Int) {}
@@ -39,18 +44,18 @@ public class VideoModel(private val context: Context, private val onAction:(Acti
             override fun onTimelineChanged(timeline: Timeline?, manifest: Any?, reason: Int) {}
             override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
                 when (playbackState){
-                    Player.STATE_ENDED -> onAction(Action.ENDED, Unit)
-                    Player.STATE_READY -> onAction(Action.READY, Unit)
-                    Player.STATE_BUFFERING-> onAction(Action.BUFFERING, Unit)
+                    Player.STATE_ENDED -> onAction.onEnded()
+                    Player.STATE_READY -> onAction.onReady(playWhenReady)
+                    Player.STATE_BUFFERING-> onAction.onBuffering()
                 }
             }
         })
         player.addVideoListener(object: com.google.android.exoplayer2.video.VideoListener{
             override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int, pixelWidthHeightRatio: Float) {
-                onAction(Action.VIDEO_SIZE_CHANGE, arrayOf(width, height, unappliedRotationDegrees, pixelWidthHeightRatio))
+                onAction.onVideoSizeChange(width, height, unappliedRotationDegrees, pixelWidthHeightRatio)
             }
             override fun onRenderedFirstFrame() {
-                onAction(Action.READY, Unit)
+                //onAction.onReady(player.playWhenReady)
             }
         })
         player
@@ -68,9 +73,10 @@ public class VideoModel(private val context: Context, private val onAction:(Acti
         }
     }*/
 
-    fun play(url: String, surface: SurfaceView, cache: Boolean){
+    fun play(url: String, surface: SurfaceView){
         player.setVideoSurfaceView(surface)
-        val dataSourceFactory = DefaultHttpDataSourceFactory("exoplayer")/*if(cache) videoCacheModel.getCacheDataSourceFactory(url) else videoCacheModel.factory*/
+        val dataSourceFactory = DefaultHttpDataSourceFactory("exoplayer", null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
+                DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, true)/*if(cache) videoCacheModel.getCacheDataSourceFactory(url) else videoCacheModel.factory*/
         val videoSource = if(url.contains("m3u8"))
             HlsMediaSource.Factory(dataSourceFactory).createMediaSource(Uri.parse(url))
         else ExtractorMediaSource.Factory(dataSourceFactory).createMediaSource(Uri.parse(url))

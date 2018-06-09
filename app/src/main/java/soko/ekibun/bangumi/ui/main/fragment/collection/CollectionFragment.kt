@@ -13,7 +13,7 @@ import com.google.gson.reflect.TypeToken
 import kotlinx.android.synthetic.main.content_collection.*
 import retrofit2.Call
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiCallback
+import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.SubjectCollectionConverterTerFactory
 import soko.ekibun.bangumi.api.bangumi.bean.CollectionStatusType
@@ -131,7 +131,7 @@ class CollectionFragment: DrawerFragment(R.layout.content_collection){
         }
         collectionCalls[index] = if(index == 2) api.collection(userName)
             else web.getCollectionList(typeList[selectedType]?.second?:"", userName, CollectionStatusType.status[index], pageIndex[index]+1)
-        collectionCalls[index]?.enqueue(ApiCallback.build(viewList.getOrNull(index)?.context, {
+        collectionCalls[index]?.enqueue(ApiHelper.buildCallback(viewList.getOrNull(index)?.context, {
             it.filter { index != 2 || it.subject?.type == typeList[selectedType]?.first }.let{
                 if(index != 2) it.forEach {
                     it.subject?.type = typeList[selectedType]?.first?:0 }

@@ -1,5 +1,6 @@
 package soko.ekibun.bangumi.ui.view
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Handler
 import android.webkit.*
@@ -11,6 +12,7 @@ class BackgroundWebView(context: Context): WebView(context) {
     var uiHandler: Handler = Handler{true}
 
     init{
+        @SuppressLint("SetJavaScriptEnabled")
         settings.javaScriptEnabled = true
         settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         webViewClient = object : WebViewClient() {

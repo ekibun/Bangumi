@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="8dp"
@@ -10,7 +9,7 @@
               android:layout_height="wrap_content"
               android:padding="8dp"
               android:textAppearance="@android:style/TextAppearance.Material.Subhead"
-              android:text="状态"/>
+              android:text="@string/status"/>
     <Spinner
             android:id="@+id/item_status"
             android:layout_margin="8dp"
@@ -21,7 +20,7 @@
               android:layout_height="wrap_content"
               android:padding="8dp"
               android:textAppearance="@android:style/TextAppearance.Material.Subhead"
-              android:text="评分"/>
+              android:text="@string/rate"/>
     <RatingBar
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" android:id="@+id/item_rating"
@@ -33,14 +32,14 @@
               android:layout_height="wrap_content"
               android:padding="8dp"
               android:textAppearance="@android:style/TextAppearance.Material.Subhead"
-              android:text="吐槽"/>
-    <soko.ekibun.bangumi.ui.view.ClearableEditText
+              android:text="@string/comment"/>
+    <soko.ekibun.bangumi.ui.view.CleanableEditText
             android:id="@+id/item_comment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
     <Switch
             android:id="@+id/item_private"
-            android:text="仅自己可见"
+            android:text="@string/private_collection"
             android:padding="8dp"
             android:textAppearance="@android:style/TextAppearance.Material.Subhead"
             android:layout_width="match_parent"

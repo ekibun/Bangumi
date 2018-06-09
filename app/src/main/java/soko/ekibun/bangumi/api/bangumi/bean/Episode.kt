@@ -1,5 +1,6 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
+import android.annotation.SuppressLint
 import android.support.annotation.IntDef
 import java.text.DecimalFormat
 
@@ -53,6 +54,7 @@ data class Episode(
         @IntDef(TYPE_MAIN, TYPE_SP, TYPE_OP, TYPE_ED, TYPE_PV, TYPE_MAD, TYPE_OTHER)
         annotation class EpisodeType
 
+        @SuppressLint("SwitchIntDef")
         fun getTypeName(@EpisodeType type: Int): String{
             return when(type){
                 TYPE_MAIN -> "本篇"

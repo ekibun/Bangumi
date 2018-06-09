@@ -1,15 +1,12 @@
 package soko.ekibun.bangumi.ui.search
 
-import android.support.design.widget.Snackbar
 import android.support.v7.widget.LinearLayoutManager
 import android.text.Editable
 import android.text.TextWatcher
 //import android.util.Log
 import kotlinx.android.synthetic.main.activity_search.*
 import retrofit2.Call
-//import retrofit2.Callback
-import retrofit2.Response
-import soko.ekibun.bangumi.api.ApiCallback
+import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.SearchResult
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
@@ -63,7 +60,7 @@ class SearchPresenter(private val context: SearchActivity) {
                 context.search_swipe?.isRefreshing = true
             searchCall?.cancel()
             searchCall = api.search(key, SubjectType.ALL, loadCount)
-            searchCall?.enqueue(ApiCallback.build(context, {
+            searchCall?.enqueue(ApiHelper.buildCallback(context, {
                 val list =it.list
                 if(list == null)
                     searchAdapter.loadMoreEnd()

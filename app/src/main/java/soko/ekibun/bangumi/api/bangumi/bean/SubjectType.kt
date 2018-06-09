@@ -1,5 +1,6 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
+import android.annotation.SuppressLint
 import android.support.annotation.IntDef
 import android.support.annotation.StringDef
 
@@ -21,6 +22,7 @@ object SubjectType{
     @StringDef(NAME_BOOK,NAME_ANIME,NAME_MUSIC,NAME_GAME,NAME_REAL)
     annotation class SubjectTypeName
 
+    @SuppressLint("SwitchIntDef")
     fun getDescription(@SubjectType type: Int): String{
         return when (type) {
             ALL -> ""

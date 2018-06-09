@@ -10,7 +10,7 @@ import android.view.MotionEvent
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.util.ResourceUtil
 
-class ClearableEditText constructor(context: Context, attrs: AttributeSet) : AppCompatEditText(context, attrs) {
+class CleanableEditText constructor(context: Context, attrs: AttributeSet) : AppCompatEditText(context, attrs) {
     private val clearDrawable: Drawable by lazy{
         ResourceUtil.getDrawable(context, R.drawable.ic_clear)
     }

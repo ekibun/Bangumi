@@ -15,7 +15,6 @@ import java.util.*
 class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
         BaseSectionQuickAdapter<CalendarAdapter.CalendarSection, BaseViewHolder>
         (R.layout.item_calendar, R.layout.header_calendar, data) {
-    val SECTION_HEADER = SECTION_HEADER_VIEW
     override fun convert(helper: BaseViewHolder, item: CalendarSection) {
         helper.setText(R.id.item_title, if(item.t.name_cn.isNullOrEmpty()) item.t.name else item.t.name_cn)
         helper.setText(R.id.item_name_jp, item.t.name)
@@ -56,6 +55,7 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
     companion object {
         val weekJp = listOf("", "月", "火", "水", "木", "金", "土", "日")
         val weekSmall = listOf("", "周一", "周二", "周三", "周四", "周五", "周六", "周日")
+        const val SECTION_HEADER = SECTION_HEADER_VIEW
 
         fun currentWeek():Int{
             val now = Calendar.getInstance()

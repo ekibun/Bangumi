@@ -1,9 +1,13 @@
 package soko.ekibun.bangumi.ui.video
 
 import android.content.pm.ActivityInfo
+import android.support.design.widget.Snackbar
 import android.view.View
+import com.google.android.exoplayer2.ExoPlaybackException
 import kotlinx.android.synthetic.main.activity_video.*
 import kotlinx.android.synthetic.main.video_player.*
+import retrofit2.Call
+import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.model.ParseModel
 import soko.ekibun.bangumi.model.VideoModel
@@ -42,7 +46,7 @@ class VideoPresenter(private val context: VideoActivity){
                         View.INVISIBLE else View.VISIBLE
                     controller.updateDanmaku(danmakuPresenter.view.visibility == View.VISIBLE)
                 }
-                Controller.Action.SEEKTO -> {
+                Controller.Action.SEEK_TO -> {
                     videoModel.player.seekTo(param as Long)
                     this.controller.updateProgress(videoModel.player.currentPosition)
                 }
@@ -69,34 +73,36 @@ class VideoPresenter(private val context: VideoActivity){
         }, { context.systemUIPresenter.isLandscape })
     }
     val videoModel: VideoModel by lazy{
-        VideoModel(context){ action: VideoModel.Action, param: Any ->
-            when(action){
-                VideoModel.Action.READY -> {
-                    if(!controller.ctrVisibility){
-                        controller.ctrVisibility = true
-                        context.item_logcat.visibility = View.INVISIBLE
-                        controller.doShowHide(false)
-                    }
-                    if(this.videoModel.player.playWhenReady)
-                        doPlayPause(true)
-                    if(!controller.isShow){
-                        context.item_mask.visibility = View.INVISIBLE
-                        context.toolbar.visibility = View.INVISIBLE
-                    }
-                    controller.updateLoading(false)
+        VideoModel(context, object : VideoModel.Listener{
+            override fun onReady(playWhenReady: Boolean) {
+                if(!controller.ctrVisibility){
+                    controller.ctrVisibility = true
+                    context.item_logcat.visibility = View.INVISIBLE
+                    controller.doShowHide(false)
                 }
-                VideoModel.Action.BUFFERING -> controller.updateLoading(true)
-                VideoModel.Action.ENDED -> doPlayPause(false)
-                VideoModel.Action.VIDEO_SIZE_CHANGE -> {
-                    val array = param as Array<*>
-                    val width = array[0] as Int
-                    val height = array[1] as Int
-                    val pixelWidthHeightRatio = array[3] as Float
-                    context.video_surface.scaleX = Math.min(context.video_surface.measuredWidth.toFloat(), (context.video_surface.measuredHeight * width * pixelWidthHeightRatio/ height)) / context.video_surface.measuredWidth
-                    context.video_surface.scaleY = Math.min(context.video_surface.measuredHeight.toFloat(), (context.video_surface.measuredWidth * height * pixelWidthHeightRatio/ width)) / context.video_surface.measuredHeight
+                if(playWhenReady)
+                    doPlayPause(true)
+                if(!controller.isShow){
+                    context.item_mask.visibility = View.INVISIBLE
+                    context.toolbar.visibility = View.INVISIBLE
                 }
+                controller.updateLoading(false)
             }
-        }
+            override fun onBuffering() {
+                controller.updateLoading(true)
+            }
+            override fun onEnded() {
+                doPlayPause(false)
+            }
+            override fun onVideoSizeChange(width: Int, height: Int, unappliedRotationDegrees: Int, pixelWidthHeightRatio: Float) {
+                context.video_surface.scaleX = Math.min(context.video_surface.measuredWidth.toFloat(), (context.video_surface.measuredHeight * width * pixelWidthHeightRatio/ height)) / context.video_surface.measuredWidth
+                context.video_surface.scaleY = Math.min(context.video_surface.measuredHeight.toFloat(), (context.video_surface.measuredWidth * height * pixelWidthHeightRatio/ width)) / context.video_surface.measuredHeight
+            }
+            override fun onError(error: ExoPlaybackException) {
+                exception = error.sourceException
+                Snackbar.make(context.root_layout, exception.toString(), Snackbar.LENGTH_SHORT).show()
+            }
+        })
     }
 
     init{
@@ -105,21 +111,36 @@ class VideoPresenter(private val context: VideoActivity){
         }
     }
 
-    private var loadVideo = false
+    private var loadVideoInfo: Boolean? = null
         set(v) {
             field = v
             parseLogcat()
         }
-    private var loadDanmaku = false
+    private var loadVideo: Boolean? = null
+        set(v) {
+            field = v
+            parseLogcat()
+        }
+    private var loadDanmaku: Boolean? = null
+        set(v) {
+            field = v
+            parseLogcat()
+        }
+    private var exception: Exception? = null
         set(v) {
             field = v
             parseLogcat()
         }
     private fun parseLogcat(){
         context.runOnUiThread{
-            context.item_logcat.text = "解析视频地址… " + (if(loadVideo) "【完成】" else "") + "\n" +
-                    "全舰弹幕装填… "+ (if(danmakuPresenter.finished) "【完成】" else "") +
-                    if(loadVideo) "\n开始视频缓冲…" else ""
+            if(loadVideoInfo == false || loadVideo == false || exception != null)
+                controller.updateLoading(false)
+            context.item_logcat.text = "获取视频信息…" + if(loadVideoInfo == null) "" else (
+                    if(loadVideoInfo != true) "【失败】" else ("【完成】" +
+                            "\n解析视频地址…${if(loadVideo == null) "" else if(loadVideo == true) "【完成】" else "【失败】"}" +
+                            "\n全舰弹幕装填…${if(loadDanmaku == null) "" else if(loadDanmaku == true) "【完成】" else "【失败】"}" +
+                            if(loadVideo == true) "\n开始视频缓冲…" else "")) +
+                    if(exception != null) "【失败】\n$exception" else ""
         }
     }
 
@@ -129,9 +150,13 @@ class VideoPresenter(private val context: VideoActivity){
 
     var playNext: (Int)->Unit = {}
     var next: Int? = null
+    var videoCall: Call<Parser.VideoInfo>? = null
     fun play(episode: Episode, info: ParseInfo){
-        loadVideo = false
-        loadDanmaku = false
+        context.systemUIPresenter.appbarCollapsible(false)
+        loadVideoInfo = null
+        loadVideo = null
+        loadDanmaku = null
+        exception = null
         controller.updateNext(next != null)
         videoModel.player.playWhenReady = false
         controller.updateLoading(true)
@@ -145,22 +170,22 @@ class VideoPresenter(private val context: VideoActivity){
         playLoopTask?.cancel()
         context.nested_scroll.tag = true
 
-        ParseModel.getVideoInfo(info.video?.type?:0, info.video?.id?:"", episode){ video->
-            if(video != null) {
-                context.runOnUiThread { ParseModel.getVideo(video.siteId, webView, info.api ?: "", video){
-                    context.runOnUiThread{
-                        it?.let{videoModel.play(it, context.video_surface, false)}
-                        loadVideo = true
-                    } } }
-                if (info.danmaku?.type == info.video?.type && info.video?.id == info.danmaku?.id)
-                    context.runOnUiThread { context.videoPresenter.loadDanmaku(video) }
-                else
-                    ParseModel.getVideoInfo(info.danmaku?.type ?: 0, info.danmaku?.id
-                            ?: "", episode) { danmaku ->
-                        if (danmaku != null) {
-                            context.runOnUiThread { context.videoPresenter.loadDanmaku(danmaku) }
-                        } } }
-        }
+        videoCall?.cancel()
+        videoCall = ParseModel.getVideoInfo(info.video?.type?:0, info.video?.id?:"", episode)
+        videoCall?.enqueue(ApiHelper.buildCallback(context,{video->
+            context.runOnUiThread { ParseModel.getVideo(video.siteId, webView, info.api ?: "", video).enqueue(ApiHelper.buildCallback(context, {
+                context.runOnUiThread{
+                    it?.let{videoModel.play(it, context.video_surface)}
+                    loadVideo = true
+                } })) }
+            if (info.danmaku?.type == info.video?.type && info.video?.id == info.danmaku?.id)
+                context.runOnUiThread { context.videoPresenter.loadDanmaku(video) }
+            else if(!info.danmaku?.id.isNullOrEmpty())
+                ParseModel.getVideoInfo(info.danmaku?.type ?: 0, info.danmaku?.id
+                        ?: "", episode).enqueue(ApiHelper.buildCallback(context, { danmaku ->
+                    context.runOnUiThread { context.videoPresenter.loadDanmaku(danmaku) }
+                }))
+        },{ loadVideoInfo = it == null }))
     }
 
     private var playLoopTask: TimerTask? = null

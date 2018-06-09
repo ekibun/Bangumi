@@ -1,68 +1,42 @@
 package soko.ekibun.bangumi.api.parser
 
 import android.util.Log
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.Response
 import org.jsoup.Jsoup
+import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.ui.view.BackgroundWebView
-import soko.ekibun.bangumi.util.HttpUtil
-import java.io.IOException
 
 class DilidiliParser: Parser {
     override val siteId: Int = ParseInfo.DILIDLILI
 
-    override fun getVideoInfo(id: String, video: Episode, callback: (Parser.VideoInfo?) -> Unit) {
-        HttpUtil.get("http://m.dilidili.wang/anime/$id/", header, object: Callback {
-            override fun onResponse(call: Call, response: Response) {
-                try{
-                    val d = Jsoup.parse(response.body()?.string()?:"")
-                    d.selectFirst(".episodeWrap").select("a").forEach {
-                        if(it.text().toFloatOrNull() == video.sort){
-                            val url = it.attr("href")
-                            val info = Parser.VideoInfo(
-                                    Regex("""dilidili.wang/watch[0-9]?/([^/]*)/""").find(url)?.groupValues?.get(1)?:"",
-                                    siteId,
-                                    url
-                            )
-                            Log.v("video", info.toString())
-                            callback(info)
-                            return
-                        }}
-                }catch (e: Exception){ e.printStackTrace() }
-                callback(null)
-            }
-
-            override fun onFailure(call: Call, e: IOException) {
-                e.printStackTrace()
-                callback(null)
-            }
-        })
-    }
-
-    override fun getVideo(webView: BackgroundWebView, api: String, video: Parser.VideoInfo, callback: (String?) -> Unit) {
-        webView.onCatchVideo={
-            Log.v("video", it.url.toString())
-            if(it.url.toString().contains("/404.mp4")){
-                callback(it.url.toString())
-            }else{
-                callback(it.url.toString())
-            }
-            webView.onCatchVideo={}
+    override fun getVideoInfo(id: String, video: Episode): retrofit2.Call<Parser.VideoInfo> {
+        return ApiHelper.buildHttpCall("http://m.dilidili.wang/anime/$id/", header){
+            val d = Jsoup.parse(it.body()?.string()?:"")
+            d.selectFirst(".episodeWrap").select("a").forEach {
+                if(it.text().toFloatOrNull() == video.sort){
+                    val url = it.attr("href")
+                    val info = Parser.VideoInfo(
+                            Regex("""dilidili.wang/watch[0-9]?/([^/]*)/""").find(url)?.groupValues?.get(1)?:"",
+                            siteId,
+                            url
+                    )
+                    Log.v("video", info.toString())
+                    return@buildHttpCall info
+                }}
+            throw Exception("not found")
         }
-        val url = video.url
-        val map = HashMap<String, String>()
-        map["referer"]=url
-        webView.loadUrl(url, map)
     }
 
-    override fun getDanmakuKey(video: Parser.VideoInfo, callback: (String?) -> Unit) {
-        //not supported
+    override fun getVideo(webView: BackgroundWebView, api: String, video: Parser.VideoInfo): retrofit2.Call<String> {
+        return ApiHelper.buildWebViewCall(webView, video.url)
     }
 
-    override fun getDanmaku(video: Parser.VideoInfo, key: String, pos: Int, callback: (Map<Int, List<Parser.Danmaku>>?) -> Unit) {
-        //not supported
+    override fun getDanmakuKey(video: Parser.VideoInfo): retrofit2.Call<String> {
+        return ApiHelper.buildGroupCall(arrayOf())
+    }
+
+    override fun getDanmaku(video: Parser.VideoInfo, key: String, pos: Int): retrofit2.Call<Map<Int, List<Parser.Danmaku>>> {
+        return ApiHelper.buildGroupCall(arrayOf())
     }
 
     companion object {

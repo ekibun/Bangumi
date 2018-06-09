@@ -9,7 +9,7 @@ import com.oushangfeng.pinnedsectionitemdecoration.SmallPinnedHeaderItemDecorati
 import kotlinx.android.synthetic.main.content_calendar.*
 import retrofit2.Call
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiCallback
+import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Calendar
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
@@ -43,7 +43,7 @@ class CalendarFragment: DrawerFragment(R.layout.content_calendar) {
         calendar_list.adapter = calendarListAdapter
         calendar_list.layoutManager = LinearLayoutManager(context)
         calendar_list.addItemDecoration(
-                SmallPinnedHeaderItemDecoration.Builder(R.id.item_pinned_header, calendarListAdapter.SECTION_HEADER).create()
+                SmallPinnedHeaderItemDecoration.Builder(R.id.item_pinned_header, CalendarAdapter.SECTION_HEADER).create()
         )
         calendarListAdapter.setOnItemChildClickListener { _, v, position ->
             calendarListAdapter.data[position].t?.let {
@@ -73,7 +73,7 @@ class CalendarFragment: DrawerFragment(R.layout.content_calendar) {
         calendarCall?.cancel()
         calendar_swipe?.isRefreshing = true
         calendarCall = api.calendar()
-        calendarCall?.enqueue(ApiCallback.build(calendar_swipe?.context, {
+        calendarCall?.enqueue(ApiHelper.buildCallback(calendar_swipe?.context, {
             it.forEach {
                 var isHeader = true
                 it.items?.forEach {subject->

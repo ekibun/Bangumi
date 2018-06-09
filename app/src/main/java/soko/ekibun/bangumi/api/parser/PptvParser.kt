@@ -2,106 +2,86 @@ package soko.ekibun.bangumi.api.parser
 
 import android.util.Log
 import com.google.gson.JsonNull
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.Response
+import okhttp3.Request
 import org.jsoup.Jsoup
+import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.ui.view.BackgroundWebView
-import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.JsonUtil
-import java.io.IOException
 
 class PptvParser: Parser{
     override val siteId: Int = ParseInfo.PPTV
 
-    override fun getVideoInfo(id: String, video: Episode, callback: (Parser.VideoInfo?) -> Unit) {
-        HttpUtil.get("http://apis.web.pptv.com/show/videoList?format=jsonp&pid=$id", header, object: Callback{
-            override fun onResponse(call: Call, response: Response) {
-                try{
-                    val src = JsonUtil.toJsonObject(response.body()?.string()?:"")
-                    src.get("data").asJsonObject.get("list").asJsonArray?.map{it.asJsonObject}?.forEach {
-                        Log.v("obj", it.toString())
-                        if(it.get("title").asString.toFloatOrNull() == video.sort){
-                            val info = Parser.VideoInfo(
-                                    it.get("id").asString,
-                                    siteId,
-                                    it.get("url").asString
-                            )
-                            Log.v("video", info.toString())
-                            callback(info)
-                            return
-                        } }
-                }catch (e: Exception){ e.printStackTrace() }
-                callback(null)
-            }
-
-            override fun onFailure(call: Call, e: IOException) {
-                e.printStackTrace()
-                callback(null)
-            }
-        })
+    override fun getVideoInfo(id: String, video: Episode): retrofit2.Call<Parser.VideoInfo> {
+        return ApiHelper.buildHttpCall("http://apis.web.pptv.com/show/videoList?format=jsonp&pid=$id", header){
+            val src = JsonUtil.toJsonObject(it.body()?.string()?:"")
+            src.get("data").asJsonObject.get("list").asJsonArray?.map{it.asJsonObject}?.forEach {
+                Log.v("obj", it.toString())
+                if(it.get("title").asString.toFloatOrNull() == video.sort){
+                    val info = Parser.VideoInfo(
+                            it.get("id").asString,
+                            siteId,
+                            it.get("url").asString
+                    )
+                    Log.v("video", info.toString())
+                    return@buildHttpCall info
+                } }
+            throw Exception("not found")
+        }
     }
 
-    override fun getVideo(webView: BackgroundWebView, api: String, video: Parser.VideoInfo, callback: (String?) -> Unit) {
-        webView.onCatchVideo={
-            Log.v("video", it.url.toString())
-            if(it.url.toString().contains("mdparse.duapp.com/404.mp4")){
-                callback(it.url.toString())
-            }else{
-                callback(it.url.toString())
-            }
-            webView.onCatchVideo={}
-        }
-        var url = api//parseModel.sharedPreferences.getString("api_pptv", "")
+    override fun getVideo(webView: BackgroundWebView, api: String, video: Parser.VideoInfo): retrofit2.Call<String> {
+        var url = api
         if(url.isEmpty())
             url = "https://jx.maoyun.tv/?id="
         if(url.endsWith("="))
-            url += video.url.split("?")[0]
-
-        val map = HashMap<String, String>()
-        map["referer"]=url
-        webView.loadUrl(url, map)
+            url += video.url
+        return ApiHelper.buildWebViewCall(webView, url)
     }
 
-    override fun getDanmakuKey(video: Parser.VideoInfo, callback: (String?) -> Unit) {
-        callback("OK")
+    override fun getDanmakuKey(video: Parser.VideoInfo): retrofit2.Call<String> {
+        return object: retrofit2.Call<String>{
+            override fun execute(): retrofit2.Response<String> {
+                return retrofit2.Response.success("OK")
+            }
+            override fun enqueue(callback: retrofit2.Callback<String>) {
+                callback.onResponse(this, execute())
+            }
+            override fun isExecuted(): Boolean { return true }
+            override fun clone(): retrofit2.Call<String> { return this }
+            override fun isCanceled(): Boolean { return false }
+            override fun cancel() {}
+            override fun request(): Request { return Request.Builder().build() }
+        }
     }
 
-    override fun getDanmaku(video: Parser.VideoInfo, key: String, pos: Int, callback: (Map<Int, List<Parser.Danmaku>>?) -> Unit) {
+    override fun getDanmaku(video: Parser.VideoInfo, key: String, pos: Int): retrofit2.Call<Map<Int, List<Parser.Danmaku>>> {
+        val list = ArrayList<retrofit2.Call<Map<Int, List<Parser.Danmaku>>>>()
         val pageStart = pos / 300 * 3
         for(i in 0..5)
-            getDanmaku(video, pageStart + i, callback)
+            list.add(getDanmakuCall(video, pageStart + i))
+        return ApiHelper.buildGroupCall(list.toTypedArray())
     }
 
-    private fun getDanmaku(video: Parser.VideoInfo, page: Int, callback: (Map<Int, List<Parser.Danmaku>>?) -> Unit) {
-        val map: MutableMap<Int, MutableList<Parser.Danmaku>>? = HashMap()
-        HttpUtil.get("http://apicdn.danmu.pptv.com/danmu/v4/pplive/ref/vod_${video.id}/danmu?pos=${page* 1000}", header, object: Callback {
-            override fun onResponse(call: Call, response: Response) {
-                try{
-                    val result = JsonUtil.toJsonObject(response.body()!!.string()).getAsJsonObject("data").getAsJsonArray("infos")
-                    result.map{ it.asJsonObject}
-                            .filter { it.get("id").asLong != 0L }
-                            .forEach {
-                                val time = it.get("play_point").asInt / 10
-                                val fontclr = it.get("font_color")
-                                val color = if(fontclr is JsonNull) "#FFFFFF" else fontclr.asString
-                                val context = Jsoup.parse(it.get("content").asString).text()
-                                val list: MutableList<Parser.Danmaku> = map?.get(time) ?: ArrayList()
-                                val danmaku = Parser.Danmaku(context, time, color)
-                                Log.v("danmaku", danmaku.toString())
-                                list += danmaku
-                                map?.put(time, list)
-                            }
-                }catch (e: Exception){ e.printStackTrace() }
-                callback(map)
-            }
-
-            override fun onFailure(call: Call, e: IOException) {
-                e.printStackTrace()
-                callback(null)
-            }
-        })
+    private fun getDanmakuCall(video: Parser.VideoInfo, page: Int): retrofit2.Call<Map<Int, List<Parser.Danmaku>>> {
+        return ApiHelper.buildHttpCall("http://apicdn.danmu.pptv.com/danmu/v4/pplive/ref/vod_${video.id}/danmu?pos=${page* 1000}", header){
+            val map: MutableMap<Int, MutableList<Parser.Danmaku>> = HashMap()
+            val result = JsonUtil.toJsonObject(it.body()!!.string()).getAsJsonObject("data").getAsJsonArray("infos")
+            result.map{ it.asJsonObject}
+                    .filter { it.get("id").asLong != 0L }
+                    .forEach {
+                        val time = it.get("play_point").asInt / 10
+                        val fontClr = it.get("font_color")
+                        val color = if(fontClr is JsonNull) "#FFFFFF" else fontClr.asString
+                        val context = Jsoup.parse(it.get("content").asString).text()
+                        val list: MutableList<Parser.Danmaku> = map[time] ?: ArrayList()
+                        val danmaku = Parser.Danmaku(context, time, color)
+                        Log.v("danmaku", danmaku.toString())
+                        list += danmaku
+                        map[time] = list
+                    }
+            return@buildHttpCall map
+        }
     }
 
     companion object {

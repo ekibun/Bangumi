@@ -17,9 +17,9 @@ data class Calendar(var weekday: WeekdayBean? = null,
          * id : 1
          */
 
-        var en: String? = null
-        var cn: String? = null
-        var ja: String? = null
+        //var en: String? = null
+        //var cn: String? = null
+        //var ja: String? = null
         var id: Int = 0
     }
 }

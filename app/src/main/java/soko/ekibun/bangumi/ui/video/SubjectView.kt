@@ -9,6 +9,7 @@ import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_video.*
 import kotlinx.android.synthetic.main.subject_detail.*
 import kotlinx.android.synthetic.main.video_player.*
+import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectProgress
@@ -25,7 +26,7 @@ class SubjectView(private val context: VideoActivity){
         context.episode_list.layoutManager = LinearLayoutManager(context)
     }
 
-    fun updateEpisode(episodes: List<Episode>){
+    private fun updateEpisode(episodes: List<Episode>){
         val maps = HashMap<Int, List<Episode>>()
         episodes.forEach {
             maps[it.type] = (maps[it.type]?:ArrayList()).plus(it)
@@ -80,8 +81,7 @@ class SubjectView(private val context: VideoActivity){
 
         subject.rating?.let {
             context.item_score.text = it.score.toString()
-            context.item_score_pt.text = "分"
-            context.item_score_count.text = "${it.total}人"
+            context.item_score_count.text = context.getString(R.string.rate_count, it.total)
         }
         Glide.with(context)
                 .applyDefaultRequestOptions(RequestOptions.placeholderOf(context.item_cover.drawable))

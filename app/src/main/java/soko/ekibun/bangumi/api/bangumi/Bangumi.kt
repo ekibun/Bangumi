@@ -1,6 +1,5 @@
 package soko.ekibun.bangumi.api.bangumi
 
-import com.google.gson.GsonBuilder
 import retrofit2.Call
 import retrofit2.Converter
 import retrofit2.Retrofit
@@ -79,10 +78,12 @@ interface Bangumi {
                      @Field("client_secret") client_secret : String = APP_SECRET
     ): Call<AccessToken>
 
+    /*
     @FormUrlEncoded
     @POST("/oauth/token_status")
     fun tokenStatus(@Field("access_token") access_token : String
     ): Call<AccessToken>
+    */
 
     @GET("/calendar")
     fun calendar(): Call<List<Calendar>>
@@ -96,7 +97,7 @@ interface Bangumi {
 
     companion object {
         const val SERVER = "https://bgm.tv"
-        const val SERVER_API = "https://api.bgm.tv"
+        private const val SERVER_API = "https://api.bgm.tv"
         const val APP_ID = "bgm2315af5554b7f887"
         const val APP_SECRET = "adaf4941f83f2fb3c4336ee80a087f75"
         const val REDIRECT_URL = "bangumi://redirect"

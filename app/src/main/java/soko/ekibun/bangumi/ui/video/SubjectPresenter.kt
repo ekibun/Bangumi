@@ -5,17 +5,15 @@ import android.net.Uri
 import android.support.customtabs.CustomTabsIntent
 import android.support.v4.widget.NestedScrollView
 import android.support.v7.app.AlertDialog
-import android.support.v7.widget.PopupMenu
 import android.util.Log
 import kotlinx.android.synthetic.main.activity_video.*
 import kotlinx.android.synthetic.main.dialog_edit_lines.view.*
 import kotlinx.android.synthetic.main.dialog_edit_subject.view.*
 import kotlinx.android.synthetic.main.subject_detail.*
 import kotlinx.android.synthetic.main.video_buttons.*
-import okhttp3.Response
 import retrofit2.Call
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiCallback
+import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.CollectionStatusType
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
@@ -24,15 +22,10 @@ import soko.ekibun.bangumi.api.bgmlist.Bgmlist
 import soko.ekibun.bangumi.model.ParseInfoModel
 import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.api.parser.ParseInfo
-import soko.ekibun.bangumi.api.parser.Parser
-import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.JsonUtil
-import java.io.IOException
-import android.app.Activity
 import android.view.*
 import android.widget.ArrayAdapter
 import android.widget.ListPopupWindow
-import android.widget.PopupWindow
 import soko.ekibun.bangumi.model.ParseModel
 
 
@@ -47,7 +40,7 @@ class SubjectPresenter(private val context: VideoActivity){
     init{
         subjectView.updateSubject(subject)
         refreshSubject(subject)
-        refershCollection(subject)
+        refreshCollection(subject)
         refreshProgress(subject)
         //refreshLines(subject)
 
@@ -83,7 +76,7 @@ class SubjectPresenter(private val context: VideoActivity){
                     val dialog = AlertDialog.Builder(context)
                             .setItems(status) { _, which ->
                                 api.updateProgress(ep.id, SubjectProgress.EpisodeProgress.EpisodeStatus.types[which],token.access_token?:"").enqueue(
-                                        ApiCallback.build(context, {
+                                        ApiHelper.buildCallback(context, {
                                             refreshProgress(subject)
                                         }))
                             }.create()
@@ -103,7 +96,7 @@ class SubjectPresenter(private val context: VideoActivity){
 
     private fun refreshProgress(subject: Subject){
         userModel.getToken()?.let{token ->
-            api.progress(token.user_id.toString(), subject.id, token.access_token?:"").enqueue(ApiCallback.build(context, {
+            api.progress(token.user_id.toString(), subject.id, token.access_token?:"").enqueue(ApiHelper.buildCallback(context, {
                 subjectView.progress = it
             }))
         }
@@ -115,7 +108,7 @@ class SubjectPresenter(private val context: VideoActivity){
         context.subject_swipe.isRefreshing = true
         subjectCall?.cancel()
         subjectCall = api.subject(subject.id)
-        subjectCall?.enqueue(ApiCallback.build(context, {
+        subjectCall?.enqueue(ApiHelper.buildCallback(context, {
             refreshLines(it)
             subjectView.updateSubject(it)
         }, { context.subject_swipe.isRefreshing = false }))
@@ -123,27 +116,27 @@ class SubjectPresenter(private val context: VideoActivity){
 
 
 
-    fun refreshLines(subject: Subject){
+    private fun refreshLines(subject: Subject){
         val dateList = subject.air_date?.split("-") ?: return
         val year = dateList.getOrNull(0)?.toIntOrNull()?:2010
         val month = ((dateList.getOrNull(1)?.toIntOrNull()?:1) - 1) / 3 * 3 + 1
         Log.v("year", "$year,$month")
-        Bgmlist.createInstance().query(year, month).enqueue(ApiCallback.build(context,{
+        Bgmlist.createInstance().query(year, month).enqueue(ApiHelper.buildCallback(context,{
             it.filter { it.value.bgmId == subject.id }.forEach {
                 Log.v("list", it.value.toString())
                 val list = it.value.onAirSite?:return@forEach
                 context.cl_lines.setOnClickListener {
-                    val poplist = ListPopupWindow(context)
-                    poplist.anchorView = context.cl_lines
-                    poplist.setAdapter(ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, list))
-                    poplist.show()
+                    val popList = ListPopupWindow(context)
+                    popList.anchorView = context.cl_lines
+                    popList.setAdapter(ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, list))
+                    popList.show()
 
-                    poplist.listView.setOnItemClickListener { _, _, position, _ ->
+                    popList.listView.setOnItemClickListener { _, _, position, _ ->
                         CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(list[position]))
-                        poplist.dismiss()
+                        popList.dismiss()
                     }
 
-                    poplist.listView.setOnItemLongClickListener { _, _, position, _ ->
+                    popList.listView.setOnItemLongClickListener { _, _, position, _ ->
                         ParseModel.processUrl(list[position]){context.runOnUiThread {
                             val view = context.layoutInflater.inflate(R.layout.dialog_edit_lines, context.cl_lines, false)
                             view.item_video_type.setSelection(it.type)
@@ -160,7 +153,7 @@ class SubjectPresenter(private val context: VideoActivity){
                                         refreshLines(subject)
                                     }.show()
                         } }
-                        poplist.dismiss()
+                        popList.dismiss()
                         true
                     }
                 }
@@ -192,10 +185,10 @@ class SubjectPresenter(private val context: VideoActivity){
         }
     }
 
-    fun refershCollection(subject: Subject){
+    private fun refreshCollection(subject: Subject){
         userModel.getToken()?.let{token ->
             //Log.v("token", token.toString())
-            api.collectionStatus(subject.id, token.access_token?:"").enqueue(ApiCallback.build(context, {body->
+            api.collectionStatus(subject.id, token.access_token?:"").enqueue(ApiHelper.buildCallback(context, { body->
                 val status = body.status
                 if(status != null){
                     context.iv_chase.setImageDrawable(context.resources.getDrawable(
@@ -213,15 +206,15 @@ class SubjectPresenter(private val context: VideoActivity){
                     }
                     AlertDialog.Builder(context)
                             .setView(view)
-                            .setPositiveButton("提交"){ _: DialogInterface, i: Int ->
-                                val new_status = CollectionStatusType.status[view.item_status.selectedItemId.toInt()]
-                                val new_rating = view.item_rating.rating.toInt()
-                                val new_comment = view.item_comment.text.toString()
-                                val new_privacy = if(view.item_private.isChecked) 1 else 0
+                            .setPositiveButton("提交"){ _: DialogInterface, _: Int ->
+                                val newStatus = CollectionStatusType.status[view.item_status.selectedItemId.toInt()]
+                                val newRating = view.item_rating.rating.toInt()
+                                val newComment = view.item_comment.text.toString()
+                                val newPrivacy = if(view.item_private.isChecked) 1 else 0
                                 //Log.v("new", "$new_status,$new_rating,$new_comment")
                                 api.updateCollectionStatus(subject.id, token.access_token?:"",
-                                        new_status, new_comment, new_rating, new_privacy).enqueue(ApiCallback.build(context,{},{
-                                    refershCollection(subject)
+                                        newStatus, newComment, newRating, newPrivacy).enqueue(ApiHelper.buildCallback(context,{},{
+                                    refreshCollection(subject)
                                 }))
                             }.show()
                 }

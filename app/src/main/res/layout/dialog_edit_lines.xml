@@ -9,8 +9,8 @@
               android:layout_height="wrap_content"
               android:padding="8dp"
               android:textAppearance="@android:style/TextAppearance.Material.Subhead"
-              android:text="接口"/>
-    <soko.ekibun.bangumi.ui.view.ClearableEditText
+              android:text="@string/parser_api"/>
+    <soko.ekibun.bangumi.ui.view.CleanableEditText
             android:id="@+id/item_api"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
@@ -18,14 +18,14 @@
               android:layout_height="wrap_content"
               android:padding="8dp"
               android:textAppearance="@android:style/TextAppearance.Material.Subhead"
-              android:text="视频"/>
+              android:text="@string/video"/>
     <Spinner
             android:id="@+id/item_video_type"
             android:layout_margin="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:entries="@array/parse_type"/>
-    <soko.ekibun.bangumi.ui.view.ClearableEditText
+    <soko.ekibun.bangumi.ui.view.CleanableEditText
             android:id="@+id/item_video_id"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
@@ -33,14 +33,14 @@
               android:layout_height="wrap_content"
               android:padding="8dp"
               android:textAppearance="@android:style/TextAppearance.Material.Subhead"
-              android:text="弹幕"/>
+              android:text="@string/danmaku"/>
     <Spinner
             android:id="@+id/item_danmaku_type"
             android:layout_margin="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:entries="@array/parse_type"/>
-    <soko.ekibun.bangumi.ui.view.ClearableEditText
+    <soko.ekibun.bangumi.ui.view.CleanableEditText
             android:id="@+id/item_danmaku_id"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>

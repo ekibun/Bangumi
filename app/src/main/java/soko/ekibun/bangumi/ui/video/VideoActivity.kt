@@ -56,6 +56,7 @@ class VideoActivity : AppCompatActivity() {
     public override fun onUserLeaveHint() {
         super.onUserLeaveHint()
         if(systemUIPresenter.isLandscape && videoPresenter.videoModel.player.playWhenReady && Build.VERSION.SDK_INT >= 24) {
+            @Suppress("DEPRECATION")
             enterPictureInPictureMode()
         }
     }
@@ -109,7 +110,7 @@ class VideoActivity : AppCompatActivity() {
             context.startActivity(parseIntent(context, subject))
         }
 
-        fun parseIntent(context: Context, subject: Subject): Intent {
+        private fun parseIntent(context: Context, subject: Subject): Intent {
             val intent = Intent(context, VideoActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             intent.putExtra(EXTRA_SUBJECT, JsonUtil.toJson(subject))

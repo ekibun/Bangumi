@@ -18,7 +18,7 @@ data class MonoInfo(
      * height : 121CM
      * weight : 18kg
      */
-
+    /*
     class AliasBean (
             var jp: String? = null,
             var kana: String? = null,
@@ -33,4 +33,5 @@ data class MonoInfo(
          * nick : 柯南
          */
     }
+    */
 }

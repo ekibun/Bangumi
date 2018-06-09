@@ -2,13 +2,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item android:id="@+id/collection_type_anime"
-          android:title="动画"/>
+          android:title="@string/anime"/>
     <item android:id="@+id/collection_type_book"
-          android:title="图书"/>
+          android:title="@string/book"/>
     <item android:id="@+id/collection_type_game"
-          android:title="游戏"/>
+          android:title="@string/game"/>
     <item android:id="@+id/collection_type_music"
-          android:title="音乐"/>
+          android:title="@string/music"/>
     <item android:id="@+id/collection_type_real"
-          android:title="三次元"/>
+          android:title="@string/real"/>
 </menu>

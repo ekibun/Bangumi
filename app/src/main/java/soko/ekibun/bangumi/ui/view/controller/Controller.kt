@@ -26,7 +26,7 @@ abstract class Controller(layoutRes: Int, view: ViewGroup) {
     abstract val ctrDanmaku: ImageButton?
 
     enum class Action {
-        PLAY_PAUSE, FULLSCREEN, NEXT, DANMAKU, SEEKTO, SHOW, HIDE, TITLE
+        PLAY_PAUSE, FULLSCREEN, NEXT, DANMAKU, SEEK_TO, SHOW, HIDE, TITLE
     }
 
     fun initView(view: ViewGroup, onClick:(Action)->Unit, onSeekBarChangeListener: SeekBar.OnSeekBarChangeListener){
