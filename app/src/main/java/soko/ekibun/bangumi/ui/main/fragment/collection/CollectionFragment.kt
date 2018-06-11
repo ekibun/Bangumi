@@ -15,7 +15,6 @@ import retrofit2.Call
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
-import soko.ekibun.bangumi.api.bangumi.SubjectCollectionConverterTerFactory
 import soko.ekibun.bangumi.api.bangumi.bean.CollectionStatusType
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectCollection
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
@@ -48,7 +47,6 @@ class CollectionFragment: DrawerFragment(R.layout.content_collection){
             R.id.collection_type_real to Pair(SubjectType.REAL, SubjectType.NAME_REAL))
     private var selectedType = R.id.collection_type_anime
 
-    private val web by lazy { Bangumi.createInstance(false, SubjectCollectionConverterTerFactory()) }
     private val api by lazy { Bangumi.createInstance() }
     var user: UserInfo? = null
 
@@ -130,7 +128,7 @@ class CollectionFragment: DrawerFragment(R.layout.content_collection){
             return
         }
         collectionCalls[index] = if(index == 2) api.collection(userName)
-            else web.getCollectionList(typeList[selectedType]?.second?:"", userName, CollectionStatusType.status[index], pageIndex[index]+1)
+            else Bangumi.getCollectionList(typeList[selectedType]?.second?:"", userName, CollectionStatusType.status[index], pageIndex[index]+1)
         collectionCalls[index]?.enqueue(ApiHelper.buildCallback(viewList.getOrNull(index)?.context, {
             it.filter { index != 2 || it.subject?.type == typeList[selectedType]?.first }.let{
                 if(index != 2) it.forEach {

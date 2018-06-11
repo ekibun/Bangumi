@@ -1,6 +1,8 @@
 package soko.ekibun.bangumi.ui.video
 
 import android.support.v7.widget.RecyclerView
+import android.view.View
+import android.widget.TextView
 import com.chad.library.adapter.base.BaseSectionQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
 import com.chad.library.adapter.base.entity.SectionEntity
@@ -14,6 +16,7 @@ class EpisodeAdapter(data: MutableList<SectionEntity<Episode>>? = null) :
         BaseSectionQuickAdapter<SectionEntity<Episode>, BaseViewHolder>
         (R.layout.item_episode, R.layout.header_episode, data) {
     override fun convertHead(helper: BaseViewHolder, item: SectionEntity<Episode>) {
+        helper.getView<TextView>(R.id.item_header).visibility = if(data.indexOf(item) == 0) View.GONE else View.VISIBLE
         helper.setText(R.id.item_header, item.header)
     }
 

@@ -1,7 +1,6 @@
 package soko.ekibun.bangumi.ui.video
 
 import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.view.View
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -9,7 +8,7 @@ import com.chad.library.adapter.base.entity.SectionEntity
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_video.*
 import kotlinx.android.synthetic.main.subject_detail.*
-import kotlinx.android.synthetic.main.subject_detail.view.*
+import kotlinx.android.synthetic.main.video_episode.*
 import kotlinx.android.synthetic.main.video_player.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
@@ -20,25 +19,63 @@ import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarAdapter
 import soko.ekibun.bangumi.util.JsonUtil
 
 class SubjectView(private val context: VideoActivity){
-    val episodeAdapter = EpisodeAdapter()
-    val headerView = context.layoutInflater.inflate(R.layout.video_header, context.root_layout, false)!!
+    val episodeAdapter = SmallEpisodeAdapter()
+    val episodeDetailAdapter = EpisodeAdapter()
+    val linkedSubjectsAdapter = LinkedSubjectAdapter()
+    val topicAdapter = TopicAdapter()
+    val blogAdapter = BlogAdapter()
+    //val headerView = context.layoutInflater.inflate(R.layout.video_episode, context.root_layout, false)!!
 
     init{
         context.episode_list.adapter = episodeAdapter
-        context.episode_list.layoutManager = LinearLayoutManager(context)
-        episodeAdapter.setHeaderView(headerView)
+        val layoutManager = LinearLayoutManager(context)
+        layoutManager.orientation = LinearLayoutManager.HORIZONTAL
+        context.episode_list.layoutManager = layoutManager//LinearLayoutManager(context)
+        context.episode_list.isNestedScrollingEnabled = false
+
+        context.episode_detail_list.adapter = episodeDetailAdapter
+        context.episode_detail_list.layoutManager = LinearLayoutManager(context)
+        //val view = context.layoutInflater.inflate(R.layout.item_title_header, context.root_layout, false)
+        context.item_close.setOnClickListener {
+            context.episode_detail_list.visibility = View.GONE
+            context.episode_detail_list_header.visibility = View.GONE
+        }
+        //episodeDetailAdapter.setHeaderView(view)
+
+        context.subject_list.adapter = linkedSubjectsAdapter
+        val subjectLayoutManager = LinearLayoutManager(context)
+        subjectLayoutManager.orientation = LinearLayoutManager.HORIZONTAL
+        context.subject_list.layoutManager = subjectLayoutManager
+        context.subject_list.isNestedScrollingEnabled = false
+        //episodeAdapter.setHeaderView(headerView)
+
+        context.topic_list.adapter = topicAdapter
+        context.topic_list.layoutManager = LinearLayoutManager(context)
+
+        context.blog_list.adapter = blogAdapter
+        context.blog_list.layoutManager = LinearLayoutManager(context)
     }
 
     private fun updateEpisode(episodes: List<Episode>){
+        val eps = episodes.filter { (it.status?:"") in listOf("Air") }.size
+        context.episode_detail.text = context.getString(if(eps == episodes.size) R.string.phrase_full else R.string.phrase_updating, eps)
+        context.episode_detail.setOnClickListener{
+            context.episode_detail_list.visibility = View.VISIBLE
+            context.episode_detail_list_header.visibility = View.VISIBLE
+        }
+
         val maps = HashMap<Int, List<Episode>>()
         episodes.forEach {
             maps[it.type] = (maps[it.type]?:ArrayList()).plus(it)
         }
         episodeAdapter.setNewData(null)
+        episodeDetailAdapter.setNewData(null)
         maps.forEach {
-            episodeAdapter.addData(object: SectionEntity<Episode>(true, Episode.getTypeName(it.key)){})
+            episodeDetailAdapter.addData(object: SectionEntity<Episode>(true, Episode.getTypeName(it.key)){})
             it.value.forEach {
-                episodeAdapter.addData(object: SectionEntity<Episode>(it){})
+                if((it.status?:"") in listOf("Air"))
+                    episodeAdapter.addData(it)
+                episodeDetailAdapter.addData(object: SectionEntity<Episode>(it){})
             }
         }
         progress = progress
@@ -57,18 +94,16 @@ class SubjectView(private val context: VideoActivity){
 
     var progress: SubjectProgress? = null
         set(value) {
-            episodeAdapter.data.forEach { ep ->
-                if (ep.t != null) {
-                    ep.t.progress = null
-                    value?.eps?.forEach {
-                        if (ep.t.id == it.id) {
-                            ep.t.progress = it
-                            //return@loop
-                        }
+            episodeDetailAdapter.data.forEach { ep ->
+                ep.t?.progress = null
+                value?.eps?.forEach {
+                    if (ep.t?.id == it.id) {
+                        ep.t?.progress = it
                     }
                 }
             }
             episodeAdapter.notifyDataSetChanged()
+            episodeDetailAdapter.notifyDataSetChanged()
             field = value
         }
 
@@ -78,18 +113,18 @@ class SubjectView(private val context: VideoActivity){
         //context.data_layout.visibility = View.VISIBLE
         context.title_text.text = if(subject.name_cn.isNullOrEmpty()) subject.name else subject.name_cn
         context.title_site.text = SubjectType.getDescription(subject.type)
-        //item_title.text = title_text.text
+        //item_title_header.text = title_text.text
         //context.item_summary.text = subject.summary
-        headerView.item_info.text = parseSubject(subject)
+        context.item_info.text = parseSubject(subject)
 
         subject.rating?.let {
-            headerView.item_score.text = it.score.toString()
-            headerView.item_score_count.text = context.getString(R.string.rate_count, it.total)
+            context.item_score.text = it.score.toString()
+            context.item_score_count.text = context.getString(R.string.rate_count, it.total)
         }
         Glide.with(context)
-                .applyDefaultRequestOptions(RequestOptions.placeholderOf(headerView.item_cover.drawable))
+                .applyDefaultRequestOptions(RequestOptions.placeholderOf(context.item_cover.drawable))
                 .load(subject.images?.common)
-                .into(headerView.item_cover)
+                .into(context.item_cover)
 
         Glide.with(context)
                 .applyDefaultRequestOptions(RequestOptions.placeholderOf(context.item_cover_blur.drawable))
@@ -99,5 +134,7 @@ class SubjectView(private val context: VideoActivity){
         ((subject.eps as? List<*>)?.map{ JsonUtil.toEntity(JsonUtil.toJson(it!!), Episode::class.java)})?.let{
             updateEpisode(it)
         }
+        topicAdapter.setNewData(subject.topic)
+        blogAdapter.setNewData(subject.blog)
     }
 }

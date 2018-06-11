@@ -5,10 +5,8 @@ import android.net.Uri
 import android.support.customtabs.CustomTabsIntent
 import android.support.v7.app.AlertDialog
 import android.util.Log
-import kotlinx.android.synthetic.main.activity_video.*
 import kotlinx.android.synthetic.main.dialog_edit_lines.view.*
 import kotlinx.android.synthetic.main.dialog_edit_subject.view.*
-import kotlinx.android.synthetic.main.subject_detail.*
 import kotlinx.android.synthetic.main.video_buttons.*
 import retrofit2.Call
 import soko.ekibun.bangumi.R
@@ -24,9 +22,8 @@ import soko.ekibun.bangumi.api.parser.ParseInfo
 import soko.ekibun.bangumi.util.JsonUtil
 import android.widget.ArrayAdapter
 import android.widget.ListPopupWindow
-import kotlinx.android.synthetic.main.subject_detail.view.*
+import kotlinx.android.synthetic.main.subject_detail.*
 import soko.ekibun.bangumi.model.ParseModel
-
 
 class SubjectPresenter(private val context: VideoActivity){
     val api by lazy { Bangumi.createInstance() }
@@ -43,34 +40,70 @@ class SubjectPresenter(private val context: VideoActivity){
         refreshProgress(subject)
         //refreshLines(subject)
 
-        context.subject_swipe.setOnRefreshListener{
-            refreshSubject(subject)
-        }
-
-        subjectView.headerView.item_detail.setOnClickListener {
+        context.item_detail.setOnClickListener {
             CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(subject.url))
         }
 
         context.videoPresenter.playNext = {position: Int ->
-            val episode = subjectView.episodeAdapter.data[position].t
-            parseInfoModel.getInfo(subject)?.let{
-                if(it.video?.id.isNullOrEmpty()) {
-                    episode?.url?.let{ CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(it)) }
-                    return@let
-                }
-                val episodeNext = subjectView.episodeAdapter.data[position+1].t
-                context.videoPresenter.next = if(episodeNext == null || (episodeNext.status?:"") !in listOf("Air")) null else position + 1
-                context.runOnUiThread { context.videoPresenter.play(episode, it) }
-            }?:episode?.url?.let{ CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(it)) }
+            val episode = subjectView.episodeDetailAdapter.data[position]?.t
+            if(episode != null){
+                parseInfoModel.getInfo(subject)?.let{
+                    if(it.video?.id.isNullOrEmpty()) {
+                        episode.url?.let{ CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(it)) }
+                        return@let
+                    }
+                    val episodeNext = subjectView.episodeDetailAdapter.data.getOrNull(position+1)?.t
+                    context.videoPresenter.next = if(episodeNext == null || (episodeNext.status?:"") !in listOf("Air")) null else position + 1
+                    context.runOnUiThread { context.videoPresenter.play(episode, it) }
+                }?:episode.url?.let{ CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(it)) }
+            }
+        }
+
+        subjectView.topicAdapter.setOnItemClickListener { _, _, position ->
+            CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(subjectView.topicAdapter.data[position].url))
+        }
+
+        subjectView.blogAdapter.setOnItemClickListener { _, _, position ->
+            CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(subjectView.blogAdapter.data[position].url))
+        }
+
+        subjectView.linkedSubjectsAdapter.setOnItemClickListener { _, _, position ->
+            subjectView.linkedSubjectsAdapter.data[position]?.let{
+                VideoActivity.startActivity(context, it)
+            }
         }
 
         subjectView.episodeAdapter.setOnItemClickListener { _, _, position ->
-            context.videoPresenter.playNext(position)
+            subjectView.episodeAdapter.data[position]?.let{episode->
+                context.videoPresenter.playNext(subjectView.episodeDetailAdapter.data.indexOfFirst { it.t == episode })
+            }
         }
 
         subjectView.episodeAdapter.setOnItemLongClickListener { _, _, position ->
             userModel.getToken()?.let{token->
-                subjectView.episodeAdapter.data[position].t?.let{ep->
+                subjectView.episodeAdapter.data[position]?.let{ep->
+                    val status = context.resources.getStringArray(R.array.episode_status)
+                    val dialog = AlertDialog.Builder(context)
+                            .setItems(status) { _, which ->
+                                api.updateProgress(ep.id, SubjectProgress.EpisodeProgress.EpisodeStatus.types[which],token.access_token?:"").enqueue(
+                                        ApiHelper.buildCallback(context, {
+                                            refreshProgress(subject)
+                                        }))
+                            }.create()
+                    //dialog.window.setGravity(Gravity.BOTTOM)
+                    dialog.show()
+                }
+            }
+            true
+        }
+
+        subjectView.episodeDetailAdapter.setOnItemClickListener { _, _, position ->
+            context.videoPresenter.playNext(position)
+        }
+
+        subjectView.episodeDetailAdapter.setOnItemLongClickListener { _, _, position ->
+            userModel.getToken()?.let{token->
+                subjectView.episodeDetailAdapter.data[position]?.t?.let{ep->
                     val status = context.resources.getStringArray(R.array.episode_status)
                     val dialog = AlertDialog.Builder(context)
                             .setItems(status) { _, which ->
@@ -104,13 +137,18 @@ class SubjectPresenter(private val context: VideoActivity){
     private var subjectCall : Call<Subject>? = null
     private fun refreshSubject(subject: Subject){
         //context.data_layout.visibility = View.GONE
-        context.subject_swipe.isRefreshing = true
+        //context.subject_swipe.isRefreshing = true
         subjectCall?.cancel()
         subjectCall = api.subject(subject.id)
         subjectCall?.enqueue(ApiHelper.buildCallback(context, {
             refreshLines(it)
             subjectView.updateSubject(it)
-        }, { context.subject_swipe.isRefreshing = false }))
+        }))
+
+        Bangumi.getSubject(subject).enqueue(ApiHelper.buildCallback(context, {
+            subjectView.linkedSubjectsAdapter.setNewData(it)
+            //Log.v("list", it.toString())
+        }))
     }
 
 

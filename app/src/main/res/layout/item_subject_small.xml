@@ -4,9 +4,9 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/item_layout"
-        android:layout_width="fill_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="8dp"
+        android:padding="4dp"
         android:clickable="true"
         android:foreground="?android:attr/selectableItemBackground"
         android:focusable="true"
@@ -31,31 +31,20 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:textColor="?android:textColorPrimary"
-            android:textSize="16sp"
-            app:layout_constraintLeft_toRightOf="@+id/item_cover"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginLeft="8dp"/>
+            android:textSize="14sp"
+            app:layout_constraintLeft_toLeftOf="@+id/item_cover"
+            app:layout_constraintRight_toRightOf="@+id/item_cover"
+            app:layout_constraintTop_toBottomOf="@+id/item_cover"/>
 
-    <TextView
-            android:id="@+id/item_name_jp"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textSize="12sp"
-            android:ellipsize="end"
-            android:maxLines="1"
-            app:layout_constraintLeft_toRightOf="@+id/item_cover"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/item_title"
-            android:layout_marginLeft="8dp"/>
     <TextView
             android:id="@+id/item_summary"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textSize="12sp"
-            app:layout_constraintLeft_toRightOf="@+id/item_cover"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/item_name_jp"
-            android:layout_marginLeft="8dp"/>
+            android:ellipsize="end"
+            android:maxLines="1"
+            app:layout_constraintLeft_toLeftOf="@+id/item_cover"
+            app:layout_constraintRight_toRightOf="@+id/item_cover"
+            app:layout_constraintTop_toBottomOf="@+id/item_title"/>
 
 </android.support.constraint.ConstraintLayout>

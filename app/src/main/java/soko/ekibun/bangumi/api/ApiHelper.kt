@@ -2,6 +2,7 @@ package soko.ekibun.bangumi.api
 
 import android.app.Activity
 import android.content.Context
+import android.os.Handler
 import android.support.design.widget.Snackbar
 import android.util.Log
 import okhttp3.Request
@@ -31,6 +32,7 @@ object ApiHelper {
     }
 
     fun <T> buildHttpCall(url: String, header: Map<String, String> = HashMap(), converter: (okhttp3.Response)->T): Call<T>{
+        val uiHandler: Handler = Handler{true}
         return object: retrofit2.Call<T>{
             private val retrofitCall = this
             val okHttpCall = HttpUtil.getCall(url, header)
@@ -40,16 +42,16 @@ object ApiHelper {
             override fun enqueue(callback: retrofit2.Callback<T>) {
                 okHttpCall.enqueue(object: okhttp3.Callback {
                     override fun onFailure(call: okhttp3.Call, e: IOException) {
-                        callback.onFailure(retrofitCall, e)
+                        uiHandler.post { callback.onFailure(retrofitCall, e) }
                     }
                     override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
                         val t = try{
                             createResponse(response)
                         }catch(e: Exception){
-                            callback.onFailure(retrofitCall, e)
+                            uiHandler.post { callback.onFailure(retrofitCall, e) }
                             return
                         }
-                        callback.onResponse(retrofitCall, t)
+                        uiHandler.post { callback.onResponse(retrofitCall, t) }
                     }
                 })
             }

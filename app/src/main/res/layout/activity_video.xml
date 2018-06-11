@@ -15,7 +15,7 @@
                 android:id="@+id/toolbar_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
+                app:layout_scrollFlags="scroll|exitUntilCollapsed"
                 app:titleEnabled="false"
                 app:contentScrim="?attr/colorPrimary">
             <include
@@ -54,22 +54,85 @@
                         android:padding="8dp"
                         android:gravity="center_vertical"
                         android:layout_width="match_parent"
+                        android:ellipsize="end"
+                        android:maxLines="1"
                         android:layout_height="match_parent"/>
             </android.support.v7.widget.Toolbar>
         </android.support.design.widget.CollapsingToolbarLayout>
     </android.support.design.widget.AppBarLayout>
 
-    <android.support.v4.widget.SwipeRefreshLayout
-            android:id="@+id/subject_swipe"
+    <android.support.v4.widget.NestedScrollView
+            android:id="@+id/subject_detail"
             android:layout_marginTop="48dp"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-        <android.support.v7.widget.RecyclerView
-                android:id="@+id/episode_list"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
-    </android.support.v4.widget.SwipeRefreshLayout>
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+        <LinearLayout android:layout_width="match_parent"
+                      android:layout_height="match_parent"
+                      android:divider="@drawable/divider"
+                      android:showDividers="middle"
+                      android:orientation="vertical">
+            <include android:id="@+id/item_episodes"
+                     layout="@layout/video_episode"/>
+            <include layout="@layout/subject_detail"/>
+            <LinearLayout android:id="@+id/item_subjects"
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:orientation="vertical">
+                <TextView android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:textAppearance="@android:style/TextAppearance.Material.Subhead"
+                          android:padding="12dp"
+                          android:text="@string/linked_subjects"/>
+                <android.support.v7.widget.RecyclerView
+                        android:id="@+id/subject_list"
+                        android:layout_width="match_parent"
+                        android:padding="4dp"
+                        android:clipToPadding="false"
+                        android:layout_height="wrap_content"/>
+            </LinearLayout>
+            <LinearLayout android:id="@+id/item_blogs"
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:orientation="vertical">
+                <TextView android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:textAppearance="@android:style/TextAppearance.Material.Subhead"
+                          android:padding="12dp"
+                          android:text="@string/blog"/>
+                <android.support.v7.widget.RecyclerView
+                        android:id="@+id/blog_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+            </LinearLayout>
+            <LinearLayout android:id="@+id/item_topics"
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:orientation="vertical">
+                <TextView android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:textAppearance="@android:style/TextAppearance.Material.Subhead"
+                          android:padding="12dp"
+                          android:text="@string/topics"/>
+                <android.support.v7.widget.RecyclerView
+                        android:id="@+id/topic_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+            </LinearLayout>
+        </LinearLayout>
+    </android.support.v4.widget.NestedScrollView>
+
+    <android.support.v7.widget.RecyclerView
+            android:id="@+id/episode_detail_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_constraintTop_toBottomOf="@+id/item_episode_title"
+            android:fillViewport="true"
+            android:background="?android:colorBackground"
+            android:layout_marginTop="96dp"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            android:visibility="gone"/>
 
     <LinearLayout
             android:layout_width="match_parent"
@@ -77,11 +140,41 @@
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
             android:orientation="vertical">
         <include layout="@layout/video_buttons"
-                 android:layout_height="48dp"
+                 android:layout_height="47dp"
                  android:layout_width="match_parent"/>
         <View android:layout_width="match_parent"
               android:layout_height="1dp"
               android:background="?android:attr/colorControlHighlight"/>
     </LinearLayout>
+
+    <android.support.constraint.ConstraintLayout
+            android:layout_marginTop="48dp"
+            android:id="@+id/episode_detail_list_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            android:background="?android:colorBackground"
+            android:visibility="gone">
+        <ImageView android:layout_width="42dp"
+                   android:layout_height="0dp"
+                   android:padding="12dp"
+                   android:id="@+id/item_close"
+                   app:layout_constraintEnd_toEndOf="parent"
+                   android:src="@drawable/ic_clear"
+                   android:clickable="true"
+                   android:foreground="?android:attr/selectableItemBackground"
+                   android:focusable="true"
+                   android:contentDescription="@string/episodes"
+                   app:layout_constraintBottom_toBottomOf="@+id/item_title"
+                   app:layout_constraintTop_toTopOf="@+id/item_title"/>
+        <TextView android:layout_width="0dp"
+                  android:layout_height="wrap_content"
+                  android:textAppearance="@android:style/TextAppearance.Material.Subhead"
+                  android:padding="12dp"
+                  android:text="@string/episodes"
+                  android:id="@+id/item_title"
+                  app:layout_constraintEnd_toStartOf="@+id/item_close"
+                  app:layout_constraintStart_toStartOf="parent"/>
+    </android.support.constraint.ConstraintLayout>
 
 </android.support.design.widget.CoordinatorLayout>

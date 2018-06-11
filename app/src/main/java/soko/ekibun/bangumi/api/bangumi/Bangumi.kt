@@ -1,10 +1,12 @@
 package soko.ekibun.bangumi.api.bangumi
 
+import org.jsoup.Jsoup
 import retrofit2.Call
 import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
+import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.*
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
 
@@ -88,12 +90,14 @@ interface Bangumi {
     @GET("/calendar")
     fun calendar(): Call<List<Calendar>>
 
+    /*
     @GET("/{subject_type}/list/{username}/{collection_status}")
     fun getCollectionList(@SubjectType.SubjectTypeName @Path("subject_type")subject_type: String,
                           @Path("username") username: String,
                           @CollectionStatusType.CollectionStatusType @Path("collection_status") collection_status: String,
                           @Query("page")page: Int = 1
     ): Call<List<SubjectCollection>>
+    */
 
     companion object {
         const val SERVER = "https://bgm.tv"
@@ -101,10 +105,63 @@ interface Bangumi {
         const val APP_ID = "bgm2315af5554b7f887"
         const val APP_SECRET = "adaf4941f83f2fb3c4336ee80a087f75"
         const val REDIRECT_URL = "bangumi://redirect"
-        fun createInstance(api: Boolean = true, converterFactory: Converter.Factory = GsonConverterFactory.create()): Bangumi{
+        fun createInstance(api: Boolean = true): Bangumi{
             return Retrofit.Builder().baseUrl(if(api) SERVER_API else SERVER)
-                    .addConverterFactory(converterFactory)
+                    .addConverterFactory( GsonConverterFactory.create())
                     .build().create(Bangumi::class.java)
+        }
+
+        fun getCollectionList(@SubjectType.SubjectTypeName subject_type: String,
+                              username: String,
+                              @CollectionStatusType.CollectionStatusType collection_status: String,
+                              page: Int = 1
+        ): Call<List<SubjectCollection>>{
+            return ApiHelper.buildHttpCall("$SERVER/$subject_type/list/$username/$collection_status?page=$page"){
+                val doc = Jsoup.parse(it.body()?.string()?:"")
+                val ret = ArrayList<SubjectCollection>()
+                doc.select(".item").forEach {
+                    it.attr("id").split('_').getOrNull(1)?.toIntOrNull()?.let{id->
+                        val nameCN = it.selectFirst("h3").selectFirst("a").text()
+                        val name = it.selectFirst("h3").selectFirst("small")?.text()?:nameCN
+                        val img = "http:" + it.selectFirst("img").attr("src").replace("cover/s/", "cover/m/")
+                        val info = it.selectFirst(".info").text()
+                        val airDate = Regex("""([0-9]{4}年[0-9]{1,2}月[0-9]{1,2})日""").find(info)?.groupValues?.get(1)?.replace("年","-")?.replace("月", "-")
+                        val subject = Subject(id,
+                                Bangumi.SERVER + it.selectFirst("a").attr("href"),
+                                0,
+                                name,
+                                nameCN,
+                                info,
+                                air_date = airDate,
+                                images = Images(img, img, img, img, img)
+                        )
+                        ret += SubjectCollection(name, id, -1, -1, subject = subject)
+                    }
+                }
+                return@buildHttpCall ret
+            }
+        }
+
+        fun getSubject(subject: Subject): Call<List<Subject>>{
+            return ApiHelper.buildHttpCall(subject.url?:""){
+                val doc = Jsoup.parse(it.body()?.string()?:"")
+                val ret = ArrayList<Subject>()
+                doc.select(".subject_section").filter { it.select(".subtitle").text() == "关联条目" }.getOrNull(0)?.let{
+                    var sub = ""
+                    it.select(".sep").forEach {
+                        val newSub = it.selectFirst(".sub").text()
+                        if(!newSub.isNullOrEmpty()) sub = newSub
+                        val avatar = it.selectFirst(".avatar")
+                        val img = "http:" + Regex("""background-image:url\('([^']*)'\)""").find(avatar.html())?.groupValues?.get(1)
+                        val title = it.selectFirst(".title")
+                        val url = SERVER + title.attr("href")
+                        val id = Regex("""/subject/([0-9]*)""").find(url)?.groupValues?.get(1)?.toIntOrNull()?:0
+                        val name = title.text()
+                        ret += Subject(id, url, 0, name, summary = sub, images = Images(img, img, img, img, img))
+                    }
+                }
+                return@buildHttpCall ret
+            }
         }
     }
 }
