@@ -1,6 +1,7 @@
 package soko.ekibun.bangumi.ui.video
 
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
 import kotlinx.android.synthetic.main.item_topic.view.*
@@ -16,6 +17,7 @@ class TopicAdapter(data: MutableList<Subject.TopicBean>? = null) :
         helper.setText(R.id.item_comment, helper.itemView.context.getString(R.string.phrase_reply,item.replies))
         Glide.with(helper.itemView)
                 .load(item.user?.avatar?.large)
+                .apply(RequestOptions.circleCropTransform())
                 .into(helper.itemView.item_avatar)
     }
 }

@@ -1,6 +1,7 @@
 package soko.ekibun.bangumi.ui.video
 
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
 import kotlinx.android.synthetic.main.item_blog.view.*
@@ -15,7 +16,8 @@ class BlogAdapter(data: MutableList<Subject.BlogBean>? = null) :
         helper.setText(R.id.item_summary, item.summary)
         helper.setText(R.id.item_comment, "by ${item.user?.nickname}  ${item.dateline}  " + helper.itemView.context.getString(R.string.phrase_reply,item.replies))
         Glide.with(helper.itemView)
-                .load(if(item.image.isNullOrEmpty()) item.user?.avatar?.large else item.image)
+                .load(item.user?.avatar?.large)
+                .apply(RequestOptions.circleCropTransform())
                 .into(helper.itemView.item_avatar)
     }
 }

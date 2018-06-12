@@ -13,14 +13,12 @@
         android:transitionName="container"
         tools:ignore="RtlHardcoded,HardcodedText">
 
-    <com.github.siyamed.shapeimageview.CircularImageView
+    <ImageView
             android:id="@+id/item_avatar"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            app:srcCompat="@drawable/akkarin"
-            app:siBorderWidth="1dp"
-            app:siBorderColor="@android:color/white"
-            app:siBorderAlpha="0.5"/>
+            android:scaleType="centerCrop"
+            tools:ignore="ContentDescription"/>
     <TextView
             android:id="@+id/item_user"
             android:layout_width="0dp"
