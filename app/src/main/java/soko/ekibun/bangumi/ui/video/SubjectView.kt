@@ -51,9 +51,11 @@ class SubjectView(private val context: VideoActivity){
 
         context.topic_list.adapter = topicAdapter
         context.topic_list.layoutManager = LinearLayoutManager(context)
+        context.topic_list.isNestedScrollingEnabled = false
 
         context.blog_list.adapter = blogAdapter
         context.blog_list.layoutManager = LinearLayoutManager(context)
+        context.blog_list.isNestedScrollingEnabled = false
     }
 
     private fun updateEpisode(episodes: List<Episode>){
