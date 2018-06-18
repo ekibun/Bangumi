@@ -10,19 +10,20 @@ class DilidiliParser: Parser {
     override val siteId: Int = ParseInfo.DILIDLILI
 
     override fun getVideoInfo(id: String, video: Episode): retrofit2.Call<Parser.VideoInfo> {
-        return ApiHelper.buildHttpCall("http://m.dilidili.wang/anime/$id/", header){
+        val vid = id.split("/")[0]
+        val num = id.split("/").getOrNull(1)?.toInt()?:0
+        return ApiHelper.buildHttpCall("http://m.dilidili.wang/anime/$vid/", header){
             val d = Jsoup.parse(it.body()?.string()?:"")
-            d.selectFirst(".episodeWrap").select("a").forEach {
-                if(it.text().toFloatOrNull() == video.sort){
-                    val url = it.attr("href")
-                    val info = Parser.VideoInfo(
-                            Regex("""dilidili.wang/watch[0-9]?/([^/]*)/""").find(url)?.groupValues?.get(1)?:"",
-                            siteId,
-                            url
-                    )
-                    Log.v("video", info.toString())
-                    return@buildHttpCall info
-                }}
+            d.selectFirst(".episode").select("a").filter { it.text().toFloatOrNull() == video.sort }.getOrNull(num)?.let {
+                val url = it.attr("href")
+                val info = Parser.VideoInfo(
+                        Regex("""dilidili.wang/watch[0-9]?/([^/]*)/""").find(url)?.groupValues?.get(1)?:"",
+                        siteId,
+                        url
+                )
+                Log.v("video", info.toString())
+                return@buildHttpCall info
+            }
             throw Exception("not found")
         }
     }
