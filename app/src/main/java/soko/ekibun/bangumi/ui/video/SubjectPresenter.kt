@@ -44,7 +44,7 @@ class SubjectPresenter(private val context: VideoActivity){
             CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(subject.url))
         }
 
-        context.videoPresenter.playNext = {position: Int ->
+        context.videoPresenter.doPlay = { position: Int ->
             val episode = subjectView.episodeDetailAdapter.data[position]?.t
             if(episode != null){
                 parseInfoModel.getInfo(subject)?.let{
@@ -52,7 +52,9 @@ class SubjectPresenter(private val context: VideoActivity){
                         episode.url?.let{ CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(it)) }
                         return@let
                     }
+                    val episodePrev = subjectView.episodeDetailAdapter.data.getOrNull(position-1)?.t
                     val episodeNext = subjectView.episodeDetailAdapter.data.getOrNull(position+1)?.t
+                    context.videoPresenter.prev = if(episodePrev == null || (episodePrev.status?:"") !in listOf("Air")) null else position - 1
                     context.videoPresenter.next = if(episodeNext == null || (episodeNext.status?:"") !in listOf("Air")) null else position + 1
                     context.runOnUiThread { context.videoPresenter.play(episode, it) }
                 }?:episode.url?.let{ CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(it)) }
@@ -75,7 +77,7 @@ class SubjectPresenter(private val context: VideoActivity){
 
         subjectView.episodeAdapter.setOnItemClickListener { _, _, position ->
             subjectView.episodeAdapter.data[position]?.let{episode->
-                context.videoPresenter.playNext(subjectView.episodeDetailAdapter.data.indexOfFirst { it.t == episode })
+                context.videoPresenter.doPlay(subjectView.episodeDetailAdapter.data.indexOfFirst { it.t == episode })
             }
         }
 
@@ -98,7 +100,7 @@ class SubjectPresenter(private val context: VideoActivity){
         }
 
         subjectView.episodeDetailAdapter.setOnItemClickListener { _, _, position ->
-            context.videoPresenter.playNext(position)
+            context.videoPresenter.doPlay(position)
         }
 
         subjectView.episodeDetailAdapter.setOnItemLongClickListener { _, _, position ->

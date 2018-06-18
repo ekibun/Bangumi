@@ -37,7 +37,7 @@ class VideoPresenter(private val context: VideoActivity){
                     context.requestedOrientation = if(context.systemUIPresenter.isLandscape) ActivityInfo.SCREEN_ORIENTATION_PORTRAIT else ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
                 }
                 Controller.Action.NEXT -> {
-                    next?.let{playNext(it)}
+                    next?.let{doPlay(it)}
                     //context.viewpager.loadAv(nextAv)
                 }
                 Controller.Action.DANMAKU -> {
@@ -148,8 +148,9 @@ class VideoPresenter(private val context: VideoActivity){
         danmakuPresenter.loadDanmaku(video)
     }
 
-    var playNext: (Int)->Unit = {}
+    var doPlay: (Int)->Unit = {}
     var next: Int? = null
+    var prev: Int? = null
     var videoCall: Call<Parser.VideoInfo>? = null
     fun play(episode: Episode, info: ParseInfo){
         context.systemUIPresenter.appbarCollapsible(false)

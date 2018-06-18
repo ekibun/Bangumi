@@ -71,7 +71,9 @@ class VideoActivity : AppCompatActivity() {
                     videoPresenter.doPlayPause(true)
                 }
                 CONTROL_TYPE_NEXT->
-                    videoPresenter.next?.let{videoPresenter.playNext(it)}
+                    videoPresenter.next?.let{videoPresenter.doPlay(it)}
+                CONTROL_TYPE_PREV->
+                    videoPresenter.prev?.let{videoPresenter.doPlay(it)}
             }
         }
     }
@@ -86,11 +88,16 @@ class VideoActivity : AppCompatActivity() {
 
     fun setPictureInPictureParams(playPause: Boolean){
         if(Build.VERSION.SDK_INT >= 26) {
+            val actionPrev = RemoteAction(Icon.createWithResource(this, R.drawable.ic_prev), getString(R.string.next_video), getString(R.string.next_video),
+                    PendingIntent.getBroadcast(this, CONTROL_TYPE_PREV, Intent(ACTION_MEDIA_CONTROL + subjectPresenter.subject.id).putExtra(EXTRA_CONTROL_TYPE,
+                            CONTROL_TYPE_PREV), PendingIntent.FLAG_UPDATE_CURRENT))
+            actionPrev.isEnabled = videoPresenter.prev != null
             val actionNext = RemoteAction(Icon.createWithResource(this, R.drawable.ic_next), getString(R.string.next_video), getString(R.string.next_video),
                     PendingIntent.getBroadcast(this, CONTROL_TYPE_NEXT, Intent(ACTION_MEDIA_CONTROL + subjectPresenter.subject.id).putExtra(EXTRA_CONTROL_TYPE,
                             CONTROL_TYPE_NEXT), PendingIntent.FLAG_UPDATE_CURRENT))
             actionNext.isEnabled = videoPresenter.next != null
             setPictureInPictureParams(PictureInPictureParams.Builder().setActions(listOf(
+                    actionPrev,
                     RemoteAction(Icon.createWithResource(this, if (playPause) R.drawable.ic_play else R.drawable.ic_pause), getString(R.string.play_pause), getString(R.string.play_pause),
                             PendingIntent.getBroadcast(this, CONTROL_TYPE_PLAY, Intent(ACTION_MEDIA_CONTROL + subjectPresenter.subject.id).putExtra(EXTRA_CONTROL_TYPE,
                                     if (playPause) CONTROL_TYPE_PLAY else CONTROL_TYPE_PAUSE), PendingIntent.FLAG_UPDATE_CURRENT)),
@@ -152,6 +159,7 @@ class VideoActivity : AppCompatActivity() {
         const val CONTROL_TYPE_PAUSE = 1
         const val CONTROL_TYPE_PLAY = 2
         const val CONTROL_TYPE_NEXT = 3
+        const val CONTROL_TYPE_PREV = 4
 
         fun startActivity(context: Context, subject: Subject) {
             context.startActivity(parseIntent(context, subject))
