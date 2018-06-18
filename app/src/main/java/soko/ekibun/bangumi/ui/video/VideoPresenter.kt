@@ -221,5 +221,6 @@ class VideoPresenter(private val context: VideoActivity){
 
     private fun updatePauseResume() {
         controller.updatePauseResume(videoModel.player.playWhenReady)
+        context.setPictureInPictureParams(!videoModel.player.playWhenReady)
     }
 }

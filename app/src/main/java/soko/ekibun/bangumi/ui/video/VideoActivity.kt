@@ -1,9 +1,15 @@
 package soko.ekibun.bangumi.ui.video
 
+import android.app.PendingIntent
+import android.app.PictureInPictureParams
+import android.app.RemoteAction
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
+import android.graphics.drawable.Icon
 import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -21,6 +27,8 @@ class VideoActivity : AppCompatActivity() {
     val videoPresenter: VideoPresenter by lazy { VideoPresenter(this) }
     val systemUIPresenter: SystemUIPresenter by lazy{ SystemUIPresenter(this) }
 
+    private val subjectPresenter: SubjectPresenter by lazy{ SubjectPresenter(this) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_video)
@@ -33,7 +41,7 @@ class VideoActivity : AppCompatActivity() {
 
         systemUIPresenter.init()
 
-        SubjectPresenter(this)
+        registerReceiver(receiver, IntentFilter(ACTION_MEDIA_CONTROL + subjectPresenter.subject.id))
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -53,22 +61,56 @@ class VideoActivity : AppCompatActivity() {
         super.onMultiWindowModeChanged(isInMultiWindowMode, newConfig)
     }
 
-    public override fun onUserLeaveHint() {
-        super.onUserLeaveHint()
-        if(systemUIPresenter.isLandscape && videoPresenter.videoModel.player.playWhenReady && Build.VERSION.SDK_INT >= 24) {
-            @Suppress("DEPRECATION")
-            enterPictureInPictureMode()
+    private val receiver = object: BroadcastReceiver(){
+        override fun onReceive(context: Context, intent: Intent) {
+            when(intent.getIntExtra(EXTRA_CONTROL_TYPE,0)){
+                CONTROL_TYPE_PAUSE->{
+                    videoPresenter.doPlayPause(false)
+                }
+                CONTROL_TYPE_PLAY->{
+                    videoPresenter.doPlayPause(true)
+                }
+                CONTROL_TYPE_NEXT->
+                    videoPresenter.next?.let{videoPresenter.playNext(it)}
+            }
         }
     }
 
+    public override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        if(systemUIPresenter.isLandscape && videoPresenter.videoModel.player.playWhenReady && Build.VERSION.SDK_INT >= 24) {
+            @Suppress("DEPRECATION") enterPictureInPictureMode()
+            setPictureInPictureParams(false)
+        }
+    }
+
+    fun setPictureInPictureParams(playPause: Boolean){
+        if(Build.VERSION.SDK_INT >= 26) {
+            val actionNext = RemoteAction(Icon.createWithResource(this, R.drawable.ic_next), getString(R.string.next_video), getString(R.string.next_video),
+                    PendingIntent.getBroadcast(this, CONTROL_TYPE_NEXT, Intent(ACTION_MEDIA_CONTROL + subjectPresenter.subject.id).putExtra(EXTRA_CONTROL_TYPE,
+                            CONTROL_TYPE_NEXT), PendingIntent.FLAG_UPDATE_CURRENT))
+            actionNext.isEnabled = videoPresenter.next != null
+            setPictureInPictureParams(PictureInPictureParams.Builder().setActions(listOf(
+                    RemoteAction(Icon.createWithResource(this, if (playPause) R.drawable.ic_play else R.drawable.ic_pause), getString(R.string.play_pause), getString(R.string.play_pause),
+                            PendingIntent.getBroadcast(this, CONTROL_TYPE_PLAY, Intent(ACTION_MEDIA_CONTROL + subjectPresenter.subject.id).putExtra(EXTRA_CONTROL_TYPE,
+                                    if (playPause) CONTROL_TYPE_PLAY else CONTROL_TYPE_PAUSE), PendingIntent.FLAG_UPDATE_CURRENT)),
+                    actionNext
+            )).build())
+        }
+    }
+
+    var pauseOnStop = false
     override fun onStart() {
         super.onStart()
-        if(videoPresenter.videoModel.player.duration >0)
+        if(videoPresenter.videoModel.player.duration >0 && pauseOnStop)
             videoPresenter.doPlayPause(true)
+        pauseOnStop = false
     }
 
     override fun onStop() {
         super.onStop()
+        if(videoPresenter.videoModel.player.playWhenReady)
+            pauseOnStop = true
         videoPresenter.doPlayPause(false)
     }
 
@@ -105,6 +147,11 @@ class VideoActivity : AppCompatActivity() {
 
     companion object{
         const val EXTRA_SUBJECT = "extraSubject"
+        const val ACTION_MEDIA_CONTROL = "bangumiActionMediaControl"
+        const val EXTRA_CONTROL_TYPE = "extraControlType"
+        const val CONTROL_TYPE_PAUSE = 1
+        const val CONTROL_TYPE_PLAY = 2
+        const val CONTROL_TYPE_NEXT = 3
 
         fun startActivity(context: Context, subject: Subject) {
             context.startActivity(parseIntent(context, subject))
