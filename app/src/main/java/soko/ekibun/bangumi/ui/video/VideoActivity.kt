@@ -125,6 +125,8 @@ class VideoActivity : AppCompatActivity() {
     private fun processBack(){
         if (systemUIPresenter.isLandscape)
             requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        else if(episode_detail_list.visibility == View.VISIBLE)
+            subjectPresenter.subjectView.showEpisodeDetail(false)
         else
             finish()
     }

@@ -30,7 +30,7 @@ data class Subject(
             var summary: String? = null,
             var image: String? = null,
             var replies: Int = 0,
-            var timestamp: Int = 0,
+            var timestamp: Long = 0,
             var dateline: String? = null,
             var user: UserInfo? = null
     ){
@@ -55,7 +55,7 @@ data class Subject(
             var url: String? = null,
             var title: String? = null,
             var main_id: Int = 0,
-            var timestamp: Int = 0,
+            var timestamp: Long = 0,
             var lastpost: Int = 0,
             var replies: Int = 0,
             var user: UserInfo? = null

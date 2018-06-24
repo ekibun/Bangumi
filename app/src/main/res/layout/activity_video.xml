@@ -73,9 +73,9 @@
                       android:divider="@drawable/divider"
                       android:showDividers="middle"
                       android:orientation="vertical">
+            <include layout="@layout/subject_detail"/>
             <include android:id="@+id/item_episodes"
                      layout="@layout/video_episode"/>
-            <include layout="@layout/subject_detail"/>
             <LinearLayout android:id="@+id/item_subjects"
                           android:layout_width="match_parent"
                           android:layout_height="wrap_content"
@@ -92,34 +92,10 @@
                         android:clipToPadding="false"
                         android:layout_height="wrap_content"/>
             </LinearLayout>
-            <LinearLayout android:id="@+id/item_blogs"
-                          android:layout_width="match_parent"
-                          android:layout_height="wrap_content"
-                          android:orientation="vertical">
-                <TextView android:layout_width="match_parent"
-                          android:layout_height="wrap_content"
-                          android:textAppearance="@android:style/TextAppearance.Material.Subhead"
-                          android:padding="12dp"
-                          android:text="@string/blog"/>
-                <android.support.v7.widget.RecyclerView
-                        android:id="@+id/blog_list"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"/>
-            </LinearLayout>
-            <LinearLayout android:id="@+id/item_topics"
-                          android:layout_width="match_parent"
-                          android:layout_height="wrap_content"
-                          android:orientation="vertical">
-                <TextView android:layout_width="match_parent"
-                          android:layout_height="wrap_content"
-                          android:textAppearance="@android:style/TextAppearance.Material.Subhead"
-                          android:padding="12dp"
-                          android:text="@string/topics"/>
-                <android.support.v7.widget.RecyclerView
-                        android:id="@+id/topic_list"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"/>
-            </LinearLayout>
+            <include android:id="@+id/item_blogs"
+                     layout="@layout/video_blog"/>
+            <include android:id="@+id/item_topics"
+                     layout="@layout/video_topic"/>
         </LinearLayout>
     </android.support.v4.widget.NestedScrollView>
 
@@ -127,10 +103,9 @@
             android:id="@+id/episode_detail_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layout_constraintTop_toBottomOf="@+id/item_episode_title"
             android:fillViewport="true"
             android:background="?android:colorBackground"
-            android:layout_marginTop="96dp"
+            android:layout_marginTop="90dp"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
             android:visibility="gone"/>
 
@@ -151,7 +126,7 @@
             android:layout_marginTop="48dp"
             android:id="@+id/episode_detail_list_header"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="42dp"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
             android:background="?android:colorBackground"
             android:visibility="gone">

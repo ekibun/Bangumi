@@ -4,7 +4,7 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/item_layout"
         android:layout_width="120dp"
-        android:layout_height="72dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:layout_marginEnd="4dp"
         android:layout_marginBottom="8dp"
@@ -30,14 +30,13 @@
     <TextView
             android:id="@+id/item_desc"
             android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:textSize="14sp"
             android:ellipsize="end"
             android:paddingTop="4dp"
-            android:maxLines="2"
+            android:maxLines="1"
             app:layout_constraintLeft_toLeftOf="@+id/item_title"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/item_title"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+            app:layout_constraintTop_toBottomOf="@+id/item_title"/>
 
 </android.support.constraint.ConstraintLayout>

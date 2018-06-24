@@ -2,14 +2,17 @@ package soko.ekibun.bangumi.ui.video
 
 import android.support.v7.widget.LinearLayoutManager
 import android.view.View
+import android.view.animation.AnimationUtils
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.entity.SectionEntity
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_video.*
 import kotlinx.android.synthetic.main.subject_detail.*
+import kotlinx.android.synthetic.main.video_blog.*
 import kotlinx.android.synthetic.main.video_episode.*
 import kotlinx.android.synthetic.main.video_player.*
+import kotlinx.android.synthetic.main.video_topic.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
@@ -26,6 +29,13 @@ class SubjectView(private val context: VideoActivity){
     val blogAdapter = BlogAdapter()
     //val headerView = context.layoutInflater.inflate(R.layout.video_episode, context.root_layout, false)!!
 
+    fun showEpisodeDetail(show: Boolean){
+        context.episode_detail_list.visibility = if(show) View.VISIBLE else View.GONE
+        context.episode_detail_list.animation = AnimationUtils.loadAnimation(context, if(show) R.anim.move_in else R.anim.move_out)
+        context.episode_detail_list_header.visibility = if(show) View.VISIBLE else View.GONE
+        context.episode_detail_list_header.animation = AnimationUtils.loadAnimation(context, if(show) R.anim.move_in else R.anim.move_out)
+    }
+
     init{
         context.episode_list.adapter = episodeAdapter
         val layoutManager = LinearLayoutManager(context)
@@ -37,8 +47,10 @@ class SubjectView(private val context: VideoActivity){
         context.episode_detail_list.layoutManager = LinearLayoutManager(context)
         //val view = context.layoutInflater.inflate(R.layout.item_title_header, context.root_layout, false)
         context.item_close.setOnClickListener {
-            context.episode_detail_list.visibility = View.GONE
-            context.episode_detail_list_header.visibility = View.GONE
+            showEpisodeDetail(false)
+        }
+        context.episode_detail.setOnClickListener{
+            showEpisodeDetail(true)
         }
         //episodeDetailAdapter.setHeaderView(view)
 
@@ -61,10 +73,6 @@ class SubjectView(private val context: VideoActivity){
     private fun updateEpisode(episodes: List<Episode>){
         val eps = episodes.filter { (it.status?:"") in listOf("Air") }.size
         context.episode_detail.text = context.getString(if(eps == episodes.size) R.string.phrase_full else R.string.phrase_updating, eps)
-        context.episode_detail.setOnClickListener{
-            context.episode_detail_list.visibility = View.VISIBLE
-            context.episode_detail_list_header.visibility = View.VISIBLE
-        }
 
         val maps = HashMap<Int, List<Episode>>()
         episodes.forEach {
@@ -104,6 +112,12 @@ class SubjectView(private val context: VideoActivity){
                     }
                 }
             }
+            var lastView = 0
+            episodeAdapter.data.forEachIndexed { index, episode ->
+                if(episode.progress != null)
+                    lastView = index
+            }
+            context.episode_list.scrollToPosition(Math.min(lastView + 1, episodeAdapter.data.size - 1))
             episodeAdapter.notifyDataSetChanged()
             episodeDetailAdapter.notifyDataSetChanged()
             field = value

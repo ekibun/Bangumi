@@ -7,6 +7,8 @@ import android.support.annotation.ColorInt
 import android.support.annotation.DrawableRes
 import android.support.v4.content.ContextCompat
 import android.util.TypedValue
+import java.text.SimpleDateFormat
+import java.util.*
 
 object ResourceUtil{
     fun getDrawable(context: Context, @DrawableRes resId: Int): Drawable {
@@ -25,5 +27,15 @@ object ResourceUtil{
         val typedValue = TypedValue()
         theme.resolveAttribute(attrRes, typedValue, true)
         return typedValue
+    }
+
+    fun getTimeInterval(timeStamp: Long): String {
+        val interval = System.currentTimeMillis()/1000 - timeStamp
+        return when(interval){
+            in 0..60-> "刚刚"
+            in 0..(60 * 60)->"${interval/60}分钟前"
+            in 0..(24 * 60 * 60)->"${interval/60/60}小时前"
+            else-> SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(timeStamp * 1000)
+        }
     }
 }

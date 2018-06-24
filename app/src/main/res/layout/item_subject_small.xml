@@ -16,8 +16,8 @@
     <ImageView
             android:id="@+id/item_cover"
             android:transitionName="cover"
-            android:layout_width="120dp"
-            android:layout_height="160dp"
+            android:layout_width="75dp"
+            android:layout_height="100dp"
             android:scaleType="centerCrop"
             android:layout_alignParentBottom="true"
             android:layout_alignParentTop="true"

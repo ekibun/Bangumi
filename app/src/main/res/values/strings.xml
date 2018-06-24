@@ -51,6 +51,7 @@
     <string name="linked_subjects">关联条目</string>
     <string name="topics">讨论版</string>
     <string name="blog">评论</string>
+    <string name="more">更多</string>
 
     <string-array name="collection_status">
         <item>想看</item>

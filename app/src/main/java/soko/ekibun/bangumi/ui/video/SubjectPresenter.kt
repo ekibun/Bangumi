@@ -23,11 +23,13 @@ import soko.ekibun.bangumi.util.JsonUtil
 import android.widget.ArrayAdapter
 import android.widget.ListPopupWindow
 import kotlinx.android.synthetic.main.subject_detail.*
+import kotlinx.android.synthetic.main.video_blog.*
+import kotlinx.android.synthetic.main.video_topic.*
 import soko.ekibun.bangumi.model.ParseModel
 
 class SubjectPresenter(private val context: VideoActivity){
     val api by lazy { Bangumi.createInstance() }
-    private val subjectView by lazy{ SubjectView(context) }
+    val subjectView by lazy{ SubjectView(context) }
     private val userModel by lazy { UserModel(context) }
     private val parseInfoModel by lazy { ParseInfoModel(context) }
 
@@ -67,6 +69,14 @@ class SubjectPresenter(private val context: VideoActivity){
 
         subjectView.blogAdapter.setOnItemClickListener { _, _, position ->
             CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(subjectView.blogAdapter.data[position].url))
+        }
+
+        context.topic_detail.setOnClickListener{
+            CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse("${subject.url}/board"))
+        }
+
+        context.blog_detail.setOnClickListener{
+            CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse("${subject.url}/reviews"))
         }
 
         subjectView.linkedSubjectsAdapter.setOnItemClickListener { _, _, position ->
