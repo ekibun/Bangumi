@@ -90,15 +90,6 @@ class SubjectView(private val context: VideoActivity){
             }
         }
         progress = progress
-
-        var lastView = 0
-        episodeAdapter.data.forEachIndexed { index, episode ->
-            if(episode.progress != null)
-                lastView = index
-        }
-        val layoutManager = (context.episode_list.layoutManager as LinearLayoutManager)
-        layoutManager.scrollToPositionWithOffset(lastView, 0)
-        layoutManager.stackFromEnd = false
     }
 
     private fun parseSubject(subject: Subject): String{
@@ -112,6 +103,7 @@ class SubjectView(private val context: VideoActivity){
         return ret
     }
 
+    var scrolled = false
     var progress: SubjectProgress? = null
         set(value) {
             episodeDetailAdapter.data.forEach { ep ->
@@ -125,6 +117,19 @@ class SubjectView(private val context: VideoActivity){
             episodeAdapter.notifyDataSetChanged()
             episodeDetailAdapter.notifyDataSetChanged()
             field = value
+
+            if(!scrolled && progress!= null && episodeAdapter.data.size>0){
+                scrolled = true
+
+                var lastView = 0
+                episodeAdapter.data.forEachIndexed { index, episode ->
+                    if(episode.progress != null)
+                        lastView = index
+                }
+                val layoutManager = (context.episode_list.layoutManager as LinearLayoutManager)
+                layoutManager.scrollToPositionWithOffset(lastView, 0)
+                layoutManager.stackFromEnd = false
+            }
         }
 
     fun updateSubject(subject: Subject){
