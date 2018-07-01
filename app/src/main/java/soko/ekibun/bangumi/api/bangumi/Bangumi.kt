@@ -1,5 +1,7 @@
 package soko.ekibun.bangumi.api.bangumi
 
+import android.net.Uri
+import android.webkit.CookieManager
 import org.jsoup.Jsoup
 import retrofit2.Call
 import retrofit2.Converter
@@ -116,7 +118,8 @@ interface Bangumi {
                               @CollectionStatusType.CollectionStatusType collection_status: String,
                               page: Int = 1
         ): Call<List<SubjectCollection>>{
-            return ApiHelper.buildHttpCall("$SERVER/$subject_type/list/$username/$collection_status?page=$page"){
+            val cookie = CookieManager.getInstance().getCookie(SERVER)
+            return ApiHelper.buildHttpCall("$SERVER/$subject_type/list/$username/$collection_status?page=$page", mapOf("cookie" to cookie)){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<SubjectCollection>()
                 doc.select(".item").forEach {

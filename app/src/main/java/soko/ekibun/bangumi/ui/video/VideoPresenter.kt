@@ -176,6 +176,7 @@ class VideoPresenter(private val context: VideoActivity){
             videoModel.play(info.api?:"", context.video_surface)
             loadVideo = true
         }
+        webView.loadUrl("about:blank")
         videoCall = ParseModel.getVideoInfo(info.video?.type?:0, info.video?.id?:"", episode)
         videoCall?.enqueue(ApiHelper.buildCallback(context,{video->
             context.runOnUiThread { ParseModel.getVideo(video.siteId, webView, info.api ?: "", video).enqueue(ApiHelper.buildCallback(context, {

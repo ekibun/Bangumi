@@ -74,14 +74,18 @@ class CalendarFragment: DrawerFragment(R.layout.content_calendar) {
         calendar_swipe?.isRefreshing = true
         calendarCall = api.calendar()
         calendarCall?.enqueue(ApiHelper.buildCallback(calendar_swipe?.context, {
+            var index = 0
             it.forEach {
                 var isHeader = true
+                if(it.weekday?.id == CalendarAdapter.currentWeek())
+                    index = calendarListAdapter.data.size
                 it.items?.forEach {subject->
                     calendarListAdapter.addData(CalendarAdapter.CalendarSection(isHeader, subject, it.weekday?.id
                             ?: 0))
                     isHeader = false
                 }
             }
+            (calendar_list.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(index, 0)
         }, { calendar_swipe?.isRefreshing = false }))
     }
 

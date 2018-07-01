@@ -2,8 +2,10 @@
 
     <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorPrimaryDark">@color/colorPrimary</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorPrimaryBackground">@color/colorPrimary</item>
+        <item name="colorPrimaryForeground">@color/colorAccent</item>
     </style>
 
     <style name="AppTheme.Splash">
@@ -13,7 +15,7 @@
 
     <style name="AppTheme.Dialog" parent="Theme.AppCompat.DayNight.Dialog">
         <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorPrimaryDark">@color/colorPrimary</item>
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 

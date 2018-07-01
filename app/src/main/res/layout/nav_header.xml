@@ -6,13 +6,14 @@
         android:layout_width="match_parent"
         android:layout_height="176dp"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        android:background="?attr/colorPrimary">
+        android:background="?colorPrimaryBackground">
 
     <ImageView
             android:layout_width="250dp"
             android:layout_height="250dp"
             app:srcCompat="@drawable/ic_splash"
-            android:tint="@color/colorAccent"
+            android:tint="?colorPrimaryForeground"
+            android:tintMode="src_in"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:tools="http://schemas.android.com/tools" package="soko.ekibun.bangumi">
+          xmlns:tools="http://schemas.android.com/tools"
+          package="soko.ekibun.bangumi">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -21,8 +22,9 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".ui.main.MainActivity"
-                  android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|uiMode">
+        <activity
+                android:name=".ui.main.MainActivity"
+                android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|uiMode">
         </activity>
         <activity
                 android:name=".ui.auth.AuthActivity"
@@ -30,9 +32,13 @@
         </activity>
         <activity android:name=".ui.search.SearchActivity">
         </activity>
-        <activity android:name=".ui.video.VideoActivity"
-                  android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|uiMode"
-                  android:supportsPictureInPicture="true" tools:targetApi="n">
+        <activity
+                android:name=".ui.video.VideoActivity"
+                android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|uiMode"
+                android:supportsPictureInPicture="true"
+                tools:targetApi="n">
+        </activity>
+        <activity android:name=".ui.subject.SubjectActivity">
         </activity>
     </application>
 

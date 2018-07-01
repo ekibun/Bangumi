@@ -1,4 +1,4 @@
-package soko.ekibun.bangumi.ui.video
+package soko.ekibun.bangumi.ui.subject
 
 import android.annotation.SuppressLint
 import com.bumptech.glide.Glide

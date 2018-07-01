@@ -1,4 +1,4 @@
-package soko.ekibun.bangumi.ui.video
+package soko.ekibun.bangumi.ui.subject
 
 import android.content.res.ColorStateList
 import com.chad.library.adapter.base.BaseQuickAdapter

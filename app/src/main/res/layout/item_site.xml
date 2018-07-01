@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="wrap_content"
+              android:padding="4dp"
+              android:layout_height="wrap_content"
+              android:clickable="true"
+              android:foreground="?android:attr/selectableItemBackground"
+              android:focusable="true">
+    <TextView
+            android:id="@+id/item_site"
+            android:background="@drawable/bg_round_rect"
+            android:textColor="@android:color/white"
+            android:paddingStart="2dp"
+            android:paddingEnd="2dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    <TextView
+            android:id="@+id/item_site_id"
+            android:paddingStart="2dp"
+            android:paddingEnd="2dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+</LinearLayout>

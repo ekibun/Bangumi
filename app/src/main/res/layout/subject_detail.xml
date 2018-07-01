@@ -5,12 +5,8 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:padding="12dp"
-        android:id="@+id/item_detail"
         android:layout_height="wrap_content"
-        android:transitionName="container"
-        android:clickable="true"
-        android:foreground="?android:attr/selectableItemBackground"
-        android:focusable="true">
+        android:transitionName="container">
     <ImageView
             android:id="@+id/item_cover"
             android:transitionName="cover"

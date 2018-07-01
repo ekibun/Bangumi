@@ -1,4 +1,4 @@
-package soko.ekibun.bangumi.ui.video
+package soko.ekibun.bangumi.ui.subject
 
 import com.bumptech.glide.Glide
 import com.chad.library.adapter.base.BaseQuickAdapter

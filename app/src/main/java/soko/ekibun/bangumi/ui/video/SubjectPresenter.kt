@@ -1,10 +1,7 @@
 package soko.ekibun.bangumi.ui.video
 
 import android.content.DialogInterface
-import android.net.Uri
-import android.support.customtabs.CustomTabsIntent
 import android.support.v7.app.AlertDialog
-import android.util.Log
 import kotlinx.android.synthetic.main.dialog_edit_lines.view.*
 import kotlinx.android.synthetic.main.dialog_edit_subject.view.*
 import kotlinx.android.synthetic.main.video_buttons.*
@@ -15,17 +12,18 @@ import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.CollectionStatusType
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectProgress
-import soko.ekibun.bangumi.api.bgmlist.Bgmlist
 import soko.ekibun.bangumi.model.ParseInfoModel
 import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.api.parser.ParseInfo
 import soko.ekibun.bangumi.util.JsonUtil
-import android.widget.ArrayAdapter
 import android.widget.ListPopupWindow
-import kotlinx.android.synthetic.main.subject_detail.*
-import kotlinx.android.synthetic.main.video_blog.*
-import kotlinx.android.synthetic.main.video_topic.*
+import kotlinx.android.synthetic.main.activity_video.*
+import kotlinx.android.synthetic.main.subject_blog.*
+import kotlinx.android.synthetic.main.subject_topic.*
+import soko.ekibun.bangumi.api.bangumiData.BangumiData
+import soko.ekibun.bangumi.api.bangumiData.bean.BangumiItem
 import soko.ekibun.bangumi.model.ParseModel
+import soko.ekibun.bangumi.util.CustomTabsUtil
 
 class SubjectPresenter(private val context: VideoActivity){
     val api by lazy { Bangumi.createInstance() }
@@ -40,10 +38,9 @@ class SubjectPresenter(private val context: VideoActivity){
         refreshSubject(subject)
         refreshCollection(subject)
         refreshProgress(subject)
-        //refreshLines(subject)
 
         context.item_detail.setOnClickListener {
-            CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(subject.url))
+            CustomTabsUtil.launchUrl(context, subject.url)
         }
 
         context.videoPresenter.doPlay = { position: Int ->
@@ -51,7 +48,7 @@ class SubjectPresenter(private val context: VideoActivity){
             if(episode != null){
                 parseInfoModel.getInfo(subject)?.let{
                     if(it.video?.id.isNullOrEmpty()) {
-                        episode.url?.let{ CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(it)) }
+                        episode.url?.let{ CustomTabsUtil.launchUrl(context, it) }
                         return@let
                     }
                     val episodePrev = subjectView.episodeDetailAdapter.data.getOrNull(position-1)?.t
@@ -59,24 +56,24 @@ class SubjectPresenter(private val context: VideoActivity){
                     context.videoPresenter.prev = if(episodePrev == null || (episodePrev.status?:"") !in listOf("Air")) null else position - 1
                     context.videoPresenter.next = if(episodeNext == null || (episodeNext.status?:"") !in listOf("Air")) null else position + 1
                     context.runOnUiThread { context.videoPresenter.play(episode, it) }
-                }?:episode.url?.let{ CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(it)) }
+                }?:episode.url?.let{ CustomTabsUtil.launchUrl(context, it) }
             }
         }
 
         subjectView.topicAdapter.setOnItemClickListener { _, _, position ->
-            CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(subjectView.topicAdapter.data[position].url))
+            CustomTabsUtil.launchUrl(context, subjectView.topicAdapter.data[position].url)
         }
 
         subjectView.blogAdapter.setOnItemClickListener { _, _, position ->
-            CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(subjectView.blogAdapter.data[position].url))
+            CustomTabsUtil.launchUrl(context, subjectView.blogAdapter.data[position].url)
         }
 
         context.topic_detail.setOnClickListener{
-            CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse("${subject.url}/board"))
+            CustomTabsUtil.launchUrl(context, "${subject.url}/board")
         }
 
         context.blog_detail.setOnClickListener{
-            CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse("${subject.url}/reviews"))
+            CustomTabsUtil.launchUrl(context, "${subject.url}/reviews")
         }
 
         subjectView.linkedSubjectsAdapter.setOnItemClickListener { _, _, position ->
@@ -100,7 +97,7 @@ class SubjectPresenter(private val context: VideoActivity){
                                 api.updateProgress(ep.id, SubjectProgress.EpisodeProgress.EpisodeStatus.types[which],token.access_token?:"").enqueue(
                                         ApiHelper.buildCallback(context, {
                                             refreshProgress(subject)
-                                        }))
+                                        }, {}))
                             }.create()
                     //dialog.window.setGravity(Gravity.BOTTOM)
                     dialog.show()
@@ -122,7 +119,7 @@ class SubjectPresenter(private val context: VideoActivity){
                                 api.updateProgress(ep.id, SubjectProgress.EpisodeProgress.EpisodeStatus.types[which],token.access_token?:"").enqueue(
                                         ApiHelper.buildCallback(context, {
                                             refreshProgress(subject)
-                                        }))
+                                        }, {}))
                             }.create()
                     //dialog.window.setGravity(Gravity.BOTTOM)
                     dialog.show()
@@ -142,7 +139,9 @@ class SubjectPresenter(private val context: VideoActivity){
         userModel.getToken()?.let{token ->
             api.progress(token.user_id.toString(), subject.id, token.access_token?:"").enqueue(ApiHelper.buildCallback(context, {
                 subjectView.progress = it
-            }))
+            }, {
+                subjectView.progress = null
+                subjectView.loaded_progress = true }))
         }
     }
 
@@ -155,39 +154,40 @@ class SubjectPresenter(private val context: VideoActivity){
         subjectCall?.enqueue(ApiHelper.buildCallback(context, {
             refreshLines(it)
             subjectView.updateSubject(it)
-        }))
+        }, {}))
 
         Bangumi.getSubject(subject).enqueue(ApiHelper.buildCallback(context, {
             subjectView.linkedSubjectsAdapter.setNewData(it)
             //Log.v("list", it.toString())
-        }))
+        }, {}))
     }
 
 
 
     private fun refreshLines(subject: Subject){
         val dateList = subject.air_date?.split("-") ?: return
-        val year = dateList.getOrNull(0)?.toIntOrNull()?:2010
-        val month = ((dateList.getOrNull(1)?.toIntOrNull()?:1) - 1) / 3 * 3 + 1
-        Log.v("year", "$year,$month")
-        Bgmlist.createInstance().query(year, month).enqueue(ApiHelper.buildCallback(context,{
-            it.filter { it.value.bgmId == subject.id }.forEach {
-                Log.v("list", it.value.toString())
-                val list = it.value.onAirSite?:return@forEach
+        val year = dateList.getOrNull(0)?.toIntOrNull()?:0
+        val month = dateList.getOrNull(1)?.toIntOrNull()?:1
+
+        BangumiData.createInstance().query(year, String.format("%02d", month)).enqueue(ApiHelper.buildCallback(context, {
+            it.filter { it.sites?.first { it.site == "bangumi" }?.id?.toIntOrNull() == subject.id }.forEach {
+                val list = ArrayList<BangumiItem.SitesBean>()
+                list.add(BangumiItem.SitesBean("offical", it.officialSite))
+                list.addAll(it.sites?.filter { it.site != "bangumi" }?:ArrayList())
                 context.cl_lines.setOnClickListener {
                     val popList = ListPopupWindow(context)
                     popList.anchorView = context.cl_lines
-                    popList.setAdapter(ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, list))
+                    popList.setAdapter(SitesAdapter(context, list))
                     popList.isModal = true
                     popList.show()
 
                     popList.listView.setOnItemClickListener { _, _, position, _ ->
-                        CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(list[position]))
+                        CustomTabsUtil.launchUrl(context, list[position].parseUrl())
                         popList.dismiss()
                     }
 
                     popList.listView.setOnItemLongClickListener { _, _, position, _ ->
-                        ParseModel.processUrl(list[position]){context.runOnUiThread {
+                        ParseModel.processUrl(list[position].parseUrl()){context.runOnUiThread {
                             val view = context.layoutInflater.inflate(R.layout.dialog_edit_lines, context.cl_lines, false)
                             view.item_video_type.setSelection(it.type)
                             view.item_video_id.setText(it.id)
@@ -208,8 +208,7 @@ class SubjectPresenter(private val context: VideoActivity){
                     }
                 }
             }
-        }))
-
+        }, {}))
         val info = parseInfoModel.getInfo(subject)
         context.tv_lines.text = info?.video?.let{ context.resources.getStringArray(R.array.parse_type)[it.type]}?:context.resources.getString(R.string.lines)
 
@@ -268,7 +267,7 @@ class SubjectPresenter(private val context: VideoActivity){
                                 }))
                             }.show()
                 }
-            }))
+            }, {}))
         }
     }
 }

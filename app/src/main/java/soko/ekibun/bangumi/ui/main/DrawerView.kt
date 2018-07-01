@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.support.v7.app.ActionBarDrawerToggle
 import android.view.Menu
 import android.view.View
-import android.widget.CompoundButton
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.switch_item.view.*
 import soko.ekibun.bangumi.R
@@ -15,7 +14,7 @@ import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarFragment
 import soko.ekibun.bangumi.ui.main.fragment.collection.CollectionFragment
 import soko.ekibun.bangumi.ui.search.SearchActivity
 
-class DrawerView(private val context: MainActivity, onNightModeChange: CompoundButton.OnCheckedChangeListener, onLogout: ()->Unit){
+class DrawerView(private val context: MainActivity, onNightModeChange: (Boolean)->Unit, onLogout: ()->Unit){
     private var checkedId = R.id.nav_chase
     private val fragments: Map<Int, DrawerFragment> = mapOf(
             R.id.nav_chase to CollectionFragment(),
@@ -34,16 +33,19 @@ class DrawerView(private val context: MainActivity, onNightModeChange: CompoundB
         context.drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
 
-        switch.setOnCheckedChangeListener(onNightModeChange)
+        switch.setOnCheckedChangeListener { _, isChecked ->
+            onNightModeChange(isChecked)
+        }
 
         context.nav_view.setNavigationItemSelectedListener {
-            context.drawer_layout.closeDrawers()
+            if(it.itemId != R.id.nav_night)
+                context.drawer_layout.closeDrawers()
             if(fragments.containsKey(it.itemId))
                 select(it.itemId)
             else{
                 when(it.itemId){
                     R.id.nav_search -> SearchActivity.startActivity(context)
-                    R.id.nav_night -> onNightModeChange.onCheckedChanged(switch, !switch.isChecked)
+                    R.id.nav_night -> switch.isChecked = !switch.isChecked
                     R.id.nav_logout -> onLogout()
                     //R.id.nav_setting -> {}//SettingsActivity.startActivity(context)
                 }
@@ -54,7 +56,6 @@ class DrawerView(private val context: MainActivity, onNightModeChange: CompoundB
 
     fun setUser(user: UserInfo?){
         (fragments[R.id.nav_chase] as? CollectionFragment)?.user = user
-        context.nav_view.menu.findItem(R.id.nav_logout).isVisible = user != null
     }
 
     fun resetCollection(){

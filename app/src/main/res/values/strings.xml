@@ -47,11 +47,14 @@
     <string name="game">游戏</string>
     <string name="music">音乐</string>
     <string name="real">三次元</string>
-    <string name="episodes">选集</string>
+    <string name="episodes">章节</string>
     <string name="linked_subjects">关联条目</string>
     <string name="topics">讨论版</string>
     <string name="blog">评论</string>
     <string name="more">更多</string>
+    <string name="info_empty">什么都没有哦</string>
+    <string name="links">关联页</string>
+    <string name="collect">收藏</string>
 
     <string-array name="collection_status">
         <item>想看</item>

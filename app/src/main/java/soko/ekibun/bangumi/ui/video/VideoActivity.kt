@@ -121,14 +121,18 @@ class VideoActivity : AppCompatActivity() {
         videoPresenter.doPlayPause(false)
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(receiver)
+    }
+
     //back
     private fun processBack(){
-        if (systemUIPresenter.isLandscape)
-            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        else if(episode_detail_list.visibility == View.VISIBLE)
-            subjectPresenter.subjectView.showEpisodeDetail(false)
-        else
-            finish()
+        when {
+            systemUIPresenter.isLandscape -> requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            episode_detail_list.visibility == View.VISIBLE -> subjectPresenter.subjectView.showEpisodeDetail(false)
+            else -> finish()
+        }
     }
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         if (keyCode == KeyEvent.KEYCODE_BACK){

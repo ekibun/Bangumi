@@ -9,6 +9,7 @@ import android.support.v7.widget.PopupMenu
 import android.support.v7.widget.RecyclerView
 import android.view.Menu
 import android.view.View
+import android.view.ViewGroup
 import com.google.gson.reflect.TypeToken
 import kotlinx.android.synthetic.main.content_collection.*
 import retrofit2.Call
@@ -61,6 +62,8 @@ class CollectionFragment: DrawerFragment(R.layout.content_collection){
                 val swipeRefreshLayout = SwipeRefreshLayout(view.context)
                 val recyclerView = RecyclerView(view.context)
                 val adapter = CollectionListAdapter()
+                adapter.emptyView = activity?.layoutInflater?.inflate(R.layout.view_empty, view as ViewGroup, false)
+                adapter.isUseEmpty(false)
                 adapter.setEnableLoadMore(true)
                 adapter.setOnLoadMoreListener({
                     loadCollectionList(i)
@@ -129,7 +132,9 @@ class CollectionFragment: DrawerFragment(R.layout.content_collection){
         }
         collectionCalls[index] = if(index == 2) api.collection(userName)
             else Bangumi.getCollectionList(typeList[selectedType]?.second?:"", userName, CollectionStatusType.status[index], pageIndex[index]+1)
+        adapters.getOrNull(index)?.isUseEmpty(false)
         collectionCalls[index]?.enqueue(ApiHelper.buildCallback(viewList.getOrNull(index)?.context, {
+            adapters.getOrNull(index)?.isUseEmpty(true)
             it.filter { index != 2 || it.subject?.type == typeList[selectedType]?.first }.let{
                 if(index != 2) it.forEach {
                     it.subject?.type = typeList[selectedType]?.first?:0 }
