@@ -8,15 +8,18 @@ import android.view.View
 import kotlinx.android.synthetic.main.activity_video.*
 
 class SystemUIPresenter(private val context: VideoActivity){
-    fun init(){}
+    fun init(){
+        setSystemUiVisibility(Visibility.IMMERSIVE)
+    }
 
     init{
-        context.window.statusBarColor = Color.BLACK
-        context.window.navigationBarColor = Color.BLACK
+        context.window.statusBarColor = Color.TRANSPARENT
+        //context.window.statusBarColor = Color.BLACK
+        //context.window.navigationBarColor = Color.BLACK
         context.window.decorView.setOnSystemUiVisibilityChangeListener{
             if(it == 0)
                 if(isLandscape) setSystemUiVisibility(Visibility.FULLSCREEN)
-                else setSystemUiVisibility(Visibility.NORMAL)
+                else setSystemUiVisibility(Visibility.IMMERSIVE)
         }
     }
 
@@ -41,7 +44,7 @@ class SystemUIPresenter(private val context: VideoActivity){
             setSystemUiVisibility(SystemUIPresenter.Visibility.FULLSCREEN)
         }else if (newConfig?.orientation == Configuration.ORIENTATION_PORTRAIT){
             isLandscape = false
-            setSystemUiVisibility(SystemUIPresenter.Visibility.NORMAL)
+            setSystemUiVisibility(SystemUIPresenter.Visibility.IMMERSIVE)
         }
     }
 
@@ -49,6 +52,7 @@ class SystemUIPresenter(private val context: VideoActivity){
     private fun setSystemUiVisibility(visibility: Visibility){
         when(visibility){
             SystemUIPresenter.Visibility.FULLSCREEN -> {
+                context.toolbar_layout.fitsSystemWindows = false
                 //context.window.statusBarColor = Color.TRANSPARENT
                 //context.window.navigationBarColor = Color.TRANSPARENT
                 context.window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -60,22 +64,18 @@ class SystemUIPresenter(private val context: VideoActivity){
                         or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
             }
             SystemUIPresenter.Visibility.IMMERSIVE -> {
+                context.toolbar_layout.fitsSystemWindows = true
                 //context.window.statusBarColor = Color.TRANSPARENT
                 //context.window.navigationBarColor = Color.TRANSPARENT
-                context.window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        or View.SYSTEM_UI_FLAG_IMMERSIVE)
+                context.window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
             }
-            SystemUIPresenter.Visibility.NORMAL -> {
-                //context.window.statusBarColor = Color.BLACK
-                //context.window.navigationBarColor = Color.BLACK
-                context.window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
-            }
+        }
+        context.toolbar_layout.post{
+            context.toolbar_layout.requestLayout()
         }
     }
 
     enum class Visibility{
-        FULLSCREEN, IMMERSIVE, NORMAL
+        FULLSCREEN, IMMERSIVE
     }
 }

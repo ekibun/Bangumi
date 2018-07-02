@@ -18,7 +18,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import kotlinx.android.synthetic.main.activity_video.*
-import kotlinx.android.synthetic.main.video_player.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.util.JsonUtil
@@ -96,13 +95,15 @@ class VideoActivity : AppCompatActivity() {
                     PendingIntent.getBroadcast(this, CONTROL_TYPE_NEXT, Intent(ACTION_MEDIA_CONTROL + subjectPresenter.subject.id).putExtra(EXTRA_CONTROL_TYPE,
                             CONTROL_TYPE_NEXT), PendingIntent.FLAG_UPDATE_CURRENT))
             actionNext.isEnabled = videoPresenter.next != null
-            setPictureInPictureParams(PictureInPictureParams.Builder().setActions(listOf(
-                    actionPrev,
-                    RemoteAction(Icon.createWithResource(this, if (playPause) R.drawable.ic_play else R.drawable.ic_pause), getString(R.string.play_pause), getString(R.string.play_pause),
-                            PendingIntent.getBroadcast(this, CONTROL_TYPE_PLAY, Intent(ACTION_MEDIA_CONTROL + subjectPresenter.subject.id).putExtra(EXTRA_CONTROL_TYPE,
-                                    if (playPause) CONTROL_TYPE_PLAY else CONTROL_TYPE_PAUSE), PendingIntent.FLAG_UPDATE_CURRENT)),
-                    actionNext
-            )).build())
+            try{
+                setPictureInPictureParams(PictureInPictureParams.Builder().setActions(listOf(
+                        actionPrev,
+                        RemoteAction(Icon.createWithResource(this, if (playPause) R.drawable.ic_play else R.drawable.ic_pause), getString(R.string.play_pause), getString(R.string.play_pause),
+                                PendingIntent.getBroadcast(this, CONTROL_TYPE_PLAY, Intent(ACTION_MEDIA_CONTROL + subjectPresenter.subject.id).putExtra(EXTRA_CONTROL_TYPE,
+                                        if (playPause) CONTROL_TYPE_PLAY else CONTROL_TYPE_PAUSE), PendingIntent.FLAG_UPDATE_CURRENT)),
+                        actionNext
+                )).build())
+            }catch(e: Exception){ }
         }
     }
 

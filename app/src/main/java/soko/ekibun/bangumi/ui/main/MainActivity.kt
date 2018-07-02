@@ -2,6 +2,7 @@ package soko.ekibun.bangumi.ui.main
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
@@ -22,7 +23,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-        //window.statusBarColor = Color.TRANSPARENT
+        window.statusBarColor = Color.TRANSPARENT
 
         if(savedInstanceState?.containsKey("user") != true)
             mainPresenter.refreshUser()

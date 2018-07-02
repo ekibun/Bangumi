@@ -100,13 +100,12 @@ class VideoController(view: ViewGroup,
 
     fun doShowHide(show: Boolean) {
         val ctr = controller[if(isFullScreen()) ctrLarge else ctrSmall]
-        if(show || ctrVisibility){
-            for(i in controller.values)
-                i.doShowHide(false)
-            ctr?.doShowHide(show)
+        for(i in controller.values)
+            i.doShowHide(false)
+        ctr?.doShowHide(show || !ctrVisibility)
+        if(show || ctrVisibility)
             onAction(if(show) Controller.Action.SHOW else Controller.Action.HIDE, Unit)
-            if(show){ resetTimeout() }else{ timeoutTask?.cancel() }
-        }
+        if(show){ resetTimeout() }else{ timeoutTask?.cancel() }
     }
 
     var ctrVisibility: Boolean = true
