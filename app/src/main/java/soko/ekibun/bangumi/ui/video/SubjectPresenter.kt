@@ -23,7 +23,7 @@ import kotlinx.android.synthetic.main.subject_topic.*
 import soko.ekibun.bangumi.api.bangumiData.BangumiData
 import soko.ekibun.bangumi.api.bangumiData.bean.BangumiItem
 import soko.ekibun.bangumi.model.ParseModel
-import soko.ekibun.bangumi.util.CustomTabsUtil
+import soko.ekibun.bangumi.ui.web.WebActivity
 
 class SubjectPresenter(private val context: VideoActivity){
     val api by lazy { Bangumi.createInstance() }
@@ -40,7 +40,7 @@ class SubjectPresenter(private val context: VideoActivity){
         refreshProgress(subject)
 
         context.item_detail.setOnClickListener {
-            CustomTabsUtil.launchUrl(context, subject.url)
+            WebActivity.launchUrl(context, subject.url)
         }
 
         context.videoPresenter.doPlay = { position: Int ->
@@ -48,7 +48,7 @@ class SubjectPresenter(private val context: VideoActivity){
             if(episode != null){
                 parseInfoModel.getInfo(subject)?.let{
                     if(it.video?.id.isNullOrEmpty()) {
-                        episode.url?.let{ CustomTabsUtil.launchUrl(context, it) }
+                        episode.url?.let{ WebActivity.launchUrl(context, it) }
                         return@let
                     }
                     val episodePrev = subjectView.episodeDetailAdapter.data.getOrNull(position-1)?.t
@@ -56,24 +56,24 @@ class SubjectPresenter(private val context: VideoActivity){
                     context.videoPresenter.prev = if(episodePrev == null || (episodePrev.status?:"") !in listOf("Air")) null else position - 1
                     context.videoPresenter.next = if(episodeNext == null || (episodeNext.status?:"") !in listOf("Air")) null else position + 1
                     context.runOnUiThread { context.videoPresenter.play(episode, it) }
-                }?:episode.url?.let{ CustomTabsUtil.launchUrl(context, it) }
+                }?:episode.url?.let{ WebActivity.launchUrl(context, it) }
             }
         }
 
         subjectView.topicAdapter.setOnItemClickListener { _, _, position ->
-            CustomTabsUtil.launchUrl(context, subjectView.topicAdapter.data[position].url)
+            WebActivity.launchUrl(context, subjectView.topicAdapter.data[position].url)
         }
 
         subjectView.blogAdapter.setOnItemClickListener { _, _, position ->
-            CustomTabsUtil.launchUrl(context, subjectView.blogAdapter.data[position].url)
+            WebActivity.launchUrl(context, subjectView.blogAdapter.data[position].url)
         }
 
         context.topic_detail.setOnClickListener{
-            CustomTabsUtil.launchUrl(context, "${subject.url}/board")
+            WebActivity.launchUrl(context, "${subject.url}/board")
         }
 
         context.blog_detail.setOnClickListener{
-            CustomTabsUtil.launchUrl(context, "${subject.url}/reviews")
+            WebActivity.launchUrl(context, "${subject.url}/reviews")
         }
 
         subjectView.linkedSubjectsAdapter.setOnItemClickListener { _, _, position ->
@@ -170,42 +170,43 @@ class SubjectPresenter(private val context: VideoActivity){
         val month = dateList.getOrNull(1)?.toIntOrNull()?:1
 
         BangumiData.createInstance().query(year, String.format("%02d", month)).enqueue(ApiHelper.buildCallback(context, {
-            it.filter { it.sites?.first { it.site == "bangumi" }?.id?.toIntOrNull() == subject.id }.forEach {
-                val list = ArrayList<BangumiItem.SitesBean>()
-                list.add(BangumiItem.SitesBean("offical", it.officialSite))
+            val list = ArrayList<BangumiItem.SitesBean>()
+            it.filter { it.sites?.filter { it.site == "bangumi" }?.getOrNull(0)?.id?.toIntOrNull() == subject.id }.forEach {
+                if(list.size == 0)
+                    list.add(BangumiItem.SitesBean("offical", it.officialSite))
                 list.addAll(it.sites?.filter { it.site != "bangumi" }?:ArrayList())
-                context.cl_lines.setOnClickListener {
-                    val popList = ListPopupWindow(context)
-                    popList.anchorView = context.cl_lines
-                    popList.setAdapter(SitesAdapter(context, list))
-                    popList.isModal = true
-                    popList.show()
+            }
+            context.cl_lines.setOnClickListener {
+                val popList = ListPopupWindow(context)
+                popList.anchorView = context.cl_lines
+                popList.setAdapter(SitesAdapter(context, list))
+                popList.isModal = true
+                popList.show()
 
-                    popList.listView.setOnItemClickListener { _, _, position, _ ->
-                        CustomTabsUtil.launchUrl(context, list[position].parseUrl())
-                        popList.dismiss()
-                    }
+                popList.listView.setOnItemClickListener { _, _, position, _ ->
+                    WebActivity.launchUrl(context, list[position].parseUrl())
+                    popList.dismiss()
+                }
 
-                    popList.listView.setOnItemLongClickListener { _, _, position, _ ->
-                        ParseModel.processUrl(list[position].parseUrl()){context.runOnUiThread {
-                            val view = context.layoutInflater.inflate(R.layout.dialog_edit_lines, context.cl_lines, false)
-                            view.item_video_type.setSelection(it.type)
-                            view.item_video_id.setText(it.id)
-                            view.item_danmaku_type.setSelection(it.type)
-                            view.item_danmaku_id.setText(it.id)
-                            AlertDialog.Builder(context)
-                                    .setView(view)
-                                    .setPositiveButton("提交"){ _: DialogInterface, _: Int ->
-                                        val parseInfo = ParseInfo(view.item_api.text.toString(),
-                                                ParseInfo.ParseItem(view.item_video_type.selectedItemId.toInt(), view.item_video_id.text.toString()),
-                                                ParseInfo.ParseItem(view.item_danmaku_type.selectedItemId.toInt(), view.item_danmaku_id.text.toString()))
-                                        parseInfoModel.saveInfo(subject, parseInfo)
-                                        refreshLines(subject)
-                                    }.show()
-                        } }
-                        popList.dismiss()
-                        true
-                    }
+                popList.listView.setOnItemLongClickListener { _, _, position, _ ->
+                    ParseModel.processUrl(list[position].parseUrl()){context.runOnUiThread {
+                        val view = context.layoutInflater.inflate(R.layout.dialog_edit_lines, context.cl_lines, false)
+                        view.item_video_type.setSelection(it.type)
+                        view.item_video_id.setText(it.id)
+                        view.item_danmaku_type.setSelection(it.type)
+                        view.item_danmaku_id.setText(it.id)
+                        AlertDialog.Builder(context)
+                                .setView(view)
+                                .setPositiveButton("提交"){ _: DialogInterface, _: Int ->
+                                    val parseInfo = ParseInfo(view.item_api.text.toString(),
+                                            ParseInfo.ParseItem(view.item_video_type.selectedItemId.toInt(), view.item_video_id.text.toString()),
+                                            ParseInfo.ParseItem(view.item_danmaku_type.selectedItemId.toInt(), view.item_danmaku_id.text.toString()))
+                                    parseInfoModel.saveInfo(subject, parseInfo)
+                                    refreshLines(subject)
+                                }.show()
+                    } }
+                    popList.dismiss()
+                    true
                 }
             }
         }, {}))

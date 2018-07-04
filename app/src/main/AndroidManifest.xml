@@ -27,8 +27,7 @@
                 android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|uiMode">
         </activity>
         <activity
-                android:name=".ui.auth.AuthActivity"
-                android:label="@string/login_auth">
+                android:name=".ui.web.WebActivity">
         </activity>
         <activity android:name=".ui.search.SearchActivity">
         </activity>

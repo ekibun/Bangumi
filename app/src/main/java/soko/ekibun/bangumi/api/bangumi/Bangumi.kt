@@ -151,7 +151,7 @@ interface Bangumi {
                 val ret = ArrayList<Subject>()
                 doc.select(".subject_section").filter { it.select(".subtitle").text() == "关联条目" }.getOrNull(0)?.let{
                     var sub = ""
-                    it.select(".sep").forEach {
+                    it.select("li").forEach {
                         val newSub = it.selectFirst(".sub").text()
                         if(!newSub.isNullOrEmpty()) sub = newSub
                         val avatar = it.selectFirst(".avatar")

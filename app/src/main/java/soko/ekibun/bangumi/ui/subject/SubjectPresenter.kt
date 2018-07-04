@@ -17,7 +17,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.SubjectProgress
 import soko.ekibun.bangumi.api.bangumiData.BangumiData
 import soko.ekibun.bangumi.api.bangumiData.bean.BangumiItem
 import soko.ekibun.bangumi.model.UserModel
-import soko.ekibun.bangumi.util.CustomTabsUtil
+import soko.ekibun.bangumi.ui.web.WebActivity
 
 class SubjectPresenter(private val context: SubjectActivity){
     val api by lazy { Bangumi.createInstance() }
@@ -31,7 +31,7 @@ class SubjectPresenter(private val context: SubjectActivity){
         refreshCollection(subject)
 
         context.item_detail.setOnClickListener {
-            CustomTabsUtil.launchUrl(context, subject.url)
+            WebActivity.launchUrl(context, subject.url)
         }
 
         subjectView.episodeAdapter.setOnItemLongClickListener { _, _, position ->
@@ -40,7 +40,7 @@ class SubjectPresenter(private val context: SubjectActivity){
         }
 
         subjectView.episodeAdapter.setOnItemClickListener { _, _, position ->
-            subjectView.episodeAdapter.data[position]?.let{ CustomTabsUtil.launchUrl(context, it.url) }
+            subjectView.episodeAdapter.data[position]?.let{ WebActivity.launchUrl(context, it.url) }
         }
 
         subjectView.episodeDetailAdapter.setOnItemLongClickListener { _, _, position ->
@@ -49,7 +49,7 @@ class SubjectPresenter(private val context: SubjectActivity){
         }
 
         subjectView.episodeDetailAdapter.setOnItemClickListener { _, _, position ->
-            subjectView.episodeDetailAdapter.data[position]?.t?.let{ CustomTabsUtil.launchUrl(context, it.url) }
+            subjectView.episodeDetailAdapter.data[position]?.t?.let{ WebActivity.launchUrl(context, it.url) }
         }
 
         subjectView.linkedSubjectsAdapter.setOnItemClickListener { _, _, position ->
@@ -57,23 +57,23 @@ class SubjectPresenter(private val context: SubjectActivity){
         }
 
         subjectView.topicAdapter.setOnItemClickListener { _, _, position ->
-            CustomTabsUtil.launchUrl(context, subjectView.topicAdapter.data[position].url)
+            WebActivity.launchUrl(context, subjectView.topicAdapter.data[position].url)
         }
 
         subjectView.blogAdapter.setOnItemClickListener { _, _, position ->
-            CustomTabsUtil.launchUrl(context, subjectView.blogAdapter.data[position].url)
+            WebActivity.launchUrl(context, subjectView.blogAdapter.data[position].url)
         }
 
         context.topic_detail.setOnClickListener{
-            CustomTabsUtil.launchUrl(context, "${subject.url}/board")
+            WebActivity.launchUrl(context, "${subject.url}/board")
         }
 
         context.blog_detail.setOnClickListener{
-            CustomTabsUtil.launchUrl(context, "${subject.url}/reviews")
+            WebActivity.launchUrl(context, "${subject.url}/reviews")
         }
 
         subjectView.sitesAdapter.setOnItemClickListener { _, _, position ->
-            CustomTabsUtil.launchUrl(context, subjectView.sitesAdapter.data[position].parseUrl())
+            WebActivity.launchUrl(context, subjectView.sitesAdapter.data[position].parseUrl())
         }
     }
 

@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.os.Build
 import android.support.design.widget.AppBarLayout
 import android.view.View
+import android.view.WindowManager
 import kotlinx.android.synthetic.main.activity_video.*
 
 class SystemUIPresenter(private val context: VideoActivity){
@@ -13,7 +14,7 @@ class SystemUIPresenter(private val context: VideoActivity){
     }
 
     init{
-        context.window.statusBarColor = Color.TRANSPARENT
+        context.window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
         //context.window.statusBarColor = Color.BLACK
         //context.window.navigationBarColor = Color.BLACK
         context.window.decorView.setOnSystemUiVisibilityChangeListener{

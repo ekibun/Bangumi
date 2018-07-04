@@ -153,7 +153,7 @@
             android:background="?android:colorBackground"
             android:layout_marginTop="90dp"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            android:visibility="gone"/>
+            android:visibility="invisible"/>
 
     <LinearLayout
             android:layout_width="match_parent"
@@ -175,7 +175,7 @@
             android:layout_height="44dp"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
             android:background="?android:colorBackground"
-            android:visibility="gone">
+            android:visibility="invisible">
         <ImageView android:layout_width="42dp"
                    android:layout_height="match_parent"
                    android:padding="12dp"

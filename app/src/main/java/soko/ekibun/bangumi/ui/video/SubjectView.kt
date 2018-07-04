@@ -31,10 +31,10 @@ class SubjectView(private val context: VideoActivity){
     //val headerView = context.layoutInflater.inflate(R.layout.subject_episode, context.root_layout, false)!!
 
     fun showEpisodeDetail(show: Boolean){
-        context.episode_detail_list.visibility = if(show) View.VISIBLE else View.GONE
-        context.episode_detail_list.animation = AnimationUtils.loadAnimation(context, if(show) R.anim.move_in else R.anim.move_out)
-        context.episode_detail_list_header.visibility = if(show) View.VISIBLE else View.GONE
+        context.episode_detail_list_header.visibility = if(show) View.VISIBLE else View.INVISIBLE
         context.episode_detail_list_header.animation = AnimationUtils.loadAnimation(context, if(show) R.anim.move_in else R.anim.move_out)
+        context.episode_detail_list.visibility = if(show) View.VISIBLE else View.INVISIBLE
+        context.episode_detail_list.animation = AnimationUtils.loadAnimation(context, if(show) R.anim.move_in else R.anim.move_out)
     }
 
     init{

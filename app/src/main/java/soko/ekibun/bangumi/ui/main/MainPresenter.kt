@@ -14,9 +14,8 @@ import soko.ekibun.bangumi.api.bangumi.bean.AccessToken
 import soko.ekibun.bangumi.api.bangumi.bean.UserInfo
 import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.model.UserModel
-import soko.ekibun.bangumi.ui.auth.AuthActivity
-import soko.ekibun.bangumi.ui.auth.AuthActivity.Companion.REQUEST_AUTH
-import soko.ekibun.bangumi.util.CustomTabsUtil
+import soko.ekibun.bangumi.ui.web.WebActivity
+import soko.ekibun.bangumi.ui.web.WebActivity.Companion.REQUEST_AUTH
 import soko.ekibun.bangumi.util.JsonUtil
 
 class MainPresenter(private val context: MainActivity){
@@ -29,9 +28,9 @@ class MainPresenter(private val context: MainActivity){
         val token = userModel.getToken()
         when {
             token == null -> {
-                AuthActivity.startActivityForResult(context)}
+                WebActivity.startActivityForAuth(context)}
             user == null -> refreshUser() //retry
-            else -> CustomTabsUtil.launchUrl(context, user?.url)
+            else -> WebActivity.launchUrl(context, user?.url)
         }
     })
 
@@ -97,7 +96,7 @@ class MainPresenter(private val context: MainActivity){
         if (resultCode == Activity.RESULT_OK)
             when (requestCode) {
                 REQUEST_AUTH -> {
-                    val code = data?.getStringExtra(AuthActivity.RESULT_CODE)
+                    val code = data?.getStringExtra(WebActivity.RESULT_CODE)
                     if (code != null) {
                         tokenCall?.cancel()
                         tokenCall = auth.accessToken(code)
