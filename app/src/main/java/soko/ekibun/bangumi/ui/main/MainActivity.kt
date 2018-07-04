@@ -11,6 +11,7 @@ import android.view.View
 import android.view.WindowManager
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
+import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.search.SearchActivity
 import soko.ekibun.bangumi.ui.view.BackgroundWebView
 
@@ -22,6 +23,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        
+        ThemeModel.setTheme(this, ThemeModel(this).getTheme())
 
         if(savedInstanceState?.containsKey("user") != true)
             mainPresenter.refreshUser()

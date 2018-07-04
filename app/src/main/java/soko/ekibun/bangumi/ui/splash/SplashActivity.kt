@@ -9,9 +9,6 @@ class SplashActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        ThemeModel.setTheme(this, ThemeModel(this).getTheme())
-
         MainActivity.startActivity(this)
         finish()
     }
