@@ -2,13 +2,10 @@ package soko.ekibun.bangumi.ui.main
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.view.WindowManager
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.model.ThemeModel
@@ -23,7 +20,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        
+
         ThemeModel.setTheme(this, ThemeModel(this).getTheme())
 
         if(savedInstanceState?.containsKey("user") != true)

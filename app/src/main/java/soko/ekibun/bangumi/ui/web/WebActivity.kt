@@ -12,6 +12,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import kotlinx.android.synthetic.main.activity_web.*
@@ -31,13 +32,19 @@ class WebActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        webview_progress.max = 100
-        webview.webChromeClient = object: WebChromeClient() {
-            override fun onProgressChanged(view: WebView, newProgress: Int) {
-                webview_progress.visibility = if (newProgress == 100) View.GONE else View.VISIBLE
-                webview_progress.progress = newProgress
-            }
+        swipe_container.setOnRefreshListener {
+            webview.reload()
         }
+
+        val setProgress = { newProgress: Int ->
+            webview_progress.visibility = if (newProgress == 100) View.GONE else View.VISIBLE
+            webview_progress.progress = newProgress
+            swipe_container.isRefreshing = newProgress != 100
+        }
+
+        webview_progress.max = 100
+        @SuppressLint("SetJavaScriptEnabled")
+        webview.settings.javaScriptEnabled = true
         if(!isAuth) {
             val url = intent.getStringExtra(OPEN_URL)
             title = ""
@@ -47,15 +54,31 @@ class WebActivity : AppCompatActivity() {
                     super.onReceivedTitle(view, title)
                     if (title != null) this@WebActivity.title = title
                 }
+                override fun onProgressChanged(view: WebView, newProgress: Int) {
+                    setProgress(newProgress)
+                }
             }
             webview.webViewClient = object : WebViewClient() {
-                override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {}
+                override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+                    if(!request.url.toString().startsWith("http")){
+                        try{
+                            startActivity(Intent.createChooser(Intent(Intent.ACTION_VIEW, request.url), request.url.toString()))
+                        }catch(e: Exception){
+                            e.printStackTrace()
+                            return false }
+                        return true
+                    }
+                    return false
+                }
             }
         }else{
             title = getString(R.string.login_auth)
             val authUrl = "${Bangumi.SERVER}/oauth/authorize?client_id=${Bangumi.APP_ID}&response_type=code"
-            @SuppressLint("SetJavaScriptEnabled")
-            webview.settings.javaScriptEnabled = true
+            webview.webChromeClient = object: WebChromeClient() {
+                override fun onProgressChanged(view: WebView, newProgress: Int) {
+                    setProgress(newProgress)
+                }
+            }
             webview.webViewClient = object : WebViewClient() {
                 override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
                     if(url == authUrl)
@@ -102,7 +125,10 @@ class WebActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            android.R.id.home -> processBack()
+            android.R.id.home -> {
+                if(isAuth) setResult(Activity.RESULT_CANCELED, null)
+                finish()
+            }
             R.id.action_open -> AppUtil.openBrowser(this, webview.url)
             R.id.action_share -> AppUtil.shareString(this, webview.url)
         }
