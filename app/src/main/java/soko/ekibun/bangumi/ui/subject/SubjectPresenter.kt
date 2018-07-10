@@ -1,6 +1,8 @@
 package soko.ekibun.bangumi.ui.subject
 
 import android.content.DialogInterface
+import android.net.Uri
+import android.support.customtabs.CustomTabsIntent
 import android.support.v7.app.AlertDialog
 import kotlinx.android.synthetic.main.activity_subject.*
 import kotlinx.android.synthetic.main.dialog_edit_subject.view.*
@@ -73,7 +75,9 @@ class SubjectPresenter(private val context: SubjectActivity){
         }
 
         subjectView.sitesAdapter.setOnItemClickListener { _, _, position ->
-            WebActivity.launchUrl(context, subjectView.sitesAdapter.data[position].parseUrl())
+            try{
+                CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(subjectView.sitesAdapter.data[position].parseUrl()))
+            }catch (e: Exception){ e.printStackTrace() }
         }
     }
 
@@ -114,11 +118,11 @@ class SubjectPresenter(private val context: SubjectActivity){
         val year = dateList.getOrNull(0)?.toIntOrNull()?:0
         val month = dateList.getOrNull(1)?.toIntOrNull()?:1
         BangumiData.createInstance().query(year, String.format("%02d", month)).enqueue(ApiHelper.buildCallback(context, {
-            it.filter { it.sites?.first { it.site == "bangumi" }?.id?.toIntOrNull() == subject.id }.forEach {
-                val list = ArrayList<BangumiItem.SitesBean>()
-                list.add(BangumiItem.SitesBean("offical", it.officialSite))
-                list.addAll(it.sites?.filter { it.site != "bangumi" }?:ArrayList())
-                subjectView.sitesAdapter.setNewData(list)
+            subjectView.sitesAdapter.setNewData(null)
+            it.filter { it.sites?.filter { it.site == "bangumi" }?.getOrNull(0)?.id?.toIntOrNull() == subject.id }.forEach {
+                if(subjectView.sitesAdapter.data.size == 0)
+                    subjectView.sitesAdapter.addData(BangumiItem.SitesBean("offical", it.officialSite))
+                subjectView.sitesAdapter.addData(it.sites?.filter { it.site != "bangumi" }?:ArrayList())
             }
         }, {}))
     }

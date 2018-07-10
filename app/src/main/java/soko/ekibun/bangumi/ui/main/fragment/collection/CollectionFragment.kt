@@ -21,7 +21,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.SubjectCollection
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
 import soko.ekibun.bangumi.api.bangumi.bean.UserInfo
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
-import soko.ekibun.bangumi.ui.video.VideoActivity
+import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.util.JsonUtil
 
 class CollectionFragment: DrawerFragment(R.layout.content_collection){
@@ -69,7 +69,7 @@ class CollectionFragment: DrawerFragment(R.layout.content_collection){
                     loadCollectionList(i)
                 }, recyclerView)
                 adapter.setOnItemClickListener { _, v, position ->
-                    VideoActivity.startActivity(v.context, adapter.data[position].subject!!)
+                    SubjectActivity.startActivity(v.context, adapter.data[position].subject!!)
                 }
                 recyclerView.adapter = adapter
                 recyclerView.layoutManager = LinearLayoutManager(view.context)

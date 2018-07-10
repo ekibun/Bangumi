@@ -1,6 +1,8 @@
 package soko.ekibun.bangumi.ui.video
 
 import android.content.DialogInterface
+import android.net.Uri
+import android.support.customtabs.CustomTabsIntent
 import android.support.v7.app.AlertDialog
 import kotlinx.android.synthetic.main.dialog_edit_lines.view.*
 import kotlinx.android.synthetic.main.dialog_edit_subject.view.*
@@ -23,6 +25,7 @@ import kotlinx.android.synthetic.main.subject_topic.*
 import soko.ekibun.bangumi.api.bangumiData.BangumiData
 import soko.ekibun.bangumi.api.bangumiData.bean.BangumiItem
 import soko.ekibun.bangumi.model.ParseModel
+import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.ui.web.WebActivity
 
 class SubjectPresenter(private val context: VideoActivity){
@@ -78,7 +81,7 @@ class SubjectPresenter(private val context: VideoActivity){
 
         subjectView.linkedSubjectsAdapter.setOnItemClickListener { _, _, position ->
             subjectView.linkedSubjectsAdapter.data[position]?.let{
-                VideoActivity.startActivity(context, it)
+                SubjectActivity.startActivity(context, it)
             }
         }
 
@@ -184,7 +187,9 @@ class SubjectPresenter(private val context: VideoActivity){
                 popList.show()
 
                 popList.listView.setOnItemClickListener { _, _, position, _ ->
-                    WebActivity.launchUrl(context, list[position].parseUrl())
+                    try{
+                        CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(list[position].parseUrl()))
+                    }catch (e: Exception){ e.printStackTrace() }
                     popList.dismiss()
                 }
 

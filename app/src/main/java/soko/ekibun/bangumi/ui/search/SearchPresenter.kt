@@ -10,9 +10,7 @@ import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.SearchResult
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
-import soko.ekibun.bangumi.ui.video.VideoActivity
-
-//import soko.ekibun.bangumi.ui.subject.SubjectActivity
+import soko.ekibun.bangumi.ui.subject.SubjectActivity
 
 class SearchPresenter(private val context: SearchActivity) {
     val api by lazy { Bangumi.createInstance() }
@@ -27,7 +25,7 @@ class SearchPresenter(private val context: SearchActivity) {
             search()
         },context.search_list)
         searchAdapter.setOnItemClickListener { _, _, position ->
-            VideoActivity.startActivity(context, searchAdapter.data[position])
+            SubjectActivity.startActivity(context, searchAdapter.data[position])
         }
 
         context.search_box.addTextChangedListener(object: TextWatcher {

@@ -13,7 +13,7 @@ import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Calendar
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
-import soko.ekibun.bangumi.ui.video.VideoActivity
+import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.util.JsonUtil
 
 class CalendarFragment: DrawerFragment(R.layout.content_calendar) {
@@ -47,7 +47,7 @@ class CalendarFragment: DrawerFragment(R.layout.content_calendar) {
         )
         calendarListAdapter.setOnItemChildClickListener { _, v, position ->
             calendarListAdapter.data[position].t?.let {
-                VideoActivity.startActivity(v.context, it)
+                SubjectActivity.startActivity(v.context, it)
             }
         }
 
