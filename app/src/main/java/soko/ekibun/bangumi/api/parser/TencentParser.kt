@@ -32,8 +32,6 @@ class TencentParser: Parser{
 
     override fun getVideo(webView: BackgroundWebView, api: String, video: Parser.VideoInfo): retrofit2.Call<String> {
         var url = api
-        if(url.isEmpty())
-            url = "http://jx.myxit.cn/vip/?url="
         if(url.endsWith("="))
             url += video.url.split(".html?")[0] + "/${video.id}.html"
         return ApiHelper.buildWebViewCall(webView, url)

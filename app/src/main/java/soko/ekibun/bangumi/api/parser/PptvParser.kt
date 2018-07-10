@@ -32,8 +32,6 @@ class PptvParser: Parser{
 
     override fun getVideo(webView: BackgroundWebView, api: String, video: Parser.VideoInfo): retrofit2.Call<String> {
         var url = api
-        if(url.isEmpty())
-            url = "http://mlxztz.com/vip/index.php?url="
         if(url.endsWith("="))
             url += video.url
         return ApiHelper.buildWebViewCall(webView, url)
