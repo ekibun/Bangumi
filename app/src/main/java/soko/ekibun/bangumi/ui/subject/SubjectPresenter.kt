@@ -27,14 +27,22 @@ class SubjectPresenter(private val context: SubjectActivity){
     private val userModel by lazy { UserModel(context) }
 
     fun init(subject: Subject){
+        context.item_detail.setOnClickListener {
+            WebActivity.launchUrl(context, subject.url)
+        }
+
+        context.topic_detail.setOnClickListener{
+            WebActivity.launchUrl(context, "${subject.url}/board")
+        }
+
+        context.blog_detail.setOnClickListener{
+            WebActivity.launchUrl(context, "${subject.url}/reviews")
+        }
+
         subjectView.updateSubject(subject)
         refreshSubject(subject)
         refreshProgress(subject)
         refreshCollection(subject)
-
-        context.item_detail.setOnClickListener {
-            WebActivity.launchUrl(context, subject.url)
-        }
 
         subjectView.episodeAdapter.setOnItemLongClickListener { _, _, position ->
             subjectView.episodeAdapter.data[position]?.let{ openEpisode(it, subject) }
@@ -66,18 +74,14 @@ class SubjectPresenter(private val context: SubjectActivity){
             WebActivity.launchUrl(context, subjectView.blogAdapter.data[position].url)
         }
 
-        context.topic_detail.setOnClickListener{
-            WebActivity.launchUrl(context, "${subject.url}/board")
-        }
-
-        context.blog_detail.setOnClickListener{
-            WebActivity.launchUrl(context, "${subject.url}/reviews")
-        }
-
         subjectView.sitesAdapter.setOnItemClickListener { _, _, position ->
             try{
                 CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(subjectView.sitesAdapter.data[position].parseUrl()))
             }catch (e: Exception){ e.printStackTrace() }
+        }
+
+        subjectView.commentAdapter.setOnItemClickListener { _, _, position ->
+            WebActivity.launchUrl(context, subjectView.commentAdapter.data[position].user?.url)
         }
     }
 
@@ -111,6 +115,28 @@ class SubjectPresenter(private val context: SubjectActivity){
             subjectView.linkedSubjectsAdapter.setNewData(it)
             //Log.v("list", it.toString())
         }, {}))
+
+        var commentPage = 1
+        subjectView.commentAdapter.setEnableLoadMore(true)
+        subjectView.commentAdapter.setOnLoadMoreListener({
+            loadComment(subject, commentPage)
+            commentPage++
+        }, context.comment_list)
+        loadComment(subject, commentPage)
+        commentPage++
+    }
+
+    private fun loadComment(subject: Subject, page: Int){
+        if(page == 1)
+            subjectView.commentAdapter.setNewData(null)
+        Bangumi.getComments(subject, page).enqueue(ApiHelper.buildCallback(context, {
+            if(it?.isEmpty() == true)
+                subjectView.commentAdapter.loadMoreEnd()
+            else{
+                subjectView.commentAdapter.loadMoreComplete()
+                subjectView.commentAdapter.addData(it)
+            }
+        }, {subjectView.commentAdapter.loadMoreFail()}))
     }
 
     private fun refreshLines(subject: Subject){

@@ -4,7 +4,9 @@
         android:layout_width="match_parent"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
-        android:padding="12dp"
+        android:paddingLeft="12dp"
+        android:paddingRight="12dp"
+        android:paddingBottom="0dp"
         android:layout_height="wrap_content"
         android:transitionName="container">
     <ImageView
@@ -18,26 +20,14 @@
             android:layout_alignParentStart="true"
             android:contentDescription="@string/desc_cover"/>
     <TextView
-            android:id="@+id/item_score_pt"
-            android:textColor="?attr/colorAccent"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="16sp"
-            android:paddingStart="2dp"
-            android:paddingBottom="2dp"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintBottom_toBottomOf="@+id/item_score"
-            android:text="@string/score_point"
-            tools:ignore="RtlSymmetry"/>
-    <TextView
             android:id="@+id/item_score"
             android:textColor="?attr/colorAccent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="24sp"
-            app:layout_constraintRight_toLeftOf="@+id/item_score_pt"
+            app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:paddingStart="8dp"
+            android:paddingTop="4dp"
             tools:ignore="RtlSymmetry"/>
     <TextView
             android:id="@+id/item_score_count"
@@ -45,7 +35,6 @@
             android:layout_height="wrap_content"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/item_score"
-            android:paddingStart="8dp"
             tools:ignore="RtlSymmetry"/>
 
     <TextView

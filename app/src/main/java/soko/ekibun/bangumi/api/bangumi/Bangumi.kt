@@ -1,10 +1,9 @@
 package soko.ekibun.bangumi.api.bangumi
 
-import android.net.Uri
+import android.util.Log
 import android.webkit.CookieManager
 import org.jsoup.Jsoup
 import retrofit2.Call
-import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
@@ -128,14 +127,12 @@ interface Bangumi {
                         val name = it.selectFirst("h3").selectFirst("small")?.text()?:nameCN
                         val img = "http:" + it.selectFirst("img").attr("src").replace("cover/s/", "cover/m/")
                         val info = it.selectFirst(".info").text()
-                        val airDate = Regex("""([0-9]{4}年[0-9]{1,2}月[0-9]{1,2})日""").find(info)?.groupValues?.get(1)?.replace("年","-")?.replace("月", "-")
                         val subject = Subject(id,
                                 Bangumi.SERVER + it.selectFirst("a").attr("href"),
                                 0,
                                 name,
                                 nameCN,
                                 info,
-                                air_date = airDate,
                                 images = Images(img, img, img, img, img)
                         )
                         ret += SubjectCollection(name, id, -1, -1, subject = subject)
@@ -161,6 +158,26 @@ interface Bangumi {
                         val id = Regex("""/subject/([0-9]*)""").find(url)?.groupValues?.get(1)?.toIntOrNull()?:0
                         val name = title.text()
                         ret += Subject(id, url, 0, name, summary = sub, images = Images(img, img, img, img, img))
+                    }
+                }
+                return@buildHttpCall ret
+            }
+        }
+
+        fun getComments(subject: Subject, page: Int): Call<List<Comment>>{
+            return ApiHelper.buildHttpCall("${subject.url?:""}/comments?page=$page"){
+                val doc = Jsoup.parse(it.body()?.string()?:"")
+                val ret = ArrayList<Comment>()
+                doc.selectFirst("#comment_box")?.let{
+                    it.select(".item").forEach {
+                        val img = "http:" + Regex("""background-image:url\('([^']*)'\)""").find(it.selectFirst(".avatar")?.html()?:"")?.groupValues?.get(1)
+                        val user = it.selectFirst(".text")?.selectFirst("a")
+                        val id = Regex("""/user/([^/]*)""").find(user?.attr("href")?:"")?.groupValues?.get(1)
+                        val userInfo = UserInfo(id?.toIntOrNull()?:0, SERVER + user?.attr("href"), id, user?.text(), Images(img, img, img, img, img))
+                        val time = it.selectFirst(".grey")?.text()?.replace("@", "")?.trim()
+                        val rate = Regex("""sstars([0-9]*)""").find(it.selectFirst(".text")?.selectFirst("span").toString())?.groupValues?.get(1)?.toIntOrNull()?:0
+                        val comment = it.selectFirst("p")?.text()
+                        ret += Comment(userInfo, time, comment, rate)
                     }
                 }
                 return@buildHttpCall ret

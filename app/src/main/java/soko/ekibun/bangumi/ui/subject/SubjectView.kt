@@ -9,6 +9,7 @@ import com.chad.library.adapter.base.entity.SectionEntity
 import com.xiaofeng.flowlayoutmanager.FlowLayoutManager
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_subject.*
+import kotlinx.android.synthetic.main.activity_subject.view.*
 import kotlinx.android.synthetic.main.subject_blog.*
 import kotlinx.android.synthetic.main.subject_detail.*
 import kotlinx.android.synthetic.main.subject_episode.*
@@ -28,8 +29,19 @@ class SubjectView(private val context: SubjectActivity){
     val topicAdapter = TopicAdapter()
     val blogAdapter = BlogAdapter()
     val sitesAdapter = SitesAdapter()
+    val commentAdapter = CommentAdapter()
+
+    private val detail = context.subject_detail
 
     init{
+        context.app_bar.addOnOffsetChangedListener { appBarLayout, verticalOffset ->
+            val ratio = Math.abs(verticalOffset.toFloat() / appBarLayout.totalScrollRange)
+            context.item_scrim.alpha = ratio
+            context.item_subject.alpha = 1 - ratio
+            context.item_collect.translationY = -(context.toolbar.height - context.item_collect.height * 9 / 8) * ratio / 2 - context.item_collect.height / 16
+            context.toolbar.currentContentInsetRight
+        }
+
         context.episode_list.adapter = episodeAdapter
         val layoutManager = LinearLayoutManager(context)
         layoutManager.orientation = LinearLayoutManager.HORIZONTAL
@@ -65,17 +77,23 @@ class SubjectView(private val context: SubjectActivity){
         flowLayoutManager.isAutoMeasureEnabled = true
         context.site_list.layoutManager = flowLayoutManager
         context.site_list.isNestedScrollingEnabled = false
+
+        context.comment_list.adapter = commentAdapter
+        context.comment_list.layoutManager = LinearLayoutManager(context)
+
+        context.root_layout.removeView(detail)
+        commentAdapter.setHeaderView(detail)
     }
 
     private fun parseSubject(subject: Subject): String{
         var ret = SubjectType.getDescription(subject.type) + "\n" +
-                "总集数：${subject.eps_count}\n" +
+                //"总集数：${subject.eps_count}\n" +
                 "开播时间：${subject.air_date}\n" +
                 "更新时间："
         subject.air_weekday.toString().forEach {
             ret += CalendarAdapter.weekSmall[it.toString().toInt()] + " "
         }
-        return ret
+        return ret + "\n"
     }
 
     fun updateSubject(subject: Subject){
@@ -86,7 +104,7 @@ class SubjectView(private val context: SubjectActivity){
         //item_title_header.text = title_text.text
         //context.item_summary.text = subject.summary
         context.item_info.text = parseSubject(subject)
-        context.item_detail.text = subject.summary
+        detail.item_detail.text = subject.summary
 
         subject.rating?.let {
             context.item_score.text = it.score.toString()

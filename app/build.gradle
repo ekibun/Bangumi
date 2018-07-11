@@ -12,7 +12,7 @@ android {
         minSdkVersion 22
         targetSdkVersion 27
         versionCode 1
-        versionName "1.0"
+        versionName "alpha20180712"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -50,4 +50,5 @@ dependencies {
     implementation 'com.android.support:customtabs:27.1.1'
     implementation 'com.zhy:base-adapter:3.0.3'
     implementation 'com.xiaofeng.android:flowlayoutmanager:1.2.3.2'
+    implementation 'me.codeboy.android:align-text-view:2.3.2'
 }

@@ -3,7 +3,6 @@ package soko.ekibun.bangumi.ui.subject
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
-import android.graphics.Color
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.KeyEvent
@@ -12,6 +11,7 @@ import android.view.View
 import kotlinx.android.synthetic.main.activity_subject.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
+import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.video.VideoActivity
 import soko.ekibun.bangumi.util.JsonUtil
 
@@ -56,7 +56,7 @@ class SubjectActivity : AppCompatActivity() {
         private const val EXTRA_SUBJECT = "extraSubject"
 
         fun startActivity(context: Context, subject: Subject) {
-            if((context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE)== 0)
+            if((context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE)== 0 || !ThemeModel(context).getTheme())
                 context.startActivity(parseIntent(context, subject))
             else
                 VideoActivity.startActivity(context, subject)

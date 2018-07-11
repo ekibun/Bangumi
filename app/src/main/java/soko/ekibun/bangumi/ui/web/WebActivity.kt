@@ -32,14 +32,9 @@ class WebActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        swipe_container.setOnRefreshListener {
-            webview.reload()
-        }
-
         val setProgress = { newProgress: Int ->
             webview_progress.visibility = if (newProgress == 100) View.GONE else View.VISIBLE
             webview_progress.progress = newProgress
-            swipe_container.isRefreshing = newProgress != 100
         }
 
         webview_progress.max = 100
@@ -147,8 +142,9 @@ class WebActivity : AppCompatActivity() {
         }
 
         fun launchUrl(context: Activity, page: String?){
+            if(page.isNullOrEmpty()) return
             val intent = Intent(context, WebActivity::class.java)
-            intent.putExtra(OPEN_URL, page?:"")
+            intent.putExtra(OPEN_URL, page)
             context.startActivity(intent)
         }
     }
