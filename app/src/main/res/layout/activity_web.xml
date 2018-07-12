@@ -19,7 +19,6 @@
                 android:id="@+id/toolbar_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_scrollFlags="scroll|enterAlways"
                 app:titleEnabled="false"
                 android:fitsSystemWindows="true">
             <android.support.v7.widget.Toolbar
@@ -32,7 +31,7 @@
         </android.support.design.widget.CollapsingToolbarLayout>
     </android.support.design.widget.AppBarLayout>
 
-    <soko.ekibun.bangumi.ui.view.NestedWebView
+    <WebView
             android:id="@+id/webview"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
             android:layout_width="match_parent"

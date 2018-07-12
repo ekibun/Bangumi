@@ -56,6 +56,7 @@
     <string name="links">关联页</string>
     <string name="collect">收藏</string>
     <string name="open_browser">在浏览器中打开</string>
+    <string name="index">索引</string>
 
     <string-array name="collection_status">
         <item>想看</item>

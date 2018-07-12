@@ -85,7 +85,7 @@ class CalendarFragment: DrawerFragment(R.layout.content_calendar) {
                     isHeader = false
                 }
             }
-            (calendar_list.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(index, 0)
+            (calendar_list?.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(index, 0)
         }, { calendar_swipe?.isRefreshing = false }))
     }
 

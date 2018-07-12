@@ -1,7 +1,6 @@
 package soko.ekibun.bangumi.ui.main.fragment.collection
 
 import android.os.Bundle
-import android.support.design.widget.TabLayout
 import android.support.v4.view.ViewPager
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.LinearLayoutManager
@@ -11,6 +10,7 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import com.google.gson.reflect.TypeToken
+import com.nshmura.recyclertablayout.RecyclerTabLayout
 import kotlinx.android.synthetic.main.content_collection.*
 import retrofit2.Call
 import soko.ekibun.bangumi.R
@@ -92,8 +92,9 @@ class CollectionFragment: DrawerFragment(R.layout.content_collection){
             } }
         }
 
-        activity?.findViewById<TabLayout>(R.id.tab_layout)?.setupWithViewPager(collection_pager)
         collection_pager.adapter = CollectionPagerAdapter(view.context, this)
+        activity?.findViewById<RecyclerTabLayout>(R.id.tab_layout)?.setUpWithViewPager(collection_pager)
+
         collection_pager.addOnPageChangeListener(object: ViewPager.OnPageChangeListener{
             override fun onPageScrollStateChanged(state: Int) {}
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
@@ -130,16 +131,17 @@ class CollectionFragment: DrawerFragment(R.layout.content_collection){
             adapters.getOrNull(index)?.loadMoreEnd()
             return
         }
-        collectionCalls[index] = if(index == 2) api.collection(userName)
+        val useApi = index == 2 && selectedType in arrayOf(R.id.collection_type_anime, R.id.collection_type_book, R.id.collection_type_real)
+        collectionCalls[index] = if(useApi) api.collection(userName)
             else Bangumi.getCollectionList(typeList[selectedType]?.second?:"", userName, CollectionStatusType.status[index], pageIndex[index]+1)
         adapters.getOrNull(index)?.isUseEmpty(false)
         collectionCalls[index]?.enqueue(ApiHelper.buildCallback(viewList.getOrNull(index)?.context, {
             adapters.getOrNull(index)?.isUseEmpty(true)
-            it.filter { index != 2 || it.subject?.type == typeList[selectedType]?.first }.let{
-                if(index != 2) it.forEach {
+            it.filter { !useApi || it.subject?.type == typeList[selectedType]?.first }.let{
+                if(!useApi) it.forEach {
                     it.subject?.type = typeList[selectedType]?.first?:0 }
                 adapters.getOrNull(index)?.addData(it) }
-            if(index == 2 || it.size < 10)
+            if(useApi || it.size < 10)
                 adapters.getOrNull(index)?.loadMoreEnd()
             else
                 adapters.getOrNull(index)?.loadMoreComplete()

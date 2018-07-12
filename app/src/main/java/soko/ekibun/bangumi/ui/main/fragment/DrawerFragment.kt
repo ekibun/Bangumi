@@ -2,9 +2,9 @@ package soko.ekibun.bangumi.ui.main.fragment
 
 import android.os.Bundle
 import android.support.annotation.LayoutRes
-import android.support.design.widget.TabLayout
 import android.support.v4.app.Fragment
 import android.view.*
+import com.nshmura.recyclertablayout.RecyclerTabLayout
 import soko.ekibun.bangumi.R
 
 abstract class DrawerFragment(@LayoutRes private val resId: Int): Fragment(){
@@ -16,7 +16,7 @@ abstract class DrawerFragment(@LayoutRes private val resId: Int): Fragment(){
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        activity?.findViewById<TabLayout>(R.id.tab_layout)?.visibility =
+        activity?.findViewById<RecyclerTabLayout>(R.id.tab_layout)?.visibility =
                 if(showTab) View.VISIBLE else View.GONE
         activity?.setTitle(titleRes)
     }

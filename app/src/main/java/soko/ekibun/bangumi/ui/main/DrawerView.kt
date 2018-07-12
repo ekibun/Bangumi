@@ -12,14 +12,15 @@ import soko.ekibun.bangumi.api.bangumi.bean.UserInfo
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
 import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarFragment
 import soko.ekibun.bangumi.ui.main.fragment.collection.CollectionFragment
+import soko.ekibun.bangumi.ui.main.fragment.index.IndexFragment
 import soko.ekibun.bangumi.ui.search.SearchActivity
 
 class DrawerView(private val context: MainActivity, onNightModeChange: (Boolean)->Unit, onLogout: ()->Unit){
     private var checkedId = R.id.nav_chase
     private val fragments: Map<Int, DrawerFragment> = mapOf(
             R.id.nav_chase to CollectionFragment(),
-            R.id.nav_calendar to CalendarFragment()//,
-            //R.id.nav_download to DownloadFragment()
+            R.id.nav_calendar to CalendarFragment(),
+            R.id.nav_index to IndexFragment()
     )
     val switch = context.nav_view.menu.findItem(R.id.nav_night).actionView.item_switch!!
 

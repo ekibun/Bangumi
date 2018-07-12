@@ -12,11 +12,10 @@
                 android:id="@+id/nav_calendar"
                 android:icon="@drawable/ic_calendar"
                 android:title="@string/calendar"/>
-        <!--
         <item
-                android:id="@+id/nav_download"
-                android:icon="@drawable/ic_cloud_download"
-                android:title="@string/download_cache"/>-->
+                android:id="@+id/nav_index"
+                android:icon="@drawable/ic_explore"
+                android:title="@string/index"/>
     </group>
 
     <group  android:id="@+id/group_settings">

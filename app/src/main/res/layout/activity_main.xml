@@ -26,15 +26,13 @@
                     app:contentInsetStart="0dp"
                     app:contentInsetStartWithNavigation="0dp"
                     app:popupTheme="@style/AppTheme.PopupOverlay"/>
-            <android.support.design.widget.TabLayout
+            <com.nshmura.recyclertablayout.RecyclerTabLayout
                     android:id="@+id/tab_layout"
-                    app:tabMaxWidth="0dp"
-                    app:tabGravity="fill"
-                    app:tabMode="fixed"
                     android:visibility="gone"
-                    app:tabIndicatorColor="?android:textColorPrimary"
+                    app:rtl_tabOnScreenLimit="5"
+                    app:rtl_tabIndicatorColor="?android:textColorPrimary"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="48dp"/>
         </android.support.design.widget.AppBarLayout>
         <FrameLayout
                 android:id="@+id/content_frame"

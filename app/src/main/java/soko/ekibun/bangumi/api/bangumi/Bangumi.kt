@@ -1,6 +1,5 @@
 package soko.ekibun.bangumi.api.bangumi
 
-import android.util.Log
 import android.webkit.CookieManager
 import org.jsoup.Jsoup
 import retrofit2.Call
@@ -123,12 +122,12 @@ interface Bangumi {
                 val ret = ArrayList<SubjectCollection>()
                 doc.select(".item").forEach {
                     it.attr("id").split('_').getOrNull(1)?.toIntOrNull()?.let{id->
-                        val nameCN = it.selectFirst("h3").selectFirst("a").text()
-                        val name = it.selectFirst("h3").selectFirst("small")?.text()?:nameCN
-                        val img = "http:" + it.selectFirst("img").attr("src").replace("cover/s/", "cover/m/")
-                        val info = it.selectFirst(".info").text()
+                        val nameCN = it.selectFirst("h3")?.selectFirst("a")?.text()
+                        val name = it.selectFirst("h3")?.selectFirst("small")?.text()?:nameCN
+                        val img = "http:" + it.selectFirst("img")?.attr("src")?.replace("cover/s/", "cover/m/")
+                        val info = it.selectFirst(".info")?.text()
                         val subject = Subject(id,
-                                Bangumi.SERVER + it.selectFirst("a").attr("href"),
+                                Bangumi.SERVER + it.selectFirst("a")?.attr("href"),
                                 0,
                                 name,
                                 nameCN,
@@ -178,6 +177,32 @@ interface Bangumi {
                         val rate = Regex("""sstars([0-9]*)""").find(it.selectFirst(".text")?.selectFirst("span").toString())?.groupValues?.get(1)?.toIntOrNull()?:0
                         val comment = it.selectFirst("p")?.text()
                         ret += Comment(userInfo, time, comment, rate)
+                    }
+                }
+                return@buildHttpCall ret
+            }
+        }
+
+        fun browserAirTime(@SubjectType.SubjectTypeName subject_type: String,
+                           year: Int, month: Int,
+                           page: Int = 1): Call<List<Subject>>{
+            return ApiHelper.buildHttpCall("$SERVER/$subject_type/browser/airtime/$year-$month?page=$page"){
+                val doc = Jsoup.parse(it.body()?.string()?:"")
+                val ret = ArrayList<Subject>()
+                doc.select(".item")?.forEach{
+                    it.attr("id").split('_').getOrNull(1)?.toIntOrNull()?.let{id->
+                        val nameCN = it.selectFirst("h3")?.selectFirst("a")?.text()
+                        val name = it.selectFirst("h3")?.selectFirst("small")?.text()?:nameCN
+                        val img = "http:" + it.selectFirst("img")?.attr("src")?.replace("cover/s/", "cover/m/")
+                        val info = it.selectFirst(".info")?.text()
+                        ret += Subject(id,
+                                Bangumi.SERVER + it.selectFirst("a")?.attr("href"),
+                                0,
+                                name,
+                                nameCN,
+                                info,
+                                images = Images(img, img, img, img, img)
+                        )
                     }
                 }
                 return@buildHttpCall ret

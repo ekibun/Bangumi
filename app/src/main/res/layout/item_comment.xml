@@ -49,8 +49,6 @@
             android:layout_height="wrap_content"
             android:textSize="15sp"
             android:textColor="?android:textColorPrimary"
-            android:maxLines="1"
-            android:ellipsize="end"
             android:padding="1dp"
             app:layout_constraintLeft_toRightOf="@+id/item_avatar"
             app:layout_constraintRight_toRightOf="parent"
