@@ -113,6 +113,7 @@ class SubjectView(private val context: SubjectActivity){
         Glide.with(context)
                 .applyDefaultRequestOptions(RequestOptions.placeholderOf(context.item_cover.drawable))
                 .load(subject.images?.common)
+                .apply(RequestOptions.errorOf(R.drawable.ic_404))
                 .into(context.item_cover)
 
         Glide.with(context)

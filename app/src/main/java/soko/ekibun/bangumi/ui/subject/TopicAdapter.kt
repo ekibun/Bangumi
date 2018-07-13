@@ -21,7 +21,7 @@ class TopicAdapter(data: MutableList<Subject.TopicBean>? = null) :
         helper.itemView.item_comment.text = helper.itemView.context.getString(R.string.phrase_reply,item.replies)
         Glide.with(helper.itemView)
                 .load(item.user?.avatar?.large)
-                .apply(RequestOptions.circleCropTransform())
+                .apply(RequestOptions.circleCropTransform().error(R.drawable.ic_404))
                 .into(helper.itemView.item_avatar)
     }
 }

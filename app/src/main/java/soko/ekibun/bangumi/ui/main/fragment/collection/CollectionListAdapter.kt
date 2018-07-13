@@ -1,6 +1,7 @@
 package soko.ekibun.bangumi.ui.main.fragment.collection
 
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
 import kotlinx.android.synthetic.main.item_subject.view.*
@@ -17,6 +18,7 @@ class CollectionListAdapter(data: MutableList<SubjectCollection>? = null) :
         helper.setText(R.id.item_summary, if(status == -1) item.subject?.summary else parseDesc(status))
         Glide.with(helper.itemView)
                 .load(item.subject?.images?.common)
+                .apply(RequestOptions.errorOf(R.drawable.ic_404))
                 .into(helper.itemView.item_cover)
     }
 

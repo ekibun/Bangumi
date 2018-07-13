@@ -18,12 +18,15 @@ import android.webkit.WebViewClient
 import kotlinx.android.synthetic.main.activity_web.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
+import soko.ekibun.bangumi.api.bangumi.bean.Subject
+import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.util.AppUtil
 
 class WebActivity : AppCompatActivity() {
     val api by lazy { Bangumi.createInstance(false) }
 
     private val isAuth by lazy{ intent.getBooleanExtra(IS_AUTH, false)}
+    private val openUrl by lazy{ intent.getStringExtra(OPEN_URL)}
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,9 +44,8 @@ class WebActivity : AppCompatActivity() {
         @SuppressLint("SetJavaScriptEnabled")
         webview.settings.javaScriptEnabled = true
         if(!isAuth) {
-            val url = intent.getStringExtra(OPEN_URL)
             title = ""
-            webview.loadUrl(url)
+            webview.loadUrl(openUrl)
             webview.webChromeClient = object:WebChromeClient(){
                 override fun onReceivedTitle(view: WebView?, title: String?) {
                     super.onReceivedTitle(view, title)
@@ -55,9 +57,14 @@ class WebActivity : AppCompatActivity() {
             }
             webview.webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-                    if(!request.url.toString().startsWith("http")){
+                    val url = request.url.toString()
+                    val id = Regex("""subject/([0-9]*)$""").find(url)?.groupValues?.get(1)?.toIntOrNull()
+                    if(id != null){
+                        SubjectActivity.startActivity(this@WebActivity, Subject(id, url))
+                        return true
+                    }else if(!url.startsWith("http")){
                         try{
-                            startActivity(Intent.createChooser(Intent(Intent.ACTION_VIEW, request.url), request.url.toString()))
+                            startActivity(Intent.createChooser(Intent(Intent.ACTION_VIEW, request.url), url))
                         }catch(e: Exception){
                             e.printStackTrace()
                             return false }

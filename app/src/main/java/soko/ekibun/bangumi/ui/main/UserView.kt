@@ -20,7 +20,7 @@ class UserView(private val context: MainActivity, onUserFigureClickListener: Vie
             if(context.isDestroyed) return@runOnUiThread
             Glide.with(headerView)
                     .load(user?.avatar?.large)
-                    .apply(RequestOptions.placeholderOf(R.drawable.akkarin))
+                    .apply(RequestOptions.placeholderOf(R.drawable.akkarin).error(R.drawable.ic_404))
                     .into(headerView.user_figure)
             headerView.user_id.text = if(user?.id == null) "" else "@${user.id}"
             headerView.user_name.text = user?.nickname

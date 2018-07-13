@@ -2,6 +2,7 @@ package soko.ekibun.bangumi.ui.main.fragment.calendar
 
 import android.support.v7.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseSectionQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
 import com.chad.library.adapter.base.entity.SectionEntity
@@ -21,6 +22,7 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
         helper.addOnClickListener(R.id.item_layout)
         Glide.with(helper.itemView)
                 .load(item.t.images?.common)
+                .apply(RequestOptions.errorOf(R.drawable.ic_404))
                 .into(helper.itemView.item_cover)
     }
 

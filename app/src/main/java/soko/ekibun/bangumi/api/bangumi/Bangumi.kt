@@ -142,7 +142,8 @@ interface Bangumi {
         }
 
         fun getSubject(subject: Subject): Call<List<Subject>>{
-            return ApiHelper.buildHttpCall(subject.url?:""){
+            val cookie = CookieManager.getInstance().getCookie(SERVER)
+            return ApiHelper.buildHttpCall(subject.url?:"",mapOf("cookie" to cookie)){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<Subject>()
                 doc.select(".subject_section").filter { it.select(".subtitle").text() == "关联条目" }.getOrNull(0)?.let{

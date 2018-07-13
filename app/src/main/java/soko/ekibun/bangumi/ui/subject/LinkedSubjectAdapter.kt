@@ -1,6 +1,7 @@
 package soko.ekibun.bangumi.ui.subject
 
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
 import kotlinx.android.synthetic.main.item_subject_small.view.*
@@ -15,6 +16,7 @@ class LinkedSubjectAdapter(data: MutableList<Subject>? = null) :
         helper.setText(R.id.item_summary, item.summary)
         Glide.with(helper.itemView)
                 .load(item.images?.common)
+                .apply(RequestOptions.errorOf(R.drawable.ic_404))
                 .into(helper.itemView.item_cover)
     }
 }
