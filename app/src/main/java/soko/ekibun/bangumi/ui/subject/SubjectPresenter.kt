@@ -1,11 +1,15 @@
 package soko.ekibun.bangumi.ui.subject
 
+import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.net.Uri
 import android.support.customtabs.CustomTabsIntent
 import android.support.v7.app.AlertDialog
+import android.view.View
+import android.widget.AdapterView
 import kotlinx.android.synthetic.main.activity_subject.*
 import kotlinx.android.synthetic.main.dialog_edit_subject.view.*
+import kotlinx.android.synthetic.main.dialog_epsode.view.*
 import kotlinx.android.synthetic.main.subject_blog.*
 import kotlinx.android.synthetic.main.subject_topic.*
 import retrofit2.Call
@@ -85,19 +89,33 @@ class SubjectPresenter(private val context: SubjectActivity){
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun openEpisode(episode: Episode, subject: Subject){
-        userModel.getToken()?.let { token ->
-            val status = context.resources.getStringArray(R.array.episode_status)
-            val dialog = AlertDialog.Builder(context)
-                    .setItems(status) { _, which ->
-                        api.updateProgress(episode.id, SubjectProgress.EpisodeProgress.EpisodeStatus.types[which],token.access_token?:"").enqueue(
-                                ApiHelper.buildCallback(context, {
-                                    refreshProgress(subject)
-                                }, {}))
-                    }.create()
-            //dialog.window.setGravity(Gravity.BOTTOM)
-            dialog.show()
+        val view = context.layoutInflater.inflate(R.layout.dialog_epsode, context.item_collect, false)
+        view.item_episode_title.text = if(episode.name_cn.isNullOrEmpty()) episode.name else episode.name_cn
+        view.item_episode_desc.text = (if(episode.name_cn.isNullOrEmpty()) "" else episode.name + "\n") +
+                (if(episode.airdate.isNullOrEmpty()) "" else "首播：" + episode.airdate + "\n") +
+                (if(episode.duration.isNullOrEmpty()) "" else "时长：" + episode.duration + "\n") +
+                "讨论 (+" + episode.comment + ")"
+        view.item_episode_title.setOnClickListener {
+            WebActivity.launchUrl(context, episode.url)
         }
+        view.item_episode_status.setSelection(intArrayOf(3,1,0,2)[episode.progress?.status?.id?:0])
+        userModel.getToken()?.let { token ->
+            view.item_episode_status.onItemSelectedListener = object: AdapterView.OnItemSelectedListener{
+                override fun onNothingSelected(parent: AdapterView<*>?) {}
+                override fun onItemSelected(parent: AdapterView<*>?, v: View?, position: Int, id: Long) {
+                    val newStatus = SubjectProgress.EpisodeProgress.EpisodeStatus.types[position]
+                    api.updateProgress(episode.id, newStatus, token.access_token ?: "").enqueue(
+                            ApiHelper.buildCallback(context, {
+                                refreshProgress(subject)
+                            }, {}))
+                } }
+        }?:{
+            view.item_episode_status.visibility = View.GONE
+        }()
+        AlertDialog.Builder(context)
+                .setView(view).show()
     }
 
     private var subjectCall : Call<Subject>? = null

@@ -59,7 +59,8 @@ class WebActivity : AppCompatActivity() {
                 override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                     val url = request.url.toString()
                     val id = Regex("""subject/([0-9]*)$""").find(url)?.groupValues?.get(1)?.toIntOrNull()
-                    if(id != null){
+                    val openId = Regex("""subject/([0-9]*)$""").find(openUrl)?.groupValues?.get(1)?.toIntOrNull()
+                    if(id != null && id != openId){
                         SubjectActivity.startActivity(this@WebActivity, Subject(id, url))
                         return true
                     }else if(!url.startsWith("http")){

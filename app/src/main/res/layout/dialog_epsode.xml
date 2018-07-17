@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="8dp"
+        android:orientation="vertical">
+    <TextView android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:id="@+id/item_episode_title"
+              android:padding="8dp"
+              android:textColor="?colorAccent"
+              android:textAppearance="@android:style/TextAppearance.Material.Title"
+              android:text="@string/status"/>
+    <TextView android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:id="@+id/item_episode_desc"
+              android:padding="8dp"
+              android:textAppearance="@android:style/TextAppearance.Material.Subhead"
+              android:text="@string/status"/>
+    <Spinner
+            android:id="@+id/item_episode_status"
+            android:layout_margin="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:entries="@array/episode_status"/>
+</LinearLayout>

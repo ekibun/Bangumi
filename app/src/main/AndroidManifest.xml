@@ -37,7 +37,8 @@
                 android:supportsPictureInPicture="true"
                 tools:targetApi="n">
         </activity>
-        <activity android:name=".ui.subject.SubjectActivity">
+        <activity android:name=".ui.subject.SubjectActivity"
+                  android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|uiMode">
         </activity>
     </application>
 

@@ -26,6 +26,7 @@ object ApiHelper {
             }
 
             override fun onResponse(call: Call<T>, response: Response<T>) {
+                Log.v("finUrl", call.request().url().toString())
                 finish(null)
                 response.body()?.let { callback(it) }
             }
