@@ -20,6 +20,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.CollectionStatusType
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectCollection
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
 import soko.ekibun.bangumi.api.bangumi.bean.UserInfo
+import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.util.JsonUtil
@@ -49,7 +50,7 @@ class CollectionFragment: DrawerFragment(R.layout.content_collection){
     private var selectedType = R.id.collection_type_anime
 
     private val api by lazy { Bangumi.createInstance() }
-    var user: UserInfo? = null
+    //var user: UserInfo? = null
 
     val viewList = ArrayList<SwipeRefreshLayout>()
     private val adapters = ArrayList<CollectionListAdapter>()
@@ -124,7 +125,7 @@ class CollectionFragment: DrawerFragment(R.layout.content_collection){
         collectionCalls[index]?.cancel()
         if(pageIndex[index] == 0)
             adapters.getOrNull(index)?.setNewData(null)
-        val userName = user?.id?.toString() ?: return
+        val userName =  context?.let{ UserModel(it).getToken()?.user_id?.toString() } ?: return
         if(pageIndex[index] == 0)
             viewList.getOrNull(index)?.isRefreshing = true
         if(index == 2 && pageIndex[index] > 0) {

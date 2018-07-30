@@ -21,7 +21,7 @@ class DanmakuPresenter(val view: DanmakuView,
         ParseModel.getDanmakuKey(video.siteId, video).enqueue(ApiHelper.buildCallback(view.context, {
             danmakuKey = it
             add(0)
-        }))
+        },{}))
     }
 
     private var lastPos = -1

@@ -38,19 +38,7 @@ class PptvParser: Parser{
     }
 
     override fun getDanmakuKey(video: Parser.VideoInfo): retrofit2.Call<String> {
-        return object: retrofit2.Call<String>{
-            override fun execute(): retrofit2.Response<String> {
-                return retrofit2.Response.success("OK")
-            }
-            override fun enqueue(callback: retrofit2.Callback<String>) {
-                callback.onResponse(this, execute())
-            }
-            override fun isExecuted(): Boolean { return true }
-            override fun clone(): retrofit2.Call<String> { return this }
-            override fun isCanceled(): Boolean { return false }
-            override fun cancel() {}
-            override fun request(): Request { return Request.Builder().build() }
-        }
+        return ApiHelper.buildCall { "OK" }
     }
 
     override fun getDanmaku(video: Parser.VideoInfo, key: String, pos: Int): retrofit2.Call<Map<Int, List<Parser.Danmaku>>> {

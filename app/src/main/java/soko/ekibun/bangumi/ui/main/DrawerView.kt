@@ -8,6 +8,7 @@ import android.view.View
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.switch_item.view.*
 import soko.ekibun.bangumi.R
+import soko.ekibun.bangumi.api.bangumi.bean.AccessToken
 import soko.ekibun.bangumi.api.bangumi.bean.UserInfo
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
 import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarFragment
@@ -55,9 +56,10 @@ class DrawerView(private val context: MainActivity, onNightModeChange: (Boolean)
         select(checkedId)
     }
 
+    /*
     fun setUser(user: UserInfo?){
         (fragments[R.id.nav_chase] as? CollectionFragment)?.user = user
-    }
+    }*/
 
     fun resetCollection(){
         (fragments[R.id.nav_chase] as? CollectionFragment)?.reset()

@@ -99,51 +99,61 @@
         </android.support.design.widget.CollapsingToolbarLayout>
     </android.support.design.widget.AppBarLayout>
 
-    <android.support.v4.widget.NestedScrollView
-            android:id="@+id/subject_detail"
+    <LinearLayout android:id="@+id/subject_detail"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:divider="@drawable/divider"
+                  android:showDividers="middle"
+                  android:orientation="vertical">
+        <FrameLayout android:id="@+id/item_detail"
+                     android:layout_width="match_parent"
+                     android:layout_height="wrap_content"
+                     android:paddingTop="8dp"
+                     android:paddingBottom="8dp"
+                     android:clickable="true"
+                     android:foreground="?android:attr/selectableItemBackground"
+                     android:focusable="true">
+            <include layout="@layout/subject_detail"/>
+        </FrameLayout>
+
+        <include android:id="@+id/item_episodes"
+                 layout="@layout/subject_episode"/>
+        <LinearLayout android:id="@+id/item_subjects"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:orientation="vertical">
+            <TextView android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:textAppearance="@android:style/TextAppearance.Material.Subhead"
+                      android:padding="12dp"
+                      android:text="@string/linked_subjects"/>
+            <android.support.v7.widget.RecyclerView
+                    android:id="@+id/subject_list"
+                    android:layout_width="match_parent"
+                    android:padding="4dp"
+                    android:clipToPadding="false"
+                    android:layout_height="wrap_content"/>
+        </LinearLayout>
+        <include android:id="@+id/item_blogs"
+                 layout="@layout/subject_blog"/>
+        <include android:id="@+id/item_topics"
+                 layout="@layout/subject_topic"/>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+            <TextView android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:textAppearance="@android:style/TextAppearance.Material.Subhead"
+                      android:padding="12dp"
+                      android:text="@string/comment"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <android.support.v7.widget.RecyclerView
             android:layout_marginTop="48dp"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            android:id="@+id/comment_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:fillViewport="true">
-        <LinearLayout android:layout_width="match_parent"
-                      android:layout_height="match_parent"
-                      android:divider="@drawable/divider"
-                      android:showDividers="middle"
-                      android:orientation="vertical">
-            <FrameLayout android:id="@+id/item_detail"
-                         android:layout_width="match_parent"
-                         android:layout_height="wrap_content"
-                         android:clickable="true"
-                         android:foreground="?android:attr/selectableItemBackground"
-                         android:focusable="true">
-                <include layout="@layout/subject_detail"/>
-            </FrameLayout>
-
-            <include android:id="@+id/item_episodes"
-                     layout="@layout/subject_episode"/>
-            <LinearLayout android:id="@+id/item_subjects"
-                          android:layout_width="match_parent"
-                          android:layout_height="wrap_content"
-                          android:orientation="vertical">
-                <TextView android:layout_width="match_parent"
-                          android:layout_height="wrap_content"
-                          android:textAppearance="@android:style/TextAppearance.Material.Subhead"
-                          android:padding="12dp"
-                          android:text="@string/linked_subjects"/>
-                <android.support.v7.widget.RecyclerView
-                        android:id="@+id/subject_list"
-                        android:layout_width="match_parent"
-                        android:padding="4dp"
-                        android:clipToPadding="false"
-                        android:layout_height="wrap_content"/>
-            </LinearLayout>
-            <include android:id="@+id/item_blogs"
-                     layout="@layout/subject_blog"/>
-            <include android:id="@+id/item_topics"
-                     layout="@layout/subject_topic"/>
-        </LinearLayout>
-    </android.support.v4.widget.NestedScrollView>
+            android:fillViewport="true"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
     <android.support.v7.widget.RecyclerView
             android:id="@+id/episode_detail_list"

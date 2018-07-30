@@ -3,6 +3,7 @@ package soko.ekibun.bangumi.ui.view
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Handler
+import android.util.Log
 import android.webkit.*
 
 class BackgroundWebView(context: Context): WebView(context) {
@@ -10,6 +11,11 @@ class BackgroundWebView(context: Context): WebView(context) {
     var onCatchVideo={_: WebResourceRequest ->}
 
     var uiHandler: Handler = Handler{true}
+
+    override fun loadUrl(url: String?) {
+        Log.v("loadUrl", url)
+        super.loadUrl(url)
+    }
 
     init{
         @SuppressLint("SetJavaScriptEnabled")

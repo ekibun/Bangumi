@@ -3,6 +3,7 @@ package soko.ekibun.bangumi.ui.video
 import android.support.v7.widget.LinearLayoutManager
 import android.view.View
 import android.view.animation.AnimationUtils
+import android.widget.LinearLayout
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.entity.SectionEntity
@@ -10,8 +11,8 @@ import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_video.*
 import kotlinx.android.synthetic.main.subject_detail.*
 import kotlinx.android.synthetic.main.subject_blog.*
+import kotlinx.android.synthetic.main.subject_detail.view.*
 import kotlinx.android.synthetic.main.subject_episode.*
-import kotlinx.android.synthetic.main.video_player.*
 import kotlinx.android.synthetic.main.subject_topic.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
@@ -28,14 +29,10 @@ class SubjectView(private val context: VideoActivity){
     val linkedSubjectsAdapter = LinkedSubjectAdapter()
     val topicAdapter = TopicAdapter()
     val blogAdapter = BlogAdapter()
-    //val headerView = context.layoutInflater.inflate(R.layout.subject_episode, context.root_layout, false)!!
+    val commentAdapter = CommentAdapter()
 
-    fun showEpisodeDetail(show: Boolean){
-        context.episode_detail_list_header.visibility = if(show) View.VISIBLE else View.INVISIBLE
-        context.episode_detail_list_header.animation = AnimationUtils.loadAnimation(context, if(show) R.anim.move_in else R.anim.move_out)
-        context.episode_detail_list.visibility = if(show) View.VISIBLE else View.INVISIBLE
-        context.episode_detail_list.animation = AnimationUtils.loadAnimation(context, if(show) R.anim.move_in else R.anim.move_out)
-    }
+    val detail: LinearLayout = context.subject_detail
+    //val headerView = context.layoutInflater.inflate(R.layout.subject_episode, context.root_layout, false)!!
 
     init{
         context.episode_list.adapter = episodeAdapter
@@ -46,21 +43,19 @@ class SubjectView(private val context: VideoActivity){
 
         context.episode_detail_list.adapter = episodeDetailAdapter
         context.episode_detail_list.layoutManager = LinearLayoutManager(context)
-        //val view = context.layoutInflater.inflate(R.layout.item_title_header, context.root_layout, false)
+
         context.item_close.setOnClickListener {
             showEpisodeDetail(false)
         }
         context.episode_detail.setOnClickListener{
             showEpisodeDetail(true)
         }
-        //episodeDetailAdapter.setHeaderView(view)
 
         context.subject_list.adapter = linkedSubjectsAdapter
         val subjectLayoutManager = LinearLayoutManager(context)
         subjectLayoutManager.orientation = LinearLayoutManager.HORIZONTAL
         context.subject_list.layoutManager = subjectLayoutManager
         context.subject_list.isNestedScrollingEnabled = false
-        //episodeAdapter.setHeaderView(headerView)
 
         context.topic_list.adapter = topicAdapter
         context.topic_list.layoutManager = LinearLayoutManager(context)
@@ -69,6 +64,50 @@ class SubjectView(private val context: VideoActivity){
         context.blog_list.adapter = blogAdapter
         context.blog_list.layoutManager = LinearLayoutManager(context)
         context.blog_list.isNestedScrollingEnabled = false
+
+        context.comment_list.adapter = commentAdapter
+        context.comment_list.layoutManager = LinearLayoutManager(context)
+
+        context.root_layout.removeView(detail)
+        commentAdapter.setHeaderView(detail)
+    }
+
+    private fun parseSubject(subject: Subject): String{
+        var ret = subject.name + "\n" +
+                "总集数：${subject.eps_count}\n" +
+                "开播时间：${subject.air_date}\n" +
+                "更新时间："
+        subject.air_weekday.toString().forEach {
+            ret += CalendarAdapter.weekSmall[it.toString().toInt()] + " "
+        }
+        return ret
+    }
+
+    fun updateSubject(subject: Subject){
+        if(context.isDestroyed) return
+        context.title_text.text = if(subject.name_cn.isNullOrEmpty()) subject.name else subject.name_cn
+        context.title_site.text = SubjectType.getDescription(subject.type)
+        detail.item_info.text = parseSubject(subject)
+
+        subject.rating?.let {
+            context.item_score.text = it.score.toString()
+            context.item_score_count.text = context.getString(R.string.rate_count, it.total)
+        }
+        Glide.with(context)
+                .applyDefaultRequestOptions(RequestOptions.placeholderOf(detail.item_cover.drawable))
+                .load(subject.images?.common)
+                .into(detail.item_cover)
+
+        Glide.with(context)
+                .applyDefaultRequestOptions(RequestOptions.placeholderOf(context.item_cover_blur.drawable))
+                .load(subject.images?.common)
+                .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)))
+                .into(context.item_cover_blur)
+        ((subject.eps as? List<*>)?.map{ JsonUtil.toEntity(JsonUtil.toJson(it!!), Episode::class.java)})?.let{
+            updateEpisode(it)
+        }
+        topicAdapter.setNewData(subject.topic)
+        blogAdapter.setNewData(subject.blog)
     }
 
     private fun updateEpisode(episodes: List<Episode>){
@@ -92,19 +131,8 @@ class SubjectView(private val context: VideoActivity){
         progress = progress
     }
 
-    private fun parseSubject(subject: Subject): String{
-        var ret = subject.name + "\n" +
-                "总集数：${subject.eps_count}\n" +
-                "开播时间：${subject.air_date}\n" +
-                "更新时间："
-        subject.air_weekday.toString().forEach {
-            ret += CalendarAdapter.weekSmall[it.toString().toInt()] + " "
-        }
-        return ret
-    }
-
     private var scrolled = false
-    var loaded_progress = false
+    var loadedProgress = false
     var progress: SubjectProgress? = null
         set(value) {
             episodeDetailAdapter.data.forEach { ep ->
@@ -119,7 +147,7 @@ class SubjectView(private val context: VideoActivity){
             episodeDetailAdapter.notifyDataSetChanged()
             field = value
 
-            if(!scrolled && loaded_progress && episodeAdapter.data.size>0){
+            if(!scrolled && loadedProgress && episodeAdapter.data.size>0){
                 scrolled = true
 
                 var lastView = 0
@@ -133,34 +161,10 @@ class SubjectView(private val context: VideoActivity){
             }
         }
 
-    fun updateSubject(subject: Subject){
-        if(context.isDestroyed) return
-        //context.nested_scroll.tag = true
-        //context.data_layout.visibility = View.VISIBLE
-        context.title_text.text = if(subject.name_cn.isNullOrEmpty()) subject.name else subject.name_cn
-        context.title_site.text = SubjectType.getDescription(subject.type)
-        //item_title_header.text = title_text.text
-        //context.item_summary.text = subject.summary
-        context.item_info.text = parseSubject(subject)
-
-        subject.rating?.let {
-            context.item_score.text = it.score.toString()
-            context.item_score_count.text = context.getString(R.string.rate_count, it.total)
-        }
-        Glide.with(context)
-                .applyDefaultRequestOptions(RequestOptions.placeholderOf(context.item_cover.drawable))
-                .load(subject.images?.common)
-                .into(context.item_cover)
-
-        Glide.with(context)
-                .applyDefaultRequestOptions(RequestOptions.placeholderOf(context.item_cover_blur.drawable))
-                .load(subject.images?.common)
-                .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)))
-                .into(context.item_cover_blur)
-        ((subject.eps as? List<*>)?.map{ JsonUtil.toEntity(JsonUtil.toJson(it!!), Episode::class.java)})?.let{
-            updateEpisode(it)
-        }
-        topicAdapter.setNewData(subject.topic)
-        blogAdapter.setNewData(subject.blog)
+    fun showEpisodeDetail(show: Boolean){
+        context.episode_detail_list_header.visibility = if(show) View.VISIBLE else View.INVISIBLE
+        context.episode_detail_list_header.animation = AnimationUtils.loadAnimation(context, if(show) R.anim.move_in else R.anim.move_out)
+        context.episode_detail_list.visibility = if(show) View.VISIBLE else View.INVISIBLE
+        context.episode_detail_list.animation = AnimationUtils.loadAnimation(context, if(show) R.anim.move_in else R.anim.move_out)
     }
 }

@@ -3,6 +3,7 @@ package soko.ekibun.bangumi.ui.subject
 import android.support.v7.widget.LinearLayoutManager
 import android.view.View
 import android.view.animation.AnimationUtils
+import android.widget.LinearLayout
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.entity.SectionEntity
@@ -11,6 +12,7 @@ import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_subject.*
 import kotlinx.android.synthetic.main.activity_subject.view.*
 import kotlinx.android.synthetic.main.subject_blog.*
+import kotlinx.android.synthetic.main.subject_buttons.*
 import kotlinx.android.synthetic.main.subject_detail.*
 import kotlinx.android.synthetic.main.subject_episode.*
 import kotlinx.android.synthetic.main.subject_topic.*
@@ -31,14 +33,14 @@ class SubjectView(private val context: SubjectActivity){
     val sitesAdapter = SitesAdapter()
     val commentAdapter = CommentAdapter()
 
-    private val detail = context.subject_detail
+    val detail: LinearLayout = context.subject_detail
 
     init{
         context.app_bar.addOnOffsetChangedListener { appBarLayout, verticalOffset ->
             val ratio = Math.abs(verticalOffset.toFloat() / appBarLayout.totalScrollRange)
             context.item_scrim.alpha = ratio
             context.item_subject.alpha = 1 - ratio
-            context.item_collect.translationY = -(context.toolbar.height - context.item_collect.height * 9 / 8) * ratio / 2 - context.item_collect.height / 16
+            context.item_buttons.translationY = -(context.toolbar.height - context.item_buttons.height * 9 / 8) * ratio / 2 - context.item_buttons.height / 16
             context.toolbar.currentContentInsetRight
         }
 
@@ -87,7 +89,6 @@ class SubjectView(private val context: SubjectActivity){
 
     private fun parseSubject(subject: Subject): String{
         var ret = SubjectType.getDescription(subject.type) + "\n" +
-                //"总集数：${subject.eps_count}\n" +
                 "开播时间：${subject.air_date}\n" +
                 "更新时间："
         subject.air_weekday.toString().forEach {
@@ -98,13 +99,11 @@ class SubjectView(private val context: SubjectActivity){
 
     fun updateSubject(subject: Subject){
         if(context.isDestroyed) return
-        //context.nested_scroll.tag = true
-        //context.data_layout.visibility = View.VISIBLE
         context.title = if(subject.name_cn.isNullOrEmpty()) subject.name else subject.name_cn
-        //item_title_header.text = title_text.text
-        //context.item_summary.text = subject.summary
         context.item_info.text = parseSubject(subject)
         detail.item_detail.text = subject.summary
+
+        context.item_play.visibility = if(subject.type in listOf(SubjectType.ANIME, SubjectType.REAL)) View.VISIBLE else View.GONE
 
         subject.rating?.let {
             context.item_score.text = it.score.toString()
@@ -150,7 +149,7 @@ class SubjectView(private val context: SubjectActivity){
     }
 
     private var scrolled = false
-    var loaded_progress = false
+    var loadedProgress = false
     var progress: SubjectProgress? = null
         set(value) {
             episodeDetailAdapter.data.forEach { ep ->
@@ -165,7 +164,7 @@ class SubjectView(private val context: SubjectActivity){
             episodeDetailAdapter.notifyDataSetChanged()
             field = value
 
-            if(!scrolled && loaded_progress && episodeAdapter.data.size>0){
+            if(!scrolled && loadedProgress && episodeAdapter.data.size>0){
                 scrolled = true
 
                 var lastView = 0

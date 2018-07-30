@@ -8,10 +8,12 @@ import android.support.v7.app.AlertDialog
 import android.view.View
 import android.widget.AdapterView
 import kotlinx.android.synthetic.main.activity_subject.*
+import kotlinx.android.synthetic.main.activity_subject.view.*
 import kotlinx.android.synthetic.main.dialog_edit_subject.view.*
 import kotlinx.android.synthetic.main.dialog_epsode.view.*
-import kotlinx.android.synthetic.main.subject_blog.*
-import kotlinx.android.synthetic.main.subject_topic.*
+import kotlinx.android.synthetic.main.subject_blog.view.*
+import kotlinx.android.synthetic.main.subject_buttons.*
+import kotlinx.android.synthetic.main.subject_topic.view.*
 import retrofit2.Call
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
@@ -23,6 +25,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.SubjectProgress
 import soko.ekibun.bangumi.api.bangumiData.BangumiData
 import soko.ekibun.bangumi.api.bangumiData.bean.BangumiItem
 import soko.ekibun.bangumi.model.UserModel
+import soko.ekibun.bangumi.ui.video.VideoActivity
 import soko.ekibun.bangumi.ui.web.WebActivity
 
 class SubjectPresenter(private val context: SubjectActivity){
@@ -31,22 +34,26 @@ class SubjectPresenter(private val context: SubjectActivity){
     private val userModel by lazy { UserModel(context) }
 
     fun init(subject: Subject){
-        context.item_detail.setOnClickListener {
-            WebActivity.launchUrl(context, subject.url)
-        }
-
-        context.topic_detail.setOnClickListener{
-            WebActivity.launchUrl(context, "${subject.url}/board")
-        }
-
-        context.blog_detail.setOnClickListener{
-            WebActivity.launchUrl(context, "${subject.url}/reviews")
-        }
-
         subjectView.updateSubject(subject)
         refreshSubject(subject)
         refreshProgress(subject)
         refreshCollection(subject)
+
+        subjectView.detail.item_detail.setOnClickListener {
+            WebActivity.launchUrl(context, subject.url)
+        }
+
+        subjectView.detail.topic_detail.setOnClickListener{
+            WebActivity.launchUrl(context, "${subject.url}/board")
+        }
+
+        subjectView.detail.blog_detail.setOnClickListener{
+            WebActivity.launchUrl(context, "${subject.url}/reviews")
+        }
+
+        context.item_play.setOnClickListener {
+            VideoActivity.startActivity(context, subject)
+        }
 
         subjectView.episodeAdapter.setOnItemLongClickListener { _, _, position ->
             subjectView.episodeAdapter.data[position]?.let{ openEpisode(it, subject) }
@@ -214,7 +221,7 @@ class SubjectPresenter(private val context: SubjectActivity){
                 subjectView.progress = it
             }, {
                 subjectView.progress = null
-                subjectView.loaded_progress = true }))
+                subjectView.loadedProgress = true }))
         }
     }
 }

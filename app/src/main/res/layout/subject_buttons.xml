@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content">
+    <LinearLayout
+            android:id="@+id/item_play"
+            android:background="@drawable/bg_round_rect"
+            android:padding="8dp"
+            android:backgroundTint="?colorPrimaryForeground"
+            android:layout_marginEnd="12dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="gone">
+        <ImageView android:id="@+id/item_play_image"
+                   android:layout_width="wrap_content"
+                   android:layout_height="match_parent"
+                   android:tint="@android:color/white"
+                   android:src="@drawable/ic_play"
+                   android:contentDescription="@string/collect"/>
+        <TextView android:id="@+id/item_play_info"
+                  android:textColor="@android:color/white"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"/>
+    </LinearLayout>
+    <LinearLayout
+            android:id="@+id/item_collect"
+            android:background="@drawable/bg_round_rect"
+            android:padding="8dp"
+            android:backgroundTint="?colorPrimaryForeground"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true">
+        <ImageView android:id="@+id/item_collect_image"
+                   android:layout_width="wrap_content"
+                   android:layout_height="match_parent"
+                   android:tint="@android:color/white"
+                   android:src="@drawable/ic_heart_outline"
+                   android:contentDescription="@string/collect"/>
+        <TextView android:id="@+id/item_collect_info"
+                  android:text="@string/collect"
+                  android:textColor="@android:color/white"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"/>
+    </LinearLayout>
+</LinearLayout>

@@ -26,10 +26,26 @@ object ApiHelper {
             }
 
             override fun onResponse(call: Call<T>, response: Response<T>) {
-                Log.v("finUrl", call.request().url().toString())
+                Log.v("finUrl", call.request()?.url().toString())
                 finish(null)
                 response.body()?.let { callback(it) }
             }
+        }
+    }
+
+    fun <T> buildCall(converter: ()->T): Call<T>{
+        return object: retrofit2.Call<T>{
+            override fun execute(): retrofit2.Response<T> {
+                return retrofit2.Response.success(converter())
+            }
+            override fun enqueue(callback: retrofit2.Callback<T>) {
+                callback.onResponse(this, execute())
+            }
+            override fun isExecuted(): Boolean { return true }
+            override fun clone(): retrofit2.Call<T> { return this }
+            override fun isCanceled(): Boolean { return false }
+            override fun cancel() {}
+            override fun request(): Request? { return null }
         }
     }
 

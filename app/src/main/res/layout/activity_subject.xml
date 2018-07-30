@@ -64,29 +64,12 @@
                     app:contentInsetStart="0dp"
                     app:contentInsetStartWithNavigation="0dp"
                     app:layout_collapseMode="pin"/>
-            <LinearLayout
-                    android:id="@+id/item_collect"
-                    android:layout_gravity="bottom|end"
-                    android:background="@drawable/bg_round_rect"
-                    android:padding="8dp"
-                    android:backgroundTint="?colorPrimaryForeground"
-                    android:layout_marginEnd="12dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:clickable="true"
-                    android:focusable="true">
-                <ImageView android:id="@+id/item_collect_image"
-                        android:layout_width="wrap_content"
-                           android:layout_height="match_parent"
-                           android:tint="@android:color/white"
-                           android:src="@drawable/ic_heart_outline"
-                           android:contentDescription="@string/collect"/>
-                <TextView android:id="@+id/item_collect_info"
-                        android:text="@string/collect"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content">
-                </TextView>
-            </LinearLayout>
+            <include layout="@layout/subject_buttons"
+                     android:id="@+id/item_buttons"
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+                     android:layout_gravity="bottom|end"
+                     android:layout_marginEnd="12dp"/>
         </android.support.design.widget.CollapsingToolbarLayout>
     </android.support.design.widget.AppBarLayout>
 
@@ -96,8 +79,7 @@
                   android:layout_height="match_parent"
                   android:divider="@drawable/divider"
                   android:showDividers="middle"
-                  android:orientation="vertical"
-                  android:animateLayoutChanges="true">
+                  android:orientation="vertical">
         <LinearLayout android:layout_width="match_parent"
                       android:layout_height="wrap_content"
                       android:paddingTop="8dp"

@@ -62,7 +62,7 @@ class MainPresenter(private val context: MainActivity){
             userCall = api.user(token.user_id.toString())
             userCall?.enqueue(ApiHelper.buildCallback(context, {
                 setUser(it)
-                drawerView.resetCollection()
+                //drawerView.resetCollection()
                 api.refreshToken(token.refresh_token?:"").enqueue(ApiHelper.buildCallback(null,{}, {}))
             },{}))
         }
@@ -76,7 +76,7 @@ class MainPresenter(private val context: MainActivity){
     private fun setUser(user: UserInfo?){
         this.user = user
         userView.setUser(user)
-        drawerView.setUser(user)
+        //drawerView.setUser(user)
     }
 
     fun onSaveInstanceState(outState: Bundle){

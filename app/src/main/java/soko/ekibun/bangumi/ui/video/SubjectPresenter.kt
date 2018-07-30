@@ -1,9 +1,12 @@
 package soko.ekibun.bangumi.ui.video
 
+import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.net.Uri
 import android.support.customtabs.CustomTabsIntent
 import android.support.v7.app.AlertDialog
+import android.view.View
+import android.widget.AdapterView
 import kotlinx.android.synthetic.main.dialog_edit_lines.view.*
 import kotlinx.android.synthetic.main.dialog_edit_subject.view.*
 import kotlinx.android.synthetic.main.video_buttons.*
@@ -20,8 +23,11 @@ import soko.ekibun.bangumi.api.parser.ParseInfo
 import soko.ekibun.bangumi.util.JsonUtil
 import android.widget.ListPopupWindow
 import kotlinx.android.synthetic.main.activity_video.*
-import kotlinx.android.synthetic.main.subject_blog.*
-import kotlinx.android.synthetic.main.subject_topic.*
+import kotlinx.android.synthetic.main.activity_video.view.*
+import kotlinx.android.synthetic.main.dialog_epsode.view.*
+import kotlinx.android.synthetic.main.subject_blog.view.*
+import kotlinx.android.synthetic.main.subject_topic.view.*
+import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumiData.BangumiData
 import soko.ekibun.bangumi.api.bangumiData.bean.BangumiItem
 import soko.ekibun.bangumi.model.ParseModel
@@ -38,11 +44,20 @@ class SubjectPresenter(private val context: VideoActivity){
 
     init{
         subjectView.updateSubject(subject)
+        refreshLines(subject)
         refreshSubject(subject)
         refreshCollection(subject)
         refreshProgress(subject)
 
-        context.item_detail.setOnClickListener {
+        subjectView.detail.topic_detail.setOnClickListener{
+            WebActivity.launchUrl(context, "${subject.url}/board")
+        }
+
+        subjectView.detail.blog_detail.setOnClickListener{
+            WebActivity.launchUrl(context, "${subject.url}/reviews")
+        }
+
+        subjectView.detail.item_detail.setOnClickListener {
             WebActivity.launchUrl(context, subject.url)
         }
 
@@ -71,14 +86,6 @@ class SubjectPresenter(private val context: VideoActivity){
             WebActivity.launchUrl(context, subjectView.blogAdapter.data[position].url)
         }
 
-        context.topic_detail.setOnClickListener{
-            WebActivity.launchUrl(context, "${subject.url}/board")
-        }
-
-        context.blog_detail.setOnClickListener{
-            WebActivity.launchUrl(context, "${subject.url}/reviews")
-        }
-
         subjectView.linkedSubjectsAdapter.setOnItemClickListener { _, _, position ->
             subjectView.linkedSubjectsAdapter.data[position]?.let{
                 SubjectActivity.startActivity(context, it)
@@ -92,20 +99,7 @@ class SubjectPresenter(private val context: VideoActivity){
         }
 
         subjectView.episodeAdapter.setOnItemLongClickListener { _, _, position ->
-            userModel.getToken()?.let{token->
-                subjectView.episodeAdapter.data[position]?.let{ep->
-                    val status = context.resources.getStringArray(R.array.episode_status)
-                    val dialog = AlertDialog.Builder(context)
-                            .setItems(status) { _, which ->
-                                api.updateProgress(ep.id, SubjectProgress.EpisodeProgress.EpisodeStatus.types[which],token.access_token?:"").enqueue(
-                                        ApiHelper.buildCallback(context, {
-                                            refreshProgress(subject)
-                                        }, {}))
-                            }.create()
-                    //dialog.window.setGravity(Gravity.BOTTOM)
-                    dialog.show()
-                }
-            }
+            subjectView.episodeAdapter.data[position]?.let{ openEpisode(it, subject) }
             true
         }
 
@@ -114,28 +108,38 @@ class SubjectPresenter(private val context: VideoActivity){
         }
 
         subjectView.episodeDetailAdapter.setOnItemLongClickListener { _, _, position ->
-            userModel.getToken()?.let{token->
-                subjectView.episodeDetailAdapter.data[position]?.t?.let{ep->
-                    val status = context.resources.getStringArray(R.array.episode_status)
-                    val dialog = AlertDialog.Builder(context)
-                            .setItems(status) { _, which ->
-                                api.updateProgress(ep.id, SubjectProgress.EpisodeProgress.EpisodeStatus.types[which],token.access_token?:"").enqueue(
-                                        ApiHelper.buildCallback(context, {
-                                            refreshProgress(subject)
-                                        }, {}))
-                            }.create()
-                    //dialog.window.setGravity(Gravity.BOTTOM)
-                    dialog.show()
-                }
-            }
+            subjectView.episodeDetailAdapter.data[position]?.t?.let{ openEpisode(it, subject) }
             true
         }
+    }
 
-        /*context.nested_scroll.setOnScrollChangeListener { v: NestedScrollView, _: Int, _: Int, oldScrollX: Int, oldScrollY: Int ->
-            if(v.tag == true){
-                v.tag = null
-                v.scrollTo(oldScrollX, oldScrollY)
-                v.smoothScrollTo(oldScrollX, oldScrollY) } }*/
+    @SuppressLint("SetTextI18n")
+    private fun openEpisode(episode: Episode, subject: Subject){
+        val view = context.layoutInflater.inflate(R.layout.dialog_epsode, context.item_detail, false)
+        view.item_episode_title.text = if(episode.name_cn.isNullOrEmpty()) episode.name else episode.name_cn
+        view.item_episode_desc.text = (if(episode.name_cn.isNullOrEmpty()) "" else episode.name + "\n") +
+                (if(episode.airdate.isNullOrEmpty()) "" else "首播：" + episode.airdate + "\n") +
+                (if(episode.duration.isNullOrEmpty()) "" else "时长：" + episode.duration + "\n") +
+                "讨论 (+" + episode.comment + ")"
+        view.item_episode_title.setOnClickListener {
+            WebActivity.launchUrl(context, episode.url)
+        }
+        view.item_episode_status.setSelection(intArrayOf(3,1,0,2)[episode.progress?.status?.id?:0])
+        userModel.getToken()?.let { token ->
+            view.item_episode_status.onItemSelectedListener = object: AdapterView.OnItemSelectedListener{
+                override fun onNothingSelected(parent: AdapterView<*>?) {}
+                override fun onItemSelected(parent: AdapterView<*>?, v: View?, position: Int, id: Long) {
+                    val newStatus = SubjectProgress.EpisodeProgress.EpisodeStatus.types[position]
+                    api.updateProgress(episode.id, newStatus, token.access_token ?: "").enqueue(
+                            ApiHelper.buildCallback(context, {
+                                refreshProgress(subject)
+                            }, {}))
+                } }
+        }?:{
+            view.item_episode_status.visibility = View.GONE
+        }()
+        AlertDialog.Builder(context)
+                .setView(view).show()
     }
 
     private fun refreshProgress(subject: Subject){
@@ -144,7 +148,7 @@ class SubjectPresenter(private val context: VideoActivity){
                 subjectView.progress = it
             }, {
                 subjectView.progress = null
-                subjectView.loaded_progress = true }))
+                subjectView.loadedProgress = true }))
         }
     }
 
@@ -163,11 +167,55 @@ class SubjectPresenter(private val context: VideoActivity){
             subjectView.linkedSubjectsAdapter.setNewData(it)
             //Log.v("list", it.toString())
         }, {}))
+
+        var commentPage = 1
+        subjectView.commentAdapter.setEnableLoadMore(true)
+        subjectView.commentAdapter.setOnLoadMoreListener({
+            loadComment(subject, commentPage)
+            commentPage++
+        }, context.comment_list)
+        loadComment(subject, commentPage)
+        commentPage++
     }
 
-
+    private fun loadComment(subject: Subject, page: Int){
+        if(page == 1)
+            subjectView.commentAdapter.setNewData(null)
+        Bangumi.getComments(subject, page).enqueue(ApiHelper.buildCallback(context, {
+            if(it?.isEmpty() == true)
+                subjectView.commentAdapter.loadMoreEnd()
+            else{
+                subjectView.commentAdapter.loadMoreComplete()
+                subjectView.commentAdapter.addData(it)
+            }
+        }, {subjectView.commentAdapter.loadMoreFail()}))
+    }
 
     private fun refreshLines(subject: Subject){
+        val info = parseInfoModel.getInfo(subject)
+        context.tv_lines.text = info?.video?.let{ context.resources.getStringArray(R.array.parse_type)[it.type]}?:context.resources.getString(R.string.lines)
+
+        context.cl_lines.setOnLongClickListener {
+            val view = context.layoutInflater.inflate(R.layout.dialog_edit_lines, context.cl_lines, false)
+            info?.let{
+                view.item_api.setText(it.api)
+                view.item_video_type.setSelection(it.video?.type?:0)
+                view.item_video_id.setText(it.video?.id)
+                view.item_danmaku_type.setSelection(it.danmaku?.type?:0)
+                view.item_danmaku_id.setText(it.danmaku?.id)
+            }
+            AlertDialog.Builder(context)
+                    .setView(view)
+                    .setPositiveButton("提交"){ _: DialogInterface, _: Int ->
+                        val parseInfo = ParseInfo(view.item_api.text.toString(),
+                                ParseInfo.ParseItem(view.item_video_type.selectedItemId.toInt(), view.item_video_id.text.toString()),
+                                ParseInfo.ParseItem(view.item_danmaku_type.selectedItemId.toInt(), view.item_danmaku_id.text.toString()))
+                        parseInfoModel.saveInfo(subject, parseInfo)
+                        refreshLines(subject)
+                    }.show()
+            true
+        }
+
         val dateList = subject.air_date?.split("-") ?: return
         val year = dateList.getOrNull(0)?.toIntOrNull()?:0
         val month = dateList.getOrNull(1)?.toIntOrNull()?:1
@@ -215,29 +263,6 @@ class SubjectPresenter(private val context: VideoActivity){
                 }
             }
         }, {}))
-        val info = parseInfoModel.getInfo(subject)
-        context.tv_lines.text = info?.video?.let{ context.resources.getStringArray(R.array.parse_type)[it.type]}?:context.resources.getString(R.string.lines)
-
-        context.cl_lines.setOnLongClickListener {
-            val view = context.layoutInflater.inflate(R.layout.dialog_edit_lines, context.cl_lines, false)
-            info?.let{
-                view.item_api.setText(it.api)
-                view.item_video_type.setSelection(it.video?.type?:0)
-                view.item_video_id.setText(it.video?.id)
-                view.item_danmaku_type.setSelection(it.danmaku?.type?:0)
-                view.item_danmaku_id.setText(it.danmaku?.id)
-            }
-            AlertDialog.Builder(context)
-                    .setView(view)
-                    .setPositiveButton("提交"){ _: DialogInterface, _: Int ->
-                        val parseInfo = ParseInfo(view.item_api.text.toString(),
-                                ParseInfo.ParseItem(view.item_video_type.selectedItemId.toInt(), view.item_video_id.text.toString()),
-                                ParseInfo.ParseItem(view.item_danmaku_type.selectedItemId.toInt(), view.item_danmaku_id.text.toString()))
-                        parseInfoModel.saveInfo(subject, parseInfo)
-                        refreshLines(subject)
-                    }.show()
-            true
-        }
     }
 
     private fun refreshCollection(subject: Subject){
