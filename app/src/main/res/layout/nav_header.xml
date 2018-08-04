@@ -11,7 +11,7 @@
     <ImageView
             android:layout_width="250dp"
             android:layout_height="250dp"
-            app:srcCompat="@drawable/ic_splash"
+            app:srcCompat="@drawable/ic_logo"
             android:tint="?colorPrimaryForeground"
             android:tintMode="src_in"
             app:layout_constraintEnd_toEndOf="parent"
@@ -20,7 +20,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintVertical_bias="0.25"
             app:layout_constraintHorizontal_bias="0.90"
-            android:layout_marginStart="500dp"
+            android:layout_marginStart="400dp"
             tools:ignore="ContentDescription"/>
 
     <com.github.siyamed.shapeimageview.CircularImageView

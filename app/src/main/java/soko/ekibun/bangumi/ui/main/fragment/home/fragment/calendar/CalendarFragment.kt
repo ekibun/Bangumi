@@ -1,7 +1,8 @@
-package soko.ekibun.bangumi.ui.main.fragment.calendar
+package soko.ekibun.bangumi.ui.main.fragment.home.fragment.calendar
 
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
+import android.util.Log
 import android.view.Menu
 import android.view.View
 import com.google.gson.reflect.TypeToken
@@ -12,14 +13,13 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Calendar
-import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
+import soko.ekibun.bangumi.ui.main.fragment.home.fragment.HomeTabFragment
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.util.JsonUtil
 
-class CalendarFragment: DrawerFragment(R.layout.content_calendar) {
-    override val showTab: Boolean = false
+class CalendarFragment: HomeTabFragment(R.layout.content_calendar) {
     override val titleRes: Int = R.string.calendar
-
+    override val iconRes: Int = R.drawable.ic_calendar
 
     val api by lazy { Bangumi.createInstance() }
     private val calendarListAdapter = CalendarAdapter()
@@ -91,7 +91,7 @@ class CalendarFragment: DrawerFragment(R.layout.content_calendar) {
 
     override fun onPrepareOptionsMenu(menu: Menu) {
         menu.findItem(R.id.action_search)?.isVisible = true
-        menu.findItem(R.id.action_type)?.isVisible = false
+        //menu.findItem(R.id.action_type)?.isVisible = false
         super.onPrepareOptionsMenu(menu)
     }
 }

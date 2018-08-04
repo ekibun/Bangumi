@@ -6,7 +6,7 @@
           android:icon="@drawable/ic_search"
           android:title="@string/search_hint"
           app:showAsAction="ifRoom"/>
-    <item android:id="@+id/action_type"
+    <!--<item android:id="@+id/action_type"
           android:title=""
-          app:showAsAction="ifRoom"/>
+          app:showAsAction="ifRoom"/>-->
 </menu>

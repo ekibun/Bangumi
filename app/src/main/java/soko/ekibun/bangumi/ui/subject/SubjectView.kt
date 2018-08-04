@@ -21,7 +21,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectProgress
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
-import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarAdapter
+import soko.ekibun.bangumi.ui.main.fragment.home.fragment.calendar.CalendarAdapter
 import soko.ekibun.bangumi.util.JsonUtil
 
 class SubjectView(private val context: SubjectActivity){

@@ -19,7 +19,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectProgress
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
-import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarAdapter
+import soko.ekibun.bangumi.ui.main.fragment.home.fragment.calendar.CalendarAdapter
 import soko.ekibun.bangumi.ui.subject.*
 import soko.ekibun.bangumi.util.JsonUtil
 
@@ -90,8 +90,8 @@ class SubjectView(private val context: VideoActivity){
         detail.item_info.text = parseSubject(subject)
 
         subject.rating?.let {
-            context.item_score.text = it.score.toString()
-            context.item_score_count.text = context.getString(R.string.rate_count, it.total)
+            detail.item_score.text = it.score.toString()
+            detail.item_score_count.text = context.getString(R.string.rate_count, it.total)
         }
         Glide.with(context)
                 .applyDefaultRequestOptions(RequestOptions.placeholderOf(detail.item_cover.drawable))

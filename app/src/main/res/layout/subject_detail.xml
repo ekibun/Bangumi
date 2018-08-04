@@ -9,7 +9,8 @@
         android:paddingBottom="0dp"
         android:layout_height="wrap_content"
         android:transitionName="container">
-    <ImageView
+    <com.github.siyamed.shapeimageview.RoundedImageView
+            app:siRadius="8dp"
             android:id="@+id/item_cover"
             android:transitionName="cover"
             android:layout_width="75dp"

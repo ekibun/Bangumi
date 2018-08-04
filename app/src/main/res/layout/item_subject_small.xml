@@ -13,7 +13,8 @@
         android:transitionName="container"
         tools:ignore="RtlHardcoded,HardcodedText">
 
-    <ImageView
+    <com.github.siyamed.shapeimageview.RoundedImageView
+            app:siRadius="8dp"
             android:id="@+id/item_cover"
             android:transitionName="cover"
             android:layout_width="75dp"

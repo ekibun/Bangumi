@@ -1,4 +1,4 @@
-package soko.ekibun.bangumi.ui.main.fragment.collection
+package soko.ekibun.bangumi.ui.main.fragment.home.fragment.collection
 
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions

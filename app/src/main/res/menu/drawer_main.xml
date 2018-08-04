@@ -5,13 +5,9 @@
 
     <group android:checkableBehavior="single">
         <item
-                android:id="@+id/nav_chase"
-                android:icon="@drawable/ic_heart"
-                android:title="@string/chase_bangumi"/>
-        <item
-                android:id="@+id/nav_calendar"
-                android:icon="@drawable/ic_calendar"
-                android:title="@string/calendar"/>
+                android:id="@+id/nav_home"
+                android:icon="@drawable/ic_home"
+                android:title="@string/home"/>
         <item
                 android:id="@+id/nav_index"
                 android:icon="@drawable/ic_explore"

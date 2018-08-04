@@ -1,4 +1,4 @@
-package soko.ekibun.bangumi.ui.main.fragment.calendar
+package soko.ekibun.bangumi.ui.main.fragment.home.fragment.calendar
 
 import android.support.v7.widget.RecyclerView
 import com.bumptech.glide.Glide

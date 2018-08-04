@@ -5,18 +5,19 @@ import android.support.v4.view.ViewPager
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
+import kotlinx.android.synthetic.main.content_index.*
 import retrofit2.Call
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
-import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
+import soko.ekibun.bangumi.ui.main.fragment.home.fragment.collection.SubjectTypeView
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 
 class IndexPagerAdapter(val fragment: IndexFragment, private val pager: ViewPager) : PagerAdapter(){
+    private val subjectTypeView = SubjectTypeView(fragment.item_type) { reset() }
 
     private val pageIndex = HashMap<Int, Int>()
     private val items = LinkedHashMap<Int, Pair<SubjectAdapter, SwipeRefreshLayout>>(10, 0.75f, true)
@@ -52,7 +53,7 @@ class IndexPagerAdapter(val fragment: IndexFragment, private val pager: ViewPage
         return PagerAdapter.POSITION_NONE
     }
 
-    fun reset(){
+    private fun reset(){
         pageIndex.clear()
         items.clear()
         pager.adapter?.notifyDataSetChanged()
@@ -74,7 +75,7 @@ class IndexPagerAdapter(val fragment: IndexFragment, private val pager: ViewPage
             item.first.setNewData(null)
             item.second.isRefreshing = true
         }
-        indexCalls[position] = Bangumi.browserAirTime(fragment.typeList[fragment.selectedType]?.second?: SubjectType.NAME_ANIME, year, month, page + 1)
+        indexCalls[position] = Bangumi.browserAirTime(subjectTypeView.getTypeName(), year, month, page + 1)
         item.first.isUseEmpty(false)
         indexCalls[position]?.enqueue(ApiHelper.buildCallback(fragment.context, {
             item.first.isUseEmpty(true)
@@ -100,7 +101,7 @@ class IndexPagerAdapter(val fragment: IndexFragment, private val pager: ViewPage
     }
 
     override fun getPageTitle(pos: Int): CharSequence{
-        return "${pos/12 + 1000}\n${pos%12+1}"
+        return "${pos/12 + 1000}\n${pos%12+1}月"
     }
 
     override fun isViewFromObject(view: View, `object`: Any): Boolean {

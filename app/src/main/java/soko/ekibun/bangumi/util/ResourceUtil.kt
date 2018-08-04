@@ -1,7 +1,9 @@
 package soko.ekibun.bangumi.util
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.StateListDrawable
 import android.support.annotation.AttrRes
 import android.support.annotation.ColorInt
 import android.support.annotation.DrawableRes
@@ -11,6 +13,12 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 object ResourceUtil{
+    fun getTintDrawable(context: Context, @DrawableRes resId: Int, colors: ColorStateList?): Drawable{
+        val icon = context.resources.getDrawable(resId, context.theme)
+        icon.setTintList(colors)
+        return icon
+    }
+
     fun getDrawable(context: Context, @DrawableRes resId: Int): Drawable {
         return context.resources.getDrawable(resId, context.theme)
     }

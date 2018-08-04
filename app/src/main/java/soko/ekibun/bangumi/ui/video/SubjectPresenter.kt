@@ -111,6 +111,10 @@ class SubjectPresenter(private val context: VideoActivity){
             subjectView.episodeDetailAdapter.data[position]?.t?.let{ openEpisode(it, subject) }
             true
         }
+
+        subjectView.commentAdapter.setOnItemClickListener { _, _, position ->
+            WebActivity.launchUrl(context, subjectView.commentAdapter.data[position].user?.url)
+        }
     }
 
     @SuppressLint("SetTextI18n")

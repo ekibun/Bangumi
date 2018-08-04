@@ -8,38 +8,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:openDrawer="start">
-    <RelativeLayout
+    <FrameLayout
+            android:id="@+id/content_frame"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:animateLayoutChanges="true">
-        <android.support.design.widget.AppBarLayout
-                android:id="@+id/app_bar"
-                android:layout_height="wrap_content"
-                android:layout_width="match_parent"
-                android:background="?colorPrimaryBackground"
-                android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-                android:animateLayoutChanges="true">
-            <android.support.v7.widget.Toolbar
-                    android:id="@+id/toolbar"
-                    android:layout_width="match_parent"
-                    android:layout_height="?attr/actionBarSize"
-                    app:contentInsetStart="0dp"
-                    app:contentInsetStartWithNavigation="0dp"
-                    app:popupTheme="@style/AppTheme.PopupOverlay"/>
-            <com.nshmura.recyclertablayout.RecyclerTabLayout
-                    android:id="@+id/tab_layout"
-                    android:visibility="gone"
-                    app:rtl_tabOnScreenLimit="5"
-                    app:rtl_tabIndicatorColor="?android:textColorPrimary"
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"/>
-        </android.support.design.widget.AppBarLayout>
-        <FrameLayout
-                android:id="@+id/content_frame"
-                android:layout_below="@id/app_bar"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
-    </RelativeLayout>
+            android:layout_height="match_parent"/>
 
     <android.support.design.widget.NavigationView
             android:id="@+id/nav_view"

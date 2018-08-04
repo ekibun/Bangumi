@@ -3,7 +3,6 @@ package soko.ekibun.bangumi.ui.main
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.view.Menu
 import android.view.View
 import kotlinx.android.synthetic.main.activity_main.*
 import retrofit2.Call
@@ -15,7 +14,6 @@ import soko.ekibun.bangumi.api.bangumi.bean.UserInfo
 import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.ui.web.WebActivity
-import soko.ekibun.bangumi.ui.web.WebActivity.Companion.REQUEST_AUTH
 import soko.ekibun.bangumi.util.JsonUtil
 
 class MainPresenter(private val context: MainActivity){
@@ -37,7 +35,7 @@ class MainPresenter(private val context: MainActivity){
     private val onLogout: ()->Unit = {
         userModel.saveToken(null)
         setUser(null)
-        drawerView.resetCollection()
+        drawerView.homeFragment.resetCollection()
         refreshUser()
     }
 
@@ -54,7 +52,7 @@ class MainPresenter(private val context: MainActivity){
     fun refreshUser(){
         userCall?.cancel()
         setUser(null)
-        drawerView.resetCollection()
+        drawerView.homeFragment.resetCollection()
 
         val token = userModel.getToken()
         context.nav_view.menu.findItem(R.id.nav_logout).isVisible = token != null
@@ -68,15 +66,10 @@ class MainPresenter(private val context: MainActivity){
         }
     }
 
-    fun onPrepareOptionsMenu(menu: Menu) {
-        drawerView.onPrepareOptionsMenu(menu)
-    }
-
     private var user: UserInfo? = null
     private fun setUser(user: UserInfo?){
         this.user = user
         userView.setUser(user)
-        //drawerView.setUser(user)
     }
 
     fun onSaveInstanceState(outState: Bundle){
@@ -95,7 +88,7 @@ class MainPresenter(private val context: MainActivity){
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode == Activity.RESULT_OK)
             when (requestCode) {
-                REQUEST_AUTH -> {
+                WebActivity.REQUEST_AUTH -> {
                     val code = data?.getStringExtra(WebActivity.RESULT_CODE)
                     if (code != null) {
                         tokenCall?.cancel()

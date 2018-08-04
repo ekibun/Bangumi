@@ -13,16 +13,16 @@ import soko.ekibun.bangumi.ui.search.SearchActivity
 import soko.ekibun.bangumi.ui.view.BackgroundWebView
 
 class MainActivity : AppCompatActivity() {
-    private val mainPresenter by lazy {
-        MainPresenter(this)
-    }
 
+    private val mainPresenter by lazy{ MainPresenter(this) }
+
+    private val backgroundWebView by lazy{ BackgroundWebView(this) }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         ThemeModel.setTheme(this, ThemeModel(this).getTheme())
-
+        backgroundWebView.loadUrl(Bangumi.SERVER)
         if(savedInstanceState?.containsKey("user") != true)
             mainPresenter.refreshUser()
     }
@@ -30,11 +30,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.action_main, menu)
         return true
-    }
-
-    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        mainPresenter.onPrepareOptionsMenu(menu)
-        return super.onPrepareOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -57,12 +52,6 @@ class MainActivity : AppCompatActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         mainPresenter.onSaveInstanceState(outState)
-    }
-
-    private val backgroundWebView by lazy{ BackgroundWebView(this) }
-    override fun onStart() {
-        super.onStart()
-        backgroundWebView.loadUrl(Bangumi.SERVER)
     }
 
     companion object{
