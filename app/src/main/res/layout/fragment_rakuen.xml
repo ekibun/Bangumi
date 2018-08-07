@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    <android.support.design.widget.TabLayout
+            android:id="@+id/item_tabs"
+            app:tabGravity="fill"
+            app:tabMode="fixed"
+            app:tabMaxWidth="0dp"
+            android:layout_width="match_parent"
+            app:tabSelectedTextColor="?colorAccent"
+            android:layout_height="48dp"/>
+    <android.support.v4.view.ViewPager
+            android:id="@+id/item_pager"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toBottomOf="@+id/item_tabs"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+</android.support.constraint.ConstraintLayout>

@@ -2,6 +2,7 @@ package soko.ekibun.bangumi.ui.web
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
@@ -149,7 +150,7 @@ class WebActivity : AppCompatActivity() {
             context.startActivityForResult(intent, REQUEST_AUTH)
         }
 
-        fun launchUrl(context: Activity, page: String?){
+        fun launchUrl(context: Context, page: String?){
             if(page.isNullOrEmpty()) return
             val intent = Intent(context, WebActivity::class.java)
             intent.putExtra(OPEN_URL, page)

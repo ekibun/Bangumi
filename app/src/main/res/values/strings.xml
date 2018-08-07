@@ -58,6 +58,16 @@
     <string name="open_browser">在浏览器中打开</string>
     <string name="index">索引</string>
     <string name="home">主页</string>
+    <string name="rakuen">超展开</string>
+    <string name="timeline">时空管理局</string>
+
+    <string-array name="topic_list">
+        <item>全部</item>
+        <item>小组</item>
+        <item>条目</item>
+        <item>章节</item>
+        <item>人物</item>
+    </string-array>
 
     <string-array name="collection_status">
         <item>想看</item>

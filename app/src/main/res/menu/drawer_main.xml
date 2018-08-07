@@ -9,8 +9,12 @@
                 android:icon="@drawable/ic_home"
                 android:title="@string/home"/>
         <item
+                android:id="@+id/nav_calendar"
+                android:icon="@drawable/ic_calendar"
+                android:title="@string/calendar"/>
+        <item
                 android:id="@+id/nav_index"
-                android:icon="@drawable/ic_explore"
+                android:icon="@drawable/ic_widgets"
                 android:title="@string/index"/>
     </group>
 

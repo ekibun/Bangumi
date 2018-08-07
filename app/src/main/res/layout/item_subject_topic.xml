@@ -20,13 +20,12 @@
             android:scaleType="centerCrop"
             tools:ignore="ContentDescription"/>
     <TextView
-            android:id="@+id/item_title"
+            android:id="@+id/item_user"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textSize="14sp"
-            android:textColor="?android:textColorPrimary"
+            android:textSize="12sp"
             android:padding="1dp"
             app:layout_constraintLeft_toRightOf="@+id/item_avatar"
             app:layout_constraintRight_toRightOf="parent"
@@ -39,14 +38,26 @@
             android:textSize="10sp"
             android:padding="1dp"
             android:ellipsize="end"
-            android:maxLines="1"
+            android:maxLines="4"
             app:layout_constraintLeft_toRightOf="@+id/item_avatar"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/item_title"
+            app:layout_constraintTop_toBottomOf="@+id/item_user"
             android:layout_marginLeft="8dp" tools:ignore="SmallSp"/>
     <TextView
+            android:id="@+id/item_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:textColor="?android:textColorPrimary"
+            android:padding="1dp"
+            app:layout_constraintLeft_toRightOf="@+id/item_avatar"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/item_time"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+    <TextView
             android:alpha="0.5"
-            android:id="@+id/item_group"
+            android:id="@+id/item_comment"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textSize="12sp"
@@ -55,7 +66,7 @@
             android:padding="1dp"
             app:layout_constraintLeft_toRightOf="@+id/item_avatar"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/item_time"
+            app:layout_constraintTop_toBottomOf="@+id/item_title"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 

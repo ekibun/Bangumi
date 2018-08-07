@@ -9,7 +9,6 @@ import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.entity.SectionEntity
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_video.*
-import kotlinx.android.synthetic.main.subject_detail.*
 import kotlinx.android.synthetic.main.subject_blog.*
 import kotlinx.android.synthetic.main.subject_detail.view.*
 import kotlinx.android.synthetic.main.subject_episode.*
@@ -19,7 +18,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectProgress
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
-import soko.ekibun.bangumi.ui.main.fragment.home.fragment.calendar.CalendarAdapter
+import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarAdapter
 import soko.ekibun.bangumi.ui.subject.*
 import soko.ekibun.bangumi.util.JsonUtil
 

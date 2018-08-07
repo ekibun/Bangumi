@@ -15,6 +15,7 @@
 
     <com.github.siyamed.shapeimageview.RoundedImageView
             app:siRadius="8dp"
+            app:siBorderAlpha="0"
             android:id="@+id/item_cover"
             android:transitionName="cover"
             android:layout_width="75dp"
