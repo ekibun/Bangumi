@@ -116,7 +116,7 @@ interface Bangumi {
                               @CollectionStatusType.CollectionStatusType collection_status: String,
                               page: Int = 1
         ): Call<List<SubjectCollection>>{
-            val cookie = CookieManager.getInstance().getCookie(SERVER)
+            val cookie = CookieManager.getInstance().getCookie(SERVER)?:""
             return ApiHelper.buildHttpCall("$SERVER/$subject_type/list/$username/$collection_status?page=$page", mapOf("cookie" to cookie)){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<SubjectCollection>()
@@ -142,7 +142,7 @@ interface Bangumi {
         }
 
         fun getSubject(subject: Subject): Call<List<Subject>>{
-            val cookie = CookieManager.getInstance().getCookie(SERVER)
+            val cookie = CookieManager.getInstance().getCookie(SERVER)?:""
             return ApiHelper.buildHttpCall(subject.url?:"",mapOf("cookie" to cookie)){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<Subject>()
@@ -165,7 +165,7 @@ interface Bangumi {
         }
 
         fun getComments(subject: Subject, page: Int): Call<List<Comment>>{
-            val cookie = CookieManager.getInstance().getCookie(SERVER)
+            val cookie = CookieManager.getInstance().getCookie(SERVER)?:""
             return ApiHelper.buildHttpCall("${subject.url?:""}/comments?page=$page",mapOf("cookie" to cookie)){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<Comment>()
@@ -188,7 +188,7 @@ interface Bangumi {
         fun browserAirTime(@SubjectType.SubjectTypeName subject_type: String,
                             year: Int, month: Int,
                             page: Int = 1): Call<List<Subject>>{
-            val cookie = CookieManager.getInstance().getCookie(SERVER)
+            val cookie = CookieManager.getInstance().getCookie(SERVER)?:""
             return ApiHelper.buildHttpCall("$SERVER/$subject_type/browser/airtime/$year-$month?page=$page",mapOf("cookie" to cookie)){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<Subject>()
@@ -215,7 +215,7 @@ interface Bangumi {
         //超展开
         fun getTopics(type: String): Call<List<Topic>>{
             val url = "$SERVER/m" + if(type.isEmpty()) "" else "?type=$type"
-            val cookie = CookieManager.getInstance().getCookie(SERVER)
+            val cookie = CookieManager.getInstance().getCookie(SERVER)?:""
             return ApiHelper.buildHttpCall(url,mapOf("cookie" to cookie)){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<Topic>()
