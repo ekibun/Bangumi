@@ -34,8 +34,6 @@ class MainPresenter(private val context: MainActivity){
 
     private val onLogout: ()->Unit = {
         userModel.saveToken(null)
-        setUser(null)
-        drawerView.homeFragment.resetCollection()
         refreshUser()
     }
 
@@ -52,7 +50,7 @@ class MainPresenter(private val context: MainActivity){
     fun refreshUser(){
         userCall?.cancel()
         setUser(null)
-        drawerView.homeFragment.resetCollection()
+        drawerView.homeFragment.collectionFragment()?.reset()
 
         val token = userModel.getToken()
         context.nav_view.menu.findItem(R.id.nav_logout).isVisible = token != null

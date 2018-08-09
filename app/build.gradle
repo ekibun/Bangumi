@@ -50,6 +50,5 @@ dependencies {
     implementation 'com.android.support:customtabs:28.0.0-rc01'
     implementation 'com.zhy:base-adapter:3.0.3'
     implementation 'com.xiaofeng.android:flowlayoutmanager:1.2.3.2'
-    implementation 'me.codeboy.android:align-text-view:2.3.2'
     implementation 'com.nshmura:recyclertablayout:1.5.0'
 }

@@ -11,6 +11,7 @@ import soko.ekibun.bangumi.util.ResourceUtil
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import soko.ekibun.bangumi.ui.main.fragment.home.fragment.collection.CollectionFragment
 
 
 class HomeFragment: DrawerFragment(R.layout.content_home){
@@ -41,7 +42,7 @@ class HomeFragment: DrawerFragment(R.layout.content_home){
         }
     }
 
-    fun resetCollection() {
-        (frame_pager?.adapter as? HomePagerAdapter)?.collectionFragment?.reset()
+    fun collectionFragment(): CollectionFragment?{
+        return (frame_pager?.adapter as? HomePagerAdapter)?.collectionFragment
     }
 }
