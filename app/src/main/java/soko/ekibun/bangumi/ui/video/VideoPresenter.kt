@@ -1,6 +1,7 @@
 package soko.ekibun.bangumi.ui.video
 
 import android.content.pm.ActivityInfo
+import android.support.design.widget.AppBarLayout
 import android.support.design.widget.Snackbar
 import android.view.View
 import com.google.android.exoplayer2.ExoPlaybackException
@@ -106,9 +107,9 @@ class VideoPresenter(private val context: VideoActivity){
     }
 
     init{
-        context.app_bar.addOnOffsetChangedListener { _, verticalOffset ->
+        context.app_bar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener{ _, verticalOffset ->
             context.toolbar.visibility = if(verticalOffset != 0 || controller.isShow || context.video_surface_container.visibility != View.VISIBLE) View.VISIBLE else View.INVISIBLE
-        }
+        })
     }
 
     private var loadVideoInfo: Boolean? = null

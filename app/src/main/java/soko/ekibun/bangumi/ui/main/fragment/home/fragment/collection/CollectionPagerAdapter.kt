@@ -20,7 +20,7 @@ import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 
 class CollectionPagerAdapter(context: Context, val fragment: CollectionFragment, private val pager: ViewPager) : PagerAdapter(){
-    private val tabList = context.resources.getStringArray(R.array.collection_status)!!
+    private val tabList = context.resources.getStringArray(R.array.collection_status)
     private val subjectTypeView = SubjectTypeView(fragment.item_type) { reset() }
     private val api by lazy { Bangumi.createInstance() }
 

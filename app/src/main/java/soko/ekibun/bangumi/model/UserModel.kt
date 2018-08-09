@@ -21,7 +21,7 @@ class UserModel(context: Context){
 
     fun getToken():AccessToken?{
         try{
-            return JsonUtil.toEntity(sp.getString(PREF_TOKEN, ""), AccessToken::class.java)
+            return JsonUtil.toEntity(sp.getString(PREF_TOKEN, "")!!, AccessToken::class.java)
         }catch (e: Exception){ }
         return null
     }

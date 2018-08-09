@@ -58,7 +58,7 @@ class DrawerView(private val context: MainActivity, onNightModeChange: (Boolean)
     private fun select(id: Int){
         checkedId = id
         context.supportFragmentManager.beginTransaction()
-                .replace(R.id.content_frame, fragments[id]).commit()
+                .replace(R.id.content_frame, fragments[id]!!).commit()
         context.nav_view.setCheckedItem(id)
         context.invalidateOptionsMenu()
     }

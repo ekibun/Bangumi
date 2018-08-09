@@ -4,8 +4,6 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:divider="@drawable/divider"
-        android:showDividers="middle"
         android:orientation="vertical">
     <android.support.design.widget.AppBarLayout
             android:id="@+id/app_bar"
@@ -41,6 +39,8 @@
             app:tabGravity="fill"
             app:tabMode="fixed"
             app:tabMaxWidth="0dp"
+            android:elevation="12dp"
+            android:background="?android:colorBackground"
             app:tabTextAppearance="@style/IconTabTextAppearance"
             app:tabSelectedTextColor="?colorAccent"
             app:tabIndicatorColor="@android:color/transparent"

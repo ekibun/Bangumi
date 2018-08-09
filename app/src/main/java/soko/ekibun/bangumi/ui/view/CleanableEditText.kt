@@ -17,7 +17,7 @@ class CleanableEditText constructor(context: Context, attrs: AttributeSet) : App
     private var onBackPress: (()->Unit) = {}
 
     override fun onKeyPreIme(keyCode: Int, event: KeyEvent?): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK && text.isEmpty()) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && text.isNullOrEmpty()) {
             onBackPress()
         }
         return false

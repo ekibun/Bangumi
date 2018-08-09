@@ -238,14 +238,14 @@ class SubjectPresenter(private val context: VideoActivity){
                 popList.isModal = true
                 popList.show()
 
-                popList.listView.setOnItemClickListener { _, _, position, _ ->
+                popList.listView?.setOnItemClickListener { _, _, position, _ ->
                     try{
                         CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(list[position].parseUrl()))
                     }catch (e: Exception){ e.printStackTrace() }
                     popList.dismiss()
                 }
 
-                popList.listView.setOnItemLongClickListener { _, _, position, _ ->
+                popList.listView?.setOnItemLongClickListener { _, _, position, _ ->
                     ParseModel.processUrl(list[position].parseUrl()){context.runOnUiThread {
                         val view = context.layoutInflater.inflate(R.layout.dialog_edit_lines, context.cl_lines, false)
                         view.item_video_type.setSelection(it.type)

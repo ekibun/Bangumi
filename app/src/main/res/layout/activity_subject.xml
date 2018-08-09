@@ -25,7 +25,8 @@
             <RelativeLayout
                     android:fitsSystemWindows="true"
                     android:layout_width="match_parent"
-                    android:layout_height="170dp"
+                    android:layout_height="match_parent"
+                    android:paddingBottom="20dp"
                     app:layout_collapseMode="parallax"
                     app:layout_collapseParallaxMultiplier="0.2">
                 <ImageView

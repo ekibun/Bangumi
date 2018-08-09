@@ -17,7 +17,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.ui.web.WebActivity
 
 class TopicPagerAdapter(context: Context, val fragment: TopicFragment, private val pager: ViewPager) : PagerAdapter(){
-    private val tabList = context.resources.getStringArray(R.array.topic_list)!!
+    private val tabList = context.resources.getStringArray(R.array.topic_list)
 
     private val items = HashMap<Int, Pair<TopicAdapter, SwipeRefreshLayout>>()
     override fun instantiateItem(container: ViewGroup, position: Int): Any {

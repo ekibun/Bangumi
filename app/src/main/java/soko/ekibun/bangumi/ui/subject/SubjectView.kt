@@ -1,5 +1,6 @@
 package soko.ekibun.bangumi.ui.subject
 
+import android.support.design.widget.AppBarLayout
 import android.support.v7.widget.LinearLayoutManager
 import android.view.View
 import android.view.animation.AnimationUtils
@@ -36,13 +37,13 @@ class SubjectView(private val context: SubjectActivity){
     val detail: LinearLayout = context.subject_detail
 
     init{
-        context.app_bar.addOnOffsetChangedListener { appBarLayout, verticalOffset ->
+        context.app_bar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener{ appBarLayout, verticalOffset ->
             val ratio = Math.abs(verticalOffset.toFloat() / appBarLayout.totalScrollRange)
             context.item_scrim.alpha = ratio
             context.item_subject.alpha = 1 - ratio
             context.item_buttons.translationY = -(context.toolbar.height - context.item_buttons.height * 9 / 8) * ratio / 2 - context.item_buttons.height / 16
             context.toolbar.currentContentInsetRight
-        }
+        })
 
         context.episode_list.adapter = episodeAdapter
         val layoutManager = LinearLayoutManager(context)

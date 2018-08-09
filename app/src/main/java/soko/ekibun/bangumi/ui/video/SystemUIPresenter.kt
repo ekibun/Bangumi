@@ -14,7 +14,8 @@ class SystemUIPresenter(private val context: VideoActivity){
     }
 
     init{
-        context.window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+        if(Build.VERSION.SDK_INT >= 28)
+            context.window.attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         //context.window.statusBarColor = Color.BLACK
         //context.window.navigationBarColor = Color.BLACK
         context.window.decorView.setOnSystemUiVisibilityChangeListener{
@@ -53,6 +54,8 @@ class SystemUIPresenter(private val context: VideoActivity){
     private fun setSystemUiVisibility(visibility: Visibility){
         when(visibility){
             SystemUIPresenter.Visibility.FULLSCREEN -> {
+                context.root_layout.fitsSystemWindows=false
+                context.app_bar.fitsSystemWindows=false
                 context.toolbar_layout.fitsSystemWindows = false
                 //context.window.statusBarColor = Color.TRANSPARENT
                 //context.window.navigationBarColor = Color.TRANSPARENT
@@ -65,6 +68,8 @@ class SystemUIPresenter(private val context: VideoActivity){
                         or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
             }
             SystemUIPresenter.Visibility.IMMERSIVE -> {
+                context.root_layout.fitsSystemWindows=true
+                context.app_bar.fitsSystemWindows=true
                 context.toolbar_layout.fitsSystemWindows = true
                 //context.window.statusBarColor = Color.TRANSPARENT
                 //context.window.navigationBarColor = Color.TRANSPARENT

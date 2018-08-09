@@ -13,11 +13,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 object ResourceUtil{
-    fun getTintDrawable(context: Context, @DrawableRes resId: Int, colors: ColorStateList?): Drawable{
-        val icon = context.resources.getDrawable(resId, context.theme)
-        icon.setTintList(colors)
-        return icon
-    }
 
     fun getDrawable(context: Context, @DrawableRes resId: Int): Drawable {
         return context.resources.getDrawable(resId, context.theme)

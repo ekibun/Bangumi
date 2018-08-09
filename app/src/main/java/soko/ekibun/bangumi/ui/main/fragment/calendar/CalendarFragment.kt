@@ -53,7 +53,7 @@ class CalendarFragment: DrawerFragment(R.layout.content_calendar) {
             loadCalendarList()
         }
         if(this.savedInstanceState != null){
-            calendar_list.layoutManager.onRestoreInstanceState(
+            calendar_list.layoutManager?.onRestoreInstanceState(
                     this.savedInstanceState!!.getParcelable("CalendarList"))
             val json = this.savedInstanceState!!.getString("CalendarData","")
             calendarListAdapter.setNewData(JsonUtil.toEntity(json, object: TypeToken<List<CalendarAdapter.CalendarSection>>(){}.type))

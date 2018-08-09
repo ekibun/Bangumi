@@ -20,7 +20,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintVertical_bias="0.25"
             app:layout_constraintHorizontal_bias="0.90"
-            android:layout_marginStart="400dp"
+            android:layout_marginStart="360dp"
             tools:ignore="ContentDescription"/>
 
     <com.github.siyamed.shapeimageview.CircularImageView
