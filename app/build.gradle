@@ -4,6 +4,10 @@ apply plugin: 'kotlin-android'
 
 apply plugin: 'kotlin-android-extensions'
 
+static def getAlphaVersionName(){
+    "alpha"+ new Date().format("yyyyMMdd")
+}
+
 android {
     compileSdkVersion 28
     buildToolsVersion "28.0.2"
@@ -12,7 +16,7 @@ android {
         minSdkVersion 22
         targetSdkVersion 28
         versionCode 1
-        versionName "alpha20180809"
+        versionName getAlphaVersionName()
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

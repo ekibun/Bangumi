@@ -1,39 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/item_layout"
+        android:clickable="true"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:focusable="true"
         android:transitionName="container">
-    <LinearLayout android:layout_width="70dp"
-                  android:id="@+id/item_date"
-                  android:textSize="20sp"
-                  android:textAlignment="center"
-                  android:background="?android:colorBackground"
-                  android:layout_height="wrap_content"
-                  android:orientation="vertical">
-        <TextView android:layout_width="wrap_content"
-                  android:id="@+id/item_date_1"
-                  android:textSize="20sp"
-                  android:layout_gravity="center"
-                  android:background="?android:colorBackground"
-                  android:layout_height="wrap_content" android:text="8-12"/>
-        <TextView android:layout_width="wrap_content"
-                  android:id="@+id/item_date_2"
-                  android:textSize="12sp"
-                  android:textAlignment="center"
-                  android:layout_gravity="center"
-                  android:background="?android:colorBackground"
-                  android:layout_height="wrap_content" android:text="周二(火)"/>
-    </LinearLayout>
-    <TextView android:layout_width="0dp"
+    <TextView android:layout_width="58dp"
               android:id="@+id/item_time"
               android:textAlignment="center"
-              android:layout_gravity="center"
               android:layout_height="wrap_content"
-              app:layout_constraintTop_toBottomOf="@+id/item_date"
-              app:layout_constraintEnd_toEndOf="@+id/item_date"
-              app:layout_constraintStart_toStartOf="@+id/item_date" android:text="21:00"/>
+              android:paddingTop="8dp"/>
     <android.support.constraint.ConstraintLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -41,12 +22,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:padding="8dp"
-            android:clickable="true"
-            android:id="@+id/item_layout"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:focusable="true"
             tools:ignore="RtlHardcoded,HardcodedText"
-            app:layout_constraintStart_toEndOf="@+id/item_date"
+            app:layout_constraintStart_toEndOf="@+id/item_time"
             app:layout_constraintEnd_toEndOf="parent">
 
         <com.github.siyamed.shapeimageview.RoundedImageView
