@@ -1,41 +1,57 @@
 package soko.ekibun.bangumi.ui.main.fragment.calendar
 
 import android.support.v7.widget.RecyclerView
+import android.view.View
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseSectionQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
 import com.chad.library.adapter.base.entity.SectionEntity
 import com.oushangfeng.pinnedsectionitemdecoration.utils.FullSpanUtil
-import kotlinx.android.synthetic.main.header_calendar.view.*
+import kotlinx.android.synthetic.main.item_calendar.view.*
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.bangumi.bean.Subject
+import soko.ekibun.bangumi.api.tinygrail.bean.OnAir
 import soko.ekibun.bangumi.util.ResourceUtil
+import java.lang.StringBuilder
 import java.util.*
 
 class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
         BaseSectionQuickAdapter<CalendarAdapter.CalendarSection, BaseViewHolder>
-        (R.layout.item_calendar, R.layout.header_calendar, data) {
+        (R.layout.item_calendar, R.layout.item_calendar, data) {
     override fun convert(helper: BaseViewHolder, item: CalendarSection) {
-        helper.setText(R.id.item_title, if(item.t.name_cn.isNullOrEmpty()) item.t.name else item.t.name_cn)
-        helper.setText(R.id.item_name_jp, item.t.name)
+        helper.setText(R.id.item_title, if(item.t.subject.name_cn.isNullOrEmpty()) item.t.subject.name else item.t.subject.name_cn)
+        helper.setText(R.id.item_name_jp, if(item.t.episode?.name_cn.isNullOrEmpty()) item.t.episode?.name?:"" else item.t.episode?.name_cn)
         helper.addOnClickListener(R.id.item_layout)
         Glide.with(helper.itemView)
-                .load(item.t.images?.common)
+                .load(item.t.subject.images?.common)
                 .apply(RequestOptions.errorOf(R.drawable.ic_404))
                 .into(helper.itemView.item_cover)
+        helper.itemView.item_time.text = if(item.showTime) item.time else ""
+        helper.itemView.item_date_2.visibility = View.GONE
+        helper.itemView.item_date_1.visibility = View.INVISIBLE
     }
 
     override fun convertHead(helper: BaseViewHolder, item: CalendarSection) {
-        helper.setText(R.id.item_date, weekSmall[item.week])
-        helper.setText(R.id.item_date_jp, weekJp[item.week])
+        convert(helper, item)
 
         val color = ResourceUtil.resolveColorAttr(helper.itemView.context,
-                if(currentWeek() == item.week) R.attr.colorPrimary else android.R.attr.textColorSecondary)
-        helper.itemView.item_date.setTextColor(color)
-        helper.itemView.item_date_jp.setTextColor(color)
+                if(getNowInt() == item.date) R.attr.colorPrimary else android.R.attr.textColorSecondary)
+        helper.itemView.item_date_1.setTextColor(color)
+        helper.itemView.item_date_2.setTextColor(color)
 
-        convert(helper, item)
+        helper.itemView.item_date_1.visibility = View.VISIBLE
+        helper.itemView.item_date_2.visibility = View.VISIBLE
+        helper.setText(R.id.item_time, item.time)
+        helper.setText(R.id.item_date_1, parseDate1(item.date))
+        helper.setText(R.id.item_date_2, parseDate2(item.date))
+    }
+
+    private fun parseDate1(date: Int): String{
+        return "${date/100%100}-${date%100}"
+    }
+    private fun parseDate2(date: Int): String{
+        val cal = getIntCalendar(date)
+        return "${weekSmall[getWeek(cal)]}(${weekJp[getWeek(cal)]})"
     }
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
@@ -48,7 +64,7 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
         FullSpanUtil.onViewAttachedToWindow(holder, this, SECTION_HEADER_VIEW)
     }
 
-    class CalendarSection(isHeader: Boolean, subject: Subject, var week: Int) : SectionEntity<Subject>(isHeader, ""){
+    class CalendarSection(isHeader: Boolean, subject: OnAir, var date: Int, var time: String, var showTime: Boolean) : SectionEntity<OnAir>(isHeader, ""){
         init{
             t = subject
         }
@@ -59,8 +75,17 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
         val weekSmall = listOf("", "周一", "周二", "周三", "周四", "周五", "周六", "周日")
         const val SECTION_HEADER = SECTION_HEADER_VIEW
 
-        fun currentWeek():Int{
-            val now = Calendar.getInstance()
+        fun getIntCalendar(date: Int):Calendar{
+            val cal = Calendar.getInstance()
+            cal.set(date/10000, date/100%100-1, date%100)
+            return cal
+        }
+
+        fun getCalendarInt(now: Calendar):Int{
+            return now.get(Calendar.YEAR)*10000 + (now.get(Calendar.MONTH)+1) * 100 + now.get(Calendar.DATE)
+        }
+
+        fun getWeek(now: Calendar): Int{
             val isFirstSunday = now.firstDayOfWeek == Calendar.SUNDAY
             var weekDay = now.get(Calendar.DAY_OF_WEEK)
             if (isFirstSunday) {
@@ -70,6 +95,15 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
                 }
             }
             return weekDay
+        }
+
+        fun getNowInt():Int{
+            return getCalendarInt(Calendar.getInstance())
+        }
+
+        fun currentWeek():Int{
+            val now = Calendar.getInstance()
+            return getWeek(now)
         }
     }
 }

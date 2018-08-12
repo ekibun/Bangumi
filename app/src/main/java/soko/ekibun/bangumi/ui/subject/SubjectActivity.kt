@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.View
@@ -57,7 +58,7 @@ class SubjectActivity : AppCompatActivity() {
         }
 
         private fun parseIntent(context: Context, subject: Subject): Intent {
-            val intent = Intent(context, SubjectActivity::class.java)
+            val intent = Intent(context.applicationContext, SubjectActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK // or Intent.FLAG_ACTIVITY_CLEAR_TOP
             intent.putExtra(EXTRA_SUBJECT, JsonUtil.toJson(subject))
             return intent
