@@ -15,7 +15,8 @@ object ParseModel{
             PptvParser(),
             TencentParser(),
             DilidiliParser(),
-            HalihaliParser())
+            HalihaliParser(),
+            BilibiliParser())
     fun getVideoInfo(siteId:Int, id: String, video: Episode): Call<Parser.VideoInfo> {
         parsers.forEach {
             if(it.siteId == siteId) {
@@ -50,6 +51,10 @@ object ParseModel{
 
     fun processUrl(url: String, callback: (ParseInfo.ParseItem)->Unit){
         when {
+            url.contains("bilibili.com") -> {
+                val vid = Regex("""([0-9]*)$""").find(url)?.groupValues?.get(1)?:return
+                callback(ParseInfo.ParseItem(ParseInfo.BILIBILI, vid))
+            }
             url.contains("halihali.cc") -> {
                 val vid = Regex("""halihali.cc/v/([^/]*)/""").find(url)?.groupValues?.get(1)?:return
                 callback(ParseInfo.ParseItem(ParseInfo.DILIDLILI, vid))

@@ -36,7 +36,9 @@ class IqiyiParser: Parser{
 
     override fun getVideo(webView: BackgroundWebView, api: String, video: Parser.VideoInfo): retrofit2.Call<String> {
         var url = api
-        if(url.endsWith("="))
+        if(url.isEmpty())
+            url = video.url
+        else if(url.endsWith("="))
             url += video.url
         return ApiHelper.buildWebViewCall(webView, url)
     }
@@ -79,10 +81,10 @@ class IqiyiParser: Parser{
             map
         }
 
-        private fun inflate(data: ByteArray): ByteArray {
+        fun inflate(data: ByteArray, nowrap: Boolean = false): ByteArray {
             var output: ByteArray
 
-            val inflater = Inflater()
+            val inflater = Inflater(nowrap)
             inflater.reset()
             inflater.setInput(data)
 

@@ -32,7 +32,9 @@ class TencentParser: Parser{
 
     override fun getVideo(webView: BackgroundWebView, api: String, video: Parser.VideoInfo): retrofit2.Call<String> {
         var url = api
-        if(url.endsWith("="))
+        if(url.isEmpty())
+            url = video.url.split(".html?")[0] + "/${video.id}.html"
+        else if(url.endsWith("="))
             url += video.url.split(".html?")[0] + "/${video.id}.html"
         return ApiHelper.buildWebViewCall(webView, url)
     }

@@ -34,7 +34,9 @@ class YoukuParser: Parser{
 
     override fun getVideo(webView: BackgroundWebView, api: String, video: Parser.VideoInfo): retrofit2.Call<String> {
         var url = api
-        if(url.endsWith("="))
+        if(url.isEmpty())
+            url = video.url
+        else if(url.endsWith("="))
             url += video.url
         return ApiHelper.buildWebViewCall(webView, url)
     }
