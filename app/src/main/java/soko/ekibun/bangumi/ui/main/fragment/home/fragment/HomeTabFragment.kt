@@ -13,5 +13,7 @@ abstract class HomeTabFragment(@LayoutRes private val resId: Int): Fragment(){
         return inflater.inflate(resId, container, false)
     }
 
+    abstract fun onSelect()
+
     var savedInstanceState:Bundle? = null
 }

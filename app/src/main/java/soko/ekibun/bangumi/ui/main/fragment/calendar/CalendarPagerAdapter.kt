@@ -3,10 +3,12 @@ package soko.ekibun.bangumi.ui.main.fragment.calendar
 import android.annotation.SuppressLint
 import android.support.v4.view.PagerAdapter
 import android.support.v4.view.ViewPager
+import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
+import kotlinx.android.synthetic.main.content_calendar.*
 import retrofit2.Call
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
@@ -24,8 +26,9 @@ import kotlin.collections.HashMap
 
 class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: ViewPager) : PagerAdapter(){
 
-    private fun getItem(position: Int): Pair<CalendarAdapter, RecyclerView>{
+    private fun getItem(position: Int): Pair<CalendarAdapter, SwipeRefreshLayout>{
         return items.getOrPut(position){
+            val swipeRefreshLayout = SwipeRefreshLayout(pager.context)
             val recyclerView = RecyclerView(pager.context)
             val adapter = CalendarAdapter()
             adapter.setOnItemChildClickListener { _, v, pos ->
@@ -34,11 +37,14 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
             recyclerView.adapter = adapter
             recyclerView.layoutManager = LinearLayoutManager(pager.context)
             recyclerView.isNestedScrollingEnabled = false
-            Pair(adapter, recyclerView)
+            swipeRefreshLayout.addView(recyclerView)
+            swipeRefreshLayout.tag = recyclerView
+            swipeRefreshLayout.setOnRefreshListener { loadCalendarList() }
+            Pair(adapter, swipeRefreshLayout)
         }
     }
 
-    private val items = LinkedHashMap<Int, Pair<CalendarAdapter, RecyclerView>>()
+    private val items = LinkedHashMap<Int, Pair<CalendarAdapter, SwipeRefreshLayout>>()
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
         val item = getItem(position)
         if(old == null)
@@ -73,10 +79,15 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
         return onAir
     }
 
+    var firstLoad = true
     private fun setOnAirList(it: Map<Int, Map<String,List<OnAir>>>){
+        val now = CalendarAdapter.getNowInt()
+        var dateIndex = 8
         it.toList().sortedBy { it.first }.forEachIndexed {i, date->
             var index = -1
             val item = getItem(i)
+            if(date.first == now)
+                dateIndex = i
             item.first.setNewData(null)
             date.second.toList().sortedBy { it.first }.forEach { time->
                 var isHeader = true
@@ -88,10 +99,14 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
                         item.first.addData(CalendarAdapter.CalendarSection(isHeader, it, date.first, time.first))
                         isHeader = false
                     } } }
-            (item.second.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(index-1, 0)
+            if(firstLoad)
+                ((item.second.tag as? RecyclerView)?.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(index-1, 0)
         }
         notifyDataSetChanged()
-        pager.currentItem = 7
+        if(firstLoad) {
+            pager.currentItem = dateIndex
+            firstLoad = false
+        }
     }
 
     private var calendarCall : Call<List<Calendar>>? = null
@@ -99,6 +114,7 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
     private var onAirCall : Call<Map<Int, Map<String, List<OnAir>>>>? = null
     @SuppressLint("UseSparseArrays")
     fun loadCalendarList(){
+        items.forEach { it.value.second.isRefreshing = true }
         val now = CalendarAdapter.getNowInt()
         bgmlistCall?.cancel()
         bgmlistCall = Bgmlist.createInstance().query(now/10000, (now/100%100-1)/3*3+1)
@@ -133,7 +149,9 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
                 onAir.getOrPut(date.key){ HashMap() }.getOrPut(time.key){ ArrayList() }.add(it)
             } } }
             setOnAirList(mixOnAir(onAir))
-        }, {}))
+        }, {items.forEach {
+            it.value.second.isRefreshing = false
+        }}))
 
         calendarCall?.cancel()
         calendarCall = Bangumi.createInstance().calendar()

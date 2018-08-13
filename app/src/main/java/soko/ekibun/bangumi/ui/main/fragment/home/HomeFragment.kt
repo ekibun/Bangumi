@@ -2,15 +2,12 @@ package soko.ekibun.bangumi.ui.main.fragment.home
 
 import android.content.res.ColorStateList
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import kotlinx.android.synthetic.main.content_home.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
-import soko.ekibun.bangumi.util.ResourceUtil
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.TextView
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.collection.CollectionFragment
 
 
@@ -19,7 +16,7 @@ class HomeFragment: DrawerFragment(R.layout.content_home){
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val adapter = HomePagerAdapter(activity!!, childFragmentManager)
+        val adapter = HomePagerAdapter(activity!!, childFragmentManager, frame_pager)
         frame_pager.adapter = adapter
         frame_tabs.setupWithViewPager(frame_pager)
         for(i in 0 until frame_tabs.tabCount){

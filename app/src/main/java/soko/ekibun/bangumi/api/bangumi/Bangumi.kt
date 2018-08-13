@@ -213,7 +213,7 @@ interface Bangumi {
         }
 
         //超展开
-        fun getTopics(type: String): Call<List<Topic>>{
+        fun getRakuen(type: String): Call<List<Topic>>{
             val url = "$SERVER/m" + if(type.isEmpty()) "" else "?type=$type"
             val cookie = CookieManager.getInstance().getCookie(SERVER)?:""
             return ApiHelper.buildHttpCall(url,mapOf("cookie" to cookie)){

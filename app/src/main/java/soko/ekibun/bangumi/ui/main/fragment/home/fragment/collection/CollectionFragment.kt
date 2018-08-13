@@ -30,4 +30,8 @@ class CollectionFragment: HomeTabFragment(R.layout.fragment_collection){
         (item_pager?.adapter as? CollectionPagerAdapter)?.reset()
         item_login_info?.visibility = if(UserModel(item_login.context).getToken() == null) View.VISIBLE else View.GONE
     }
+
+    override fun onSelect() {
+        //TODO
+    }
 }

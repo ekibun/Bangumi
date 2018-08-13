@@ -1,4 +1,4 @@
-package soko.ekibun.bangumi.ui.main.fragment.home.fragment.topic
+package soko.ekibun.bangumi.ui.main.fragment.home.fragment.rakuen
 
 import android.content.Context
 import android.support.v4.view.PagerAdapter
@@ -16,15 +16,24 @@ import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.ui.web.WebActivity
 
-class TopicPagerAdapter(context: Context, val fragment: TopicFragment, private val pager: ViewPager) : PagerAdapter(){
+class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private val pager: ViewPager) : PagerAdapter(){
     private val tabList = context.resources.getStringArray(R.array.topic_list)
 
-    private val items = HashMap<Int, Pair<TopicAdapter, SwipeRefreshLayout>>()
+    init{
+        pager.addOnPageChangeListener(object: ViewPager.OnPageChangeListener{
+            override fun onPageScrollStateChanged(state: Int) {}
+            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
+            override fun onPageSelected(position: Int) {
+                loadTopicList(position)
+            } })
+    }
+
+    private val items = HashMap<Int, Pair<RakuenAdapter, SwipeRefreshLayout>>()
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
         val item = items.getOrPut(position){
             val swipeRefreshLayout = SwipeRefreshLayout(container.context)
             val recyclerView = RecyclerView(container.context)
-            val adapter = TopicAdapter()
+            val adapter = RakuenAdapter()
             adapter.emptyView = LayoutInflater.from(container.context).inflate(R.layout.view_empty, container, false)
             adapter.isUseEmpty(false)
             adapter.setOnItemClickListener { _, v, position ->
@@ -45,11 +54,11 @@ class TopicPagerAdapter(context: Context, val fragment: TopicFragment, private v
     }
 
     private var topicCall = HashMap<Int, Call<List<Topic>>>()
-    private fun loadTopicList(position: Int = pager.currentItem){
+    fun loadTopicList(position: Int = pager.currentItem){
         val item = items[position]?:return
         item.first.isUseEmpty(false)
         topicCall[position]?.cancel()
-        topicCall[position] = Bangumi.getTopics(listOf("", "group", "subject", "ep", "mono")[position])
+        topicCall[position] = Bangumi.getRakuen(listOf("", "group", "subject", "ep", "mono")[position])
         item.second.isRefreshing = true
         topicCall[position]?.enqueue(ApiHelper.buildCallback(item.second.context, {
             item.first.isUseEmpty(true)

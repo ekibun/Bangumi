@@ -1,4 +1,4 @@
-package soko.ekibun.bangumi.ui.main.fragment.home.fragment.topic
+package soko.ekibun.bangumi.ui.main.fragment.home.fragment.rakuen
 
 import android.annotation.SuppressLint
 import android.view.View
@@ -10,7 +10,7 @@ import kotlinx.android.synthetic.main.item_topic.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 
-class TopicAdapter(data: MutableList<Topic>? = null) :
+class RakuenAdapter(data: MutableList<Topic>? = null) :
         BaseQuickAdapter<Topic, BaseViewHolder>(R.layout.item_topic, data) {
 
     @SuppressLint("SetTextI18n")
