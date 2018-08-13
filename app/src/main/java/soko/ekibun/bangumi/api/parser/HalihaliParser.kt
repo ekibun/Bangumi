@@ -11,10 +11,13 @@ class HalihaliParser: Parser {
     override val siteId: Int = ParseInfo.HALIHALI
 
     override fun getVideoInfo(id: String, video: Episode): retrofit2.Call<Parser.VideoInfo> {
+        val ids = id.split("/")
+        val vid = ids[0]
+        val offset = ids.getOrNull(1)?.toFloatOrNull()?:0f
         return ApiHelper.buildCall{Parser.VideoInfo(
                         video.sort.toString(),
                         siteId,
-                        "http://m.halihali.cc/v/$id/0-${DecimalFormat("#.##").format(video.sort)}.html"
+                        "http://m.halihali.cc/v/$vid/0-${DecimalFormat("#.##").format(video.sort + offset)}.html"
                 )}
     }
 

@@ -10,11 +10,13 @@ class DilidiliParser: Parser {
     override val siteId: Int = ParseInfo.DILIDLILI
 
     override fun getVideoInfo(id: String, video: Episode): retrofit2.Call<Parser.VideoInfo> {
-        val vid = id.split("/")[0]
-        val num = id.split("/").getOrNull(1)?.toInt()?:0
+        val ids = id.split("/")
+        val vid = ids[0]
+        val offset = ids.getOrNull(1)?.toFloatOrNull()?:0f
+        val num = id.split("/").getOrNull(2)?.toInt()?:0
         return ApiHelper.buildHttpCall("http://m.dilidili.wang/anime/$vid/", header){
             val d = Jsoup.parse(it.body()?.string()?:"")
-            d.selectFirst(".episode").select("a").filter { it.text().toFloatOrNull() == video.sort }.getOrNull(num)?.let {
+            d.selectFirst(".episode").select("a").filter { it.text().toFloatOrNull() == video.sort + offset }.getOrNull(num)?.let {
                 val url = it.attr("href")
                 val info = Parser.VideoInfo(
                         Regex("""dilidili.wang/watch[0-9]?/([^/]*)/""").find(url)?.groupValues?.get(1)?:"",

@@ -13,11 +13,14 @@ class PptvParser: Parser{
     override val siteId: Int = ParseInfo.PPTV
 
     override fun getVideoInfo(id: String, video: Episode): retrofit2.Call<Parser.VideoInfo> {
-        return ApiHelper.buildHttpCall("http://apis.web.pptv.com/show/videoList?format=jsonp&pid=$id", header){
+        val ids = id.split("/")
+        val vid = ids[0]
+        val offset = ids.getOrNull(1)?.toFloatOrNull()?:0f
+        return ApiHelper.buildHttpCall("http://apis.web.pptv.com/show/videoList?format=jsonp&pid=$vid", header){
             val src = JsonUtil.toJsonObject(it.body()?.string()?:"")
             src.get("data").asJsonObject.get("list").asJsonArray?.map{it.asJsonObject}?.forEach {
                 Log.v("obj", it.toString())
-                if(it.get("title").asString.toFloatOrNull() == video.sort){
+                if(it.get("title").asString.toFloatOrNull() == video.sort + offset){
                     val info = Parser.VideoInfo(
                             it.get("id").asString,
                             siteId,

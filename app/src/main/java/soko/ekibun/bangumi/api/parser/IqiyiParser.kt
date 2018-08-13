@@ -15,13 +15,16 @@ class IqiyiParser: Parser{
     override val siteId: Int = ParseInfo.IQIYI
 
     override fun getVideoInfo(id: String, video: Episode): retrofit2.Call<Parser.VideoInfo> {
-        return ApiHelper.buildHttpCall("http://mixer.video.iqiyi.com/jp/mixin/videos/avlist?albumId=$id&page=${video.sort.toInt()/100 + 1}&size=100", header){
+        val ids = id.split("/")
+        val vid = ids[0]
+        val offset = ids.getOrNull(1)?.toFloatOrNull()?:0f
+        return ApiHelper.buildHttpCall("http://mixer.video.iqiyi.com/jp/mixin/videos/avlist?albumId=$vid&page=${(video.sort + offset).toInt()/100 + 1}&size=100", header){
             var json = it.body()?.string()?:""
             if (json.startsWith("var"))
                 json = json.substring(json.indexOf('{'), json.lastIndexOf('}') + 1)
             JsonUtil.toJsonObject(json).getAsJsonArray("mixinVideos").map{it.asJsonObject}.forEach {
                 Log.v("obj", it.toString())
-                if(it.get("order").asInt.toFloat() == video.sort){
+                if(it.get("order").asInt.toFloat() == video.sort + offset){
                     val info = Parser.VideoInfo(
                             it.get("tvId").asString,
                             siteId,

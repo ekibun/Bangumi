@@ -12,14 +12,17 @@ class YoukuParser: Parser{
     override val siteId: Int = ParseInfo.YOUKU
 
     override fun getVideoInfo(id: String, video: Episode): retrofit2.Call<Parser.VideoInfo> {
-        return ApiHelper.buildHttpCall("http://list.youku.com/show/episode?id=$id&stage=reload_${(video.sort.toInt()-1) / 10 * 10 + 1}&callback=jQuery", header){
+        val ids = id.split("/")
+        val vid = ids[0]
+        val offset = ids.getOrNull(1)?.toFloatOrNull()?:0f
+        return ApiHelper.buildHttpCall("http://list.youku.com/show/episode?id=$vid&stage=reload_${((video.sort + offset).toInt()-1) / 10 * 10 + 1}&callback=jQuery", header){
             var json = it.body()?.string()?:""
             json = json.substring(json.indexOf('{'), json.lastIndexOf('}') + 1)
             val element = JsonUtil.toJsonObject(json)
             val li = Jsoup.parse(element.get("html").asString)
             li.select(".c555").forEach {
                 Log.v("video", it.toString())
-                if(it.parent().text().substringBefore(it.text()).toFloatOrNull() == video.sort){
+                if(it.parent().text().substringBefore(it.text()).toFloatOrNull() == video.sort + offset){
                     val vid = Regex("""id_([^.=]+)""").find(it.attr("href"))?.groupValues?.get(1)?:"http:" + it.attr("href")
                     val info = Parser.VideoInfo(vid,
                             siteId,

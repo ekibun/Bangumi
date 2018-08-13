@@ -7,15 +7,16 @@ import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.ui.view.BackgroundWebView
 import soko.ekibun.bangumi.util.JsonUtil
-import java.io.*
-import java.util.zip.GZIPInputStream
 import kotlin.math.roundToInt
 
 class BilibiliParser: Parser {
     override val siteId: Int = ParseInfo.BILIBILI
 
     override fun getVideoInfo(id: String, video: Episode): Call<Parser.VideoInfo> {
-        return ApiHelper.buildHttpCall("https://bangumi.bilibili.com/anime/$id", header){
+        val ids = id.split("/")
+        val vid = ids[0]
+        val offset = ids.getOrNull(1)?.toFloatOrNull()?:0f
+        return ApiHelper.buildHttpCall("https://bangumi.bilibili.com/anime/$vid", header){
             var body = it.body()?.string()?:""
             val start = "window.__INITIAL_STATE__="
             val end = "};"
@@ -23,7 +24,7 @@ class BilibiliParser: Parser {
             body = body.substring(0, body.indexOf(end)+1)
             Log.v("body", body)
             val d = JsonUtil.toJsonObject(body)
-            val episode = d.getAsJsonObject("mediaInfo").getAsJsonArray("episodes").get(video.sort.toInt()-1).asJsonObject
+            val episode = d.getAsJsonObject("mediaInfo").getAsJsonArray("episodes").get((video.sort + offset).toInt()-1).asJsonObject
             return@buildHttpCall Parser.VideoInfo(
                     episode.get("cid").toString(),
                     siteId,
@@ -71,32 +72,6 @@ class BilibiliParser: Parser {
             val map = HashMap<String, String>()
             //map["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.36"
             map
-        }
-
-        fun gzipInputStreamToUTF8String(`is`: InputStream): String {
-            // unzip to get htmlString
-            val gZipIs: GZIPInputStream
-            val sb = StringBuilder()
-            try {
-                gZipIs = GZIPInputStream(`is`)
-                val isr = InputStreamReader(gZipIs, "utf-8")
-                val br = java.io.BufferedReader(isr)
-
-                var tempbf: String? = ""
-                while (tempbf != null) {
-                    tempbf = br.readLine()
-                    if(tempbf!= null){
-                        sb.append(tempbf)
-                        sb.append("\r\n")
-                    }
-                }
-                isr.close()
-                gZipIs.close()
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
-
-            return sb.toString()
         }
     }
 }
