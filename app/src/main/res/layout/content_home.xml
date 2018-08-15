@@ -39,7 +39,7 @@
             app:tabGravity="fill"
             app:tabMode="fixed"
             app:tabMaxWidth="0dp"
-            android:elevation="12dp"
+            android:elevation="20dp"
             android:background="?android:colorBackground"
             app:tabTextAppearance="@style/IconTabTextAppearance"
             app:tabSelectedTextColor="?colorAccent"

@@ -55,7 +55,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/item_logcat"
-                    android:layout_margin="8dp"
+                    android:layout_margin="12dp"
                     android:layout_gravity="bottom"
                     android:visibility="invisible"
                     app:layout_collapseMode="parallax"
@@ -78,24 +78,7 @@
                     app:popupTheme="@style/AppTheme.PopupOverlay"
                     app:contentInsetStart="0dp"
                     app:contentInsetStartWithNavigation="0dp"
-                    app:layout_collapseMode="pin">
-                <TextView
-                        android:id="@+id/title_site"
-                        android:textSize="12sp"
-                        android:gravity="center_vertical"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"/>
-                <TextView
-                        android:id="@+id/title_text"
-                        android:textColor="?android:textColorPrimary"
-                        android:textSize="18sp"
-                        android:padding="8dp"
-                        android:gravity="center_vertical"
-                        android:layout_width="match_parent"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:layout_height="match_parent"/>
-            </android.support.v7.widget.Toolbar>
+                    app:layout_collapseMode="pin"/>
         </android.support.design.widget.CollapsingToolbarLayout>
     </android.support.design.widget.AppBarLayout>
 
@@ -130,7 +113,7 @@
             <android.support.v7.widget.RecyclerView
                     android:id="@+id/subject_list"
                     android:layout_width="match_parent"
-                    android:padding="4dp"
+                    android:padding="6dp"
                     android:clipToPadding="false"
                     android:layout_height="wrap_content"/>
         </LinearLayout>

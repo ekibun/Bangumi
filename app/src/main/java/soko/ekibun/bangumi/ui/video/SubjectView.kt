@@ -1,5 +1,6 @@
 package soko.ekibun.bangumi.ui.video
 
+import android.annotation.SuppressLint
 import android.support.v7.widget.LinearLayoutManager
 import android.view.View
 import android.view.animation.AnimationUtils
@@ -17,7 +18,6 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectProgress
-import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
 import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarAdapter
 import soko.ekibun.bangumi.ui.subject.*
 import soko.ekibun.bangumi.util.JsonUtil
@@ -71,22 +71,22 @@ class SubjectView(private val context: VideoActivity){
         commentAdapter.setHeaderView(detail)
     }
 
-    private fun parseSubject(subject: Subject): String{
-        var ret = subject.name + "\n" +
-                "总集数：${subject.eps_count}\n" +
-                "开播时间：${subject.air_date}\n" +
-                "更新时间："
+    private fun parseAirWeek(subject: Subject): String{
+        var ret = "更新时间："
         subject.air_weekday.toString().forEach {
             ret += CalendarAdapter.weekSmall[it.toString().toInt()] + " "
         }
         return ret
     }
 
+    @SuppressLint("SetTextI18n")
     fun updateSubject(subject: Subject){
         if(context.isDestroyed) return
-        context.title_text.text = if(subject.name_cn.isNullOrEmpty()) subject.name else subject.name_cn
-        context.title_site.text = SubjectType.getDescription(subject.type)
-        detail.item_info.text = parseSubject(subject)
+        context.title = if(subject.name_cn.isNullOrEmpty()) subject.name else subject.name_cn
+        detail.item_info.text = "总集数：${subject.eps_count}"
+        detail.item_subject_title.text = subject.name
+        detail.item_air_time.text = "开播时间：${subject.air_date}"
+        detail.item_air_week.text = parseAirWeek(subject)
 
         subject.rating?.let {
             detail.item_score.text = it.score.toString()
@@ -102,7 +102,7 @@ class SubjectView(private val context: VideoActivity){
                 .load(subject.images?.common)
                 .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)))
                 .into(context.item_cover_blur)
-        ((subject.eps as? List<*>)?.map{ JsonUtil.toEntity(JsonUtil.toJson(it!!), Episode::class.java)})?.let{
+        ((subject.eps as? List<*>)?.map{ JsonUtil.toEntity(JsonUtil.toJson(it!!), Episode::class.java)!!})?.let{
             updateEpisode(it)
         }
         topicAdapter.setNewData(subject.topic)

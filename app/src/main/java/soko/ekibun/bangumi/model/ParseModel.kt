@@ -15,7 +15,7 @@ object ParseModel{
             PptvParser(),
             TencentParser(),
             DilidiliParser(),
-            HalihaliParser(),
+            UrlParser(),
             BilibiliParser())
     fun getVideoInfo(siteId:Int, id: String, video: Episode): Call<Parser.VideoInfo> {
         parsers.forEach {

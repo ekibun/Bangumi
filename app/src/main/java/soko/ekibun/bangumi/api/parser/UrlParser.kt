@@ -1,23 +1,22 @@
 package soko.ekibun.bangumi.api.parser
 
 import android.util.Log
-import org.jsoup.Jsoup
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.ui.view.BackgroundWebView
 import java.text.DecimalFormat
 
-class HalihaliParser: Parser {
-    override val siteId: Int = ParseInfo.HALIHALI
+class UrlParser: Parser {
+    override val siteId: Int = ParseInfo.URL
 
     override fun getVideoInfo(id: String, video: Episode): retrofit2.Call<Parser.VideoInfo> {
-        val ids = id.split("/")
+        val ids = id.split(" ")
         val vid = ids[0]
         val offset = ids.getOrNull(1)?.toFloatOrNull()?:0f
         return ApiHelper.buildCall{Parser.VideoInfo(
                         video.sort.toString(),
                         siteId,
-                        "http://m.halihali.cc/v/$vid/0-${DecimalFormat("#.##").format(video.sort + offset)}.html"
+                        vid.replace("{{ep}}", DecimalFormat("#.##").format(video.sort + offset))
                 )}
     }
 

@@ -4,8 +4,8 @@ apply plugin: 'kotlin-android'
 
 apply plugin: 'kotlin-android-extensions'
 
-static def getAlphaVersionName(){
-    "alpha"+ new Date().format("yyyyMMdd")
+static def getAlphaVersionName() {
+    "alpha" + new Date().format("yyyyMMdd")
 }
 
 android {
@@ -55,4 +55,5 @@ dependencies {
     implementation 'com.zhy:base-adapter:3.0.3'
     implementation 'com.xiaofeng.android:flowlayoutmanager:1.2.3.2'
     implementation 'com.nshmura:recyclertablayout:1.5.0'
+    implementation 'com.github.chrisbanes:PhotoView:2.1.4'
 }

@@ -7,6 +7,7 @@ import android.os.Looper
 import android.support.design.widget.Snackbar
 import android.util.Log
 import okhttp3.Request
+import okhttp3.RequestBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -27,6 +28,7 @@ object ApiHelper {
 
             override fun onResponse(call: Call<T>, response: Response<T>) {
                 Log.v("finUrl", call.request()?.url().toString())
+                Log.v("finUrl", response.toString())
                 finish(null)
                 response.body()?.let { callback(it) }
             }
@@ -49,11 +51,11 @@ object ApiHelper {
         }
     }
 
-    fun <T> buildHttpCall(url: String, header: Map<String, String> = HashMap(), converter: (okhttp3.Response)->T): Call<T>{
+    fun <T> buildHttpCall(url: String, header: Map<String, String> = HashMap(), body: RequestBody? = null, converter: (okhttp3.Response)->T): Call<T>{
         val uiHandler = Handler(Looper.getMainLooper())
         return object: retrofit2.Call<T>{
             private val retrofitCall = this
-            val okHttpCall = HttpUtil.getCall(url, header)
+            val okHttpCall = HttpUtil.getCall(url, header, body)
             fun createResponse(response: okhttp3.Response): retrofit2.Response<T>{
                 return retrofit2.Response.success(converter(response))
             }

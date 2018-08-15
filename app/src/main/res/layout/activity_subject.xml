@@ -84,7 +84,7 @@
         <LinearLayout android:layout_width="match_parent"
                       android:layout_height="wrap_content"
                       android:paddingTop="8dp"
-                      android:paddingBottom="8dp"
+                      android:paddingBottom="12dp"
                       android:orientation="vertical">
             <TextView
                     android:layout_width="match_parent"
@@ -118,7 +118,7 @@
             <android.support.v7.widget.RecyclerView
                     android:id="@+id/subject_list"
                     android:layout_width="match_parent"
-                    android:padding="4dp"
+                    android:padding="6dp"
                     android:clipToPadding="false"
                     android:nestedScrollingEnabled="false"
                     android:layout_height="wrap_content"/>

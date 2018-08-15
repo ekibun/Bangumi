@@ -9,6 +9,8 @@ import retrofit2.http.*
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.*
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
+import kotlin.math.max
+import kotlin.math.min
 
 interface Bangumi {
 
@@ -213,21 +215,74 @@ interface Bangumi {
         }
 
         //超展开
-        fun getRakuen(type: String): Call<List<Topic>>{
+        fun getRakuen(type: String): Call<List<Rakuen>>{
             val url = "$SERVER/m" + if(type.isEmpty()) "" else "?type=$type"
             val cookie = CookieManager.getInstance().getCookie(SERVER)?:""
             return ApiHelper.buildHttpCall(url,mapOf("cookie" to cookie)){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
-                val ret = ArrayList<Topic>()
+                val ret = ArrayList<Rakuen>()
                 doc.select(".item_list")?.forEach{
                     val img = "http:" + Regex("""background-image:url\('([^']*)'\)""").find(it.selectFirst(".avatar")?.html()?:"")?.groupValues?.get(1)
                     val title = it.selectFirst(".title")
                     val plus =  it.selectFirst(".grey").text()
                     val time = it.selectFirst(".time").text()?.replace("...", "")?:""
                     val group = it.selectFirst(".row").selectFirst("a")
-                    ret+= Topic(img, title.text(), group?.text(), time, plus, "$SERVER${title.attr("href")}", "$SERVER${group?.attr("href")}")
+                    ret+= Rakuen(img, title.text(), group?.text(), time, plus, "$SERVER${title.attr("href")}", "$SERVER${group?.attr("href")}")
                 }
                 return@buildHttpCall ret
+            }
+        }
+
+        //讨论
+        fun getTopic(url: String): Call<Topic>{
+            val cookie = CookieManager.getInstance().getCookie(SERVER)?:""
+            return ApiHelper.buildHttpCall(url,mapOf("cookie" to cookie)){
+                val doc = Jsoup.parse(it.body()?.string()?:"")
+                val replies = ArrayList<TopicPost>()
+                doc.select(".re_info")?.map{ it.parent() }?.forEach{
+                    val img = Regex("""background-image:url\('([^']*)'\)""").find(it.selectFirst(".avatar")?.html()?:"")?.groupValues?.get(1)?:""
+                    val user = it.selectFirst(".inner")?.selectFirst("a")
+                    val userId = Regex("""/user/([^/]*)""").find(user?.attr("href")?:"")?.groupValues?.get(1)?:""
+                    val userName = user?.text()?:""
+                    val message = it.selectFirst(".topic_content")?.html()
+                            ?:it.selectFirst(".message")?.html()
+                            ?:it.selectFirst(".cmt_sub_content")?.html()?:""
+                    val isSubReply = it.selectFirst(".re_info")?.selectFirst("a")?.text()?.contains("-")?:false
+                    val info = it.selectFirst(".re_info")?.text()?.split("/")?.get(0)?.trim()?:""
+                    val isSelf = it.selectFirst(".re_info")?.text()?.contains("/") == true
+                    val data = (it.selectFirst(".icons_cmt")?.attr("onclick")?:"").split(",")
+                    val topic_id = data.getOrNull(1)?:""
+                    val relate = data.getOrNull(2)?.toIntOrNull()?:0
+                    val post_id = data.getOrNull(3)?.toIntOrNull()?:0
+                    val post_uid = data.getOrNull(5)?:""
+                    val model = Regex("'([^']*)'").find(data.getOrNull(0)?:"")?.groupValues?.get(1)?:""
+                    replies += TopicPost(
+                            (if(post_id == 0) relate else post_id).toString(), //pst_id
+                            topic_id, //pst_mid
+                            post_uid, //pst_uid
+                            message, //pst_content
+                            userId, //username
+                            userName, //nickName
+                            img,  //avatar
+                            info.substring(max(min(info.indexOf(" - ")+3, info.length-1), 0)), //dateline
+                            isSelf,
+                            isSubReply,
+                            isSelf,
+                            relate.toString(),
+                            model
+                    )
+                }
+                val group = doc.selectFirst("#pageHeader")?.selectFirst("span")?.text()?:""
+                val title = doc.selectFirst("#pageHeader")?.selectFirst("h1")?.ownText()?:""
+                val form = doc.selectFirst("#ReplyForm")
+                val post = "$SERVER${form?.attr("action")}?ajax=1"
+                val formhash = form?.selectFirst("input[name=formhash]")?.attr("value")
+                val lastview = form?.selectFirst("input[name=lastview]")?.attr("value")
+                val links = LinkedHashMap<String, String>()
+                doc.selectFirst("#pageHeader")?.select("a")?.filter { !it.text().isNullOrEmpty() }?.forEach {
+                    links[it.text()]= "$SERVER${it.attr("href")}" }
+                links[title]= url
+                return@buildHttpCall Topic(group, title, replies, post, formhash, lastview, links)
             }
         }
     }

@@ -40,7 +40,7 @@ class SubjectPresenter(private val context: VideoActivity){
     private val userModel by lazy { UserModel(context) }
     private val parseInfoModel by lazy { ParseInfoModel(context) }
 
-    val subject by lazy{ JsonUtil.toEntity(context.intent.getStringExtra(VideoActivity.EXTRA_SUBJECT), Subject::class.java) }
+    val subject by lazy{ JsonUtil.toEntity(context.intent.getStringExtra(VideoActivity.EXTRA_SUBJECT), Subject::class.java)!! }
 
     init{
         subjectView.updateSubject(subject)
@@ -79,7 +79,7 @@ class SubjectPresenter(private val context: VideoActivity){
         }
 
         subjectView.topicAdapter.setOnItemClickListener { _, _, position ->
-            WebActivity.launchUrl(context, subjectView.topicAdapter.data[position].url)
+            WebActivity.launchUrl(context, subjectView.topicAdapter.data[position].url, "")
         }
 
         subjectView.blogAdapter.setOnItemClickListener { _, _, position ->

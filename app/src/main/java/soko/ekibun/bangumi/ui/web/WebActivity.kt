@@ -8,6 +8,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
@@ -21,6 +22,7 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
+import soko.ekibun.bangumi.ui.topic.TopicActivity
 import soko.ekibun.bangumi.util.AppUtil
 
 class WebActivity : AppCompatActivity() {
@@ -59,10 +61,7 @@ class WebActivity : AppCompatActivity() {
             webview.webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                     val url = request.url.toString()
-                    val id = Regex("""subject/([0-9]*)$""").find(url)?.groupValues?.get(1)?.toIntOrNull()
-                    val openId = Regex("""subject/([0-9]*)$""").find(openUrl)?.groupValues?.get(1)?.toIntOrNull()
-                    if(id != null && id != openId){
-                        SubjectActivity.startActivity(this@WebActivity, Subject(id, url))
+                    if(jumpUrl(this@WebActivity, url, openUrl)){
                         return true
                     }else if(!url.startsWith("http")){
                         try{
@@ -155,6 +154,41 @@ class WebActivity : AppCompatActivity() {
             val intent = Intent(context, WebActivity::class.java)
             intent.putExtra(OPEN_URL, page)
             context.startActivity(intent)
+        }
+
+        fun launchUrl(context: Context, url: String?, openUrl: String){
+            Log.v("launch", url.toString())
+            if(jumpUrl(context, url, openUrl)) return
+            launchUrl(context, url)
+        }
+
+        fun jumpUrl(context: Context, url: String?, openUrl: String): Boolean{
+            if(url == null || url.isNullOrEmpty() || url == openUrl) return false
+            //Topic
+            var regex = Regex("""/m/topic/[^/]*/([0-9]*)$""")
+            var id = regex.find(url)?.groupValues?.get(1)?.toIntOrNull()
+            if(id != null){
+                TopicActivity.startActivity(context, url)
+                return true }
+            regex = Regex("""/rakuen/topic/([^/]*)/([0-9]*)$""")
+            var model = regex.find(url)?.groupValues?.get(1)?:""
+            id = regex.find(url)?.groupValues?.get(2)?.toIntOrNull()
+            if(id != null){
+                TopicActivity.startActivity(context, "${Bangumi.SERVER}/m/topic/$model/$id")
+                return true }
+            regex = Regex("""/([^/]*)/topic/([0-9]*)$""")
+            model = regex.find(url)?.groupValues?.get(1)?:""
+            id = regex.find(url)?.groupValues?.get(2)?.toIntOrNull()
+            if(id != null){
+                TopicActivity.startActivity(context, "${Bangumi.SERVER}/m/topic/$model/$id")
+                return true }
+            //Subject
+            regex = Regex("""/subject/([0-9]*)$""")
+            id = regex.find(url)?.groupValues?.get(1)?.toIntOrNull()
+            if(id != null){
+                SubjectActivity.startActivity(context, Subject(id, url))
+                return true }
+            return false
         }
     }
 }

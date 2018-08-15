@@ -1,11 +1,11 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
 data class Topic(
-        val img: String,
-        val topic: String,
-        val group: String?,
-        val time: String,
-        val plus: String?,
-        val url: String,
-        val groupUrl: String?
+        val group: String,
+        val title: String,
+        val replies: List<TopicPost>,
+        val post: String,
+        val formhash: String?,
+        val lastview: String?,
+        val links: Map<String, String>
 )

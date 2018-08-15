@@ -13,7 +13,7 @@ class BilibiliParser: Parser {
     override val siteId: Int = ParseInfo.BILIBILI
 
     override fun getVideoInfo(id: String, video: Episode): Call<Parser.VideoInfo> {
-        val ids = id.split("/")
+        val ids = id.split(" ")
         val vid = ids[0]
         val offset = ids.getOrNull(1)?.toFloatOrNull()?:0f
         return ApiHelper.buildHttpCall("https://bangumi.bilibili.com/anime/$vid", header){

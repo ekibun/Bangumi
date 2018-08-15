@@ -13,7 +13,7 @@ class ParseInfoModel(context: Context){
 
     fun saveInfo(subject: Subject, info: ParseInfo) {
         val editor = sp.edit()
-        val list = JsonUtil.toEntity<Map<Int, ParseInfo>>(sp.getString(PREF_PARSE_INFO, JsonUtil.toJson(HashMap<Int, ParseInfo>()))!!, object: TypeToken<Map<Int, ParseInfo>>(){}.type).toMutableMap()
+        val list = JsonUtil.toEntity<Map<Int, ParseInfo>>(sp.getString(PREF_PARSE_INFO, JsonUtil.toJson(HashMap<Int, ParseInfo>()))!!, object: TypeToken<Map<Int, ParseInfo>>(){}.type)?.toMutableMap()?:HashMap()
         if(info.api.isNullOrEmpty() && info.video?.id.isNullOrEmpty() && info.danmaku?.id.isNullOrEmpty())
             list.remove(subject.id)
         else
@@ -23,7 +23,7 @@ class ParseInfoModel(context: Context){
     }
 
     fun getInfo(subject: Subject): ParseInfo?{
-        return JsonUtil.toEntity<Map<Int, ParseInfo>>(sp.getString(PREF_PARSE_INFO, JsonUtil.toJson(HashMap<Int, ParseInfo>()))!!, object: TypeToken<Map<Int, ParseInfo>>(){}.type)[subject.id]
+        return JsonUtil.toEntity<Map<Int, ParseInfo>>(sp.getString(PREF_PARSE_INFO, JsonUtil.toJson(HashMap<Int, ParseInfo>()))!!, object: TypeToken<Map<Int, ParseInfo>>(){}.type)?.get(subject.id)
     }
 
     companion object {

@@ -14,12 +14,21 @@ object JsonUtil{
         return GSON.toJson(src)
     }
 
-    fun <T> toEntity(json: String, classOfT: Class<T>): T {
-        return GSON.fromJson(json, classOfT)
+    fun <T> toEntity(json: String, classOfT: Class<T>): T? {
+        return try{
+            GSON.fromJson(json, classOfT)
+        }catch (e: Exception){
+            e.printStackTrace()
+            null
+        }
     }
 
-    fun <T> toEntity(json: String, type: Type): T {
-        return GSON.fromJson(json, type)
+    fun <T> toEntity(json: String, type: Type): T? {
+        return try{ GSON.fromJson(json, type)
+        }catch (e: Exception){
+            e.printStackTrace()
+            null
+        }
     }
 
     fun toJsonObject(json: String): JsonObject {

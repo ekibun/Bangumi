@@ -11,7 +11,7 @@ class TencentParser: Parser{
     override val siteId: Int = ParseInfo.TENCENT
 
     override fun getVideoInfo(id: String, video: Episode): retrofit2.Call<Parser.VideoInfo> {
-        val ids = id.split("/")
+        val ids = id.split(" ")
         val vid = ids[0]
         val offset = ids.getOrNull(1)?.toFloatOrNull()?:0f
         return ApiHelper.buildHttpCall("https://s.video.qq.com/get_playsource?id=$vid&type=4&range=${(video.sort + offset).toInt()}-${(video.sort + offset).toInt()+1}&otype=json", header){

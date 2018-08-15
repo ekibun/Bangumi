@@ -147,7 +147,7 @@ class VideoActivity : AppCompatActivity() {
         when (item.itemId) {
             android.R.id.home -> processBack()
             R.id.action_share -> {
-                val subject = JsonUtil.toEntity(intent.getStringExtra(EXTRA_SUBJECT), Subject::class.java)
+                val subject = JsonUtil.toEntity(intent.getStringExtra(EXTRA_SUBJECT), Subject::class.java)!!
                 val intent = Intent(Intent.ACTION_SEND)
                 intent.type = "text/plain"
                 intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.share))

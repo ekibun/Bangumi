@@ -61,6 +61,10 @@
     <string name="home">主页</string>
     <string name="rakuen">超展开</string>
     <string name="timeline">时空管理局</string>
+    <string name="reply">回复</string>
+    <string name="delete">删除</string>
+    <string name="edit">编辑</string>
+    <string name="reply_hint">不吐槽一下吗</string>
 
     <string-array name="topic_list">
         <item>全部</item>
@@ -89,7 +93,7 @@
         <item>PPTV</item>
         <item>腾讯视频</item>
         <item>Dilidili</item>
-        <item>Halihali</item>
+        <item>链接</item>
         <item>Bilibili</item>
     </string-array>
 </resources>

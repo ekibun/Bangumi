@@ -15,7 +15,7 @@ class IqiyiParser: Parser{
     override val siteId: Int = ParseInfo.IQIYI
 
     override fun getVideoInfo(id: String, video: Episode): retrofit2.Call<Parser.VideoInfo> {
-        val ids = id.split("/")
+        val ids = id.split(" ")
         val vid = ids[0]
         val offset = ids.getOrNull(1)?.toFloatOrNull()?:0f
         return ApiHelper.buildHttpCall("http://mixer.video.iqiyi.com/jp/mixin/videos/avlist?albumId=$vid&page=${(video.sort + offset).toInt()/100 + 1}&size=100", header){

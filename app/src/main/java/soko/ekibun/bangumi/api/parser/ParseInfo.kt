@@ -20,7 +20,7 @@ data class ParseInfo(
         const val PPTV = 2
         const val TENCENT = 3
         const val DILIDLILI = 4
-        const val HALIHALI = 5
+        const val URL = 5
         const val BILIBILI = 6
     }
 }

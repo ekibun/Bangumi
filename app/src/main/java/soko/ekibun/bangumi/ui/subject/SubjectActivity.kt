@@ -16,7 +16,7 @@ import soko.ekibun.bangumi.util.JsonUtil
 class SubjectActivity : AppCompatActivity() {
     private val subjectPresenter: SubjectPresenter by lazy{ SubjectPresenter(this) }
 
-    private val subject by lazy{ JsonUtil.toEntity(intent.getStringExtra(SubjectActivity.EXTRA_SUBJECT), Subject::class.java) }
+    private val subject by lazy{ JsonUtil.toEntity(intent.getStringExtra(SubjectActivity.EXTRA_SUBJECT), Subject::class.java)!! }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

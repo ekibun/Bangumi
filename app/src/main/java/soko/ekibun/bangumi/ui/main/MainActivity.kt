@@ -16,15 +16,18 @@ class MainActivity : AppCompatActivity() {
 
     private val mainPresenter by lazy{ MainPresenter(this) }
 
-    private val backgroundWebView by lazy{ BackgroundWebView(this) }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         ThemeModel.setTheme(this, ThemeModel(this).getTheme())
-        backgroundWebView.loadUrl(Bangumi.SERVER)
         if(savedInstanceState?.containsKey("user") != true)
             mainPresenter.refreshUser()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        BackgroundWebView(this).loadUrl(Bangumi.SERVER)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

@@ -1,5 +1,6 @@
 package soko.ekibun.bangumi.ui.subject
 
+import android.annotation.SuppressLint
 import android.support.design.widget.AppBarLayout
 import android.support.v7.widget.LinearLayoutManager
 import android.view.View
@@ -88,20 +89,22 @@ class SubjectView(private val context: SubjectActivity){
         commentAdapter.setHeaderView(detail)
     }
 
-    private fun parseSubject(subject: Subject): String{
-        var ret = SubjectType.getDescription(subject.type) + "\n" +
-                "开播时间：${subject.air_date}\n" +
-                "更新时间："
+    private fun parseAirWeek(subject: Subject): String{
+        var ret = "更新时间："
         subject.air_weekday.toString().forEach {
             ret += CalendarAdapter.weekSmall[it.toString().toInt()] + " "
         }
-        return ret + "\n"
+        return ret
     }
 
+    @SuppressLint("SetTextI18n")
     fun updateSubject(subject: Subject){
         if(context.isDestroyed) return
         context.title = if(subject.name_cn.isNullOrEmpty()) subject.name else subject.name_cn
-        context.item_info.text = parseSubject(subject)
+        context.item_info.text = SubjectType.getDescription(subject.type)
+        context.item_subject_title.visibility = View.GONE
+        context.item_air_time.text = "开播时间：${subject.air_date}"
+        context.item_air_week.text = parseAirWeek(subject)
         detail.item_detail.text = subject.summary
 
         context.item_play.visibility = if(subject.type in listOf(SubjectType.ANIME, SubjectType.REAL)) View.VISIBLE else View.GONE
@@ -121,7 +124,7 @@ class SubjectView(private val context: SubjectActivity){
                 .load(subject.images?.common)
                 .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)))
                 .into(context.item_cover_blur)
-        ((subject.eps as? List<*>)?.map{ JsonUtil.toEntity(JsonUtil.toJson(it!!), Episode::class.java)})?.let{
+        ((subject.eps as? List<*>)?.map{ JsonUtil.toEntity(JsonUtil.toJson(it!!), Episode::class.java)!!})?.let{
             updateEpisode(it)
         }
         topicAdapter.setNewData(subject.topic)

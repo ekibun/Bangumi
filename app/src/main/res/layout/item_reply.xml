@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/item_layout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:transitionName="container"
+        tools:ignore="RtlHardcoded,HardcodedText">
+
+    <View android:id="@+id/offset"
+          android:visibility="gone"
+          android:layout_width="25dp"
+          android:layout_height="0dp" />
+    <ImageView
+            android:id="@+id/item_avatar"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:scaleType="centerCrop"
+            tools:ignore="ContentDescription"
+            app:layout_constraintStart_toEndOf="@+id/offset"
+            app:layout_constraintTop_toTopOf="parent"/>
+    <TextView
+            android:id="@+id/item_user"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textSize="@dimen/textSizeMedium"
+            android:textColor="?android:textColorPrimary"
+            app:layout_constraintStart_toEndOf="@+id/item_avatar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginLeft="8dp"/>
+    <TextView
+            android:layout_marginTop="8dp"
+            android:id="@+id/item_message"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/textSizeMedium"
+            android:textIsSelectable="true"
+            app:layout_constraintTop_toBottomOf="@+id/item_user"
+            app:layout_constraintStart_toStartOf="@+id/item_user"
+            app:layout_constraintEnd_toEndOf="parent"/>
+    <LinearLayout android:layout_width="0dp"
+                  android:layout_height="wrap_content"
+                  app:layout_constraintEnd_toEndOf="parent"
+                  app:layout_constraintTop_toBottomOf="@+id/item_message"
+                  app:layout_constraintStart_toStartOf="@+id/item_user">
+        <TextView
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:id="@+id/item_time"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/textSizeSmall"
+                android:ellipsize="end"
+                android:maxLines="1"/>
+        <TextView
+                android:padding="8dp"
+                android:id="@+id/item_del"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/textSizeSmall"
+                android:text="@string/delete"
+                android:clickable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:focusable="true"/>
+        <TextView
+                android:padding="8dp"
+                android:id="@+id/item_edit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/textSizeSmall"
+                android:text="@string/edit"
+                android:clickable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:focusable="true"/>
+        <TextView
+                android:padding="8dp"
+                android:id="@+id/item_reply"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/textSizeSmall"
+                android:text="@string/reply"
+                android:clickable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:focusable="true"/>
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>

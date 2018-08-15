@@ -10,7 +10,7 @@ class DilidiliParser: Parser {
     override val siteId: Int = ParseInfo.DILIDLILI
 
     override fun getVideoInfo(id: String, video: Episode): retrofit2.Call<Parser.VideoInfo> {
-        val ids = id.split("/")
+        val ids = id.split(" ")
         val vid = ids[0]
         val offset = ids.getOrNull(1)?.toFloatOrNull()?:0f
         val num = id.split("/").getOrNull(2)?.toInt()?:0

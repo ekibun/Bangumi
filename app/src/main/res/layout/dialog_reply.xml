@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="#3000">
+    <View android:id="@+id/item_lock" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"/>
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:elevation="20dp"
+            android:background="?android:colorBackground">
+
+        <EditText
+                android:id="@+id/item_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:padding="12dp"
+                android:textSize="@dimen/textSizeMedium"
+                android:textIsSelectable="true"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:inputType="textMultiLine"
+                tools:ignore="LabelFor">
+            <requestFocus />
+        </EditText>
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+            <ImageButton
+                    android:id="@+id/item_btn_emoji"
+                    android:layout_width="wrap_content"
+                    android:tint="?android:textColorSecondary"
+                    android:padding="6dp"
+                    android:tintMode="src_in"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:layout_height="wrap_content"
+                    app:srcCompat="@drawable/ic_emoji_keyboard"/>
+            <ImageButton
+                    android:id="@+id/item_btn_image"
+                    android:layout_width="wrap_content"
+                    android:tint="?android:textColorSecondary"
+                    android:padding="6dp"
+                    android:tintMode="src_in"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:layout_height="wrap_content"
+                    app:srcCompat="@drawable/ic_image"/>
+            <View android:layout_weight="1"
+                  android:layout_height="match_parent"
+                  android:layout_width="0dp"/>
+            <ImageButton
+                    android:id="@+id/item_btn_send"
+                    android:layout_width="wrap_content"
+                    android:tint="?android:textColorSecondary"
+                    android:padding="6dp"
+                    android:tintMode="src_in"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:layout_height="wrap_content"
+                    app:srcCompat="@drawable/ic_send"/>
+        </LinearLayout>
+        <android.support.v7.widget.RecyclerView
+                android:id="@+id/item_emoji_list"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"/>
+    </LinearLayout>
+</LinearLayout>

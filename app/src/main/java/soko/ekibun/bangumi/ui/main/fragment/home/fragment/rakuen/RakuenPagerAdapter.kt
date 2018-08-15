@@ -13,8 +13,8 @@ import retrofit2.Call
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
-import soko.ekibun.bangumi.api.bangumi.bean.Topic
-import soko.ekibun.bangumi.ui.web.WebActivity
+import soko.ekibun.bangumi.api.bangumi.bean.Rakuen
+import soko.ekibun.bangumi.ui.topic.TopicActivity
 
 class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private val pager: ViewPager) : PagerAdapter(){
     private val tabList = context.resources.getStringArray(R.array.topic_list)
@@ -37,7 +37,8 @@ class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private
             adapter.emptyView = LayoutInflater.from(container.context).inflate(R.layout.view_empty, container, false)
             adapter.isUseEmpty(false)
             adapter.setOnItemClickListener { _, v, position ->
-                WebActivity.launchUrl(v.context, adapter.data[position].url)
+                TopicActivity.startActivity(v.context, adapter.data[position].url)
+                //WebActivity.launchUrl(v.context, adapter.data[position].url)
             }
             recyclerView.adapter = adapter
             recyclerView.layoutManager = LinearLayoutManager(container.context)
@@ -53,7 +54,7 @@ class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private
         return item.second
     }
 
-    private var topicCall = HashMap<Int, Call<List<Topic>>>()
+    private var topicCall = HashMap<Int, Call<List<Rakuen>>>()
     fun loadTopicList(position: Int = pager.currentItem){
         val item = items[position]?:return
         item.first.isUseEmpty(false)

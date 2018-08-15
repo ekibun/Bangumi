@@ -78,7 +78,7 @@ class SubjectPresenter(private val context: SubjectActivity){
         }
 
         subjectView.topicAdapter.setOnItemClickListener { _, _, position ->
-            WebActivity.launchUrl(context, subjectView.topicAdapter.data[position].url)
+            WebActivity.launchUrl(context, subjectView.topicAdapter.data[position].url, "")
         }
 
         subjectView.blogAdapter.setOnItemClickListener { _, _, position ->

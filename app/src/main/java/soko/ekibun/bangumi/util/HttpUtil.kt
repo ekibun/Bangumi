@@ -13,10 +13,12 @@ object HttpUtil{
                 .enqueue(callback)
     }
 
-    fun getCall(url: String, header: Map<String, String> = HashMap()): Call {
-        return okHttpClient.newCall(Request.Builder()
+    fun getCall(url: String, header: Map<String, String> = HashMap(), body: RequestBody? = null): Call {
+        val request = Request.Builder()
                 .url(url)
                 .headers(Headers.of(header))
-                .build())
+        if(body != null)
+            request.post(body)
+        return okHttpClient.newCall(request.build())
     }
 }
