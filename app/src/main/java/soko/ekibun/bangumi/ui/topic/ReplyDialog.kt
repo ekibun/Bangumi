@@ -162,7 +162,7 @@ class ReplyDialog: DialogFragment() {
         val body = MultipartBody.Part.createFormData("smfile", "image", requestBody)
         val call = SmMs.createInstance().upload(body)
         call.enqueue(ApiHelper.buildCallback(activity, {
-            insertText("[img]${it.data?.url}[img]")
+            insertText("[img]${it.data?.url}[/img]")
         }, {}))
     }
 /*
