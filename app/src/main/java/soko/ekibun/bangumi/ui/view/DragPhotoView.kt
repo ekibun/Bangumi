@@ -181,7 +181,7 @@ class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeS
 
         val percent = mTranslateY / MAX_TRANSLATE_Y
         if (mScale in minScale..1f) {
-            mScale = 1 - percent
+            mScale = (1 - percent)* 0.5f + 0.5f
 
             mAlpha = (155 * (1 - percent)).toInt() + 100
             if (mAlpha > 255) {

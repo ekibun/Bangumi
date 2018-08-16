@@ -33,10 +33,7 @@ class VideoActivity : AppCompatActivity() {
         setContentView(R.layout.activity_video)
 
         setSupportActionBar(toolbar)
-        supportActionBar?.let{
-            it.setDisplayHomeAsUpEnabled(true)
-            it.setDisplayShowTitleEnabled(false)
-        }
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         systemUIPresenter.init()
 

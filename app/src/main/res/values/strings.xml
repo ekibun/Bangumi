@@ -65,6 +65,11 @@
     <string name="delete">删除</string>
     <string name="edit">编辑</string>
     <string name="reply_hint">不吐槽一下吗</string>
+    <string name="bold">粗体字</string>
+    <string name="italic">斜体字</string>
+    <string name="strike">删除线</string>
+    <string name="underline">下划线</string>
+    <string name="mask">马赛克</string>
 
     <string-array name="topic_list">
         <item>全部</item>

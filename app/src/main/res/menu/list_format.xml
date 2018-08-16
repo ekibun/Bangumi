@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@+id/format_bold"
+          android:title="@string/bold"/>
+    <item android:id="@+id/format_italic"
+          android:title="@string/italic"/>
+    <item android:id="@+id/format_strike"
+          android:title="@string/strike"/>
+    <item android:id="@+id/format_underline"
+          android:title="@string/underline"/>
+    <item android:id="@+id/format_mask"
+          android:title="@string/mask"/>
+</menu>

@@ -7,6 +7,7 @@ import android.graphics.Rect
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
 import android.support.v7.widget.GridLayoutManager
+import android.support.v7.widget.PopupMenu
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
@@ -19,7 +20,6 @@ import android.widget.LinearLayout
 import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
-import okio.BufferedSink
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.smms.SmMs
 
@@ -32,6 +32,13 @@ class ReplyDialog: DialogFragment() {
         val metrics = DisplayMetrics()
         (activity?.getSystemService(Context.WINDOW_SERVICE) as? WindowManager)?.defaultDisplay?.getMetrics(metrics)
         return metrics.heightPixels - rect.bottom
+    }
+
+    private fun insertCode(code: String){
+        val contentView = contentView?:return
+        contentView.item_input.text.insert(contentView.item_input.selectionStart, "[$code]")
+        contentView.item_input.text.insert(contentView.item_input.selectionEnd, "[/$code]")
+        contentView.item_input.setSelection(contentView.item_input.selectionEnd-code.length-3)
     }
 
     private fun insertText(str: String){
@@ -54,6 +61,22 @@ class ReplyDialog: DialogFragment() {
         val emojiAdapter = EmojiAdapter(emojiList)
         emojiAdapter.setOnItemChildClickListener { _, _, position ->
             insertText(emojiList[position].first)
+        }
+        contentView.item_btn_format.setOnClickListener {view->
+            val popup = PopupMenu(view.context, view)
+            popup.menuInflater.inflate(R.menu.list_format, popup.menu)
+            popup.setOnMenuItemClickListener{
+                insertCode(when(it.itemId){
+                    R.id.format_bold -> "b"
+                    R.id.format_italic -> "i"
+                    R.id.format_strike -> "s"
+                    R.id.format_underline -> "u"
+                    R.id.format_mask -> "mask"
+                    else -> return@setOnMenuItemClickListener true
+                })
+                true
+            }
+            popup.show()
         }
         contentView.item_emoji_list.adapter = emojiAdapter
         contentView.item_emoji_list.layoutManager = GridLayoutManager(context, 7)

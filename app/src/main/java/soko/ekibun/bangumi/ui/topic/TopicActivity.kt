@@ -3,6 +3,7 @@ package soko.ekibun.bangumi.ui.topic
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.graphics.Rect
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
@@ -20,18 +21,23 @@ import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
 import soko.ekibun.bangumi.ui.view.BackgroundWebView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.JsonUtil
+import android.support.v7.widget.RecyclerView
+import android.view.View
 
 
 class TopicActivity : AppCompatActivity() {
 
-    val adapter = ReplyAdapter()
+    val adapter = PostAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_topic)
 
         item_list.adapter = adapter
-        item_list.layoutManager = LinearLayoutManager(this)
+        item_list.layoutManager = object: LinearLayoutManager(this){
+            override fun requestChildRectangleOnScreen(parent: RecyclerView, child: View, rect: Rect, immediate: Boolean): Boolean { return false }
+            override fun requestChildRectangleOnScreen(parent: RecyclerView, child: View, rect: Rect, immediate: Boolean, focusedChildVisible: Boolean): Boolean { return false }
+        }
 
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -140,6 +146,8 @@ class TopicActivity : AppCompatActivity() {
             adapter.setOnItemChildClickListener { _, v, position ->
                 val post = adapter.data[position]
                 when(v.id){
+                    R.id.item_avatar->
+                        WebActivity.launchUrl(v.context, "${Bangumi.SERVER}/user/${post.username}")
                     R.id.item_reply->{
                         val body = Jsoup.parse(post.pst_content).body()
                         body.select("div.quote").remove()
