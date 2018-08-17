@@ -24,6 +24,7 @@ class BlogAdapter(data: MutableList<Subject.BlogBean>? = null) :
         helper.itemView.item_comment.text = helper.itemView.context.getString(R.string.phrase_reply,item.replies)
         Glide.with(helper.itemView)
                 .load(item.user?.avatar?.large)
+                .apply(RequestOptions.errorOf(R.drawable.ic_404))
                 .apply(RequestOptions.circleCropTransform())
                 .into(helper.itemView.item_avatar)
     }

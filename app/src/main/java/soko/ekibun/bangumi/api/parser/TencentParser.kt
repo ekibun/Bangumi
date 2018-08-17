@@ -19,7 +19,6 @@ class TencentParser: Parser{
             json = json.substring(json.indexOf('{'), json.lastIndexOf('}') + 1)
             JsonUtil.toJsonObject(json).getAsJsonObject("PlaylistItem")
                     .getAsJsonArray("videoPlayList").map{it.asJsonObject}.forEach {
-                        Log.v("obj", it.toString())
                         if(it.get("episode_number").asString.toFloatOrNull() == video.sort + offset && it.get("type").asString == "1"){
                             val info = Parser.VideoInfo(
                                     it.get("id").asString,
@@ -34,12 +33,14 @@ class TencentParser: Parser{
     }
 
     override fun getVideo(webView: BackgroundWebView, api: String, video: Parser.VideoInfo): retrofit2.Call<String> {
-        var url = api
+        val apis = api.split(" ")
+        var url = apis.getOrNull(0)?:""
+        val js = apis.getOrNull(1)?:""
         if(url.isEmpty())
             url = video.url.split(".html?")[0] + "/${video.id}.html"
         else if(url.endsWith("="))
             url += video.url.split(".html?")[0] + "/${video.id}.html"
-        return ApiHelper.buildWebViewCall(webView, url)
+        return ApiHelper.buildWebViewCall(webView, url, header, js)
     }
 
     override fun getDanmakuKey(video: Parser.VideoInfo): retrofit2.Call<String> {

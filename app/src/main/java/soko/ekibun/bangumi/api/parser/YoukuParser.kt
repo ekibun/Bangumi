@@ -21,7 +21,6 @@ class YoukuParser: Parser{
             val element = JsonUtil.toJsonObject(json)
             val li = Jsoup.parse(element.get("html").asString)
             li.select(".c555").forEach {
-                Log.v("video", it.toString())
                 if(it.parent().text().substringBefore(it.text()).toFloatOrNull() == video.sort + offset){
                     val videoid = Regex("""id_([^.=]+)""").find(it.attr("href"))?.groupValues?.get(1)?:"http:" + it.attr("href")
                     val info = Parser.VideoInfo(videoid,
@@ -36,12 +35,14 @@ class YoukuParser: Parser{
     }
 
     override fun getVideo(webView: BackgroundWebView, api: String, video: Parser.VideoInfo): retrofit2.Call<String> {
-        var url = api
+        val apis = api.split(" ")
+        var url = apis.getOrNull(0)?:""
+        val js = apis.getOrNull(1)?:""
         if(url.isEmpty())
             url = video.url
         else if(url.endsWith("="))
             url += video.url
-        return ApiHelper.buildWebViewCall(webView, url)
+        return ApiHelper.buildWebViewCall(webView, url, header, js)
     }
 
     override fun getDanmakuKey(video: Parser.VideoInfo): retrofit2.Call<String> {

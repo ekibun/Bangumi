@@ -4,13 +4,19 @@ import android.content.Context
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import soko.ekibun.bangumi.R
+import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.search.SearchActivity
 import soko.ekibun.bangumi.ui.view.BackgroundWebView
+import android.support.v4.view.MenuItemCompat
+import soko.ekibun.bangumi.ui.view.NotifyActionProvider
+import soko.ekibun.bangumi.ui.web.WebActivity
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -28,10 +34,21 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         BackgroundWebView(this).loadUrl(Bangumi.SERVER)
+        Bangumi.getNotify().enqueue(ApiHelper.buildCallback(this, {
+            notifyMenu?.badge = it.count()
+        },{}))
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    var notifyMenu: NotifyActionProvider? = null
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.action_main, menu)
+
+        val menuItem = menu.findItem(R.id.action_notify)
+        notifyMenu = MenuItemCompat.getActionProvider(menuItem) as NotifyActionProvider
+        notifyMenu?.onClick = {
+            WebActivity.launchUrl(this, "${Bangumi.SERVER}/notify")
+        }
+
         return true
     }
 

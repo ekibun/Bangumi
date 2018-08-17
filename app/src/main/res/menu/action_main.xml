@@ -2,11 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <item android:id="@+id/action_notify"
+          app:actionProviderClass="soko.ekibun.bangumi.ui.view.NotifyActionProvider"
+          app:showAsAction="ifRoom"
+          android:title=""/>
     <item android:id="@+id/action_search"
           android:icon="@drawable/ic_search"
           android:title="@string/search_hint"
           app:showAsAction="ifRoom"/>
-    <!--<item android:id="@+id/action_type"
-          android:title=""
-          app:showAsAction="ifRoom"/>-->
 </menu>

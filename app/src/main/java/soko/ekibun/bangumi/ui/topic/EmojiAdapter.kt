@@ -2,6 +2,7 @@ package soko.ekibun.bangumi.ui.topic
 
 import android.annotation.SuppressLint
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
 import kotlinx.android.synthetic.main.item_emoji.view.*

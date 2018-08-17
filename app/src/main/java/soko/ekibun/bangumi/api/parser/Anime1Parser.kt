@@ -1,29 +1,33 @@
 package soko.ekibun.bangumi.api.parser
 
 import android.util.Log
+import org.jsoup.Jsoup
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.ui.view.BackgroundWebView
 import java.text.DecimalFormat
 
-class UrlParser: Parser {
-    override val siteId: Int = ParseInfo.URL
+class Anime1Parser: Parser {
+    override val siteId: Int = ParseInfo.ANIME1
 
     override fun getVideoInfo(id: String, video: Episode): retrofit2.Call<Parser.VideoInfo> {
         val ids = id.split(" ")
         val vid = ids[0]
-        val offset = ids.getOrNull(1)?.toFloatOrNull()?:0f
-        val type = ids.getOrNull(2)?.toIntOrNull()?:0
-        return ApiHelper.buildCall{Parser.VideoInfo(
-                type.toString(), siteId,
-                vid.replace("{{ep}}", DecimalFormat("#.##").format(video.sort + offset)))}
+        return ApiHelper.buildHttpCall(vid, header){
+            val d = Jsoup.parse(it.body()?.string()?:"")
+            val src = d.selectFirst("iframe")?.attr("src")?:throw Exception("not found")
+            val info = Parser.VideoInfo(
+                    vid, siteId, src)
+            Log.v("video", info.toString())
+            return@buildHttpCall info
+        }
     }
 
     override fun getVideo(webView: BackgroundWebView, api: String, video: Parser.VideoInfo): retrofit2.Call<String> {
         Log.v("video", video.url)
         val apis = api.split(" ")
         var url = apis.getOrNull(0)?:""
-        val js = apis.getOrNull(1)?:""
+        val js = apis.getOrNull(1)?:"jwplayer().getPlaylist()[0].sources[1].file"
         if(url.isEmpty())
             url = video.url
         else if(url.endsWith("="))

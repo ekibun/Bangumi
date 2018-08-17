@@ -22,5 +22,6 @@ data class ParseInfo(
         const val DILIDLILI = 4
         const val URL = 5
         const val BILIBILI = 6
+        const val ANIME1 = 7
     }
 }

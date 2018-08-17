@@ -23,7 +23,6 @@ class IqiyiParser: Parser{
             if (json.startsWith("var"))
                 json = json.substring(json.indexOf('{'), json.lastIndexOf('}') + 1)
             JsonUtil.toJsonObject(json).getAsJsonArray("mixinVideos").map{it.asJsonObject}.forEach {
-                Log.v("obj", it.toString())
                 if(it.get("order").asInt.toFloat() == video.sort + offset){
                     val info = Parser.VideoInfo(
                             it.get("tvId").asString,
@@ -38,12 +37,14 @@ class IqiyiParser: Parser{
     }
 
     override fun getVideo(webView: BackgroundWebView, api: String, video: Parser.VideoInfo): retrofit2.Call<String> {
-        var url = api
+        val apis = api.split(" ")
+        var url = apis.getOrNull(0)?:""
+        val js = apis.getOrNull(1)?:""
         if(url.isEmpty())
             url = video.url
         else if(url.endsWith("="))
             url += video.url
-        return ApiHelper.buildWebViewCall(webView, url)
+        return ApiHelper.buildWebViewCall(webView, url, header, js)
     }
 
     override fun getDanmakuKey(video: Parser.VideoInfo): retrofit2.Call<String> {

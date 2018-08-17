@@ -8,15 +8,11 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.webkit.WebChromeClient
-import android.webkit.WebResourceRequest
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.webkit.*
 import kotlinx.android.synthetic.main.activity_web.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
@@ -40,12 +36,22 @@ class WebActivity : AppCompatActivity() {
 
         val setProgress = { newProgress: Int ->
             webview_progress.visibility = if (newProgress == 100) View.GONE else View.VISIBLE
+            item_swipe.isRefreshing = newProgress != 100
             webview_progress.progress = newProgress
+        }
+
+        item_swipe.setOnRefreshListener {
+            webview.reload()
         }
 
         webview_progress.max = 100
         @SuppressLint("SetJavaScriptEnabled")
         webview.settings.javaScriptEnabled = true
+        webview.settings.useWideViewPort = true
+        webview.settings.loadWithOverviewMode = true
+        webview.settings.setSupportMultipleWindows(true)
+        webview.settings.domStorageEnabled = true
+        webview.settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         if(!isAuth) {
             title = ""
             webview.loadUrl(openUrl)
@@ -157,12 +163,12 @@ class WebActivity : AppCompatActivity() {
         }
 
         fun launchUrl(context: Context, url: String?, openUrl: String){
-            Log.v("launch", url.toString())
             if(jumpUrl(context, url, openUrl)) return
             launchUrl(context, url)
         }
 
-        fun jumpUrl(context: Context, url: String?, openUrl: String): Boolean{
+        fun jumpUrl(context: Context, page: String?, openUrl: String): Boolean{
+            val url = page?.split("#")?.get(0)
             if(url == null || url.isNullOrEmpty() || url == openUrl) return false
             //Topic
             var regex = Regex("""/m/topic/[^/]*/([0-9]*)$""")

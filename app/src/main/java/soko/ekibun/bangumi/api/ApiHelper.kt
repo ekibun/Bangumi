@@ -85,13 +85,21 @@ object ApiHelper {
         }
     }
 
-    fun buildWebViewCall(webView: BackgroundWebView, url: String, header: Map<String, String> = HashMap()): Call<String>{
+    fun buildWebViewCall(webView: BackgroundWebView, url: String, header: Map<String, String> = HashMap(), js: String = ""): Call<String>{
         return object: retrofit2.Call<String>{
             override fun enqueue(callback: retrofit2.Callback<String>) {
                 webView.onCatchVideo={
                     Log.v("video", it.url.toString())
                     callback.onResponse(this, Response.success(it.url.toString()))
                     webView.onCatchVideo={}
+                }
+                webView.onPageFinished={
+                    webView.evaluateJavascript(js){
+                        Log.v("javascript", it.toString())
+                        val url = it?.trim('"', '\'')?:""
+                        if(url.startsWith("http") == true)
+                            callback.onResponse(this, Response.success(url))
+                    }
                 }
                 val map = HashMap<String, String>()
                 map["referer"]=url

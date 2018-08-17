@@ -73,6 +73,7 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
         helper.itemView.item_message.movementMethod = LinkMovementMethod.getInstance()
         Glide.with(helper.itemView)
                 .load("http:" + item.avatar)
+                .apply(RequestOptions.errorOf(R.drawable.ic_404))
                 .apply(RequestOptions.circleCropTransform())
                 .into(helper.itemView.item_avatar)
     }

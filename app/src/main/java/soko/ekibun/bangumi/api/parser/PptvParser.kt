@@ -19,7 +19,6 @@ class PptvParser: Parser{
         return ApiHelper.buildHttpCall("http://apis.web.pptv.com/show/videoList?format=jsonp&pid=$vid", header){
             val src = JsonUtil.toJsonObject(it.body()?.string()?:"")
             src.get("data").asJsonObject.get("list").asJsonArray?.map{it.asJsonObject}?.forEach {
-                Log.v("obj", it.toString())
                 if(it.get("title").asString.toFloatOrNull() == video.sort + offset){
                     val info = Parser.VideoInfo(
                             it.get("id").asString,
@@ -34,12 +33,14 @@ class PptvParser: Parser{
     }
 
     override fun getVideo(webView: BackgroundWebView, api: String, video: Parser.VideoInfo): retrofit2.Call<String> {
-        var url = api
+        val apis = api.split(" ")
+        var url = apis.getOrNull(0)?:""
+        val js = apis.getOrNull(1)?:""
         if(url.isEmpty())
             url = video.url
         else if(url.endsWith("="))
             url += video.url
-        return ApiHelper.buildWebViewCall(webView, url)
+        return ApiHelper.buildWebViewCall(webView, url, header, js)
     }
 
     override fun getDanmakuKey(video: Parser.VideoInfo): retrofit2.Call<String> {

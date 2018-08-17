@@ -31,7 +31,14 @@ class DilidiliParser: Parser {
     }
 
     override fun getVideo(webView: BackgroundWebView, api: String, video: Parser.VideoInfo): retrofit2.Call<String> {
-        return ApiHelper.buildWebViewCall(webView, video.url)
+        val apis = api.split(" ")
+        var url = apis.getOrNull(0)?:""
+        val js = apis.getOrNull(1)?:""
+        if(url.isEmpty())
+            url = video.url
+        else if(url.endsWith("="))
+            url += video.url
+        return ApiHelper.buildWebViewCall(webView, url, header, js)
     }
 
     override fun getDanmakuKey(video: Parser.VideoInfo): retrofit2.Call<String> {

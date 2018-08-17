@@ -22,23 +22,26 @@ class BilibiliParser: Parser {
             val end = "};"
             body = body.substring(body.indexOf(start)+start.length)
             body = body.substring(0, body.indexOf(end)+1)
-            Log.v("body", body)
             val d = JsonUtil.toJsonObject(body)
             val episode = d.getAsJsonObject("mediaInfo").getAsJsonArray("episodes").get((video.sort + offset).toInt()-1).asJsonObject
-            return@buildHttpCall Parser.VideoInfo(
+            val info = Parser.VideoInfo(
                     episode.get("cid").toString(),
                     siteId,
                     "https://www.bilibili.com/bangumi/play/ep${episode.get("ep_id").asString}")
+            Log.v("video", info.toString())
+            return@buildHttpCall info
         }
     }
 
     override fun getVideo(webView: BackgroundWebView, api: String, video: Parser.VideoInfo): Call<String> {
-        var url = api
+        val apis = api.split(" ")
+        var url = apis.getOrNull(0)?:""
+        val js = apis.getOrNull(1)?:""
         if(url.isEmpty())
             url = video.url
         else if(url.endsWith("="))
             url += video.url
-        return ApiHelper.buildWebViewCall(webView, url)
+        return ApiHelper.buildWebViewCall(webView, url, header, js)
     }
 
     override fun getDanmakuKey(video: Parser.VideoInfo): Call<String> {
@@ -49,7 +52,6 @@ class BilibiliParser: Parser {
         return ApiHelper.buildHttpCall("https://comment.bilibili.com/${video.id}.xml", header) {
             val map: MutableMap<Int, MutableList<Parser.Danmaku>> = HashMap()
             val xml = String(IqiyiParser.inflate(it.body()!!.bytes(), true))
-            Log.v("danmaku", xml)
             val doc = Jsoup.parse(xml)
             val infos = doc.select("d")
             for (info in infos) {

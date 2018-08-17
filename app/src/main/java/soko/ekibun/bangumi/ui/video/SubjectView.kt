@@ -95,6 +95,7 @@ class SubjectView(private val context: VideoActivity){
         Glide.with(context)
                 .applyDefaultRequestOptions(RequestOptions.placeholderOf(detail.item_cover.drawable))
                 .load(subject.images?.common)
+                .apply(RequestOptions.errorOf(R.drawable.ic_404))
                 .into(detail.item_cover)
 
         Glide.with(context)

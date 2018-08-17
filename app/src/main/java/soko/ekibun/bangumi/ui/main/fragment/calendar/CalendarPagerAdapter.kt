@@ -103,7 +103,7 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
                 ((item.second.tag as? RecyclerView)?.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(index-1, 0)
         }
         notifyDataSetChanged()
-        if(firstLoad) {
+        if(firstLoad && count > 0) {
             pager.currentItem = dateIndex
             firstLoad = false
         }

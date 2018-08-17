@@ -7,8 +7,10 @@ import android.graphics.drawable.Drawable
 import android.text.Html
 import android.widget.TextView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.transition.Transition
+import soko.ekibun.bangumi.R
 import java.net.URI
 import kotlin.math.max
 import kotlin.math.min
@@ -21,7 +23,8 @@ class HtmlHttpImageGetter(val container: TextView, private val baseUri: URI?, pr
         if(urlDrawable.drawable == null) container.post {
             val url = baseUri?.resolve(source)?.toURL() ?: URI.create(source).toURL()
             // get the actual source
-            Glide.with(container).asBitmap().load(url).into(object : SimpleTarget<Bitmap>() {
+            Glide.with(container).asBitmap().load(url)
+                    .into(object : SimpleTarget<Bitmap>() {
                 override fun onResourceReady(bitmap: Bitmap, transition: Transition<in Bitmap>?) {
                     val result = BitmapDrawable(container.resources, bitmap)
                     val maxWidth = container.width.toFloat()

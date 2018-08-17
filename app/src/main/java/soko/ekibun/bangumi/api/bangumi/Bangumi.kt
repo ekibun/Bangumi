@@ -285,5 +285,24 @@ interface Bangumi {
                 return@buildHttpCall Topic(group, title, replies, post, formhash, lastview, links)
             }
         }
+
+        //通知
+        fun getNotify(): Call<List<Notify>>{
+            val cookie = CookieManager.getInstance().getCookie(SERVER)?:""
+            return ApiHelper.buildHttpCall("$SERVER/notify",mapOf("cookie" to cookie)){
+                val doc = Jsoup.parse(it.body()?.string()?:"")
+                val ret = ArrayList<Notify>()
+                doc.select(".tml_item")?.forEach {
+                    val user = it.selectFirst("a.avatar")
+                    val userId = Regex("""/user/([^/]*)""").find(user?.attr("href")?:"")?.groupValues?.get(1)
+                    val img = "http:" + Regex("""background-image:url\('([^']*)'\)""").find(user?.html()?:"")?.groupValues?.get(1)
+                    val userName = it.selectFirst(".inner")?.selectFirst("strong")?.text()
+                    val content = it.selectFirst(".inner")?.text()?:""
+                    val url = it.selectFirst(".nt_link")?.attr("href")?:""
+                    ret += Notify(url, content, UserInfo(0, "$SERVER/user/$userId", userId, userName, Images(img, img, img, img, img)))
+                }
+                ret
+            }
+        }
     }
 }

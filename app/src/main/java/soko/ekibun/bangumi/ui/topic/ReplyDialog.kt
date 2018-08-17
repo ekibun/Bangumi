@@ -9,7 +9,6 @@ import android.support.v4.app.DialogFragment
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.PopupMenu
 import android.util.DisplayMetrics
-import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import kotlinx.android.synthetic.main.dialog_reply.view.*
@@ -24,7 +23,7 @@ import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.smms.SmMs
 
 class ReplyDialog: DialogFragment() {
-    var contentView: View? = null
+    private var contentView: View? = null
 
     private fun getKeyBoardHeight(): Int{
         val rect = Rect()
@@ -147,17 +146,14 @@ class ReplyDialog: DialogFragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if(contentView?.item_btn_emoji?.isSelected == false){
-            Log.v("result", "focus")
             contentView?.item_input?.postDelayed( {
                 contentView?.item_input?.requestFocus()
                 val inputMethodManager = (context?:return@postDelayed).applicationContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 inputMethodManager.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS)
             }, 200)
         }
-        Log.v("result", "$requestCode $resultCode $data")
         val inputStream = activity?.contentResolver?.openInputStream(data?.data?:return)?:return
         val bytes = inputStream.readBytes()
-        Log.v("bytes", bytes.size.toString())
         val requestBody = RequestBody.create(MediaType.parse("image/*"),bytes)
         val body = MultipartBody.Part.createFormData("smfile", "image", requestBody)
         val call = SmMs.createInstance().upload(body)

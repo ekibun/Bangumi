@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Handler
 import android.util.Log
 import android.webkit.*
+import kotlinx.android.synthetic.main.activity_web.*
 
 class BackgroundWebView(context: Context): WebView(context) {
     var onPageFinished = {_:String?->}
@@ -20,6 +21,10 @@ class BackgroundWebView(context: Context): WebView(context) {
     init{
         @SuppressLint("SetJavaScriptEnabled")
         settings.javaScriptEnabled = true
+        settings.useWideViewPort = true
+        settings.loadWithOverviewMode = true
+        settings.setSupportMultipleWindows(true)
+        settings.domStorageEnabled = true
         settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {

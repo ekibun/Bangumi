@@ -8,7 +8,6 @@ import android.text.style.ClickableSpan
 import android.view.View
 import java.util.*
 import android.text.style.RelativeSizeSpan
-import android.util.Log
 import android.widget.TextView
 
 class HtmlTagHandler(private val widget: TextView, private var baseSize: Float = 13f, private val onClick:(ImageSpan)->Unit): Html.TagHandler{
@@ -68,7 +67,6 @@ class HtmlTagHandler(private val widget: TextView, private var baseSize: Float =
             textView.text = textView.text
         }
         override fun updateDrawState(ds: TextPaint) {
-            Log.v("update", "")
             ds.bgColor = bgColor
             ds.color = if(textView.tag == this) colorInv else Color.TRANSPARENT
             ds.isUnderlineText = false

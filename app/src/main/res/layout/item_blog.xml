@@ -16,7 +16,8 @@
         android:transitionName="container"
         tools:ignore="RtlHardcoded,HardcodedText">
 
-    <ImageView
+    <com.github.siyamed.shapeimageview.CircularImageView
+            app:siBorderAlpha="0"
             android:id="@+id/item_avatar"
             android:layout_width="32dp"
             android:layout_height="32dp"
