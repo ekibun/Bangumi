@@ -47,7 +47,6 @@ class WebActivity : AppCompatActivity() {
         webview_progress.max = 100
         @SuppressLint("SetJavaScriptEnabled")
         webview.settings.javaScriptEnabled = true
-        webview.settings.useWideViewPort = true
         webview.settings.setSupportMultipleWindows(true)
         webview.settings.domStorageEnabled = true
         webview.settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
