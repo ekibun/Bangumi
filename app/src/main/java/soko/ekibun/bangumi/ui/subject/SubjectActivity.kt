@@ -4,13 +4,14 @@ import android.content.Context
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
+import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import kotlinx.android.synthetic.main.activity_subject.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
+import soko.ekibun.bangumi.util.AppUtil
 import soko.ekibun.bangumi.util.JsonUtil
 
 class SubjectActivity : AppCompatActivity() {
@@ -26,6 +27,11 @@ class SubjectActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         subjectPresenter.init(subject)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.action_subject, menu)
+        return true
     }
 
     private fun processBack(){
@@ -45,6 +51,7 @@ class SubjectActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> processBack()
+            R.id.action_share -> AppUtil.shareString(this, subject.name + " " + subject.url)
         }
         return super.onOptionsItemSelected(item)
     }

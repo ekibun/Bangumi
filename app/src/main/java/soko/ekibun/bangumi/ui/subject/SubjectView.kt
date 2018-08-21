@@ -2,6 +2,7 @@ package soko.ekibun.bangumi.ui.subject
 
 import android.annotation.SuppressLint
 import android.support.design.widget.AppBarLayout
+import android.support.design.widget.CollapsingToolbarLayout
 import android.support.v7.widget.LinearLayoutManager
 import android.view.View
 import android.view.animation.AnimationUtils
@@ -39,10 +40,11 @@ class SubjectView(private val context: SubjectActivity){
 
     init{
         context.app_bar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener{ appBarLayout, verticalOffset ->
-            val ratio = Math.abs(verticalOffset.toFloat() / appBarLayout.totalScrollRange)
+             val ratio = Math.abs(verticalOffset.toFloat() / appBarLayout.totalScrollRange)
             context.item_scrim.alpha = ratio
             context.item_subject.alpha = 1 - ratio
             context.item_buttons.translationY = -(context.toolbar.height - context.item_buttons.height * 9 / 8) * ratio / 2 - context.item_buttons.height / 16
+            context.item_buttons.translationX = -(context.toolbar.height - (context.item_buttons.layoutParams as CollapsingToolbarLayout.LayoutParams).marginEnd * 2) * ratio
             context.toolbar.currentContentInsetRight
         })
 

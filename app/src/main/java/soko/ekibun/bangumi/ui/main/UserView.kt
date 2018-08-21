@@ -22,6 +22,7 @@ class UserView(private val context: MainActivity, onUserFigureClickListener: Vie
             Glide.with(headerView)
                     .load(user?.avatar?.large)
                     .apply(RequestOptions.placeholderOf(R.drawable.akkarin))
+                    .apply(RequestOptions.circleCropTransform())
                     .into(headerView.user_figure)
             val token = UserModel(context).getToken()
             headerView.user_id.text = if(user?.id == null) "" else "@${user.id}"

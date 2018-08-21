@@ -3,6 +3,7 @@ package soko.ekibun.bangumi.ui.main
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import kotlinx.android.synthetic.main.activity_main.*
 import retrofit2.Call
@@ -49,18 +50,27 @@ class MainPresenter(private val context: MainActivity){
     private var userCall : Call<UserInfo>? = null
     fun refreshUser(){
         userCall?.cancel()
-        setUser(null)
-        drawerView.homeFragment.collectionFragment()?.reset()
 
         val token = userModel.getToken()
         context.nav_view.menu.findItem(R.id.nav_logout).isVisible = token != null
         if(token != null){
+            api.refreshToken(token.refresh_token?:"").enqueue(ApiHelper.buildCallback(null,{}, {}))
+
+            val user = userModel.getUser()
             userCall = api.user(token.user_id.toString())
             userCall?.enqueue(ApiHelper.buildCallback(context, {
+                userModel.saveUser(it)
                 setUser(it)
-                //drawerView.resetCollection()
-                api.refreshToken(token.refresh_token?:"").enqueue(ApiHelper.buildCallback(null,{}, {}))
+                if(user == null) refreshUser()
             },{}))
+            if(user != null){
+                setUser(user)
+                drawerView.homeFragment.collectionFragment()?.reset()
+            }
+        }else{
+            setUser(null)
+            userModel.saveUser(null)
+            drawerView.homeFragment.collectionFragment()?.reset()
         }
     }
 

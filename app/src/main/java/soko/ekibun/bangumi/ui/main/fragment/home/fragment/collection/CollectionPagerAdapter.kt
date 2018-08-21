@@ -80,7 +80,9 @@ class CollectionPagerAdapter(context: Context, val fragment: CollectionFragment,
         collectionCalls[position]?.cancel()
         if(page == 0)
             item.first.setNewData(null)
-        val userName =  UserModel(item.second.context).getToken()?.user_id?.toString()?:return
+        val user =  UserModel(item.second.context).getUser()?:return
+        if(UserModel(item.second.context).getToken()?.user_id?.toString() != user.id.toString()) return
+        val userName = user.username?:user.id.toString()
         if(page == 0)
             item.second.isRefreshing = true
         val useApi = position == 2 && subjectTypeView.selectedType in arrayOf(R.id.collection_type_anime, R.id.collection_type_book, R.id.collection_type_real)
