@@ -30,7 +30,7 @@ class VideoController(view: ViewGroup,
             when(event.action){
                 MotionEvent.ACTION_DOWN->{
                     val curTime = System.currentTimeMillis()
-                    if(curTime - lastTime < 500){
+                    if(curTime - lastTime < 300){
                         dblclick = true
                         onAction(Controller.Action.PLAY_PAUSE, 0)
                     }else{
@@ -57,12 +57,12 @@ class VideoController(view: ViewGroup,
                         onAction(Controller.Action.SEEK_TO, downPos + (event.x - downX).toLong() * 66)
                         doSkip = false
                     } else
-                        if (!dblclick && System.currentTimeMillis() - lastTime < 500)
+                        if (!dblclick && System.currentTimeMillis() - lastTime < 300)
                             Handler().postDelayed({
                                 if (!dblclick) {
                                     doShowHide(!isShow)
                                 }
-                            }, 500)
+                            }, 300)
                     view.parent.requestDisallowInterceptTouchEvent(false)
                     resetTimeout()
                 }

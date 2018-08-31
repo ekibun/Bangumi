@@ -3,7 +3,7 @@ package soko.ekibun.bangumi.ui.main
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
+import android.support.design.widget.Snackbar
 import android.view.View
 import kotlinx.android.synthetic.main.activity_main.*
 import retrofit2.Call
@@ -54,8 +54,14 @@ class MainPresenter(private val context: MainActivity){
         val token = userModel.getToken()
         context.nav_view.menu.findItem(R.id.nav_logout).isVisible = token != null
         if(token != null){
-            api.refreshToken(token.refresh_token?:"").enqueue(ApiHelper.buildCallback(null,{}, {}))
-
+            auth.refreshToken(token.refresh_token?:"").enqueue(ApiHelper.buildCallback(null,{
+                if(it.expires_in==0){
+                    Snackbar.make(context.window.decorView, "登录过期请重新登录", Snackbar.LENGTH_SHORT).show()
+                    onLogout()
+                }else{
+                    userModel.saveToken(it)
+                }
+            }, {}))
             val user = userModel.getUser()
             userCall = api.user(token.user_id.toString())
             userCall?.enqueue(ApiHelper.buildCallback(context, {

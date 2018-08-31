@@ -8,6 +8,8 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Message
+import android.util.Log
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
@@ -47,7 +49,6 @@ class WebActivity : AppCompatActivity() {
         webview_progress.max = 100
         @SuppressLint("SetJavaScriptEnabled")
         webview.settings.javaScriptEnabled = true
-        webview.settings.setSupportMultipleWindows(true)
         webview.settings.domStorageEnabled = true
         webview.settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         if(!isAuth) {
