@@ -36,16 +36,22 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            android:paddingBottom="40dp">
-        <android.support.v7.widget.RecyclerView
+            android:paddingBottom="45dp">
+        <com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView
                 android:id="@+id/item_list"
-                android:scrollbars="vertical"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
+                android:layout_height="match_parent"
+                app:fastScrollThumbInactiveColor="?colorPrimaryForeground"
+                app:fastScrollThumbColor="?colorAccent"
+                app:fastScrollPopupTextSize="32sp"
+                app:fastScrollPopupBackgroundSize="48sp"
+                app:fastScrollPopupTextColor="@android:color/white"
+                app:fastScrollPopupBgColor="?colorAccent"/>
     </android.support.v4.widget.SwipeRefreshLayout>
 
     <TextView android:id="@+id/item_reply"
               android:drawableStart="@drawable/ic_edit"
+              android:drawableEnd="@drawable/ic_send"
               android:text="@string/reply_hint"
               android:padding="8dp"
               android:gravity="center_vertical"

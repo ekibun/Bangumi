@@ -1,7 +1,8 @@
 package soko.ekibun.bangumi.ui.topic
 
 import android.annotation.SuppressLint
-import android.text.Html
+import android.support.v7.widget.RecyclerView
+import android.text.*
 import android.text.method.LinkMovementMethod
 import android.view.Gravity
 import android.view.View
@@ -19,19 +20,65 @@ import soko.ekibun.bangumi.ui.view.FixMultiViewPager
 import soko.ekibun.bangumi.util.HtmlHttpImageGetter
 import soko.ekibun.bangumi.util.HtmlTagHandler
 import java.net.URI
-import android.text.SpannableStringBuilder
-import android.text.Spanned
 import android.text.style.ClickableSpan
 import android.text.style.URLSpan
+import android.util.Log
+import android.util.SparseIntArray
+import android.widget.TextView
+import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView
 import org.jsoup.Jsoup
 import soko.ekibun.bangumi.ui.web.WebActivity
+import soko.ekibun.bangumi.util.HttpUtil
+import java.util.concurrent.Executors
 
+class PostAdapter(private val recyclerView: FastScrollRecyclerView, data: MutableList<TopicPost>? = null) :
+        BaseQuickAdapter<TopicPost, BaseViewHolder>(R.layout.item_reply, data), FastScrollRecyclerView.MeasurableAdapter<BaseViewHolder>, FastScrollRecyclerView.SectionedAdapter {
+    private fun updateScrollOffsets(item: TopicPost, height: Int){
+        try{
+            val soField = FastScrollRecyclerView::class.java.getDeclaredField("mScrollOffsets")
+            soField.isAccessible = true
+            val mScrollOffsets = soField.get(recyclerView) as SparseIntArray
+            val position = data.indexOf(item)
+            val index = mScrollOffsets.indexOfKey(position)
+            if(index >= 0){
+                val delta = height - (itemHeight.get(getItemViewType(position),0))
+                itemHeight.put(getItemViewType(position), height)
+                Log.v("delta", delta.toString())
+                for(i in index + 1 until mScrollOffsets.size()){
+                    Log.v("key", mScrollOffsets.keyAt(i).toString())
+                    mScrollOffsets.put(mScrollOffsets.keyAt(i), mScrollOffsets.valueAt(i) + delta)
+                }
+            }
+        }catch (e: Exception){
+            e.printStackTrace()
+        }
+    }
 
-class PostAdapter(data: MutableList<TopicPost>? = null) :
-        BaseQuickAdapter<TopicPost, BaseViewHolder>(R.layout.item_reply, data) {
+    private val itemHeight = SparseIntArray()
+    override fun getViewTypeHeight(recyclerView: RecyclerView?, viewHolder: BaseViewHolder?, viewType: Int): Int {
+        var height = viewHolder?.itemView?.height?:-1
+        if(height != -1){
+            itemHeight.put(viewType, height)
+        }else{
+            height = itemHeight.get(viewType, -1)
+            if(height == -1){
+                height = if(viewType < 0x00001000) 0 else recyclerView?.context?.resources?.getDimensionPixelSize(R.dimen.reply_def_height)?:100
+                itemHeight.put(viewType, height)
+            }
+        }
+        return height
+    }
 
-    private val drawableMap  = HashMap<String, LinkedHashMap<String, HtmlHttpImageGetter.UrlDrawable>>()
+    override fun getSectionName(position: Int): String {
+        val item = data.getOrNull(position)?:data.last()
+        return "#${item.floor}"
+    }
 
+    override fun getItemViewType(position: Int): Int {
+        return if(position >= data.size)super.getItemViewType(position) else 0x00001000 + position
+    }
+
+    private val drawableMap  = HashMap<BaseViewHolder, LinkedHashMap<String, HtmlHttpImageGetter.UrlDrawable>>()
     @SuppressLint("SetTextI18n")
     override fun convert(helper: BaseViewHolder, item: TopicPost) {
         helper.addOnClickListener(R.id.item_del)
@@ -39,43 +86,68 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
         helper.addOnClickListener(R.id.item_edit)
         helper.addOnClickListener(R.id.item_avatar)
         helper.itemView.item_user.text = "${item.nickname}@${item.username}"
-        val subFloor = if(item.sub_floor>0) "-${item.sub_floor}" else ""
+        val subFloor = if (item.sub_floor > 0) "-${item.sub_floor}" else ""
         helper.itemView.item_time.text = "#${item.floor}$subFloor - ${item.dateline}"
-        helper.itemView.offset.visibility = if(item.isSub) View.VISIBLE else View.GONE
-        helper.itemView.item_reply.visibility = if(item.relate.toIntOrNull()?:0 > 0) View.VISIBLE else View.GONE
-        helper.itemView.item_del.visibility = if(item.editable) View.VISIBLE else View.GONE
+        helper.itemView.offset.visibility = if (item.isSub) View.VISIBLE else View.GONE
+        helper.itemView.item_reply.visibility = if (item.relate.toIntOrNull() ?: 0 > 0) View.VISIBLE else View.GONE
+        helper.itemView.item_del.visibility = if (item.editable) View.VISIBLE else View.GONE
         helper.itemView.item_edit.visibility = helper.itemView.item_del.visibility
-        val drawables = drawableMap.getOrPut(item.pst_id){ LinkedHashMap() }
-        helper.itemView.item_message.setOnFocusChangeListener { _, focus ->
-            if(!focus){
-                helper.itemView.item_message.tag = null
-                helper.itemView.item_message.text = helper.itemView.item_message.text
-            } }
-        @Suppress("DEPRECATION")
-        helper.itemView.item_message.text = setTextLinkOpenByWebView(
-                Html.fromHtml(parseHtml(item.pst_content),HtmlHttpImageGetter(helper.itemView.item_message, URI.create(Bangumi.SERVER), drawables), HtmlTagHandler(helper.itemView.item_message){
-            val imageList = drawables.filter { it.value.drawable != null && (it.key.startsWith("http") || !it.key.contains("smile")) }.toList()
-            val index = imageList.indexOfFirst { d-> d.first == it.source }
-            if(index < 0) return@HtmlTagHandler
-            val popWindow = PopupWindow(helper.itemView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, true)
-            val viewPager = FixMultiViewPager(helper.itemView.context)
-            popWindow.contentView = viewPager
-            viewPager.adapter = PhotoPagerAdapter(imageList.map{it.second.drawable!!.constantState!!.newDrawable()}){
-                popWindow.dismiss()
+        val drawables = drawableMap.getOrPut(helper) { LinkedHashMap() }
+        helper.itemView.item_message.let { item_message ->
+            val htmlText = setTextLinkOpenByWebView(
+                    Html.fromHtml(parseHtml(item.pst_content), HtmlHttpImageGetter(item_message, URI.create(Bangumi.SERVER), drawables), HtmlTagHandler(item_message) {
+                        val imageList = drawables.filter { (it.key.startsWith("http") || !it.key.contains("smile")) }.toList()
+                        val index = imageList.indexOfFirst { d -> d.first == it.source }
+                        if (index < 0) return@HtmlTagHandler
+                        val popWindow = PopupWindow(helper.itemView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, true)
+                        val viewPager = FixMultiViewPager(helper.itemView.context)
+                        popWindow.contentView = viewPager
+                        viewPager.adapter = PhotoPagerAdapter(imageList.map { HttpUtil.getUrl(it.first, URI.create(Bangumi.SERVER)) }) {
+                            popWindow.dismiss()
+                        }
+                        viewPager.currentItem = index
+                        popWindow.isClippingEnabled = false
+                        popWindow.animationStyle = R.style.AppTheme_FadeInOut
+                        popWindow.showAtLocation(helper.itemView, Gravity.CENTER, 0, 0)
+                    })) {
+                WebActivity.launchUrl(helper.itemView.context, it, "")
             }
-            viewPager.currentItem = index
-            popWindow.isClippingEnabled = false
-            popWindow.showAtLocation(helper.itemView, Gravity.CENTER, 0, 0)
-        })){
-            WebActivity.launchUrl(helper.itemView.context, it, "")
+            item_message.post {
+                item_message.text = htmlText
+            }
         }
-
+        helper.itemView.item_message.setOnFocusChangeListener { view, focus ->
+            if(!focus){
+                view.tag = null
+                (view as TextView).text = view.text
+            } }
         helper.itemView.item_message.movementMethod = LinkMovementMethod.getInstance()
         Glide.with(helper.itemView)
-                .load("http:" + item.avatar)
+                .load(HttpUtil.getUrl(item.avatar, URI.create(Bangumi.SERVER)))
                 .apply(RequestOptions.errorOf(R.drawable.ic_404))
                 .apply(RequestOptions.circleCropTransform())
                 .into(helper.itemView.item_avatar)
+
+        helper.itemView.tag = item
+        helper.itemView.addOnLayoutChangeListener (object: View.OnLayoutChangeListener{
+            override fun onLayoutChange(view: View, l: Int, t: Int, r: Int, b: Int, ol: Int, ot: Int, or: Int, ob: Int) {
+                if(view.tag == item && b-t != ob-ot) {
+                    Thread {
+                        updateScrollOffsets(item, b - t)
+                    }.start()
+                } else if(view.tag != item)
+                    view.removeOnLayoutChangeListener(this)
+            }
+        })
+    }
+
+    override fun onViewAttachedToWindow(holder: BaseViewHolder) {
+        super.onViewAttachedToWindow(holder)
+
+        // Bug workaround for losing text selection ability, see:
+        // https://code.google.com/p/android/issues/detail?id=208169
+        holder.itemView.item_message?.isEnabled = false
+        holder.itemView.item_message?.isEnabled = true
     }
 
     companion object {
@@ -115,14 +187,12 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
 
         fun setTextLinkOpenByWebView(htmlString: Spanned, onCLick:(String)->Unit): Spanned {
             if (htmlString is SpannableStringBuilder) {
-// 取得与a标签相关的Span
                 val objs = htmlString.getSpans(0, htmlString.length, URLSpan::class.java)
                 if (null != objs && objs.isNotEmpty()) {
                     for (obj in objs) {
                         val start = htmlString.getSpanStart(obj)
                         val end = htmlString.getSpanEnd(obj)
                         if (obj is URLSpan) {
-                            //先移除这个Span，再新添加一个自己实现的Span。
                             val url = obj.url
                             htmlString.removeSpan(obj)
                             htmlString.setSpan(object : ClickableSpan() {

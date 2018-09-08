@@ -56,4 +56,6 @@ dependencies {
     implementation 'com.xiaofeng.android:flowlayoutmanager:1.2.3.2'
     implementation 'com.nshmura:recyclertablayout:1.5.0'
     implementation 'com.github.chrisbanes:PhotoView:2.1.4'
+    implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.15'
+    implementation 'com.simplecityapps:recyclerview-fastscroll:1.0.18'
 }

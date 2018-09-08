@@ -6,6 +6,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Path
 import soko.ekibun.bangumi.api.bangumiData.bean.BangumiItem
+import soko.ekibun.bangumi.util.HttpUtil
 
 interface BangumiData{
 
@@ -19,6 +20,7 @@ interface BangumiData{
         fun createInstance(): BangumiData{
             return Retrofit.Builder().baseUrl(SERVER_API)
                     .addConverterFactory(GsonConverterFactory.create())
+                    .client(HttpUtil.okHttpClient)
                     .build().create(BangumiData::class.java)
         }
     }

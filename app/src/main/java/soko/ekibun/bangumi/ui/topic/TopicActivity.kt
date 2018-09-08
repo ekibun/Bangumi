@@ -27,7 +27,7 @@ import android.view.View
 
 class TopicActivity : AppCompatActivity() {
 
-    val adapter = PostAdapter()
+    val adapter by lazy{ PostAdapter(item_list) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,7 +38,6 @@ class TopicActivity : AppCompatActivity() {
             override fun requestChildRectangleOnScreen(parent: RecyclerView, child: View, rect: Rect, immediate: Boolean): Boolean { return false }
             override fun requestChildRectangleOnScreen(parent: RecyclerView, child: View, rect: Rect, immediate: Boolean, focusedChildVisible: Boolean): Boolean { return false }
         }
-
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         title = ""
@@ -61,8 +60,7 @@ class TopicActivity : AppCompatActivity() {
         dialog.callback = { inputString->
             data.add("submit", "submit")
             data.add("content", comment + inputString)
-            val cookie = CookieManager.getInstance().getCookie(Bangumi.SERVER)?:""
-            ApiHelper.buildHttpCall(post, mapOf("cookie" to cookie), data.build()){
+            ApiHelper.buildHttpCall(post, mapOf(), data.build()){
                 val replies = ArrayList(adapter.data)
                 val posts = JsonUtil.toJsonObject(it.body()?.string()?:"").getAsJsonObject("posts")
                 val main = JsonUtil.toEntity<Map<String, TopicPost>>(posts.get("main")?.toString()?:"", object: TypeToken<Map<String, TopicPost>>(){}.type)?: HashMap()
@@ -165,8 +163,7 @@ class TopicActivity : AppCompatActivity() {
                                 .setNegativeButton("取消", { _, _ -> }).setPositiveButton("确定") { _, _ ->
                                     if (post.floor == 1) {
                                         val url = topic.post.replace(Bangumi.SERVER, "${Bangumi.SERVER}/erase").replace("/new_reply", "?gh=${topic.formhash}&ajax=1")
-                                        val cookie = CookieManager.getInstance().getCookie(Bangumi.SERVER) ?: ""
-                                        ApiHelper.buildHttpCall(url, mapOf("cookie" to cookie)) {
+                                        ApiHelper.buildHttpCall(url) {
                                             true
                                         }.enqueue(ApiHelper.buildCallback<Boolean>(this@TopicActivity, {
                                             if (it) finish()
@@ -180,8 +177,7 @@ class TopicActivity : AppCompatActivity() {
                                             "subject" -> "/erase/subject/reply/"//http://bangumi.tv/subject/reply/114260/edit
                                             else -> ""
                                         } + "${post.pst_id}?gh=${topic.formhash}&ajax=1"
-                                        val cookie = CookieManager.getInstance().getCookie(Bangumi.SERVER) ?: ""
-                                        ApiHelper.buildHttpCall(url, mapOf("cookie" to cookie)) {
+                                        ApiHelper.buildHttpCall(url) {
                                             it.body()?.string()?.contains("\"status\":\"ok\"") == true
                                         }.enqueue(ApiHelper.buildCallback<Boolean>(this@TopicActivity, {
                                             val data = ArrayList(adapter.data)

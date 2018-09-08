@@ -1,17 +1,18 @@
 package soko.ekibun.bangumi.ui.topic
 
-import android.graphics.drawable.Drawable
 import android.support.v4.view.PagerAdapter
 import android.view.View
 import android.view.ViewGroup
+import com.bumptech.glide.Glide
 import soko.ekibun.bangumi.ui.view.DragPhotoView
 
-class PhotoPagerAdapter(private val items: List<Drawable>, private val onDismiss: ()->Unit): PagerAdapter(){
+class PhotoPagerAdapter(private val items: List<String>, private val onDismiss: ()->Unit): PagerAdapter(){
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
         val photoView = DragPhotoView(container.context)
         photoView.isEnabled = true
-        photoView.setImageDrawable(items[position])
+        Glide.with(container).load(items[position]).into(photoView)
+        //photoView.setImageDrawable(items[position])
         photoView.mExitListener = { onDismiss() }
         photoView.mTapListener = { onDismiss() }
         container.addView(photoView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)

@@ -51,11 +51,11 @@ object ApiHelper {
         }
     }
 
-    fun <T> buildHttpCall(url: String, header: Map<String, String> = HashMap(), body: RequestBody? = null, converter: (okhttp3.Response)->T): Call<T>{
+    fun <T> buildHttpCall(url: String, header: Map<String, String> = HashMap(), body: RequestBody? = null, cookie: Boolean = true, converter: (okhttp3.Response)->T): Call<T>{
         val uiHandler = Handler(Looper.getMainLooper())
         return object: retrofit2.Call<T>{
             private val retrofitCall = this
-            val okHttpCall = HttpUtil.getCall(url, header, body)
+            val okHttpCall = HttpUtil.getCall(url, header, body, cookie)
             fun createResponse(response: okhttp3.Response): retrofit2.Response<T>{
                 return retrofit2.Response.success(converter(response))
             }

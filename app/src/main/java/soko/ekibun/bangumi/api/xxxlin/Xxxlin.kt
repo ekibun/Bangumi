@@ -8,6 +8,7 @@ import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.POST
 import soko.ekibun.bangumi.api.xxxlin.bean.BaseResult
+import soko.ekibun.bangumi.util.HttpUtil
 import java.util.*
 
 interface Xxxlin {
@@ -28,6 +29,7 @@ interface Xxxlin {
         fun createInstance(): Xxxlin{
             return Retrofit.Builder().baseUrl(SERVER_API)
                     .addConverterFactory(GsonConverterFactory.create())
+                    .client(HttpUtil.okHttpClient)
                     .build().create(Xxxlin::class.java)
         }
     }

@@ -10,6 +10,7 @@ import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 import soko.ekibun.bangumi.api.smms.bean.Response
+import soko.ekibun.bangumi.util.HttpUtil
 
 interface SmMs{
 
@@ -23,6 +24,7 @@ interface SmMs{
         fun createInstance(): SmMs{
             return Retrofit.Builder().baseUrl(SERVER_API)
                     .addConverterFactory(GsonConverterFactory.create())
+                    .client(HttpUtil.okHttpClient)
                     .build().create(SmMs::class.java)
         }
     }

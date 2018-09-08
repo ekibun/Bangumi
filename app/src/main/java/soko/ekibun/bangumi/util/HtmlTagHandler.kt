@@ -9,10 +9,12 @@ import android.view.View
 import java.util.*
 import android.text.style.RelativeSizeSpan
 import android.widget.TextView
+import java.lang.ref.WeakReference
 
-class HtmlTagHandler(private val widget: TextView, private var baseSize: Float = 13f, private val onClick:(ImageSpan)->Unit): Html.TagHandler{
-    private val bgColor = widget.textColors.defaultColor
-    private val colorInv = ResourceUtil.resolveColorAttr(widget.context, android.R.attr.textColorPrimaryInverse)
+class HtmlTagHandler(view: TextView, private var baseSize: Float = 13f, private val onClick:(ImageSpan)->Unit): Html.TagHandler{
+    private val bgColor = view.textColors.defaultColor
+    private val colorInv = ResourceUtil.resolveColorAttr(view.context, android.R.attr.textColorPrimaryInverse)
+    private val widget = WeakReference(view)
 
     override fun handleTag(openning: Boolean, tag: String, output: Editable, xmlReader: XMLReader) {
         if (tag.toLowerCase(Locale.getDefault()) == "img") {
@@ -59,16 +61,18 @@ class HtmlTagHandler(private val widget: TextView, private var baseSize: Float =
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
     }
 
-    class MaskSpan(private var bgColor: Int, private var colorInv: Int, private val textView: TextView, private val onClick:()->Unit): ClickableSpan(){
+    class MaskSpan(private var bgColor: Int, private var colorInv: Int, private val textView: WeakReference<TextView>, private val onClick:()->Unit): ClickableSpan(){
         var select = false
         override fun onClick(widget: View) {
             onClick()
-            textView.tag = if(textView.tag == this) null else this
-            textView.text = textView.text
+            val view = textView.get()?:return
+            view.tag = if(view.tag == this) null else this
+            view.text = view.text
         }
         override fun updateDrawState(ds: TextPaint) {
+            val view = textView.get()?:return
             ds.bgColor = bgColor
-            ds.color = if(textView.tag == this) colorInv else Color.TRANSPARENT
+            ds.color = if(view.tag == this) colorInv else Color.TRANSPARENT
             ds.isUnderlineText = false
         }
     }
