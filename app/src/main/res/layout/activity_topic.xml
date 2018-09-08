@@ -37,7 +37,7 @@
             android:layout_height="match_parent"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
             android:paddingBottom="45dp">
-        <com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView
+        <soko.ekibun.bangumi.ui.view.FastScrollRecyclerView
                 android:id="@+id/item_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

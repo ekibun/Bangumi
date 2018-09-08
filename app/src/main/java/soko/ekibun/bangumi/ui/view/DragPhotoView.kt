@@ -14,9 +14,7 @@ import com.github.chrisbanes.photoview.PhotoView
 class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeSet? = null, defStyle: Int = 0) : PhotoView(context, attr, defStyle) {
     private val mPaint: Paint = Paint()
 
-    // downX
     private var mDownX: Float = 0.toFloat()
-    // down Y
     private var mDownY: Float = 0.toFloat()
 
     private var mTranslateY: Float = 0.toFloat()
@@ -24,7 +22,7 @@ class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeS
     private var mScale = 1f
     private var mWidth: Int = 0
     private var mHeight: Int = 0
-    var minScale = 0.5f
+    private var minScale = 0.5f
     private var mAlpha = 255
     private var canFinish = false
     private var isAnimate = false
@@ -101,6 +99,11 @@ class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeS
     }
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        val moveY = event.y
+        val moveX = event.x
+        val translateX = moveX - mDownX
+        val translateY = moveY - mDownY
+
         //only scale == 1 can drag
         if (scale == 1f) {
 
@@ -112,30 +115,27 @@ class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeS
                 }
                 MotionEvent.ACTION_MOVE -> {
                     //in viewpager
-                    if (mTranslateY == 0f && mTranslateX != 0f) {
-
-                        //如果不消费事件，则不作操作
-                        if (!isTouchEvent) {
-                            mScale = 1f
-                            performAnimation()
-                            return super.dispatchTouchEvent(event)
-                        }
+                    //如果不消费事件，则不作操作
+                    if (!isTouchEvent && Math.abs(translateY) < Math.abs(translateX)) {
+                        mScale = 1f
+                        performAnimation()
+                        return super.dispatchTouchEvent(event)
                     }
 
                     //single finger drag  down
-                    if (mTranslateY >= 0 && event.pointerCount == 1) {
-                        onActionMove(event)
+                    //如果有上下位移 则不交给viewpager
+                    if (event.pointerCount == 1 ) {
+                        if(isTouchEvent)
+                            onActionMove(event)
 
-                        //如果有上下位移 则不交给viewpager
-                        if (mTranslateY > 100) {
+                        if (Math.abs(translateY) > Math.abs(translateX)) {
                             isTouchEvent = true
                         }
                         return true
                     }
 
-
                     //防止下拉的时候双手缩放
-                    if (mTranslateY >= 0 && mScale < 0.95) {
+                    if (isTouchEvent) {
                         return true
                     }
                 }
@@ -143,11 +143,15 @@ class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeS
                 MotionEvent.ACTION_UP ->
                     //防止下拉的时候双手缩放
                     if (event.pointerCount == 1) {
-                        onActionUp(event)
+                        if (mTranslateY > MAX_TRANSLATE_Y) {
+                            mExitListener?.invoke()
+                        } else {
+                            performAnimation()
+                        }
                         isTouchEvent = false
                         //judge finish or not
                         postDelayed({
-                            if (mTranslateX == 0f && mTranslateY == 0f && canFinish) {
+                            if (translateX == 0f && translateY == 0f && canFinish) {
                                 mTapListener?.invoke()
                             }
                             canFinish = false
@@ -159,27 +163,14 @@ class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeS
         return super.dispatchTouchEvent(event)
     }
 
-    private fun onActionUp(event: MotionEvent) {
-
-        if (mTranslateY > MAX_TRANSLATE_Y) {
-            mExitListener?.invoke()//!!.onExit(this, mTranslateX, mTranslateY, mWidth.toFloat(), mHeight.toFloat())
-        } else {
-            performAnimation()
-        }
-    }
-
     private fun onActionMove(event: MotionEvent) {
         val moveY = event.y
         val moveX = event.x
         mTranslateX = moveX - mDownX
         mTranslateY = moveY - mDownY
 
-        //保证上划到到顶还可以继续滑动
-        if (mTranslateY < 0) {
-            mTranslateY = 0f
-        }
+        val percent = Math.max(0f, mTranslateY) / MAX_TRANSLATE_Y
 
-        val percent = mTranslateY / MAX_TRANSLATE_Y
         if (mScale in minScale..1f) {
             mScale = (1 - percent)* 0.5f + 0.5f
 
@@ -194,6 +185,10 @@ class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeS
             mScale = minScale
         } else if (mScale > 1f) {
             mScale = 1f
+        }
+        if(mTranslateY > 0){
+            mTranslateX += (mDownX - mWidth /2) * (1-mScale)
+            mTranslateY += (mDownY - mHeight/2) * (1-mScale)
         }
 
         invalidate()
@@ -211,15 +206,8 @@ class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeS
         mDownY = event.y
     }
 
-    fun finishAnimationCallBack() {
-        mTranslateX = -mWidth / 2 + mWidth * mScale / 2
-        mTranslateY = -mHeight / 2 + mHeight * mScale / 2
-        invalidate()
-    }
-
     companion object {
-        private val MAX_TRANSLATE_Y = 500
-
-        private val DURATION: Long = 300
+        private const val MAX_TRANSLATE_Y = 500
+        private const val DURATION: Long = 300
     }
 }

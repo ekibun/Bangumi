@@ -35,7 +35,8 @@ public class FastScroller {
     private FastScrollRecyclerView mRecyclerView;
     private FastScrollPopup mPopup;
 
-    private int mThumbHeight;
+    private int minThumbHeight;
+    int mThumbHeight;
     private int mWidth;
 
     private Paint mThumb;
@@ -81,7 +82,7 @@ public class FastScroller {
         mRecyclerView = recyclerView;
         mPopup = new FastScrollPopup(resources, recyclerView);
 
-        mThumbHeight = Utils.toPixels(resources, 48);
+        minThumbHeight = Utils.toPixels(resources, 48);
         mWidth = Utils.toPixels(resources, 8);
 
         mTouchInset = Utils.toPixels(resources, -24);
@@ -147,8 +148,8 @@ public class FastScroller {
         }
     }
 
-    public int getThumbHeight() {
-        return mThumbHeight;
+    public int getMinThumbHeight() {
+        return minThumbHeight;
     }
 
     public int getWidth() {

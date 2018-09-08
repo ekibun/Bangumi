@@ -1,5 +1,6 @@
 package soko.ekibun.bangumi.util
 
+import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
@@ -10,49 +11,48 @@ import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.transition.Transition
 import pl.droidsonroids.gif.GifDrawable
 import java.net.URI
-import kotlin.math.max
-import kotlin.math.min
-import android.graphics.BitmapFactory
-import android.graphics.Bitmap.CompressFormat
-import java.io.ByteArrayOutputStream
+import android.util.Size
+import com.bumptech.glide.request.RequestOptions
 import java.lang.ref.WeakReference
 
-
 @Suppress("DEPRECATION")
-class HtmlHttpImageGetter(container: TextView, private val baseUri: URI?, private val drawableMap: HashMap<String, HtmlHttpImageGetter.UrlDrawable>) : Html.ImageGetter {
-    private val widget = WeakReference(container)
+class HtmlHttpImageGetter(container: TextView, private val baseUri: URI?, private val drawables: ArrayList<String>, private val sizeInfos: HashMap<String, Size>) : Html.ImageGetter {
+    private val container = WeakReference(container)
     override fun getDrawable(source: String): Drawable {
-        val urlDrawable  = drawableMap.getOrPut(source) {UrlDrawable()}
-        val container = widget.get()?:return urlDrawable
-        if(urlDrawable.drawable == null) container.post {
-            Glide.with(container).asDrawable().load(HttpUtil.getUrl(source, baseUri))
-                    .into(object : SimpleTarget<Drawable>() {
-                override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
-                    val maxWidth = container.width.toFloat()
-                    val minWidth = container.textSize
-                    val originalDrawableWidth = resource.intrinsicWidth.toFloat()
-                    val scale = min(maxWidth, max(minWidth, originalDrawableWidth)) / originalDrawableWidth
+        val urlDrawable = UrlDrawable()
+        drawables.add(source)
+        if(urlDrawable.drawable == null)
+            container.get()?.post {
+                Glide.with(container.get()?:return@post)
+                        .asDrawable().load(HttpUtil.getUrl(source, baseUri))
+                        .apply(RequestOptions().transform(SizeTransformation {width, _ ->
+                            val maxWidth = container.get()?.width?.toFloat()?:return@SizeTransformation 1f
+                            val minWidth = container.get()?.textSize?:return@SizeTransformation 1f
+                            Math.min(maxWidth, Math.max(minWidth, width.toFloat())) / width
+                        }))
+                        .into(object : SimpleTarget<Drawable>() {
+                            override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
+                                val drawable = when (resource) {
+                                    is com.bumptech.glide.load.resource.gif.GifDrawable -> GifDrawable(resource.buffer)
+                                    else -> resource
+                                }
+                                val size = Size(resource.intrinsicWidth, resource.intrinsicHeight)
+                                sizeInfos[source] = size
+                                urlDrawable.setBounds(0, 0, size.width, size.height)
 
-                    val drawable = when (resource) {
-                        is com.bumptech.glide.load.resource.gif.GifDrawable -> GifDrawable(resource.buffer)
-                        is BitmapDrawable -> {
-                            val baos = ByteArrayOutputStream()
-                            resource.bitmap.compress(CompressFormat.PNG, Math.min((scale * 90).toInt(), 90), baos)
-                            val bytes = baos.toByteArray()
-                            BitmapDrawable(BitmapFactory.decodeByteArray(bytes, 0, bytes.size))
-                        }
-                        else -> resource
-                    }
-
-                    drawable.setBounds(0, 0, (resource.intrinsicWidth * scale).toInt(), (resource.intrinsicHeight * scale).toInt())
-                    urlDrawable.drawable = drawable
-                    urlDrawable.setBounds(0, 0, (resource.intrinsicWidth * scale).toInt(), (resource.intrinsicHeight * scale).toInt())
-                    container.text = container.text
-                    container.invalidate()
-                }
-                override fun onStart() {}
-                override fun onDestroy() {}
-            })
+                                drawable.setBounds(0, 0, size.width, size.height)
+                                urlDrawable.drawable?.callback = null
+                                urlDrawable.drawable = drawable
+                                //}
+                                container.get()?.text = container.get()?.text
+                                container.get()?.invalidate()
+                            }
+                            override fun onStart() {}
+                            override fun onDestroy() {}
+                        })
+            }
+        sizeInfos[source]?.let{
+            urlDrawable.setBounds(0, 0, it.width, it.height)
         }
         urlDrawable.container = container
         return urlDrawable
@@ -60,20 +60,19 @@ class HtmlHttpImageGetter(container: TextView, private val baseUri: URI?, privat
 
     class UrlDrawable : BitmapDrawable() {
         var drawable: Drawable? = null
-        var container: TextView? = null
+        var container: WeakReference<TextView>? = null
 
         override fun draw(canvas: Canvas) {
             (drawable as? GifDrawable)?.let{
-                container?.unscheduleDrawable(it)
                 it.callback = object: Drawable.Callback{
                     override fun invalidateDrawable(who: Drawable) {
-                        container?.invalidate()
+                        container?.get()?.invalidate()
                     }
                     override fun scheduleDrawable(who: Drawable, what: Runnable, `when`: Long) {
-                        container?.postDelayed(what, `when`)
+                        container?.get()?.postDelayed(what, `when`)
                     }
                     override fun unscheduleDrawable(who: Drawable, what: Runnable) {
-                        container?.removeCallbacks(what)
+                        container?.get()?.removeCallbacks(what)
                     }
                 }
             }

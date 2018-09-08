@@ -22,12 +22,13 @@ import soko.ekibun.bangumi.ui.view.BackgroundWebView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.JsonUtil
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.View
 
 
 class TopicActivity : AppCompatActivity() {
 
-    val adapter by lazy{ PostAdapter(item_list) }
+    val adapter = PostAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,6 +47,12 @@ class TopicActivity : AppCompatActivity() {
             getTopic()
         }
         getTopic()
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if(hasFocus)
+            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
     }
 
     override fun onStart() {

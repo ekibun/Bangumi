@@ -1,7 +1,7 @@
 package soko.ekibun.bangumi.ui.topic
 
 import android.annotation.SuppressLint
-import android.support.v7.widget.RecyclerView
+import android.app.Activity
 import android.text.*
 import android.text.method.LinkMovementMethod
 import android.view.Gravity
@@ -22,63 +22,27 @@ import soko.ekibun.bangumi.util.HtmlTagHandler
 import java.net.URI
 import android.text.style.ClickableSpan
 import android.text.style.URLSpan
-import android.util.Log
-import android.util.SparseIntArray
+import android.util.Size
 import android.widget.TextView
-import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView
 import org.jsoup.Jsoup
+import soko.ekibun.bangumi.ui.view.FastScrollRecyclerView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.HttpUtil
-import java.util.concurrent.Executors
+import android.os.Build
+import android.graphics.drawable.ColorDrawable
 
-class PostAdapter(private val recyclerView: FastScrollRecyclerView, data: MutableList<TopicPost>? = null) :
-        BaseQuickAdapter<TopicPost, BaseViewHolder>(R.layout.item_reply, data), FastScrollRecyclerView.MeasurableAdapter<BaseViewHolder>, FastScrollRecyclerView.SectionedAdapter {
-    private fun updateScrollOffsets(item: TopicPost, height: Int){
-        try{
-            val soField = FastScrollRecyclerView::class.java.getDeclaredField("mScrollOffsets")
-            soField.isAccessible = true
-            val mScrollOffsets = soField.get(recyclerView) as SparseIntArray
-            val position = data.indexOf(item)
-            val index = mScrollOffsets.indexOfKey(position)
-            if(index >= 0){
-                val delta = height - (itemHeight.get(getItemViewType(position),0))
-                itemHeight.put(getItemViewType(position), height)
-                Log.v("delta", delta.toString())
-                for(i in index + 1 until mScrollOffsets.size()){
-                    Log.v("key", mScrollOffsets.keyAt(i).toString())
-                    mScrollOffsets.put(mScrollOffsets.keyAt(i), mScrollOffsets.valueAt(i) + delta)
-                }
-            }
-        }catch (e: Exception){
-            e.printStackTrace()
-        }
-    }
 
-    private val itemHeight = SparseIntArray()
-    override fun getViewTypeHeight(recyclerView: RecyclerView?, viewHolder: BaseViewHolder?, viewType: Int): Int {
-        var height = viewHolder?.itemView?.height?:-1
-        if(height != -1){
-            itemHeight.put(viewType, height)
-        }else{
-            height = itemHeight.get(viewType, -1)
-            if(height == -1){
-                height = if(viewType < 0x00001000) 0 else recyclerView?.context?.resources?.getDimensionPixelSize(R.dimen.reply_def_height)?:100
-                itemHeight.put(viewType, height)
-            }
-        }
-        return height
-    }
 
+
+
+class PostAdapter(data: MutableList<TopicPost>? = null) :
+        BaseQuickAdapter<TopicPost, BaseViewHolder>(R.layout.item_reply, data), FastScrollRecyclerView.SectionedAdapter {
     override fun getSectionName(position: Int): String {
         val item = data.getOrNull(position)?:data.last()
         return "#${item.floor}"
     }
 
-    override fun getItemViewType(position: Int): Int {
-        return if(position >= data.size)super.getItemViewType(position) else 0x00001000 + position
-    }
-
-    private val drawableMap  = HashMap<BaseViewHolder, LinkedHashMap<String, HtmlHttpImageGetter.UrlDrawable>>()
+    private val imaageSizes = HashMap<String, Size>()
     @SuppressLint("SetTextI18n")
     override fun convert(helper: BaseViewHolder, item: TopicPost) {
         helper.addOnClickListener(R.id.item_del)
@@ -92,29 +56,33 @@ class PostAdapter(private val recyclerView: FastScrollRecyclerView, data: Mutabl
         helper.itemView.item_reply.visibility = if (item.relate.toIntOrNull() ?: 0 > 0) View.VISIBLE else View.GONE
         helper.itemView.item_del.visibility = if (item.editable) View.VISIBLE else View.GONE
         helper.itemView.item_edit.visibility = helper.itemView.item_del.visibility
-        val drawables = drawableMap.getOrPut(helper) { LinkedHashMap() }
+        val drawables = ArrayList<String>()
         helper.itemView.item_message.let { item_message ->
+            @Suppress("DEPRECATION")
             val htmlText = setTextLinkOpenByWebView(
-                    Html.fromHtml(parseHtml(item.pst_content), HtmlHttpImageGetter(item_message, URI.create(Bangumi.SERVER), drawables), HtmlTagHandler(item_message) {
-                        val imageList = drawables.filter { (it.key.startsWith("http") || !it.key.contains("smile")) }.toList()
-                        val index = imageList.indexOfFirst { d -> d.first == it.source }
+                    Html.fromHtml(parseHtml(item.pst_content), HtmlHttpImageGetter(item_message, URI.create(Bangumi.SERVER), drawables, imaageSizes), HtmlTagHandler(item_message) {
+                        val imageList = drawables.filter { (it.startsWith("http") || !it.contains("smile")) }.toList()
+                        val index = imageList.indexOfFirst { d -> d == it.source }
                         if (index < 0) return@HtmlTagHandler
                         val popWindow = PopupWindow(helper.itemView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, true)
                         val viewPager = FixMultiViewPager(helper.itemView.context)
                         popWindow.contentView = viewPager
-                        viewPager.adapter = PhotoPagerAdapter(imageList.map { HttpUtil.getUrl(it.first, URI.create(Bangumi.SERVER)) }) {
+                        viewPager.adapter = PhotoPagerAdapter(imageList.map { HttpUtil.getUrl(it, URI.create(Bangumi.SERVER)) }) {
                             popWindow.dismiss()
                         }
                         viewPager.currentItem = index
                         popWindow.isClippingEnabled = false
                         popWindow.animationStyle = R.style.AppTheme_FadeInOut
                         popWindow.showAtLocation(helper.itemView, Gravity.CENTER, 0, 0)
+                        popWindow.contentView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                or View.SYSTEM_UI_FLAG_FULLSCREEN)
+
                     })) {
                 WebActivity.launchUrl(helper.itemView.context, it, "")
             }
-            item_message.post {
-                item_message.text = htmlText
-            }
+            item_message.text = htmlText
         }
         helper.itemView.item_message.setOnFocusChangeListener { view, focus ->
             if(!focus){
@@ -127,18 +95,6 @@ class PostAdapter(private val recyclerView: FastScrollRecyclerView, data: Mutabl
                 .apply(RequestOptions.errorOf(R.drawable.ic_404))
                 .apply(RequestOptions.circleCropTransform())
                 .into(helper.itemView.item_avatar)
-
-        helper.itemView.tag = item
-        helper.itemView.addOnLayoutChangeListener (object: View.OnLayoutChangeListener{
-            override fun onLayoutChange(view: View, l: Int, t: Int, r: Int, b: Int, ol: Int, ot: Int, or: Int, ob: Int) {
-                if(view.tag == item && b-t != ob-ot) {
-                    Thread {
-                        updateScrollOffsets(item, b - t)
-                    }.start()
-                } else if(view.tag != item)
-                    view.removeOnLayoutChangeListener(this)
-            }
-        })
     }
 
     override fun onViewAttachedToWindow(holder: BaseViewHolder) {

@@ -3,7 +3,9 @@ package soko.ekibun.bangumi.ui.topic
 import android.support.v4.view.PagerAdapter
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.gif.GifDrawable
 import soko.ekibun.bangumi.ui.view.DragPhotoView
 
 class PhotoPagerAdapter(private val items: List<String>, private val onDismiss: ()->Unit): PagerAdapter(){

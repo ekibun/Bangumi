@@ -6,6 +6,8 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.net.Uri
 import soko.ekibun.bangumi.R
+import java.io.File
+
 
 object AppUtil {
     fun shareString(context: Context, str: String){
