@@ -62,7 +62,8 @@ class TopicActivity : AppCompatActivity() {
         dialog.callback = { inputString->
             data.add("submit", "submit")
             data.add("content", comment + inputString)
-            ApiHelper.buildHttpCall(post, mapOf(), data.build()){
+            val cookie = CookieManager.getInstance().getCookie(Bangumi.SERVER)?:""
+            ApiHelper.buildHttpCall(post, mapOf("cookie" to cookie), data.build()){
                 val replies = ArrayList(adapter.data)
                 val posts = JsonUtil.toJsonObject(it.body()?.string()?:"").getAsJsonObject("posts")
                 val main = JsonUtil.toEntity<Map<String, TopicPost>>(posts.get("main")?.toString()?:"", object: TypeToken<Map<String, TopicPost>>(){}.type)?: HashMap()
