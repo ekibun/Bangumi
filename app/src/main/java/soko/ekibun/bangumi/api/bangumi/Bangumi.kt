@@ -111,7 +111,6 @@ interface Bangumi {
         const val REDIRECT_URL = "bangumi://redirect"
         fun createInstance(api: Boolean = true): Bangumi{
             return Retrofit.Builder().baseUrl(if(api) SERVER_API else SERVER)
-                    .client(HttpUtil.okHttpClient)
                     .addConverterFactory( GsonConverterFactory.create())
                     .build().create(Bangumi::class.java)
         }
@@ -121,7 +120,8 @@ interface Bangumi {
                               @CollectionStatusType.CollectionStatusType collection_status: String,
                               page: Int = 1
         ): Call<List<SubjectCollection>>{
-            return ApiHelper.buildHttpCall("$SERVER/$subject_type/list/$username/$collection_status?page=$page"){
+            val cookie = CookieManager.getInstance().getCookie(Bangumi.SERVER)?:""
+            return ApiHelper.buildHttpCall("$SERVER/$subject_type/list/$username/$collection_status?page=$page", mapOf("cookie" to cookie)){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<SubjectCollection>()
                 doc.select(".item").forEach {
@@ -146,7 +146,8 @@ interface Bangumi {
         }
 
         fun getSubject(subject: Subject): Call<List<Subject>>{
-            return ApiHelper.buildHttpCall(subject.url?:""){
+            val cookie = CookieManager.getInstance().getCookie(Bangumi.SERVER)?:""
+            return ApiHelper.buildHttpCall(subject.url?:"", mapOf("cookie" to cookie)){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<Subject>()
                 doc.select(".subject_section").filter { it.select(".subtitle").text() == "关联条目" }.getOrNull(0)?.let{
@@ -216,7 +217,7 @@ interface Bangumi {
         //超展开
         fun getRakuen(type: String): Call<List<Rakuen>>{
             val url = "$SERVER/m" + if(type.isEmpty()) "" else "?type=$type"
-            return ApiHelper.buildHttpCall(url, cookie = false){
+            return ApiHelper.buildHttpCall(url){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<Rakuen>()
                 doc.select(".item_list")?.forEach{
@@ -235,7 +236,8 @@ interface Bangumi {
 
         //讨论
         fun getTopic(url: String): Call<Topic>{
-            return ApiHelper.buildHttpCall(url){
+            val cookie = CookieManager.getInstance().getCookie(Bangumi.SERVER)?:""
+            return ApiHelper.buildHttpCall(url, mapOf("cookie" to cookie)){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val replies = ArrayList<TopicPost>()
                 doc.select(".re_info")?.map{ it.parent() }?.forEach{
@@ -287,7 +289,8 @@ interface Bangumi {
 
         //通知
         fun getNotify(): Call<List<Notify>>{
-            return ApiHelper.buildHttpCall("$SERVER/notify"){
+            val cookie = CookieManager.getInstance().getCookie(Bangumi.SERVER)?:""
+            return ApiHelper.buildHttpCall("$SERVER/notify", mapOf("cookie" to cookie)){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<Notify>()
                 doc.select(".tml_item")?.forEach {

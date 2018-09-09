@@ -55,11 +55,6 @@ class TopicActivity : AppCompatActivity() {
             window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
     }
 
-    override fun onStart() {
-        super.onStart()
-        BackgroundWebView(this).loadUrl(Bangumi.SERVER)
-    }
-
     @SuppressLint("InflateParams")
     private fun showPopupWindow(post: String, data: FormBody.Builder, comment: String = "", hint: String = "") {
         val dialog = ReplyDialog()
@@ -128,86 +123,98 @@ class TopicActivity : AppCompatActivity() {
 
     private fun getTopic(){
         item_swipe.isRefreshing = true
+        val webView = BackgroundWebView(this)
+        webView.loadUrl("${Bangumi.SERVER}/m")
+        webView.onPageFinished = {
+            getTopicApi()
+            webView.onPageFinished = {}
+        }
+    }
+
+    private fun getTopicApi(){
+        item_swipe.isRefreshing = true
         val openUrl = intent.getStringExtra(EXTRA_TOPIC)
-        Bangumi.getTopic(openUrl).enqueue(ApiHelper.buildCallback(this, {topic->
-            title = topic.title
-            toolbar.subtitle = topic.group
-            if(topic.replies.isEmpty())
-                finish()
-            toolbar.menu.clear()
-            topic.links.forEach {
-                toolbar.menu.add(it.key)
-            }
-            toolbar.setOnMenuItemClickListener {
-                WebActivity.launchUrl(this@TopicActivity, topic.links[it.title]?:"", openUrl)
-                true
-            }
-            setNewData(topic.replies)
-            adapter.setOnLoadMoreListener({adapter.loadMoreEnd()}, item_list)
-            adapter.setEnableLoadMore(true)
-            item_reply.setOnClickListener {
-                topic.formhash?.let{ showPopupWindow(topic.post, FormBody.Builder().add("lastview", topic.lastview!!).add("formhash", it),"", "回复 ${topic.title}") }
-            }
-            adapter.setOnItemChildClickListener { _, v, position ->
-                val post = adapter.data[position]
-                when(v.id){
-                    R.id.item_avatar->
-                        WebActivity.launchUrl(v.context, "${Bangumi.SERVER}/user/${post.username}")
-                    R.id.item_reply->{
-                        val body = Jsoup.parse(post.pst_content).body()
-                        body.select("div.quote").remove()
-                        val comment = if(post?.isSub == true)
-                            "[quote][b]${post.nickname}[/b] 说: ${body.text()}[/quote]\n" else ""
-                        showPopupWindow(topic.post, FormBody.Builder()
-                                .add("lastview", topic.lastview!!)
-                                .add("formhash", topic.formhash!!)
-                                .add("topic_id" ,post.pst_mid)
-                                .add("related", post.relate)
-                                .add("post_uid", post.pst_uid), comment, "回复 ${post.nickname} 的评论")
-                    }
-                    R.id.item_del-> {
-                        AlertDialog.Builder(this@TopicActivity).setTitle("确认删除？")
-                                .setNegativeButton("取消", { _, _ -> }).setPositiveButton("确定") { _, _ ->
-                                    if (post.floor == 1) {
-                                        val url = topic.post.replace(Bangumi.SERVER, "${Bangumi.SERVER}/erase").replace("/new_reply", "?gh=${topic.formhash}&ajax=1")
-                                        ApiHelper.buildHttpCall(url) {
-                                            true
-                                        }.enqueue(ApiHelper.buildCallback<Boolean>(this@TopicActivity, {
-                                            if (it) finish()
-                                        }) {})
-                                    } else {
-                                        val url = Bangumi.SERVER + when (post.model) {
-                                            "group" -> "/erase/group/reply/" //http://bangumi.tv/group/reply/1365766/edit
-                                            "prsn" -> "/erase/reply/person/"
-                                            "crt" -> "/erase/reply/character/" //http://bangumi.tv/character/edit_reply/83994
-                                            "ep" -> "/erase/reply/ep/" //http://bangumi.tv/subject/ep/edit_reply/641453
-                                            "subject" -> "/erase/subject/reply/"//http://bangumi.tv/subject/reply/114260/edit
-                                            else -> ""
-                                        } + "${post.pst_id}?gh=${topic.formhash}&ajax=1"
-                                        ApiHelper.buildHttpCall(url) {
-                                            it.body()?.string()?.contains("\"status\":\"ok\"") == true
-                                        }.enqueue(ApiHelper.buildCallback<Boolean>(this@TopicActivity, {
-                                            val data = ArrayList(adapter.data)
-                                            data.removeAll { it.pst_id == post.pst_id }
-                                            setNewData(data)
-                                        }) {})
-                                    } }.show()
-                    }
-                    R.id.item_edit->{
-                        val url = if(post.floor == 1)
-                            topic.post.replace("/new_reply", "/edit")
-                        else  Bangumi.SERVER +  when(post.model){
-                            "group" -> "/group/reply/${post.pst_id}/edit"
-                            "prsn" -> "/person/edit_reply/${post.pst_id}"
-                            "crt" -> "/character/edit_reply/${post.pst_id}"
-                            "ep" -> "/subject/ep/edit_reply/${post.pst_id}"
-                            "subject" -> "/subject/reply/${post.pst_id}/edit"
-                            else -> "" }
-                        WebActivity.launchUrl(this@TopicActivity, url)
+        ApiHelper.buildHttpCall(Bangumi.SERVER){ it }.enqueue(ApiHelper.buildCallback(this, {
+            Bangumi.getTopic(openUrl).enqueue(ApiHelper.buildCallback(this, {topic->
+                title = topic.title
+                toolbar.subtitle = topic.group
+                if(topic.replies.isEmpty())
+                    finish()
+                toolbar.menu.clear()
+                topic.links.forEach {
+                    toolbar.menu.add(it.key)
+                }
+                toolbar.setOnMenuItemClickListener {
+                    WebActivity.launchUrl(this@TopicActivity, topic.links[it.title]?:"", openUrl)
+                    true
+                }
+                setNewData(topic.replies)
+                adapter.setOnLoadMoreListener({adapter.loadMoreEnd()}, item_list)
+                adapter.setEnableLoadMore(true)
+                item_reply.setOnClickListener {
+                    topic.formhash?.let{ showPopupWindow(topic.post, FormBody.Builder().add("lastview", topic.lastview!!).add("formhash", it),"", "回复 ${topic.title}") }
+                }
+                adapter.setOnItemChildClickListener { _, v, position ->
+                    val post = adapter.data[position]
+                    when(v.id){
+                        R.id.item_avatar->
+                            WebActivity.launchUrl(v.context, "${Bangumi.SERVER}/user/${post.username}")
+                        R.id.item_reply->{
+                            val body = Jsoup.parse(post.pst_content).body()
+                            body.select("div.quote").remove()
+                            val comment = if(post?.isSub == true)
+                                "[quote][b]${post.nickname}[/b] 说: ${body.text()}[/quote]\n" else ""
+                            showPopupWindow(topic.post, FormBody.Builder()
+                                    .add("lastview", topic.lastview!!)
+                                    .add("formhash", topic.formhash!!)
+                                    .add("topic_id" ,post.pst_mid)
+                                    .add("related", post.relate)
+                                    .add("post_uid", post.pst_uid), comment, "回复 ${post.nickname} 的评论")
+                        }
+                        R.id.item_del-> {
+                            AlertDialog.Builder(this@TopicActivity).setTitle("确认删除？")
+                                    .setNegativeButton("取消", { _, _ -> }).setPositiveButton("确定") { _, _ ->
+                                        if (post.floor == 1) {
+                                            val url = topic.post.replace(Bangumi.SERVER, "${Bangumi.SERVER}/erase").replace("/new_reply", "?gh=${topic.formhash}&ajax=1")
+                                            ApiHelper.buildHttpCall(url) {
+                                                true
+                                            }.enqueue(ApiHelper.buildCallback<Boolean>(this@TopicActivity, {
+                                                if (it) finish()
+                                            }) {})
+                                        } else {
+                                            val url = Bangumi.SERVER + when (post.model) {
+                                                "group" -> "/erase/group/reply/" //http://bangumi.tv/group/reply/1365766/edit
+                                                "prsn" -> "/erase/reply/person/"
+                                                "crt" -> "/erase/reply/character/" //http://bangumi.tv/character/edit_reply/83994
+                                                "ep" -> "/erase/reply/ep/" //http://bangumi.tv/subject/ep/edit_reply/641453
+                                                "subject" -> "/erase/subject/reply/"//http://bangumi.tv/subject/reply/114260/edit
+                                                else -> ""
+                                            } + "${post.pst_id}?gh=${topic.formhash}&ajax=1"
+                                            ApiHelper.buildHttpCall(url) {
+                                                it.body()?.string()?.contains("\"status\":\"ok\"") == true
+                                            }.enqueue(ApiHelper.buildCallback<Boolean>(this@TopicActivity, {
+                                                val data = ArrayList(adapter.data)
+                                                data.removeAll { it.pst_id == post.pst_id }
+                                                setNewData(data)
+                                            }) {})
+                                        } }.show()
+                        }
+                        R.id.item_edit->{
+                            val url = if(post.floor == 1)
+                                topic.post.replace("/new_reply", "/edit")
+                            else  Bangumi.SERVER +  when(post.model){
+                                "group" -> "/group/reply/${post.pst_id}/edit"
+                                "prsn" -> "/person/edit_reply/${post.pst_id}"
+                                "crt" -> "/character/edit_reply/${post.pst_id}"
+                                "ep" -> "/subject/ep/edit_reply/${post.pst_id}"
+                                "subject" -> "/subject/reply/${post.pst_id}/edit"
+                                else -> "" }
+                            WebActivity.launchUrl(this@TopicActivity, url)
+                        }
                     }
                 }
-            }
-        }){item_swipe.isRefreshing = false})
+            }){item_swipe.isRefreshing = false})
+        }){})
     }
 
     class PostList: ArrayList<TopicPost>()

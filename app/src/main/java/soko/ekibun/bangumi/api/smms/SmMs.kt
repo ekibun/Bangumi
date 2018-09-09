@@ -24,7 +24,6 @@ interface SmMs{
         fun createInstance(): SmMs{
             return Retrofit.Builder().baseUrl(SERVER_API)
                     .addConverterFactory(GsonConverterFactory.create())
-                    .client(HttpUtil.okHttpClient)
                     .build().create(SmMs::class.java)
         }
     }

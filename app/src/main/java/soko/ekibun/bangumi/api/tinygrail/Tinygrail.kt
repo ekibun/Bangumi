@@ -1,6 +1,5 @@
 package soko.ekibun.bangumi.api.tinygrail
 
-import android.util.Log
 import org.jsoup.Jsoup
 import retrofit2.Call
 import soko.ekibun.bangumi.api.ApiHelper

@@ -29,7 +29,6 @@ interface Xxxlin {
         fun createInstance(): Xxxlin{
             return Retrofit.Builder().baseUrl(SERVER_API)
                     .addConverterFactory(GsonConverterFactory.create())
-                    .client(HttpUtil.okHttpClient)
                     .build().create(Xxxlin::class.java)
         }
     }

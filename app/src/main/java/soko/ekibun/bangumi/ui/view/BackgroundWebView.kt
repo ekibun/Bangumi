@@ -6,6 +6,7 @@ import android.os.Handler
 import android.util.Log
 import android.webkit.*
 import kotlinx.android.synthetic.main.activity_web.*
+import java.io.ByteArrayInputStream
 
 class BackgroundWebView(context: Context): WebView(context) {
     var onPageFinished = {_:String?->}
@@ -26,6 +27,7 @@ class BackgroundWebView(context: Context): WebView(context) {
         settings.setSupportMultipleWindows(true)
         settings.domStorageEnabled = true
         settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+        settings.blockNetworkImage = true
         webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 onPageFinished(url)
