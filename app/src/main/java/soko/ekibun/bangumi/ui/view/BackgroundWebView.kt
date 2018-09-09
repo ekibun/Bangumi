@@ -5,8 +5,6 @@ import android.content.Context
 import android.os.Handler
 import android.util.Log
 import android.webkit.*
-import kotlinx.android.synthetic.main.activity_web.*
-import java.io.ByteArrayInputStream
 
 class BackgroundWebView(context: Context): WebView(context) {
     var onPageFinished = {_:String?->}
