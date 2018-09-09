@@ -16,7 +16,7 @@ class CalendarFragment: DrawerFragment(R.layout.content_calendar) {
         val adapter = CalendarPagerAdapter(this, item_pager)
         item_pager?.adapter = adapter
         item_tabs?.setUpWithViewPager(item_pager)
-        adapter.loadCalendarList()
+        item_pager?.currentItem = 7
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {

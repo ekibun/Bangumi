@@ -14,7 +14,7 @@ class LinkedSubjectAdapter(data: MutableList<Subject>? = null) :
     override fun convert(helper: BaseViewHolder, item: Subject) {
         helper.setText(R.id.item_title, item.name)
         helper.setText(R.id.item_summary, item.summary)
-        Glide.with(helper.itemView)
+        Glide.with(helper.itemView.item_cover)
                 .load(item.images?.common)
                 .apply(RequestOptions.errorOf(R.drawable.ic_404))
                 .into(helper.itemView.item_cover)

@@ -92,13 +92,13 @@ class SubjectView(private val context: VideoActivity){
             detail.item_score.text = it.score.toString()
             detail.item_score_count.text = context.getString(R.string.rate_count, it.total)
         }
-        Glide.with(context)
+        Glide.with(detail.item_cover)
                 .applyDefaultRequestOptions(RequestOptions.placeholderOf(detail.item_cover.drawable))
                 .load(subject.images?.common)
                 .apply(RequestOptions.errorOf(R.drawable.ic_404))
                 .into(detail.item_cover)
 
-        Glide.with(context)
+        Glide.with(context.item_cover_blur)
                 .applyDefaultRequestOptions(RequestOptions.placeholderOf(context.item_cover_blur.drawable))
                 .load(subject.images?.common)
                 .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)))

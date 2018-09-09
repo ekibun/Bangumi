@@ -8,7 +8,6 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.content_calendar.*
 import retrofit2.Call
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
@@ -44,10 +43,10 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
         }
     }
 
-    private val items = LinkedHashMap<Int, Pair<CalendarAdapter, SwipeRefreshLayout>>()
+    private val items = HashMap<Int, Pair<CalendarAdapter, SwipeRefreshLayout>>()
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
-        val item = getItem(position)
-        if(old == null)
+        val item = getItem(CalendarAdapter.getCalendarInt(getPostDate(position)))
+        if(old == null && position == pager.currentItem)
             loadCalendarList()
         container.addView(item.second)
         return item.second
@@ -81,13 +80,9 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
 
     var firstLoad = true
     private fun setOnAirList(it: Map<Int, Map<String,List<OnAir>>>){
-        val now = CalendarAdapter.getNowInt()
-        var dateIndex = 8
-        it.toList().sortedBy { it.first }.forEachIndexed {i, date->
+        it.toList().forEach {date->
             var index = -1
-            val item = getItem(i)
-            if(date.first == now)
-                dateIndex = i
+            val item = getItem(date.first)
             item.first.setNewData(null)
             date.second.toList().sortedBy { it.first }.forEach { time->
                 var isHeader = true
@@ -102,9 +97,7 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
             if(firstLoad)
                 ((item.second.tag as? RecyclerView)?.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(index-1, 0)
         }
-        notifyDataSetChanged()
-        if(firstLoad && count > 0) {
-            pager.currentItem = dateIndex
+        if(firstLoad && old?.size?:0 > 0) {
             firstLoad = false
         }
     }
@@ -177,12 +170,18 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
         return "${date/100%100}-${date%100}\n${CalendarAdapter.weekSmall[CalendarAdapter.getWeek(cal)]}(${CalendarAdapter.weekJp[CalendarAdapter.getWeek(cal)]})"
     }
 
+    fun getPostDate(pos: Int): java.util.Calendar{
+        val cal = java.util.Calendar.getInstance()
+        cal.add(java.util.Calendar.DAY_OF_MONTH, pos-7)
+        return cal
+    }
+
     override fun getPageTitle(pos: Int): CharSequence{
-        return parseDate(old?.toList()?.sortedBy { it.first }?.get(pos)?.first?:0)
+        return parseDate(CalendarAdapter.getCalendarInt(getPostDate(pos)))//parseDate(old?.toList()?.sortedBy { it.first }?.get(pos)?.first?:0)
     }
 
     override fun getCount(): Int {
-        return old?.size?:0
+        return 15
     }
 
     override fun isViewFromObject(view: View, `object`: Any): Boolean {

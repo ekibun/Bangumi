@@ -16,7 +16,7 @@ class CollectionListAdapter(data: MutableList<SubjectCollection>? = null) :
         helper.setText(R.id.item_name_jp, item.subject?.name)
         val status = Math.max(item.ep_status, item.vol_status)
         helper.setText(R.id.item_summary, if(status == -1) item.subject?.summary else parseDesc(status))
-        Glide.with(helper.itemView)
+        Glide.with(helper.itemView.item_cover)
                 .load(item.subject?.images?.common)
                 .apply(RequestOptions.errorOf(R.drawable.ic_404))
                 .into(helper.itemView.item_cover)

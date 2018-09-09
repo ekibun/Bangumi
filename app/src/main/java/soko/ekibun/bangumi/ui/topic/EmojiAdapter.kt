@@ -14,7 +14,7 @@ class EmojiAdapter(data: MutableList<Pair<String, String>>? = null) :
     @SuppressLint("SetTextI18n")
     override fun convert(helper: BaseViewHolder, item: Pair<String, String>) {
         helper.addOnClickListener(R.id.item_emoji)
-        Glide.with(helper.itemView)
+        Glide.with(helper.itemView.item_emoji)
                 .load(item.second)
                 .into(helper.itemView.item_emoji)
     }

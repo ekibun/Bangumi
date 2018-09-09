@@ -1,7 +1,6 @@
 package soko.ekibun.bangumi.ui.topic
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.text.*
 import android.text.method.LinkMovementMethod
 import android.view.Gravity
@@ -28,12 +27,6 @@ import org.jsoup.Jsoup
 import soko.ekibun.bangumi.ui.view.FastScrollRecyclerView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.HttpUtil
-import android.os.Build
-import android.graphics.drawable.ColorDrawable
-
-
-
-
 
 class PostAdapter(data: MutableList<TopicPost>? = null) :
         BaseQuickAdapter<TopicPost, BaseViewHolder>(R.layout.item_reply, data), FastScrollRecyclerView.SectionedAdapter {
@@ -61,26 +54,27 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
             @Suppress("DEPRECATION")
             val htmlText = setTextLinkOpenByWebView(
                     Html.fromHtml(parseHtml(item.pst_content), HtmlHttpImageGetter(item_message, URI.create(Bangumi.SERVER), drawables, imaageSizes), HtmlTagHandler(item_message) {
-                        val imageList = drawables.filter { (it.startsWith("http") || !it.contains("smile")) }.toList()
-                        val index = imageList.indexOfFirst { d -> d == it.source }
-                        if (index < 0) return@HtmlTagHandler
-                        val popWindow = PopupWindow(helper.itemView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, true)
-                        val viewPager = FixMultiViewPager(helper.itemView.context)
-                        popWindow.contentView = viewPager
-                        viewPager.adapter = PhotoPagerAdapter(imageList.map { HttpUtil.getUrl(it, URI.create(Bangumi.SERVER)) }) {
-                            popWindow.dismiss()
+                        helper.itemView.item_message?.let{itemView->
+                            val imageList = drawables.filter { (it.startsWith("http") || !it.contains("smile")) }.toList()
+                            val index = imageList.indexOfFirst { d -> d == it.source }
+                            if (index < 0) return@HtmlTagHandler
+                            val popWindow = PopupWindow(itemView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, true)
+                            val viewPager = FixMultiViewPager(itemView.context)
+                            popWindow.contentView = viewPager
+                            viewPager.adapter = PhotoPagerAdapter(imageList.map { HttpUtil.getUrl(it, URI.create(Bangumi.SERVER)) }) {
+                                popWindow.dismiss()
+                            }
+                            viewPager.currentItem = index
+                            popWindow.isClippingEnabled = false
+                            popWindow.animationStyle = R.style.AppTheme_FadeInOut
+                            popWindow.showAtLocation(itemView, Gravity.CENTER, 0, 0)
+                            popWindow.contentView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                    or View.SYSTEM_UI_FLAG_FULLSCREEN)
                         }
-                        viewPager.currentItem = index
-                        popWindow.isClippingEnabled = false
-                        popWindow.animationStyle = R.style.AppTheme_FadeInOut
-                        popWindow.showAtLocation(helper.itemView, Gravity.CENTER, 0, 0)
-                        popWindow.contentView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                                or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                                or View.SYSTEM_UI_FLAG_FULLSCREEN)
-
                     })) {
-                WebActivity.launchUrl(helper.itemView.context, it, "")
+                WebActivity.launchUrl(helper.itemView.context.applicationContext, it, "")
             }
             item_message.text = htmlText
         }
@@ -90,7 +84,7 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
                 (view as TextView).text = view.text
             } }
         helper.itemView.item_message.movementMethod = LinkMovementMethod.getInstance()
-        Glide.with(helper.itemView)
+        Glide.with(helper.itemView.item_avatar)
                 .load(HttpUtil.getUrl(item.avatar, URI.create(Bangumi.SERVER)))
                 .apply(RequestOptions.errorOf(R.drawable.ic_404))
                 .apply(RequestOptions.circleCropTransform())

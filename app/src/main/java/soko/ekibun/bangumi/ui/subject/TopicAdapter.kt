@@ -19,7 +19,7 @@ class TopicAdapter(data: MutableList<Subject.TopicBean>? = null) :
         helper.itemView.item_time.text = ResourceUtil.getTimeInterval(item.timestamp)
         helper.itemView.item_title.text = item.title
         helper.itemView.item_comment.text = helper.itemView.context.getString(R.string.phrase_reply,item.replies)
-        Glide.with(helper.itemView)
+        Glide.with(helper.itemView.item_avatar)
                 .load(item.user?.avatar?.small)
                 .apply(RequestOptions.errorOf(R.drawable.ic_404))
                 .apply(RequestOptions.circleCropTransform())

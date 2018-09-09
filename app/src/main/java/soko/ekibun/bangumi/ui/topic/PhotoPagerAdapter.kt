@@ -13,7 +13,7 @@ class PhotoPagerAdapter(private val items: List<String>, private val onDismiss: 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
         val photoView = DragPhotoView(container.context)
         photoView.isEnabled = true
-        Glide.with(container).load(items[position]).into(photoView)
+        Glide.with(photoView).load(items[position]).into(photoView)
         //photoView.setImageDrawable(items[position])
         photoView.mExitListener = { onDismiss() }
         photoView.mTapListener = { onDismiss() }

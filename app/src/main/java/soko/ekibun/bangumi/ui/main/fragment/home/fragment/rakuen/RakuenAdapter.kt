@@ -22,7 +22,7 @@ class RakuenAdapter(data: MutableList<Rakuen>? = null) :
             helper.itemView.item_group.visibility = View.VISIBLE
             helper.itemView.item_group.text = it
         }
-        Glide.with(helper.itemView)
+        Glide.with(helper.itemView.item_avatar)
                 .load(item.img)
                 .apply(RequestOptions.circleCropTransform().error(R.drawable.ic_404))
                 .into(helper.itemView.item_avatar)

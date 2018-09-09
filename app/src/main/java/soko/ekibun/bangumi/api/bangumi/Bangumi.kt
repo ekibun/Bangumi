@@ -169,7 +169,8 @@ interface Bangumi {
         }
 
         fun getComments(subject: Subject, page: Int): Call<List<Comment>>{
-            return ApiHelper.buildHttpCall("${subject.url?:""}/comments?page=$page"){
+            val cookie = CookieManager.getInstance().getCookie(Bangumi.SERVER)?:""
+            return ApiHelper.buildHttpCall("${subject.url?:""}/comments?page=$page", mapOf("cookie" to cookie)){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<Comment>()
                 doc.selectFirst("#comment_box")?.let{
@@ -191,7 +192,8 @@ interface Bangumi {
         fun browserAirTime(@SubjectType.SubjectTypeName subject_type: String,
                             year: Int, month: Int,
                             page: Int = 1): Call<List<Subject>>{
-            return ApiHelper.buildHttpCall("$SERVER/$subject_type/browser/airtime/$year-$month?page=$page"){
+            val cookie = CookieManager.getInstance().getCookie(Bangumi.SERVER)?:""
+            return ApiHelper.buildHttpCall("$SERVER/$subject_type/browser/airtime/$year-$month?page=$page", mapOf("cookie" to cookie)){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<Subject>()
                 doc.select(".item")?.forEach{

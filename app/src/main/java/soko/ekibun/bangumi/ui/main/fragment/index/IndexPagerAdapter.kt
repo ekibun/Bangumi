@@ -5,6 +5,7 @@ import android.support.v4.view.ViewPager
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.util.SparseIntArray
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.content_index.*
@@ -15,13 +16,16 @@ import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.collection.SubjectTypeView
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
+import java.util.*
 
 class IndexPagerAdapter(val fragment: IndexFragment, private val pager: ViewPager) : PagerAdapter(){
     private val subjectTypeView = SubjectTypeView(fragment.item_type) { reset() }
 
-    private val pageIndex = HashMap<Int, Int>()
-    private val items = LinkedHashMap<Int, Pair<SubjectAdapter, SwipeRefreshLayout>>(10, 0.75f, true)
+    private val pageIndex = SparseIntArray()
+    private val items = WeakHashMap<Int, Pair<SubjectAdapter, SwipeRefreshLayout>>()
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
+        if(!items.containsKey(position))
+            pageIndex.put(position, 0)
         val item = items.getOrPut(position){
             val swipeRefreshLayout = SwipeRefreshLayout(container.context)
             val recyclerView = RecyclerView(container.context)
@@ -43,7 +47,7 @@ class IndexPagerAdapter(val fragment: IndexFragment, private val pager: ViewPage
             swipeRefreshLayout.setOnRefreshListener { reset(position) }
             Pair(adapter, swipeRefreshLayout)
         }
-        if(pageIndex[position]?:0 == 0)
+        if(pageIndex.get(position, 0) == 0)
             loadIndex(position)
         container.addView(item.second)
         return item.second
@@ -60,15 +64,15 @@ class IndexPagerAdapter(val fragment: IndexFragment, private val pager: ViewPage
     }
 
     private fun reset(position: Int){
-        pageIndex[position] = 0
+        pageIndex.put(position, 0)
         loadIndex(position)
     }
 
-    private var indexCalls = HashMap<Int, Call<List<Subject>>>()
+    private var indexCalls = WeakHashMap<Int, Call<List<Subject>>>()
     private fun loadIndex(position: Int = pager.currentItem){
         val year = position/12 + 1000
         val month = position % 12 + 1
-        val page = pageIndex.getOrPut(position) {0}
+        val page = pageIndex.get(position,0)
         val item = items[position]?:return
         indexCalls[position]?.cancel()
         if(page == 0){
@@ -84,7 +88,7 @@ class IndexPagerAdapter(val fragment: IndexFragment, private val pager: ViewPage
             }else{
                 item.first.loadMoreComplete()
                 item.first.addData(it)
-                pageIndex[position] = (pageIndex[position]?:0) + 1
+                pageIndex.put(position, (pageIndex.get(position,0)) + 1)
             }
         }, {
             item.first.loadMoreFail()

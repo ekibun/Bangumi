@@ -19,7 +19,7 @@ class CommentAdapter(data: MutableList<Comment>? = null) :
         helper.itemView.item_title.text = item.comment
         //helper.itemView.item_rate.visibility = if(item.rate == 0) View.GONE else View.VISIBLE
         helper.itemView.item_rate.rating = item.rate * 0.5f
-        Glide.with(helper.itemView)
+        Glide.with(helper.itemView.item_avatar)
                 .load(item.user?.avatar?.small)
                 .apply(RequestOptions.errorOf(R.drawable.ic_404))
                 .apply(RequestOptions.circleCropTransform())
