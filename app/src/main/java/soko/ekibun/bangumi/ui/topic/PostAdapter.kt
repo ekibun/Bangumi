@@ -74,7 +74,7 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
                                     or View.SYSTEM_UI_FLAG_FULLSCREEN)
                         }
                     })) {
-                WebActivity.launchUrl(helper.itemView.context, it, "")
+                WebActivity.launchUrl(helper.itemView.context, HttpUtil.getUrl(it, URI.create(Bangumi.SERVER)), "")
             }
             item_message.text = htmlText
         }
