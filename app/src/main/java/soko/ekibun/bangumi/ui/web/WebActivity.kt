@@ -169,23 +169,24 @@ class WebActivity : AppCompatActivity() {
         fun jumpUrl(context: Context, page: String?, openUrl: String): Boolean{
             val url = page?.split("#")?.get(0)
             if(url == null || url.isNullOrEmpty() || url == openUrl) return false
+            val post = Regex("""#post_([0-9]+)$""").find(page)?.groupValues?.get(1)?.toIntOrNull()?:0
             //Topic
             var regex = Regex("""/m/topic/[^/]*/([0-9]*)$""")
             var id = regex.find(url)?.groupValues?.get(1)?.toIntOrNull()
             if(id != null){
-                TopicActivity.startActivity(context, url)
+                TopicActivity.startActivity(context, url, post)
                 return true }
             regex = Regex("""/rakuen/topic/([^/]*)/([0-9]*)$""")
             var model = regex.find(url)?.groupValues?.get(1)?:""
             id = regex.find(url)?.groupValues?.get(2)?.toIntOrNull()
             if(id != null){
-                TopicActivity.startActivity(context, "${Bangumi.SERVER}/m/topic/$model/$id")
+                TopicActivity.startActivity(context, "${Bangumi.SERVER}/m/topic/$model/$id", post)
                 return true }
             regex = Regex("""/([^/]*)/topic/([0-9]*)$""")
             model = regex.find(url)?.groupValues?.get(1)?:""
             id = regex.find(url)?.groupValues?.get(2)?.toIntOrNull()
             if(id != null){
-                TopicActivity.startActivity(context, "${Bangumi.SERVER}/m/topic/$model/$id")
+                TopicActivity.startActivity(context, "${Bangumi.SERVER}/m/topic/$model/$id", post)
                 return true }
             //Subject
             regex = Regex("""/subject/([0-9]*)$""")

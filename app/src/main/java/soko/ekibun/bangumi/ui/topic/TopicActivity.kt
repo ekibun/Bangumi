@@ -135,6 +135,7 @@ class TopicActivity : AppCompatActivity() {
     private fun getTopicApi(){
         item_swipe.isRefreshing = true
         val openUrl = intent.getStringExtra(EXTRA_TOPIC)
+        val openPost = intent.getIntExtra(EXTRA_POST, 0)
         Bangumi.getTopic(openUrl).enqueue(ApiHelper.buildCallback(this, {topic->
             title = topic.title
             toolbar.subtitle = topic.group
@@ -149,6 +150,7 @@ class TopicActivity : AppCompatActivity() {
                 true
             }
             setNewData(topic.replies)
+            (item_list?.layoutManager as? LinearLayoutManager)?.let{ it.scrollToPositionWithOffset(adapter.data.indexOfFirst { it.pst_id == openPost.toString() }, 0) }
             adapter.setOnLoadMoreListener({adapter.loadMoreEnd()}, item_list)
             adapter.setEnableLoadMore(true)
             item_reply.setOnClickListener {
@@ -220,15 +222,17 @@ class TopicActivity : AppCompatActivity() {
 
     companion object{
         private const val EXTRA_TOPIC = "extraTopic"
+        private const val EXTRA_POST = "extraPost"
 
-        fun startActivity(context: Context, topic: String) {
-            context.startActivity(parseIntent(context, topic))
+        fun startActivity(context: Context, topic: String, post: Int = 0) {
+            context.startActivity(parseIntent(context, topic, post))
         }
 
-        private fun parseIntent(context: Context, topic: String): Intent {
+        private fun parseIntent(context: Context, topic: String, post: Int): Intent {
             val intent = Intent(context.applicationContext, TopicActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK // or Intent.FLAG_ACTIVITY_CLEAR_TOP
             intent.putExtra(EXTRA_TOPIC, topic)
+            intent.putExtra(EXTRA_POST, post)
             return intent
         }
     }
