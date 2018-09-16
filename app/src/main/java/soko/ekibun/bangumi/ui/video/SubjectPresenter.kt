@@ -14,9 +14,6 @@ import retrofit2.Call
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
-import soko.ekibun.bangumi.api.bangumi.bean.CollectionStatusType
-import soko.ekibun.bangumi.api.bangumi.bean.Subject
-import soko.ekibun.bangumi.api.bangumi.bean.SubjectProgress
 import soko.ekibun.bangumi.model.ParseInfoModel
 import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.api.parser.ParseInfo
@@ -27,9 +24,11 @@ import kotlinx.android.synthetic.main.activity_video.view.*
 import kotlinx.android.synthetic.main.dialog_epsode.view.*
 import kotlinx.android.synthetic.main.subject_blog.view.*
 import kotlinx.android.synthetic.main.subject_topic.view.*
-import soko.ekibun.bangumi.api.bangumi.bean.Episode
+import soko.ekibun.bangumi.api.bangumi.bean.*
 import soko.ekibun.bangumi.api.bangumiData.BangumiData
 import soko.ekibun.bangumi.api.bangumiData.bean.BangumiItem
+import soko.ekibun.bangumi.api.trim21.BgmIpViewer
+import soko.ekibun.bangumi.api.trim21.bean.IpView
 import soko.ekibun.bangumi.model.ParseModel
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.ui.web.WebActivity
@@ -115,6 +114,17 @@ class SubjectPresenter(private val context: VideoActivity){
         subjectView.commentAdapter.setOnItemClickListener { _, _, position ->
             WebActivity.launchUrl(context, subjectView.commentAdapter.data[position].user?.url)
         }
+
+        subjectView.seasonAdapter.setOnItemClickListener { _, _, position ->
+            val item = subjectView.seasonAdapter.data[position]
+            if(item.id != subjectView.seasonAdapter.currentId)
+                VideoActivity.startActivity(context, Subject(item._id, "${Bangumi.SERVER}/subject/${item._id}", subject.type, item.name, item.name_cn,
+                        images = Images(item.image?.replace("/g/", "/l/"),
+                                item.image?.replace("/g/", "/c/"),
+                                item.image?.replace("/g/", "/m/"),
+                                item.image?.replace("/g/", "/s/"),
+                                item.image)))
+        }
     }
 
     @SuppressLint("SetTextI18n")
@@ -165,6 +175,37 @@ class SubjectPresenter(private val context: VideoActivity){
         subjectCall?.enqueue(ApiHelper.buildCallback(context, {
             refreshLines(it)
             subjectView.updateSubject(it)
+        }, {}))
+
+        BgmIpViewer.createInstance().subject(subject.id).enqueue(ApiHelper.buildCallback(context, {
+            val bgmIp = it.nodes?.firstOrNull { it._id == subject.id }?:return@buildCallback
+            val id = it.edges?.firstOrNull{edge-> edge.source == bgmIp.id && edge.relation == "主线故事"}?.target?:bgmIp.id
+            val ret = java.util.ArrayList<IpView.Node>()
+            it.edges?.filter { edge-> edge.target == id && edge.relation == "主线故事" }?.reversed()?.forEach { edge->
+                ret.add(0, it.nodes.firstOrNull{it.id == edge.source}?:return@forEach)
+            }
+            ret.add(0,it.nodes.firstOrNull { it.id == id }?:return@buildCallback)
+            var prevId = id
+            while(true){
+                prevId = it.edges?.firstOrNull { it.source == prevId && it.relation == "前传"}?.target?:break
+                it.edges.filter { edge-> edge.target == prevId && edge.relation == "主线故事" }.reversed().forEach {edge->
+                    ret.add(0, it.nodes.firstOrNull{it.id == edge.source}?:return@forEach)
+                }
+                ret.add(0, it.nodes.firstOrNull{it.id == prevId}?:break)
+            }
+            var nextId = id
+            while(true){
+                nextId = it.edges?.firstOrNull { it.source == nextId && it.relation == "续集"}?.target?:break
+                ret.add(it.nodes.firstOrNull{it.id == nextId}?:break)
+                it.edges.filter { edge-> edge.target == nextId && edge.relation == "主线故事" }.forEach {edge->
+                    ret.add(it.nodes.firstOrNull{it.id == edge.source}?:return@forEach)
+                }
+            }
+            if(ret.size > 1){
+                subjectView.seasonAdapter.setNewData(ret.distinct())
+                subjectView.seasonAdapter.currentId = bgmIp.id
+                subjectView.seasonlayoutManager.scrollToPositionWithOffset(ret.indexOfFirst { it.id == bgmIp.id }, 0)
+            }
         }, {}))
 
         Bangumi.getSubject(subject).enqueue(ApiHelper.buildCallback(context, {

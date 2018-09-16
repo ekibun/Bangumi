@@ -21,9 +21,10 @@ class HtmlHttpImageGetter(container: TextView, private val baseUri: URI?, privat
     override fun getDrawable(source: String): Drawable {
         val urlDrawable = UrlDrawable()
         drawables.add(source)
-        if(urlDrawable.drawable == null)
-            container.get()?.post {
-                Glide.with(container.get()?:return@post)
+        if(urlDrawable.drawable == null){
+            val view = container.get()
+            view?.post {
+                Glide.with(view)
                         .asDrawable().load(HttpUtil.getUrl(source, baseUri))
                         .apply(RequestOptions().transform(SizeTransformation {width, _ ->
                             val maxWidth = container.get()?.width?.toFloat()?:return@SizeTransformation 1f
@@ -51,6 +52,7 @@ class HtmlHttpImageGetter(container: TextView, private val baseUri: URI?, privat
                             override fun onDestroy() {}
                         })
             }
+        }
         sizeInfos[source]?.let{
             urlDrawable.setBounds(0, 0, it.width, it.height)
         }

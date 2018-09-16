@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                             android:layout_width="wrap_content"
+                                             android:layout_height="wrap_content"
+                                             android:layout_marginStart="1dp"
+                                             android:layout_marginEnd="2dp"
+                                             android:layout_marginBottom="8dp">
+    <TextView
+            android:id="@+id/item_desc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/textSizeMedium"
+            android:ellipsize="end"
+            android:padding="8dp"
+            android:gravity="center"
+            android:background="@drawable/bangumi_detail_ic_season_middle"
+            android:maxLines="1"/>
+</android.support.constraint.ConstraintLayout>

@@ -29,11 +29,18 @@ class SubjectView(private val context: VideoActivity){
     val topicAdapter = TopicAdapter()
     val blogAdapter = BlogAdapter()
     val commentAdapter = CommentAdapter()
+    val seasonAdapter = SeasonAdapter()
+    val seasonlayoutManager = LinearLayoutManager(context)
 
     val detail: LinearLayout = context.subject_detail
     //val headerView = context.layoutInflater.inflate(R.layout.subject_episode, context.root_layout, false)!!
 
     init{
+        context.season_list.adapter = seasonAdapter
+        seasonlayoutManager.orientation = LinearLayoutManager.HORIZONTAL
+        context.season_list.layoutManager = seasonlayoutManager
+        context.season_list.isNestedScrollingEnabled = false
+
         context.episode_list.adapter = episodeAdapter
         val layoutManager = LinearLayoutManager(context)
         layoutManager.orientation = LinearLayoutManager.HORIZONTAL

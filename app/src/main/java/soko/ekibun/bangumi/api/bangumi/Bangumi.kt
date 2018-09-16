@@ -128,7 +128,7 @@ interface Bangumi {
                     it.attr("id").split('_').getOrNull(1)?.toIntOrNull()?.let{id->
                         val nameCN = it.selectFirst("h3")?.selectFirst("a")?.text()
                         val name = it.selectFirst("h3")?.selectFirst("small")?.text()?:nameCN
-                        val img = "http:" + it.selectFirst("img")?.attr("src")?.replace("cover/s/", "cover/m/")
+                        val img = "http:" + it.selectFirst("img")?.attr("src")
                         val info = it.selectFirst(".info")?.text()
                         val subject = Subject(id,
                                 HttpUtil.getUrl(it.selectFirst("a")?.attr("href")?:"", URI.create(Bangumi.SERVER)),
@@ -136,7 +136,10 @@ interface Bangumi {
                                 name,
                                 nameCN,
                                 info,
-                                images = Images(img, img, img, img, img)
+                                images = Images(img.replace("/s/", "/l/"),
+                                        img.replace("/s/", "/c/"),
+                                        img.replace("/s/", "/m/"), img,
+                                        img.replace("/s/", "/g/"))
                         )
                         ret += SubjectCollection(name, id, -1, -1, subject = subject)
                     }
@@ -161,7 +164,11 @@ interface Bangumi {
                         val url = HttpUtil.getUrl(title.attr("href")?:"", URI.create(Bangumi.SERVER))
                         val id = Regex("""/subject/([0-9]*)""").find(url)?.groupValues?.get(1)?.toIntOrNull()?:0
                         val name = title.text()
-                        ret += Subject(id, url, 0, name, summary = sub, images = Images(img, img, img, img, img))
+                        ret += Subject(id, url, 0, name, summary = sub,
+                                images = Images(img.replace("/m/", "/l/"),
+                                        img.replace("/m/", "/c/"), img,
+                                        img.replace("/m/", "/s/"),
+                                        img.replace("/m/", "/g/")))
                     }
                 }
                 return@buildHttpCall ret

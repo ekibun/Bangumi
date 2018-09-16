@@ -24,7 +24,7 @@ class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeS
     private var mHeight: Int = 0
     private var minScale = 0.5f
     private var mAlpha = 255
-    private var canFinish = false
+    private var canFinish = 0
     private var isAnimate = false
 
     //is event on PhotoView
@@ -111,7 +111,7 @@ class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeS
                 MotionEvent.ACTION_DOWN -> {
                     onActionDown(event)
                     //change the canFinish flag
-                    canFinish = !canFinish
+                    canFinish++
                 }
                 MotionEvent.ACTION_MOVE -> {
                     //in viewpager
@@ -151,10 +151,10 @@ class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeS
                         isTouchEvent = false
                         //judge finish or not
                         postDelayed({
-                            if (translateX == 0f && translateY == 0f && canFinish) {
+                            if (translateX == 0f && translateY == 0f && canFinish == 1) {
                                 mTapListener?.invoke()
                             }
-                            canFinish = false
+                            canFinish = 0
                         }, 300)
                     }
             }

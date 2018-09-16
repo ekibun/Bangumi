@@ -4,9 +4,12 @@ import android.annotation.SuppressLint
 import android.support.design.widget.AppBarLayout
 import android.support.design.widget.CollapsingToolbarLayout
 import android.support.v7.widget.LinearLayoutManager
+import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.LinearLayout
+import android.widget.PopupWindow
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.entity.SectionEntity
@@ -25,6 +28,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectProgress
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
 import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarAdapter
+import soko.ekibun.bangumi.ui.view.DragPhotoView
 import soko.ekibun.bangumi.util.JsonUtil
 
 class SubjectView(private val context: SubjectActivity){
@@ -35,6 +39,8 @@ class SubjectView(private val context: SubjectActivity){
     val blogAdapter = BlogAdapter()
     val sitesAdapter = SitesAdapter()
     val commentAdapter = CommentAdapter()
+    val seasonAdapter = SeasonAdapter()
+    val seasonlayoutManager = LinearLayoutManager(context)
 
     val detail: LinearLayout = context.subject_detail
 
@@ -47,6 +53,11 @@ class SubjectView(private val context: SubjectActivity){
             context.item_buttons.translationX = -(context.toolbar.height - (context.item_buttons.layoutParams as CollapsingToolbarLayout.LayoutParams).marginEnd * 2) * ratio
             context.toolbar.currentContentInsetRight
         })
+
+        context.season_list.adapter = seasonAdapter
+        seasonlayoutManager.orientation = LinearLayoutManager.HORIZONTAL
+        context.season_list.layoutManager = seasonlayoutManager
+        context.season_list.isNestedScrollingEnabled = false
 
         context.episode_list.adapter = episodeAdapter
         val layoutManager = LinearLayoutManager(context)
@@ -120,6 +131,26 @@ class SubjectView(private val context: SubjectActivity){
                 .load(subject.images?.common)
                 .apply(RequestOptions.errorOf(R.drawable.ic_404))
                 .into(context.item_cover)
+        context.item_cover.setOnClickListener {
+            val popWindow = PopupWindow(it, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, true)
+            val photoView = DragPhotoView(it.context)
+            popWindow.contentView = photoView
+            Glide.with(photoView).applyDefaultRequestOptions(RequestOptions.placeholderOf(context.item_cover.drawable))
+                    .load(subject.images?.large).into(photoView)
+            photoView.mTapListener={
+                popWindow.dismiss()
+            }
+            photoView.mExitListener={
+                popWindow.dismiss()
+            }
+            popWindow.isClippingEnabled = false
+            popWindow.animationStyle = R.style.AppTheme_FadeInOut
+            popWindow.showAtLocation(it, Gravity.CENTER, 0, 0)
+            popWindow.contentView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_FULLSCREEN)
+        }
 
         Glide.with(context.item_cover_blur)
                 .applyDefaultRequestOptions(RequestOptions.placeholderOf(context.item_cover_blur.drawable))
