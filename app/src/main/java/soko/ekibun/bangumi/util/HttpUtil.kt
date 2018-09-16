@@ -23,6 +23,8 @@ object HttpUtil {
     }
 
     fun getUrl(url: String, baseUri: URI?): String{
-        return baseUri?.resolve(url)?.toASCIIString() ?: URI.create(url).toASCIIString()
+        return try{
+            baseUri?.resolve(url)?.toASCIIString() ?: URI.create(url).toASCIIString()
+        }catch (e: Exception){ url }
     }
 }

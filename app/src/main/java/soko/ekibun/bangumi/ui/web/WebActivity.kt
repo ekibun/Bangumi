@@ -8,8 +8,6 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Message
-import android.util.Log
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
@@ -22,6 +20,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.ui.topic.TopicActivity
 import soko.ekibun.bangumi.util.AppUtil
+import java.net.URI
 
 class WebActivity : AppCompatActivity() {
     val api by lazy { Bangumi.createInstance(false) }
@@ -166,9 +165,18 @@ class WebActivity : AppCompatActivity() {
             launchUrl(context, url)
         }
 
+        val bgmHosts = arrayOf("bgm.tv", "bangumi.tv", "chii.in")
         fun jumpUrl(context: Context, page: String?, openUrl: String): Boolean{
             val url = page?.split("#")?.get(0)
             if(url == null || url.isNullOrEmpty() || url == openUrl) return false
+            val host = try{
+                URI.create(url).host
+            }catch (e: Exception){ return false }
+            var flag = false
+            bgmHosts.forEach {
+                if(host.contains(it))  flag = true
+            }
+            if(!flag) return false
             val post = Regex("""#post_([0-9]+)$""").find(page)?.groupValues?.get(1)?.toIntOrNull()?:0
             //Topic
             var regex = Regex("""/m/topic/[^/]*/([0-9]*)$""")
