@@ -8,7 +8,10 @@ import android.animation.ValueAnimator
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.util.Log
+import android.view.ViewConfiguration
 import com.github.chrisbanes.photoview.PhotoView
+import java.util.*
 
 
 class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeSet? = null, defStyle: Int = 0) : PhotoView(context, attr, defStyle) {
@@ -31,6 +34,7 @@ class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeS
     private var isTouchEvent = false
     var mTapListener: (()->Unit)? = null
     var mExitListener: (()->Unit)? = null
+    var mLongClickListener: (()->Unit)? = null
 
     private val alphaAnimation: ValueAnimator
         get() {
@@ -98,6 +102,9 @@ class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeS
         mHeight = h
     }
 
+    private var timer = Timer()
+    private var timeoutTask: TimerTask? = null
+    private var longClick = false
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
         val moveY = event.y
         val moveX = event.x
@@ -110,10 +117,21 @@ class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeS
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     onActionDown(event)
-                    //change the canFinish flag
-                    canFinish++
+                    longClick = false
+                    timeoutTask?.cancel()
+                    timeoutTask = object: TimerTask(){
+                        override fun run() {
+                            if (scale != 1f) return
+                            this@DragPhotoView.post {mLongClickListener?.invoke()}
+                            longClick = true
+                        }
+                    }
+                    timer.schedule(timeoutTask, ViewConfiguration.getLongPressTimeout().toLong())
                 }
                 MotionEvent.ACTION_MOVE -> {
+                    if(translateY != 0f || translateX != 0f){
+                        timeoutTask?.cancel()
+                    }
                     //in viewpager
                     //如果不消费事件，则不作操作
                     if (!isTouchEvent && Math.abs(translateY) < Math.abs(translateX)) {
@@ -143,19 +161,23 @@ class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeS
                 MotionEvent.ACTION_UP ->
                     //防止下拉的时候双手缩放
                     if (event.pointerCount == 1) {
+                        timeoutTask?.cancel()
+                        if (translateX == 0f && translateY == 0f &&!longClick){
+                            timeoutTask = object: TimerTask(){
+                                override fun run() {
+                                    if (scale != 1f) return
+                                    this@DragPhotoView.post { mTapListener?.invoke() }
+                                }
+                            }
+                            timer.schedule(timeoutTask, ViewConfiguration.getDoubleTapTimeout().toLong())
+                        }
+
                         if (mTranslateY > MAX_TRANSLATE_Y) {
                             mExitListener?.invoke()
                         } else {
                             performAnimation()
                         }
                         isTouchEvent = false
-                        //judge finish or not
-                        postDelayed({
-                            if (translateX == 0f && translateY == 0f && canFinish == 1) {
-                                mTapListener?.invoke()
-                            }
-                            canFinish = 0
-                        }, 300)
                     }
             }
         }

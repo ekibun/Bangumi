@@ -3,6 +3,7 @@ package soko.ekibun.bangumi.ui.subject
 import android.annotation.SuppressLint
 import android.support.design.widget.AppBarLayout
 import android.support.design.widget.CollapsingToolbarLayout
+import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.view.Gravity
 import android.view.View
@@ -29,6 +30,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.SubjectProgress
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
 import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarAdapter
 import soko.ekibun.bangumi.ui.view.DragPhotoView
+import soko.ekibun.bangumi.util.AppUtil
 import soko.ekibun.bangumi.util.JsonUtil
 
 class SubjectView(private val context: SubjectActivity){
@@ -142,6 +144,16 @@ class SubjectView(private val context: SubjectActivity){
             }
             photoView.mExitListener={
                 popWindow.dismiss()
+            }
+            photoView.mLongClickListener = {
+                val systemUiVisibility = popWindow.contentView.systemUiVisibility
+                AlertDialog.Builder(context)
+                        .setItems(arrayOf("分享"))
+                        { _, _ ->
+                            AppUtil.shareDrawable(context, photoView.drawable)
+                        }.setOnDismissListener {
+                            popWindow.contentView.systemUiVisibility = systemUiVisibility
+                        }.show()
             }
             popWindow.isClippingEnabled = false
             popWindow.animationStyle = R.style.AppTheme_FadeInOut

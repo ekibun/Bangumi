@@ -47,7 +47,6 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        Log.e("xxxxx",ViewCompat.canScrollVertically(this, 1)+"....."+ViewCompat.canScrollVertically(this, -1));
         final int action = MotionEventCompat.getActionMasked(event);
 
         int y = (int) event.getY();
