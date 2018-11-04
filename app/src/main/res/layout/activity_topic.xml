@@ -50,9 +50,6 @@
     </android.support.v4.widget.SwipeRefreshLayout>
 
     <TextView android:id="@+id/item_reply"
-              android:drawableStart="@drawable/ic_edit"
-              android:drawableEnd="@drawable/ic_send"
-              android:text="@string/reply_hint"
               android:padding="8dp"
               android:gravity="center_vertical"
           android:layout_width="match_parent"

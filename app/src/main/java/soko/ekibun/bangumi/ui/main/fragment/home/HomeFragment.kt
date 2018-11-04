@@ -2,6 +2,7 @@ package soko.ekibun.bangumi.ui.main.fragment.home
 
 import android.content.res.ColorStateList
 import android.os.Bundle
+import android.support.design.widget.TabLayout
 import android.view.View
 import kotlinx.android.synthetic.main.content_home.*
 import soko.ekibun.bangumi.R
@@ -37,6 +38,10 @@ class HomeFragment: DrawerFragment(R.layout.content_home){
                 child.requestLayout()
             }
         }
+    }
+
+    fun frame_tab(): TabLayout? {
+        return frame_tabs
     }
 
     fun collectionFragment(): CollectionFragment?{

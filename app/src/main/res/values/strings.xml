@@ -2,43 +2,24 @@
     <string name="app_name">Bangumi</string>
     <string name="search_hint">搜索…</string>
     <string name="desc_cover">番剧海报</string>
-    <string name="chase_bangumi">追番</string>
-    <string name="has_chase_bangumi">已追番</string>
 
-    <string name="av_title">第 %1$d 话</string>
     <string name="phrase_full">全 %1$d 话</string>
-    <string name="phrase_time">%1$s/%2$s</string>
     <string name="rate_count">%1$d人</string>
     <string name="phrase_reply">%1$d 回复</string>
     <string name="phrase_updating">更新至第 %1$d 话</string>
-    <string name="load_video_failed">获取视频失败</string>
-    <string name="download_cache">离线缓存</string>
-    <string name="settings">设置</string>
 
     <string name="navigation_drawer_open">导航开</string>
     <string name="navigation_drawer_close">导航关</string>
-    <string name="danmaku">弹幕</string>
-    <string name="fullscreen">全屏</string>
     <string name="play_pause">播放</string>
-    <string name="next_video">下一集</string>
-    <string name="user_cancel">用户取消</string>
 
-    <string name="err_not_login">登录才可以追番哟~</string>
-    <string name="err_network">电波无法到达哟</string>
-    <string name="err_load">加载失败了∑(OДO</string>
     <string name="share">分享</string>
     <string name="calendar">时间表</string>
     <string name="login_hint">点击头像登录</string>
     <string name="login">登录</string>
-    <string name="now_login">登录中…</string>
     <string name="night_mode">夜间模式</string>
     <string name="login_auth">登录</string>
     <string name="search">搜索</string>
-    <string name="lines">线路</string>
     <string name="logout">注销</string>
-    <string name="score_point">分</string>
-    <string name="parser_api">接口</string>
-    <string name="video">视频</string>
     <string name="status">状态</string>
     <string name="rate">评分</string>
     <string name="comment">吐槽</string>
@@ -54,13 +35,11 @@
     <string name="blog">评论</string>
     <string name="more">更多</string>
     <string name="info_empty">什么都没有哦</string>
-    <string name="links">关联页</string>
     <string name="collect">收藏</string>
     <string name="open_browser">在浏览器中打开</string>
     <string name="index">索引</string>
     <string name="home">主页</string>
     <string name="rakuen">超展开</string>
-    <string name="timeline">时空管理局</string>
     <string name="reply">回复</string>
     <string name="delete">删除</string>
     <string name="edit">编辑</string>
@@ -93,15 +72,5 @@
         <item>想看</item>
         <item>抛弃</item>
         <item>未看</item>
-    </string-array>
-    <string-array name="parse_type">
-        <item>爱奇艺</item>
-        <item>优酷</item>
-        <item>PPTV</item>
-        <item>腾讯视频</item>
-        <item>Dilidili</item>
-        <item>链接</item>
-        <item>Bilibili</item>
-        <item>Anime1</item>
     </string-array>
 </resources>

@@ -26,6 +26,7 @@ data class BangumiItem(
     data class SitesBean(
             var site: String? = null,
             var id: String? = null,
+            var url: String? = null,
             var begin: String? = null,
             var isOfficial: Boolean? = false,
             var isPremuiumOnly: Boolean? = false,
@@ -123,6 +124,7 @@ data class BangumiItem(
          */
 
         fun parseUrl(): String{
+            if(!url.isNullOrEmpty()) return url.toString()
             return when(site){
                 "bangumi" -> "http://bangumi.tv/subject/$id"
                 "saraba1st" -> "https://bbs.saraba1st.com/2b/thread-$id-1-1.html"

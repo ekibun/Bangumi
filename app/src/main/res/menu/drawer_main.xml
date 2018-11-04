@@ -18,7 +18,7 @@
                 android:title="@string/index"/>
     </group>
 
-    <group  android:id="@+id/group_settings">
+    <group>
         <item android:id="@+id/nav_search"
               android:icon="@drawable/ic_search"
               android:title="@string/search"

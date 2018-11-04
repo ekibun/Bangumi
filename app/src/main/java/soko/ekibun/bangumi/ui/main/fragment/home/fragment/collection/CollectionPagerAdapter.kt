@@ -93,7 +93,7 @@ class CollectionPagerAdapter(context: Context, val fragment: CollectionFragment,
             it.filter { !useApi || it.subject?.type == subjectTypeView.getType() }.let{
                 if(!useApi) it.forEach {
                     it.subject?.type = subjectTypeView.getType() }
-                item.first.addData(it) }
+                item.first.addData(if(useApi) it.reversed() else it) }
             if(useApi || it.size < 10)
                 item.first.loadMoreEnd()
             else

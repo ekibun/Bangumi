@@ -11,7 +11,7 @@ import soko.ekibun.bangumi.ui.main.fragment.index.IndexFragment
 import soko.ekibun.bangumi.ui.search.SearchActivity
 
 class DrawerView(private val context: MainActivity, onNightModeChange: (Boolean)->Unit, onLogout: ()->Unit){
-    private var checkedId = R.id.nav_home
+    var checkedId = R.id.nav_home
     val homeFragment = HomeFragment()
     private val fragments: Map<Int, DrawerFragment> = mapOf(
             R.id.nav_home to homeFragment,
@@ -55,7 +55,7 @@ class DrawerView(private val context: MainActivity, onNightModeChange: (Boolean)
         }
     }
 
-    private fun select(id: Int){
+    fun select(id: Int){
         checkedId = id
         context.supportFragmentManager.beginTransaction()
                 .replace(R.id.content_frame, fragments[id]!!).commit()

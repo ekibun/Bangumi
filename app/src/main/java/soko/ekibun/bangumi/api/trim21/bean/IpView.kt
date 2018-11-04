@@ -6,8 +6,9 @@ data class IpView(
 ) {
 
     data class Edge(
-            val _id: String? = null,
+            val id: String? = null,
             val relation: String? = null,
+            val removed: Boolean = false,
             val source: Int = 0,
             val target: Int = 0
     ) {
@@ -20,8 +21,7 @@ data class IpView(
     }
 
     data class Node(
-            val NSFW: Boolean = false,
-            val _id: Int = 0,
+            val subject_id: Int = 0,
             val cover: String? = null,
             val id: Int = 0,
             val image: String? = null,

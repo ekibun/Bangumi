@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.Snackbar
+import android.support.v4.view.GravityCompat
 import android.view.View
 import kotlinx.android.synthetic.main.activity_main.*
 import retrofit2.Call
@@ -45,6 +46,21 @@ class MainPresenter(private val context: MainActivity){
 
     init{
         drawerView.switch.isChecked = themeModel.getTheme()
+    }
+
+    fun processBack(): Boolean{
+        if(context.drawer_layout.isDrawerOpen(GravityCompat.START)){
+            context.drawer_layout.closeDrawers()
+            return true
+        }
+        if(drawerView.checkedId != R.id.nav_home){
+            drawerView.select(R.id.nav_home)
+            return true
+        }
+        val homeTab = drawerView.homeFragment.frame_tab()?.getTabAt(0)?: return false
+        if(homeTab.isSelected) return false
+        homeTab.select()
+        return true
     }
 
     private var userCall : Call<UserInfo>? = null

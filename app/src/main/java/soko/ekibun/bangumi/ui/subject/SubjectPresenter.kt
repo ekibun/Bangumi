@@ -5,6 +5,7 @@ import android.content.DialogInterface
 import android.net.Uri
 import android.support.customtabs.CustomTabsIntent
 import android.support.v7.app.AlertDialog
+import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import kotlinx.android.synthetic.main.activity_subject.*
@@ -19,14 +20,13 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.*
-import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.bangumiData.BangumiData
 import soko.ekibun.bangumi.api.bangumiData.bean.BangumiItem
 import soko.ekibun.bangumi.api.trim21.BgmIpViewer
 import soko.ekibun.bangumi.api.trim21.bean.IpView
 import soko.ekibun.bangumi.model.UserModel
-import soko.ekibun.bangumi.ui.video.VideoActivity
 import soko.ekibun.bangumi.ui.web.WebActivity
+import soko.ekibun.bangumi.util.PlayerBridge
 import java.util.*
 
 class SubjectPresenter(private val context: SubjectActivity){
@@ -53,7 +53,8 @@ class SubjectPresenter(private val context: SubjectActivity){
         }
 
         context.item_play.setOnClickListener {
-            VideoActivity.startActivity(context, subject)
+            if(PlayerBridge.checkActivity(context))
+                PlayerBridge.startActivity(context, subject, userModel.getToken())
         }
 
         subjectView.episodeAdapter.setOnItemLongClickListener { _, _, position ->
@@ -99,7 +100,7 @@ class SubjectPresenter(private val context: SubjectActivity){
         subjectView.seasonAdapter.setOnItemClickListener { _, _, position ->
             val item = subjectView.seasonAdapter.data[position]
             if(item.id != subjectView.seasonAdapter.currentId)
-            SubjectActivity.startActivity(context, Subject(item._id, "${Bangumi.SERVER}/subject/${item._id}", subject.type, item.name, item.name_cn,
+            SubjectActivity.startActivity(context, Subject(item.subject_id, "${Bangumi.SERVER}/subject/${item.subject_id}", subject.type, item.name, item.name_cn,
                     images = Images(item.image?.replace("/g/", "/l/"),
                             item.image?.replace("/g/", "/c/"),
                             item.image?.replace("/g/", "/m/"),
@@ -117,7 +118,7 @@ class SubjectPresenter(private val context: SubjectActivity){
                 (if(episode.duration.isNullOrEmpty()) "" else "时长：" + episode.duration + "\n") +
                 "讨论 (+" + episode.comment + ")"
         view.item_episode_title.setOnClickListener {
-            WebActivity.launchUrl(context, episode.url)
+            WebActivity.launchUrl(context, "${Bangumi.SERVER}/m/topic/ep/${episode.id}", "")
         }
         view.item_episode_status.setSelection(intArrayOf(3,1,0,2)[episode.progress?.status?.id?:0])
         userModel.getToken()?.let { token ->
@@ -149,7 +150,7 @@ class SubjectPresenter(private val context: SubjectActivity){
         }, {}))
 
         BgmIpViewer.createInstance().subject(subject.id).enqueue(ApiHelper.buildCallback(context, {
-            val bgmIp = it.nodes?.firstOrNull { it._id == subject.id }?:return@buildCallback
+            val bgmIp = it.nodes?.firstOrNull { it.subject_id == subject.id }?:return@buildCallback
             val id = it.edges?.firstOrNull{edge-> edge.source == bgmIp.id && edge.relation == "主线故事"}?.target?:bgmIp.id
             val ret = ArrayList<IpView.Node>()
             it.edges?.filter { edge-> edge.target == id && edge.relation == "主线故事" }?.reversed()?.forEach { edge->
@@ -175,7 +176,7 @@ class SubjectPresenter(private val context: SubjectActivity){
             if(ret.size > 1){
                 subjectView.seasonAdapter.setNewData(ret.distinct())
                 subjectView.seasonAdapter.currentId = bgmIp.id
-                subjectView.seasonlayoutManager.scrollToPositionWithOffset(ret.indexOfFirst { it.id == bgmIp.id }, 0)
+                subjectView.seasonLayoutManager.scrollToPositionWithOffset(subjectView.seasonAdapter.data.indexOfFirst { it.id == bgmIp.id }, 0)
             }
         }, {}))
 
@@ -214,8 +215,8 @@ class SubjectPresenter(private val context: SubjectActivity){
         BangumiData.createInstance().query(year, String.format("%02d", month)).enqueue(ApiHelper.buildCallback(context, {
             subjectView.sitesAdapter.setNewData(null)
             it.filter { it.sites?.filter { it.site == "bangumi" }?.getOrNull(0)?.id?.toIntOrNull() == subject.id }.forEach {
-                if(subjectView.sitesAdapter.data.size == 0)
-                    subjectView.sitesAdapter.addData(BangumiItem.SitesBean("offical", it.officialSite))
+                if(subjectView.sitesAdapter.data.size == 0 && !it.officialSite.isNullOrEmpty())
+                    subjectView.sitesAdapter.addData(BangumiItem.SitesBean("official", "", it.officialSite))
                 subjectView.sitesAdapter.addData(it.sites?.filter { it.site != "bangumi" }?:ArrayList())
             }
         }, {}))

@@ -22,9 +22,10 @@ import soko.ekibun.bangumi.ui.view.BackgroundWebView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.JsonUtil
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.View
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
+import soko.ekibun.bangumi.model.UserModel
+import soko.ekibun.bangumi.util.ResourceUtil
 
 
 class TopicActivity : AppCompatActivity() {
@@ -126,7 +127,7 @@ class TopicActivity : AppCompatActivity() {
     private fun getTopic(){
         item_swipe.isRefreshing = true
         getTopicApi{
-            if(it.formhash.isNullOrEmpty()){
+            if(it.user_id.isNullOrEmpty() && UserModel(this).getToken() != null){
                 item_swipe.isRefreshing = true
                 val webView = BackgroundWebView(this)
                 webView.loadUrl("${Bangumi.SERVER}/m")
@@ -157,8 +158,20 @@ class TopicActivity : AppCompatActivity() {
         (item_list?.layoutManager as? LinearLayoutManager)?.let{ it.scrollToPositionWithOffset(adapter.data.indexOfFirst { it.pst_id == openPost.toString() }, 0) }
         adapter.setOnLoadMoreListener({adapter.loadMoreEnd()}, item_list)
         adapter.setEnableLoadMore(true)
+        item_reply.text = when {
+            !topic.formhash.isNullOrEmpty() -> getString(R.string.reply_hint)
+            !topic.error.isNullOrEmpty() -> topic.error
+            else -> "登录后才可以评论哦"
+        }
+        item_reply.setCompoundDrawablesWithIntrinsicBounds(
+                if(!topic.formhash.isNullOrEmpty())ResourceUtil.getDrawable(this, R.drawable.ic_edit) else null,//left
+                null,
+                if(!topic.formhash.isNullOrEmpty())ResourceUtil.getDrawable(this, R.drawable.ic_send) else null,//right
+                null)
         item_reply.setOnClickListener {
-            topic.formhash?.let{ showPopupWindow(topic.post, FormBody.Builder().add("lastview", topic.lastview!!).add("formhash", it),"", "回复 ${topic.title}") }
+            topic.formhash?.let{ showPopupWindow(topic.post, FormBody.Builder().add("lastview", topic.lastview!!).add("formhash", it),"", "回复 ${topic.title}") }?:{
+                if(!topic.errorLink.isNullOrEmpty()) WebActivity.launchUrl(this, topic.errorLink, "")
+            }()
         }
         adapter.setOnItemChildClickListener { _, v, position ->
             val post = adapter.data[position]
@@ -179,7 +192,7 @@ class TopicActivity : AppCompatActivity() {
                 }
                 R.id.item_del -> {
                     AlertDialog.Builder(this@TopicActivity).setTitle("确认删除？")
-                            .setNegativeButton("取消", { _, _ -> }).setPositiveButton("确定") { _, _ ->
+                            .setNegativeButton("取消") { _, _ -> }.setPositiveButton("确定") { _, _ ->
                                 if (post.floor == 1) {
                                     val url = topic.post.replace(Bangumi.SERVER, "${Bangumi.SERVER}/erase").replace("/new_reply", "?gh=${topic.formhash}&ajax=1")
                                     ApiHelper.buildHttpCall(url) {

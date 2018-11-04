@@ -16,7 +16,7 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme"
-            tools:ignore="UnusedAttribute">
+            tools:ignore="AllowBackup,GoogleAppIndexingWarning,UnusedAttribute">
         <provider
                 android:name="android.support.v4.content.FileProvider"
                 android:authorities="soko.ekibun.bangumi.fileprovider"
@@ -42,12 +42,6 @@
         <activity android:name=".ui.web.WebActivity">
         </activity>
         <activity android:name=".ui.search.SearchActivity">
-        </activity>
-        <activity
-                android:name=".ui.video.VideoActivity"
-                android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|uiMode"
-                android:supportsPictureInPicture="true"
-                tools:targetApi="n">
         </activity>
         <activity
                 android:name=".ui.subject.SubjectActivity"

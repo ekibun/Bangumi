@@ -12,7 +12,7 @@ class SitesAdapter(data: MutableList<BangumiItem.SitesBean>? = null) :
 
     override fun convert(helper: BaseViewHolder, item: BangumiItem.SitesBean) {
         helper.itemView.item_site.text = item.site
-        helper.itemView.item_site_id.text = item.id
+        helper.itemView.item_site_id.text = if(item.id.isNullOrEmpty()) item.url else item.id
         helper.itemView.item_site.backgroundTintList = ColorStateList.valueOf(item.color())
     }
 }

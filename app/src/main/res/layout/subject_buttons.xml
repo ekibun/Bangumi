@@ -11,11 +11,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:clickable="true"
-            android:focusable="true"
-            android:visibility="gone">
+            android:focusable="true">
         <ImageView android:id="@+id/item_play_image"
-                   android:layout_width="wrap_content"
-                   android:layout_height="match_parent"
+                   android:layout_width="20dp"
+                   android:layout_height="18dp"
+                   android:layout_gravity="center_vertical"
                    android:tint="@android:color/white"
                    android:src="@drawable/ic_play"
                    android:contentDescription="@string/collect"/>
@@ -34,8 +34,9 @@
             android:clickable="true"
             android:focusable="true">
         <ImageView android:id="@+id/item_collect_image"
-                   android:layout_width="wrap_content"
-                   android:layout_height="match_parent"
+                   android:layout_width="20dp"
+                   android:layout_height="18dp"
+                   android:layout_gravity="center_vertical"
                    android:tint="@android:color/white"
                    android:src="@drawable/ic_heart_outline"
                    android:contentDescription="@string/collect"/>

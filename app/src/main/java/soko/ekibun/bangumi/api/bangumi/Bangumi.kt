@@ -282,6 +282,9 @@ interface Bangumi {
                             model
                     )
                 }
+                val user_id = Regex("""/user/([^/]*)""").find(doc.selectFirst("#header")?.selectFirst(".avatar")?.attr("href")?:"")?.groupValues?.get(1)?:""
+                val error = doc.selectFirst("#reply_wrapper")?.selectFirst(".tip")
+                val errorLink = HttpUtil.getUrl(error?.selectFirst("a")?.attr("href")?:"", URI.create(SERVER))
                 val group = doc.selectFirst("#pageHeader")?.selectFirst("span")?.text()?:""
                 val title = doc.selectFirst("#pageHeader")?.selectFirst("h1")?.ownText()?:""
                 val form = doc.selectFirst("#ReplyForm")
@@ -292,7 +295,7 @@ interface Bangumi {
                 doc.selectFirst("#pageHeader")?.select("a")?.filter { !it.text().isNullOrEmpty() }?.forEach {
                     links[it.text()]= HttpUtil.getUrl(it.attr("href")?:"", URI.create(SERVER)) }
                 links[title]= url
-                return@buildHttpCall Topic(group, title, replies, post, formhash, lastview, links)
+                return@buildHttpCall Topic(user_id, group, title, replies, post, formhash, lastview, links, error?.text(), errorLink)
             }
         }
 

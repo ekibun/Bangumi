@@ -8,6 +8,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
@@ -88,9 +89,7 @@ class WebActivity : AppCompatActivity() {
             }
             webview.webViewClient = object : WebViewClient() {
                 override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
-                    if(url == authUrl)
-                        webview.loadUrl("$authUrl&redirect_uri=${Bangumi.REDIRECT_URL}")
-                    else if(url.startsWith(Bangumi.REDIRECT_URL)){
+                    if(url.startsWith(Bangumi.REDIRECT_URL)){
                         webview.loadUrl("about:blank")
                         val uri = Uri.parse(url)
                         val code = uri.getQueryParameter("code")
@@ -99,6 +98,9 @@ class WebActivity : AppCompatActivity() {
                         intent.putExtra(RESULT_CODE, code)
                         setResult(Activity.RESULT_OK, intent)
                         finish()
+                    }else if(url == authUrl || !url.startsWith(authUrl) && !url.startsWith("${Bangumi.SERVER}/login") && !url.startsWith("${Bangumi.SERVER}/FollowTheRabbit")){
+                        Log.v("redirect", url)
+                        webview.loadUrl("$authUrl&redirect_uri=${Bangumi.REDIRECT_URL}")
                     }
                 }
             }

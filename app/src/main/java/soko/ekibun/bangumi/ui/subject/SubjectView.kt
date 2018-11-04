@@ -32,6 +32,7 @@ import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarAdapter
 import soko.ekibun.bangumi.ui.view.DragPhotoView
 import soko.ekibun.bangumi.util.AppUtil
 import soko.ekibun.bangumi.util.JsonUtil
+import soko.ekibun.bangumi.util.PlayerBridge
 
 class SubjectView(private val context: SubjectActivity){
     val episodeAdapter = SmallEpisodeAdapter()
@@ -42,7 +43,7 @@ class SubjectView(private val context: SubjectActivity){
     val sitesAdapter = SitesAdapter()
     val commentAdapter = CommentAdapter()
     val seasonAdapter = SeasonAdapter()
-    val seasonlayoutManager = LinearLayoutManager(context)
+    val seasonLayoutManager = LinearLayoutManager(context)
 
     val detail: LinearLayout = context.subject_detail
 
@@ -52,13 +53,14 @@ class SubjectView(private val context: SubjectActivity){
             context.item_scrim.alpha = ratio
             context.item_subject.alpha = 1 - ratio
             context.item_buttons.translationY = -(context.toolbar.height - context.item_buttons.height * 9 / 8) * ratio / 2 - context.item_buttons.height / 16
-            context.item_buttons.translationX = -(context.toolbar.height - (context.item_buttons.layoutParams as CollapsingToolbarLayout.LayoutParams).marginEnd * 2) * ratio
-            context.toolbar.currentContentInsetRight
+            val marginEnd = (context.item_buttons.layoutParams as CollapsingToolbarLayout.LayoutParams).marginEnd
+            context.item_buttons.translationX = -2.2f * marginEnd * ratio
+            context.toolbar.contentInsetEndWithActions = ((context.item_buttons.width + 3 * marginEnd) * ratio).toInt()
         })
 
         context.season_list.adapter = seasonAdapter
-        seasonlayoutManager.orientation = LinearLayoutManager.HORIZONTAL
-        context.season_list.layoutManager = seasonlayoutManager
+        seasonLayoutManager.orientation = LinearLayoutManager.HORIZONTAL
+        context.season_list.layoutManager = seasonLayoutManager
         context.season_list.isNestedScrollingEnabled = false
 
         context.episode_list.adapter = episodeAdapter
@@ -122,7 +124,7 @@ class SubjectView(private val context: SubjectActivity){
         context.item_air_week.text = parseAirWeek(subject)
         detail.item_detail.text = subject.summary
 
-        context.item_play.visibility = if(subject.type in listOf(SubjectType.ANIME, SubjectType.REAL)) View.VISIBLE else View.GONE
+        context.item_play.visibility = if(PlayerBridge.checkActivity(context) && subject.type in listOf(SubjectType.ANIME, SubjectType.REAL)) View.VISIBLE else View.GONE
 
         subject.rating?.let {
             context.item_score.text = it.score.toString()

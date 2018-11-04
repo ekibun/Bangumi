@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="textSizeLarge">20sp</dimen>
     <dimen name="textSizeMedium">15sp</dimen>
     <dimen name="textSizeSmall">12sp</dimen>
 
-    <dimen name="reply_def_height">100dp</dimen>
 </resources>

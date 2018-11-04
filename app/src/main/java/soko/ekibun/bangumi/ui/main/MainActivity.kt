@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import soko.ekibun.bangumi.R
@@ -14,9 +13,10 @@ import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.search.SearchActivity
 import soko.ekibun.bangumi.ui.view.BackgroundWebView
 import android.support.v4.view.MenuItemCompat
+import android.view.KeyEvent
+import android.widget.Toast
 import soko.ekibun.bangumi.ui.view.NotifyActionProvider
 import soko.ekibun.bangumi.ui.web.WebActivity
-
 
 class MainActivity : AppCompatActivity() {
 
@@ -54,6 +54,20 @@ class MainActivity : AppCompatActivity() {
         }
 
         return true
+    }
+
+    var exitTime = 0L
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK){
+            if(mainPresenter.processBack()){
+                return true
+            }else if((System.currentTimeMillis()-exitTime) > 2000){
+                Toast.makeText(applicationContext, "再按一次退出程序", Toast.LENGTH_SHORT).show()
+                exitTime = System.currentTimeMillis()
+                return true
+            }
+        }
+        return super.onKeyDown(keyCode, event)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
