@@ -5,10 +5,12 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.switch_item.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
+import soko.ekibun.bangumi.ui.main.fragment.cache.CacheFragment
 import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarFragment
 import soko.ekibun.bangumi.ui.main.fragment.home.HomeFragment
 import soko.ekibun.bangumi.ui.main.fragment.index.IndexFragment
 import soko.ekibun.bangumi.ui.search.SearchActivity
+import soko.ekibun.bangumi.util.PlayerBridge
 
 class DrawerView(private val context: MainActivity, onNightModeChange: (Boolean)->Unit, onLogout: ()->Unit){
     var checkedId = R.id.nav_home
@@ -16,7 +18,8 @@ class DrawerView(private val context: MainActivity, onNightModeChange: (Boolean)
     private val fragments: Map<Int, DrawerFragment> = mapOf(
             R.id.nav_home to homeFragment,
             R.id.nav_calendar to CalendarFragment(),
-            R.id.nav_index to IndexFragment()
+            R.id.nav_index to IndexFragment(),
+            R.id.nav_download to CacheFragment()
     )
     val switch = context.nav_view.menu.findItem(R.id.nav_night).actionView.item_switch!!
 
@@ -24,6 +27,8 @@ class DrawerView(private val context: MainActivity, onNightModeChange: (Boolean)
         switch.setOnCheckedChangeListener { _, isChecked ->
             onNightModeChange(isChecked)
         }
+
+        context.nav_view.menu.findItem(R.id.nav_download).isVisible = PlayerBridge.checkActivity(context)
 
         context.nav_view.setNavigationItemSelectedListener {
             if(it.itemId != R.id.nav_night)

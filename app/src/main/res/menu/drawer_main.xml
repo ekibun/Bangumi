@@ -16,9 +16,13 @@
                 android:id="@+id/nav_index"
                 android:icon="@drawable/ic_widgets"
                 android:title="@string/index"/>
+        <item
+                android:id="@+id/nav_download"
+                android:icon="@drawable/ic_cloud_download"
+                android:title="@string/cache"/>
     </group>
 
-    <group>
+    <group android:id="@+id/group_settings">
         <item android:id="@+id/nav_search"
               android:icon="@drawable/ic_search"
               android:title="@string/search"
