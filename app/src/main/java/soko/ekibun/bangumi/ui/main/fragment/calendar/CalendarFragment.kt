@@ -23,4 +23,10 @@ class CalendarFragment: DrawerFragment(R.layout.content_calendar) {
         menu.findItem(R.id.action_search)?.isVisible = true
         super.onPrepareOptionsMenu(menu)
     }
+
+    override fun processBack(): Boolean{
+        if(item_pager == null || item_pager?.currentItem == 7) return false
+        item_pager?.currentItem = 7
+        return true
+    }
 }

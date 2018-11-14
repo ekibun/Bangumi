@@ -58,6 +58,7 @@ class SubjectActivity : AppCompatActivity() {
         when (item.itemId) {
             android.R.id.home -> processBack()
             R.id.action_share -> AppUtil.shareString(this, subject.name + " " + subject.url)
+            R.id.action_refresh -> subjectPresenter.refresh(subject)
         }
         return super.onOptionsItemSelected(item)
     }

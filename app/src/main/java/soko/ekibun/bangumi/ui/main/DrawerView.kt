@@ -60,7 +60,11 @@ class DrawerView(private val context: MainActivity, onNightModeChange: (Boolean)
         }
     }
 
-    fun select(id: Int){
+    fun current(): DrawerFragment? {
+        return fragments[checkedId]
+    }
+
+  fun select(id: Int){
         checkedId = id
         context.supportFragmentManager.beginTransaction()
                 .replace(R.id.content_frame, fragments[id]!!).commit()

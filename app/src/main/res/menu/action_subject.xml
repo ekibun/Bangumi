@@ -3,4 +3,6 @@
 
     <item android:id="@+id/action_share"
           android:title="@string/share"/>
+    <item android:id="@+id/action_refresh"
+          android:title="@string/refresh"/>
 </menu>

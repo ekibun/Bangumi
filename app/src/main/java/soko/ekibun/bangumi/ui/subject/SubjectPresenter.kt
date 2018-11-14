@@ -5,7 +5,6 @@ import android.content.DialogInterface
 import android.net.Uri
 import android.support.customtabs.CustomTabsIntent
 import android.support.v7.app.AlertDialog
-import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import kotlinx.android.synthetic.main.activity_subject.*
@@ -34,11 +33,15 @@ class SubjectPresenter(private val context: SubjectActivity){
     val subjectView by lazy{ SubjectView(context) }
     private val userModel by lazy { UserModel(context) }
 
-    fun init(subject: Subject){
-        subjectView.updateSubject(subject)
+    fun refresh(subject: Subject){
         refreshSubject(subject)
         refreshProgress(subject)
         refreshCollection(subject)
+    }
+
+    fun init(subject: Subject){
+        subjectView.updateSubject(subject)
+        refresh(subject)
 
         subjectView.detail.item_detail.setOnClickListener {
             WebActivity.launchUrl(context, subject.url)

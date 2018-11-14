@@ -17,9 +17,20 @@ class IndexFragment: DrawerFragment(R.layout.content_index){
         item_pager?.adapter = IndexPagerAdapter(this, item_pager)
         item_tabs?.setUpWithViewPager(item_pager)
 
+        item_pager?.currentItem = getNowIndex()
+    }
+
+    override fun processBack(): Boolean{
+        val index = getNowIndex()
+        if(item_pager == null || item_pager?.currentItem == index) return false
+        item_pager?.currentItem = index
+        return true
+    }
+
+    private fun getNowIndex(): Int{
         val cal = Calendar.getInstance()
         val year = cal.get(Calendar.YEAR)
         val month = cal.get(Calendar.MONTH)
-        item_pager?.currentItem = (year - 1000) * 12 + month
+       return (year - 1000) * 12 + month
     }
 }

@@ -35,4 +35,8 @@ abstract class DrawerFragment(@LayoutRes private val resId: Int): Fragment(){
     fun onRestoreInstanceState(savedInstanceState: Bundle){
         this.savedInstanceState = savedInstanceState
     }
+
+    open fun processBack(): Boolean{
+        return false
+    }
 }

@@ -53,14 +53,14 @@ class MainPresenter(private val context: MainActivity){
             context.drawer_layout.closeDrawers()
             return true
         }
+        if(drawerView.current()?.processBack() == true){
+            return true
+        }
         if(drawerView.checkedId != R.id.nav_home){
             drawerView.select(R.id.nav_home)
             return true
         }
-        val homeTab = drawerView.homeFragment.frame_tab()?.getTabAt(0)?: return false
-        if(homeTab.isSelected) return false
-        homeTab.select()
-        return true
+        return false
     }
 
     private var userCall : Call<UserInfo>? = null
