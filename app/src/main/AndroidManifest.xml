@@ -46,6 +46,32 @@
         <activity
                 android:name=".ui.subject.SubjectActivity"
                 android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|uiMode">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data
+                        android:scheme="http"
+                        android:host="bgm.tv"
+                        android:pathPrefix="/subject"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data
+                        android:scheme="https"
+                        android:host="bgm.tv"
+                        android:pathPrefix="/subject"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data
+                        android:scheme="bangumi"
+                        android:host="subject"/>
+            </intent-filter>
         </activity>
         <activity android:name=".ui.topic.TopicActivity">
         </activity>

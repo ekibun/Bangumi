@@ -21,7 +21,8 @@ data class Subject(
         var crt: List<Character>? = null,
         var staff: List<Person>? = null,
         var topic: List<TopicBean>? = null,
-        var blog: List<BlogBean>? = null
+        var blog: List<BlogBean>? = null,
+        var collect: Boolean = false
 ){
     data class BlogBean(
             var id: Int = 0,

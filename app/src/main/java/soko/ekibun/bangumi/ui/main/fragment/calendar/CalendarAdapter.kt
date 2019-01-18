@@ -1,5 +1,7 @@
 package soko.ekibun.bangumi.ui.main.fragment.calendar
 
+import android.annotation.SuppressLint
+import android.view.View
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseSectionQuickAdapter
@@ -9,25 +11,42 @@ import kotlinx.android.synthetic.main.item_calendar.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.tinygrail.bean.OnAir
 import soko.ekibun.bangumi.util.ResourceUtil
+import java.text.DecimalFormat
 import java.util.*
 
 class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
         BaseSectionQuickAdapter<CalendarAdapter.CalendarSection, BaseViewHolder>
         (R.layout.item_calendar, R.layout.item_calendar, data) {
+    @SuppressLint("SetTextI18n")
     override fun convert(helper: BaseViewHolder, item: CalendarSection) {
-        helper.setText(R.id.item_title, if(item.t.subject.name_cn.isNullOrEmpty()) item.t.subject.name else item.t.subject.name_cn)
-        helper.setText(R.id.item_name_jp, if(item.t.episode?.name_cn.isNullOrEmpty()) item.t.episode?.name?:"" else item.t.episode?.name_cn)
+        helper.addOnClickListener(R.id.item_layout)
+        helper.setText(R.id.item_title, (if(item.t.subject.collect) " " else "")+if(item.t.subject.name_cn.isNullOrEmpty()) item.t.subject.name else item.t.subject.name_cn)
+        helper.setText(R.id.item_ep_name, item.t.episode?.parseSort() + " " + (if(item.t.episode?.name_cn.isNullOrEmpty()) item.t.episode?.name?:"" else item.t.episode?.name_cn))
         helper.addOnClickListener(R.id.item_layout)
         Glide.with(helper.itemView.item_cover)
                 .load(item.t.subject.images?.common)
                 .apply(RequestOptions.errorOf(R.drawable.ic_404))
                 .into(helper.itemView.item_cover)
         helper.itemView.item_time.text = ""
+        helper.itemView.item_chase.visibility = if(item.t.subject.collect) View.VISIBLE else View.GONE
 
         val past = pastTime(item.date, item.time)
         val color = ResourceUtil.resolveColorAttr(helper.itemView.context, if(past) R.attr.colorPrimary else android.R.attr.textColorSecondary)
-        helper.itemView.item_name_jp.setTextColor(color)
+        helper.itemView.item_ep_name.setTextColor(color)
         helper.itemView.item_time.alpha = if(past) 0.6f else 1.0f
+
+        helper.itemView.item_now_time.visibility = View.GONE
+
+        if(item.date != getNowInt()) return
+        val prev = data.getOrNull(data.indexOfFirst { it === item }-1)?.let{pastTime(it.date, it.time)}?: true
+        if(prev != past){
+            helper.itemView.item_now_time.visibility = View.VISIBLE
+            val cal = Calendar.getInstance()
+            val hourNow = cal.get(Calendar.HOUR_OF_DAY)
+            val minuteNow = cal.get(Calendar.MINUTE)
+            val format = DecimalFormat("00")
+            helper.itemView.item_now_time_text.text = "${format.format(hourNow)}:${format.format(minuteNow)}"
+        }
     }
 
     override fun convertHead(helper: BaseViewHolder, item: CalendarSection) {

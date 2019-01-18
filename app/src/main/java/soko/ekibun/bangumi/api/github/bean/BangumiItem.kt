@@ -1,4 +1,4 @@
-package soko.ekibun.bangumi.api.bangumiData.bean
+package soko.ekibun.bangumi.api.github.bean
 
 data class BangumiItem(
         var title: String? = null,

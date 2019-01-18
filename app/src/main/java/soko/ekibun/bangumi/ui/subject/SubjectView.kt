@@ -1,6 +1,7 @@
 package soko.ekibun.bangumi.ui.subject
 
 import android.annotation.SuppressLint
+import android.support.constraint.ConstraintLayout
 import android.support.design.widget.AppBarLayout
 import android.support.design.widget.CollapsingToolbarLayout
 import android.support.v7.app.AlertDialog
@@ -48,14 +49,19 @@ class SubjectView(private val context: SubjectActivity){
     val detail: LinearLayout = context.subject_detail
 
     init{
+        val marginEnd = (context.item_buttons.layoutParams as CollapsingToolbarLayout.LayoutParams).marginEnd
+        (context.title_expand.layoutParams as ConstraintLayout.LayoutParams).marginEnd = 3 * marginEnd
+
         context.app_bar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener{ appBarLayout, verticalOffset ->
              val ratio = Math.abs(verticalOffset.toFloat() / appBarLayout.totalScrollRange)
+
             context.item_scrim.alpha = ratio
             context.item_subject.alpha = 1 - ratio
             context.item_buttons.translationY = -(context.toolbar.height - context.item_buttons.height * 9 / 8) * ratio / 2 - context.item_buttons.height / 16
-            val marginEnd = (context.item_buttons.layoutParams as CollapsingToolbarLayout.LayoutParams).marginEnd
+            context.title_collapse.alpha = 1-(1-ratio)*(1-ratio)*(1-ratio)
+            context.title_expand.alpha = 1-ratio
+
             context.item_buttons.translationX = -2.2f * marginEnd * ratio
-            context.toolbar.contentInsetEndWithActions = ((context.item_buttons.width + 3 * marginEnd) * ratio).toInt()
         })
 
         context.season_list.adapter = seasonAdapter
@@ -117,7 +123,15 @@ class SubjectView(private val context: SubjectActivity){
     @SuppressLint("SetTextI18n")
     fun updateSubject(subject: Subject){
         if(context.isDestroyed) return
-        context.title = if(subject.name_cn.isNullOrEmpty()) subject.name else subject.name_cn
+        context.title = ""//if(subject.name_cn.isNullOrEmpty()) subject.name else subject.name_cn
+        context.title_collapse.text = if(subject.name_cn.isNullOrEmpty()) subject.name else subject.name_cn
+        context.title_expand.text = context.title_collapse.text
+        context.title_expand.post {
+            val layoutParams = (context.title_collapse.layoutParams as ConstraintLayout.LayoutParams)
+            layoutParams.marginEnd = 3 * (context.item_buttons.layoutParams as CollapsingToolbarLayout.LayoutParams).marginEnd + context.item_buttons.width
+            context.title_collapse.layoutParams = layoutParams
+            (context.item_subject.layoutParams as CollapsingToolbarLayout.LayoutParams).topMargin = context.toolbar_container.height
+        }
         context.item_info.text = SubjectType.getDescription(subject.type)
         context.item_subject_title.visibility = View.GONE
         context.item_air_time.text = "开播时间：${subject.air_date}"

@@ -128,7 +128,7 @@ interface Bangumi {
                     it.attr("id").split('_').getOrNull(1)?.toIntOrNull()?.let{id->
                         val nameCN = it.selectFirst("h3")?.selectFirst("a")?.text()
                         val name = it.selectFirst("h3")?.selectFirst("small")?.text()?:nameCN
-                        val img = "http:" + it.selectFirst("img")?.attr("src")
+                        val img = HttpUtil.getUrl(it.selectFirst("img")?.attr("src")?:"", URI.create(Bangumi.SERVER))
                         val info = it.selectFirst(".info")?.text()
                         val subject = Subject(id,
                                 HttpUtil.getUrl(it.selectFirst("a")?.attr("href")?:"", URI.create(Bangumi.SERVER)),
@@ -159,7 +159,7 @@ interface Bangumi {
                         val newSub = it.selectFirst(".sub").text()
                         if(!newSub.isNullOrEmpty()) sub = newSub
                         val avatar = it.selectFirst(".avatar")
-                        val img = "http:" + Regex("""background-image:url\('([^']*)'\)""").find(avatar.html())?.groupValues?.get(1)
+                        val img = HttpUtil.getUrl(Regex("""background-image:url\('([^']*)'\)""").find(avatar.html())?.groupValues?.get(1)?:"", URI.create(Bangumi.SERVER))
                         val title = it.selectFirst(".title")
                         val url = HttpUtil.getUrl(title.attr("href")?:"", URI.create(Bangumi.SERVER))
                         val id = Regex("""/subject/([0-9]*)""").find(url)?.groupValues?.get(1)?.toIntOrNull()?:0
@@ -182,7 +182,7 @@ interface Bangumi {
                 val ret = ArrayList<Comment>()
                 doc.selectFirst("#comment_box")?.let{
                     it.select(".item").forEach {
-                        val img = "http:" + Regex("""background-image:url\('([^']*)'\)""").find(it.selectFirst(".avatar")?.html()?:"")?.groupValues?.get(1)
+                        val img = HttpUtil.getUrl(Regex("""background-image:url\('([^']*)'\)""").find(it.selectFirst(".avatar")?.html()?:"")?.groupValues?.get(1)?:"", URI.create(Bangumi.SERVER))
                         val user = it.selectFirst(".text")?.selectFirst("a")
                         val id = Regex("""/user/([^/]*)""").find(user?.attr("href")?:"")?.groupValues?.get(1)
                         val userInfo = UserInfo(id?.toIntOrNull()?:0, HttpUtil.getUrl(user?.attr("href")?:"", URI.create(SERVER)), id, user?.text(), Images(img, img, img, img, img))
@@ -207,16 +207,16 @@ interface Bangumi {
                     it.attr("id").split('_').getOrNull(1)?.toIntOrNull()?.let{id->
                         val nameCN = it.selectFirst("h3")?.selectFirst("a")?.text()
                         val name = it.selectFirst("h3")?.selectFirst("small")?.text()?:nameCN
-                        val img = "http:" + it.selectFirst("img")?.attr("src")?.replace("cover/s/", "cover/m/")
+                        val img = HttpUtil.getUrl(it.selectFirst("img")?.attr("src")?:"", URI.create(Bangumi.SERVER))
                         val info = it.selectFirst(".info")?.text()
                         ret += Subject(id,
                                 HttpUtil.getUrl(it.selectFirst("a")?.attr("href")?:"", URI.create(SERVER)),
-                                0,
-                                name,
-                                nameCN,
-                                info,
-                                images = Images(img, img, img, img, img)
-                        )
+                                0, name, nameCN, info,
+                                images = Images(img.replace("/s/", "/l/"),
+                                        img.replace("/s/", "/c/"),
+                                        img.replace("/s/", "/m/"), img,
+                                        img.replace("/s/", "/g/")),
+                                collect = (it.selectFirst(".collectBlock")?.text()?.contains("修改") == true))
                     }
                 }
                 return@buildHttpCall ret
@@ -308,7 +308,7 @@ interface Bangumi {
                 doc.select(".tml_item")?.forEach {
                     val user = it.selectFirst("a.avatar")
                     val userId = Regex("""/user/([^/]*)""").find(user?.attr("href")?:"")?.groupValues?.get(1)
-                    val img = "http:" + Regex("""background-image:url\('([^']*)'\)""").find(user?.html()?:"")?.groupValues?.get(1)
+                    val img = HttpUtil.getUrl(Regex("""background-image:url\('([^']*)'\)""").find(user?.html()?:"")?.groupValues?.get(1)?:"", URI.create(Bangumi.SERVER))
                     val userName = it.selectFirst(".inner")?.selectFirst("strong")?.text()
                     val content = it.selectFirst(".inner")?.text()?:""
                     val url = it.selectFirst(".nt_link")?.attr("href")?:""
