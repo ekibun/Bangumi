@@ -27,8 +27,6 @@
             android:id="@+id/item_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="1"
             android:textSize="@dimen/textSizeMedium"
             android:textColor="?android:textColorPrimary"
             app:layout_constraintLeft_toRightOf="@+id/item_avatar"
@@ -37,13 +35,11 @@
             android:layout_marginLeft="8dp"/>
     <TextView
             android:id="@+id/item_time"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="@dimen/textSizeSmall"
-            android:ellipsize="end"
             android:maxLines="1"
             app:layout_constraintLeft_toLeftOf="@+id/item_title"
-            app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/item_title"/>
     <TextView
             android:alpha="0.5"
@@ -53,11 +49,9 @@
             android:textSize="@dimen/textSizeSmall"
             android:maxLines="1"
             android:ellipsize="end"
-            android:paddingTop="2dp"
-            app:layout_constraintLeft_toRightOf="@+id/item_avatar"
+            android:layout_marginLeft="4dp"
+            app:layout_constraintLeft_toRightOf="@+id/item_time"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/item_time"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintBaseline_toBaselineOf="@+id/item_time"/>
 
 </android.support.constraint.ConstraintLayout>

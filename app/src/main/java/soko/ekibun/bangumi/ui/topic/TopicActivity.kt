@@ -6,6 +6,8 @@ import android.content.Intent
 import android.graphics.Rect
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.constraint.ConstraintLayout
+import android.support.design.widget.AppBarLayout
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.view.MenuItem
@@ -22,10 +24,17 @@ import soko.ekibun.bangumi.ui.view.BackgroundWebView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.JsonUtil
 import android.support.v7.widget.RecyclerView
+import android.view.Menu
 import android.view.View
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
+import jp.wasabeef.glide.transformations.BlurTransformation
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.model.UserModel
+import soko.ekibun.bangumi.util.AppUtil
+import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.ResourceUtil
+import java.net.URI
 
 
 class TopicActivity : AppCompatActivity() {
@@ -49,6 +58,15 @@ class TopicActivity : AppCompatActivity() {
             getTopic()
         }
         getTopic()
+
+        app_bar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener{ appBarLayout, verticalOffset ->
+            val ratio = Math.abs(verticalOffset.toFloat() / appBarLayout.totalScrollRange)
+            title_collapse.alpha = 1-(1-ratio)*(1-ratio)*(1-ratio)
+            title_expand.alpha = 1-ratio
+            title_collapse.translationY = -title_slice.height / 2 * ratio
+            title_expand.translationY = title_collapse.translationY
+            title_slice.translationY =  (title_collapse.height - title_expand.height - (title_slice.layoutParams as ConstraintLayout.LayoutParams).topMargin - title_slice.height / 2) * ratio
+        })
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -64,8 +82,7 @@ class TopicActivity : AppCompatActivity() {
         dialog.callback = { inputString->
             data.add("submit", "submit")
             data.add("content", comment + inputString)
-            val cookie = CookieManager.getInstance().getCookie(Bangumi.SERVER)?:""
-            ApiHelper.buildHttpCall(post, mapOf("cookie" to cookie), data.build()){
+            ApiHelper.buildHttpCall(post, mapOf("cookie" to (CookieManager.getInstance().getCookie(Bangumi.SERVER)?:"")), data.build()){
                 val replies = ArrayList(adapter.data)
                 val posts = JsonUtil.toJsonObject(it.body()?.string()?:"").getAsJsonObject("posts")
                 val main = JsonUtil.toEntity<Map<String, TopicPost>>(posts.get("main")?.toString()?:"", object: TypeToken<Map<String, TopicPost>>(){}.type)?: HashMap()
@@ -98,7 +115,7 @@ class TopicActivity : AppCompatActivity() {
         dialog.show(supportFragmentManager, "reply")
     }
 
-    fun setNewData(data: List<TopicPost>){
+    private fun setNewData(data: List<TopicPost>){
         var floor = 0
         var subFloor = 0
         var referPost: TopicPost? = null
@@ -117,9 +134,16 @@ class TopicActivity : AppCompatActivity() {
         adapter.setNewData(data)
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.action_subject, menu)
+        return true
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> finish()
+            R.id.action_share -> AppUtil.shareString(this, "${title_expand.text} $openUrl")
+            R.id.action_refresh -> getTopic()
         }
         return super.onOptionsItemSelected(item)
     }
@@ -142,18 +166,41 @@ class TopicActivity : AppCompatActivity() {
     }
 
     private fun processTopic(topic: Topic){
-        title = topic.title
-        toolbar.subtitle = topic.group
+        title = ""//topic.title
+        title_collapse.text = topic.title
+        title_expand.text = title_collapse.text
+        title_collapse.setOnClickListener {
+            WebActivity.launchUrl(this@TopicActivity, topic.links.toList().last().second, openUrl)
+        }
+        title_expand.setOnClickListener {
+            WebActivity.launchUrl(this@TopicActivity, topic.links.toList().last().second, openUrl)
+        }
+        topic.links.toList().getOrNull(0)?.let{link ->
+            title_slice_0.text = link.first
+            title_slice_0.setOnClickListener {
+                WebActivity.launchUrl(this@TopicActivity, link.second, openUrl)
+            }
+        }
+        topic.links.toList().getOrNull(1)?.let{link ->
+            title_slice_1.text = link.first
+            title_slice_1.setOnClickListener {
+                WebActivity.launchUrl(this@TopicActivity, link.second, openUrl)
+            }
+        }
+        title_slice_divider.visibility = if(topic.links.size>2) View.VISIBLE else View.GONE
+        title_slice_1.visibility = title_slice_divider.visibility
+        title_slice_0.post{
+            title_slice_0.maxWidth = title_expand.width - if(title_slice_divider.visibility == View.VISIBLE) 2*title_slice_divider.width + title_slice_1.width else 0
+        }
+
+        //toolbar.subtitle = topic.group
         if(topic.replies.isEmpty())
             finish()
-        toolbar.menu.clear()
-        topic.links.forEach {
-            toolbar.menu.add(it.key)
-        }
-        toolbar.setOnMenuItemClickListener {
-            WebActivity.launchUrl(this@TopicActivity, topic.links[it.title]?:"", openUrl)
-            true
-        }
+        Glide.with(item_cover_blur)
+                .applyDefaultRequestOptions(RequestOptions.placeholderOf(item_cover_blur.drawable))
+                .load(HttpUtil.getUrl(topic.replies.firstOrNull()?.avatar?:"", URI.create(Bangumi.SERVER)))
+                .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)))
+                .into(item_cover_blur)
         setNewData(topic.replies)
         (item_list?.layoutManager as? LinearLayoutManager)?.let{ it.scrollToPositionWithOffset(adapter.data.indexOfFirst { it.pst_id == openPost.toString() }, 0) }
         adapter.setOnLoadMoreListener({adapter.loadMoreEnd()}, item_list)
@@ -195,7 +242,7 @@ class TopicActivity : AppCompatActivity() {
                             .setNegativeButton("取消") { _, _ -> }.setPositiveButton("确定") { _, _ ->
                                 if (post.floor == 1) {
                                     val url = topic.post.replace(Bangumi.SERVER, "${Bangumi.SERVER}/erase").replace("/new_reply", "?gh=${topic.formhash}&ajax=1")
-                                    ApiHelper.buildHttpCall(url) {
+                                    ApiHelper.buildHttpCall(url, mapOf("cookie" to (CookieManager.getInstance().getCookie(Bangumi.SERVER)?:""))) {
                                         true
                                     }.enqueue(ApiHelper.buildCallback<Boolean>(this@TopicActivity, {
                                         if (it) finish()
@@ -209,7 +256,7 @@ class TopicActivity : AppCompatActivity() {
                                         "subject" -> "/erase/subject/reply/"//http://bangumi.tv/subject/reply/114260/edit
                                         else -> ""
                                     } + "${post.pst_id}?gh=${topic.formhash}&ajax=1"
-                                    ApiHelper.buildHttpCall(url) {
+                                    ApiHelper.buildHttpCall(url, mapOf("cookie" to (CookieManager.getInstance().getCookie(Bangumi.SERVER)?:""))) {
                                         it.body()?.string()?.contains("\"status\":\"ok\"") == true
                                     }.enqueue(ApiHelper.buildCallback<Boolean>(this@TopicActivity, {
                                         val data = ArrayList(adapter.data)

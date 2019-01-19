@@ -230,7 +230,7 @@ interface Bangumi {
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<Rakuen>()
                 doc.select(".item_list")?.forEach{
-                    val img = "http:" + Regex("""background-image:url\('([^']*)'\)""").find(it.selectFirst(".avatar")?.html()?:"")?.groupValues?.get(1)
+                    val img = HttpUtil.getUrl(Regex("""background-image:url\('([^']*)'\)""").find(it.selectFirst(".avatar")?.html()?:"")?.groupValues?.get(1)?:"", URI.create(SERVER))
                     val title = it.selectFirst(".title")
                     val plus =  it.selectFirst(".grey").text()
                     val time = it.selectFirst(".time").text()?.replace("...", "")?:""

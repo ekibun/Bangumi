@@ -68,7 +68,7 @@ class WebActivity : AppCompatActivity() {
                     val url = request.url.toString()
                     if(jumpUrl(this@WebActivity, url, openUrl)){
                         return true
-                    }else if(!url.startsWith("http")){
+                    }else if(!url.startsWith("http") || !isBgmPage(url)){
                         try{
                             startActivity(Intent.createChooser(Intent(Intent.ACTION_VIEW, request.url), url))
                         }catch(e: Exception){
@@ -164,21 +164,32 @@ class WebActivity : AppCompatActivity() {
 
         fun launchUrl(context: Context, url: String?, openUrl: String){
             if(jumpUrl(context, url, openUrl)) return
+            if(url?.startsWith("http") == false || !isBgmPage(url?:"")){
+                try{
+                    context.startActivity(Intent.createChooser(Intent(Intent.ACTION_VIEW, Uri.parse(url)), url))
+                    return
+                }catch(e: Exception){
+                    e.printStackTrace()
+                }
+            }
             launchUrl(context, url)
         }
 
-        val bgmHosts = arrayOf("bgm.tv", "bangumi.tv", "chii.in")
-        fun jumpUrl(context: Context, page: String?, openUrl: String): Boolean{
-            val url = page?.split("#")?.get(0)
-            if(url == null || url.isNullOrEmpty() || url == openUrl) return false
+        fun isBgmPage(url: String): Boolean{
             val host = try{
                 URI.create(url).host
             }catch (e: Exception){ return false }
-            var flag = false
             bgmHosts.forEach {
-                if(host.contains(it))  flag = true
+                if(host.contains(it)) return true
             }
-            if(!flag) return false
+            return false
+        }
+
+        private val bgmHosts = arrayOf("bgm.tv", "bangumi.tv", "chii.in")
+        fun jumpUrl(context: Context, page: String?, openUrl: String): Boolean{
+            val url = page?.split("#")?.get(0)
+            if(url == null || url.isNullOrEmpty() || url == openUrl) return false
+            if(!isBgmPage(url)) return false
             val post = Regex("""#post_([0-9]+)$""").find(page)?.groupValues?.get(1)?.toIntOrNull()?:0
             //Topic
             var regex = Regex("""/m/topic/[^/]*/([0-9]*)$""")

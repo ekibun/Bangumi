@@ -1,6 +1,7 @@
 package soko.ekibun.bangumi.util
 
 import okhttp3.*
+import soko.ekibun.bangumi.api.bangumi.Bangumi
 import java.net.URI
 
 object HttpUtil {
@@ -23,6 +24,7 @@ object HttpUtil {
     }
 
     fun getUrl(url: String, baseUri: URI?): String{
+        if(url == "/img/no_icon_subject.png" && baseUri?.toASCIIString()?.startsWith(Bangumi.SERVER) == true) return ""
         return try{
             baseUri?.resolve(url)?.toASCIIString() ?: URI.create(url).toASCIIString()
         }catch (e: Exception){ url }
