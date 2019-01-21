@@ -5,7 +5,9 @@ import android.support.constraint.ConstraintLayout
 import android.support.design.widget.AppBarLayout
 import android.support.design.widget.CollapsingToolbarLayout
 import android.support.v7.app.AlertDialog
+import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.StaggeredGridLayoutManager
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -75,11 +77,11 @@ class SubjectView(private val context: SubjectActivity){
         context.episode_list.layoutManager = layoutManager
         context.episode_list.isNestedScrollingEnabled = false
 
-        context.episode_detail_list.adapter = episodeDetailAdapter
-        context.episode_detail_list.layoutManager = LinearLayoutManager(context)
+        episodeDetailAdapter.setUpWithRecyclerView(context.episode_detail_list)
+        context.episode_detail_list.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
 
         context.item_close.setOnClickListener {
-            showEpisodeDetail(false)
+            closeEpisodeDetail()
         }
         context.episode_detail.setOnClickListener{
             showEpisodeDetail(true)
@@ -110,6 +112,17 @@ class SubjectView(private val context: SubjectActivity){
 
         context.root_layout.removeView(detail)
         commentAdapter.setHeaderView(detail)
+    }
+
+    fun closeEpisodeDetail(){
+        val eps = episodeDetailAdapter.data.filter { it.isSelected }
+        if(eps.isEmpty())
+            showEpisodeDetail(false)
+        else{
+            for(ep in eps) ep.isSelected = false
+            episodeDetailAdapter.updateSelection()
+            episodeDetailAdapter.notifyDataSetChanged()
+        }
     }
 
     private fun parseAirWeek(subject: Subject): String{
@@ -193,8 +206,9 @@ class SubjectView(private val context: SubjectActivity){
     }
 
     private fun updateEpisode(episodes: List<Episode>){
-        val eps = episodes.filter { (it.status?:"") in listOf("Air") }.size
-        context.episode_detail.text = context.getString(if(eps == episodes.size) R.string.phrase_full else R.string.phrase_updating, eps)
+        val mainEps = episodes.filter { it.type == Episode.TYPE_MAIN }
+        val eps = mainEps.filter { (it.status ?: "") in listOf("Air") }.size
+        context.episode_detail.text = context.getString(if(eps == mainEps.size) R.string.phrase_full else R.string.phrase_updating, eps)
 
         val maps = HashMap<Int, List<Episode>>()
         episodes.forEach {
@@ -203,11 +217,11 @@ class SubjectView(private val context: SubjectActivity){
         episodeAdapter.setNewData(null)
         episodeDetailAdapter.setNewData(null)
         maps.forEach {
-            episodeDetailAdapter.addData(object: SectionEntity<Episode>(true, Episode.getTypeName(it.key)){})
+            episodeDetailAdapter.addData(EpisodeAdapter.SelectableSectionEntity(true, Episode.getTypeName(it.key)))
             it.value.forEach {
                 if((it.status?:"") in listOf("Air"))
                     episodeAdapter.addData(it)
-                episodeDetailAdapter.addData(object: SectionEntity<Episode>(it){})
+                episodeDetailAdapter.addData(EpisodeAdapter.SelectableSectionEntity(it))
             }
         }
         progress = progress

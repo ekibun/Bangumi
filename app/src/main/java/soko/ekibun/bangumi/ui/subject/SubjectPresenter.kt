@@ -5,6 +5,7 @@ import android.content.DialogInterface
 import android.net.Uri
 import android.support.customtabs.CustomTabsIntent
 import android.support.v7.app.AlertDialog
+import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import kotlinx.android.synthetic.main.activity_subject.*
@@ -25,6 +26,7 @@ import soko.ekibun.bangumi.api.trim21.BgmIpViewer
 import soko.ekibun.bangumi.api.trim21.bean.IpView
 import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.ui.web.WebActivity
+import soko.ekibun.bangumi.util.AppUtil
 import soko.ekibun.bangumi.util.PlayerBridge
 import java.util.*
 
@@ -39,6 +41,7 @@ class SubjectPresenter(private val context: SubjectActivity){
         refreshCollection(subject)
     }
 
+    @SuppressLint("SetTextI18n")
     fun init(subject: Subject){
         subjectView.updateSubject(subject)
         refresh(subject)
@@ -60,22 +63,47 @@ class SubjectPresenter(private val context: SubjectActivity){
                 PlayerBridge.startActivity(context, subject, userModel.getToken())
         }
 
-        subjectView.episodeAdapter.setOnItemLongClickListener { _, _, position ->
-            subjectView.episodeAdapter.data[position]?.let{ openEpisode(it, subject) }
-            true
-        }
-
         subjectView.episodeAdapter.setOnItemClickListener { _, _, position ->
-            subjectView.episodeAdapter.data[position]?.let{ WebActivity.launchUrl(context, it.url) }
+            subjectView.episodeAdapter.data[position]?.let{ openEpisode(it, subject) }
+            //subjectView.episodeAdapter.data[position]?.let{ WebActivity.launchUrl(context, it.url) }
         }
 
-        subjectView.episodeDetailAdapter.setOnItemLongClickListener { _, _, position ->
-            subjectView.episodeDetailAdapter.data[position]?.t?.let{ openEpisode(it, subject) }
-            true
+        userModel.getToken()?.let { token ->
+            context.item_edit_ep.setOnClickListener {
+                val eps = subjectView.episodeDetailAdapter.data.filter { it.isSelected }
+                if(eps.isEmpty()) return@setOnClickListener
+                val epStatus = context.resources.getStringArray(R.array.episode_status)
+                AlertDialog.Builder(context)
+                        .setItems(epStatus)
+                        { _, index ->
+                            val newStatus = SubjectProgress.EpisodeProgress.EpisodeStatus.types[index]
+                            val epIds = eps.map{ it.t.id.toString()}.reduce { acc, s -> "$acc,$s" }
+                            if(newStatus == SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH)
+                            api.updateProgress(eps.last().t.id, newStatus, token.access_token ?: "", epIds).enqueue(
+                                    ApiHelper.buildCallback(context, {
+                                        refreshProgress(subject)
+                                    }, {}))
+                            else for(ep in eps) //TODO issues 25
+                                api.updateProgress(ep.t.id, newStatus, token.access_token ?: "").enqueue(
+                                        ApiHelper.buildCallback(context, {
+                                            refreshProgress(subject)
+                                        }, {}))
+                        }.show()
+            }
+            subjectView.episodeDetailAdapter.updateSelection = {
+                val eps = subjectView.episodeDetailAdapter.data.filter { it.isSelected }
+                context.item_edit_ep.visibility = if(eps.isEmpty()) View.GONE else View.VISIBLE
+                context.item_ep_title.text = "${context.getText(R.string.episodes)}${if(eps.isEmpty()) "" else "(${eps.size})"}"
+            }
+
+            subjectView.episodeDetailAdapter.setOnItemLongClickListener { _, _, position ->
+                subjectView.episodeDetailAdapter.longClickListener(position)
+            }
         }
 
         subjectView.episodeDetailAdapter.setOnItemClickListener { _, _, position ->
-            subjectView.episodeDetailAdapter.data[position]?.t?.let{ WebActivity.launchUrl(context, it.url) }
+            if(subjectView.episodeDetailAdapter.clickListener(position))
+                subjectView.episodeDetailAdapter.data[position]?.t?.let{ openEpisode(it, subject) }//WebActivity.launchUrl(context, it.url) }
         }
 
         subjectView.linkedSubjectsAdapter.setOnItemClickListener { _, _, position ->

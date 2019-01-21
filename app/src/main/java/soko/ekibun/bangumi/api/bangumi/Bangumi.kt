@@ -50,6 +50,15 @@ interface Bangumi {
                        @Query("access_token") access_token: String
     ): Call<StatusCode>
 
+    @FormUrlEncoded
+    @POST("/ep/{id}/status/{status}")
+    fun updateProgress(@Path("id") id: Int,
+                       @SubjectProgress.EpisodeProgress.EpisodeStatus.Companion.EpStatusType
+                       @Path("status") status: String,
+                       @Query("access_token") access_token: String,
+                       @Field("ep_id") epIds: String
+    ): Call<StatusCode>
+
     @GET("/user/{username}/progress")
     fun progress(@Path("username") username: String,
                  @Query("subject_id") subject_id: Int,
@@ -294,7 +303,6 @@ interface Bangumi {
                 val links = LinkedHashMap<String, String>()
                 doc.selectFirst("#pageHeader")?.select("a")?.filter { !it.text().isNullOrEmpty() }?.forEach {
                     links[it.text()]= HttpUtil.getUrl(it.attr("href")?:"", URI.create(SERVER)) }
-                links[title]= url
                 return@buildHttpCall Topic(user_id, group, title, replies, post, formhash, lastview, links, error?.text(), errorLink)
             }
         }

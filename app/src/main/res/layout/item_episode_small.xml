@@ -11,9 +11,9 @@
         android:padding="8dp"
         android:clickable="true"
         android:foreground="?android:attr/selectableItemBackground"
-        android:backgroundTint="@color/colorAccent"
+        android:backgroundTint="?colorAccent"
         android:backgroundTintMode="src_in"
-        android:background="@drawable/bg_episode"
+        android:background="@drawable/bg_episode_outline"
         android:focusable="true">
 
     <TextView

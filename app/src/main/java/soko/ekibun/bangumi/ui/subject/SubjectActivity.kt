@@ -46,7 +46,7 @@ class SubjectActivity : AppCompatActivity() {
 
     private fun processBack(){
         when {
-            episode_detail_list.visibility == View.VISIBLE -> subjectPresenter.subjectView.showEpisodeDetail(false)
+            episode_detail_list.visibility == View.VISIBLE -> subjectPresenter.subjectView.closeEpisodeDetail()
             else -> finish()
         }
     }

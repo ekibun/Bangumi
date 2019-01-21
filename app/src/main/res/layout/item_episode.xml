@@ -3,37 +3,49 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/item_layout"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="8dp"
-        android:paddingBottom="4dp"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginBottom="8dp"
         android:clickable="true"
         android:foreground="?android:attr/selectableItemBackground"
+        android:background="?android:colorBackground"
         android:focusable="true">
-
-    <TextView
-            android:id="@+id/item_title"
-            android:layout_width="0dp"
+    <View
+            android:id="@+id/item_ep_mask"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:background="@drawable/bg_episode_fill"
+            android:backgroundTint="?colorAccent"
+            android:alpha="0.1"
+            android:backgroundTintMode="src_in"/>
+    <LinearLayout
+            android:id="@+id/item_ep_box"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:textSize="@dimen/textSizeMedium"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            android:padding="8dp"
+            android:backgroundTint="?colorAccent"
+            android:backgroundTintMode="src_in"
+            android:background="@drawable/bg_episode_outline"
+            android:orientation="vertical">
+        <TextView
+                android:id="@+id/item_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textSize="@dimen/textSizeSmall"/>
 
-    <TextView
-            android:id="@+id/item_desc"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textSize="@dimen/textSizeSmall"
-            android:ellipsize="end"
-            android:paddingBottom="4dp"
-            android:maxLines="1"
-            app:layout_constraintLeft_toLeftOf="@+id/item_title"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/item_title"/>
-
+        <TextView
+                android:id="@+id/item_desc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/textSizeMedium"
+                android:ellipsize="end"
+                android:paddingTop="4dp"
+                android:maxLines="1"/>
+    </LinearLayout>
 </android.support.constraint.ConstraintLayout>

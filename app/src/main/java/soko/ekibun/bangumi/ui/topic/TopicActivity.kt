@@ -10,7 +10,6 @@ import android.support.constraint.ConstraintLayout
 import android.support.design.widget.AppBarLayout
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
-import android.view.MenuItem
 import kotlinx.android.synthetic.main.activity_topic.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
@@ -24,20 +23,20 @@ import soko.ekibun.bangumi.ui.view.BackgroundWebView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.JsonUtil
 import android.support.v7.widget.RecyclerView
-import android.view.Menu
-import android.view.View
+import android.view.*
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import jp.wasabeef.glide.transformations.BlurTransformation
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.model.UserModel
+import soko.ekibun.bangumi.ui.view.SwipeBackActivity
 import soko.ekibun.bangumi.util.AppUtil
 import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.ResourceUtil
 import java.net.URI
 
 
-class TopicActivity : AppCompatActivity() {
+class TopicActivity : SwipeBackActivity() {
 
     val adapter = PostAdapter()
 
@@ -50,6 +49,8 @@ class TopicActivity : AppCompatActivity() {
             override fun requestChildRectangleOnScreen(parent: RecyclerView, child: View, rect: Rect, immediate: Boolean): Boolean { return false }
             override fun requestChildRectangleOnScreen(parent: RecyclerView, child: View, rect: Rect, immediate: Boolean, focusedChildVisible: Boolean): Boolean { return false }
         }
+        adapter.emptyView = LayoutInflater.from(this).inflate(R.layout.view_empty, item_list, false)
+        adapter.isUseEmpty(false)
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         title = ""
@@ -59,6 +60,8 @@ class TopicActivity : AppCompatActivity() {
         }
         getTopic()
 
+        var appBarOffset = 0
+        var canScroll = false
         app_bar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener{ appBarLayout, verticalOffset ->
             val ratio = Math.abs(verticalOffset.toFloat() / appBarLayout.totalScrollRange)
             title_collapse.alpha = 1-(1-ratio)*(1-ratio)*(1-ratio)
@@ -66,6 +69,16 @@ class TopicActivity : AppCompatActivity() {
             title_collapse.translationY = -title_slice.height / 2 * ratio
             title_expand.translationY = title_collapse.translationY
             title_slice.translationY =  (title_collapse.height - title_expand.height - (title_slice.layoutParams as ConstraintLayout.LayoutParams).topMargin - title_slice.height / 2) * ratio
+
+            appBarOffset = verticalOffset
+            canScroll = canScroll || appBarOffset != 0
+        })
+
+        item_list.addOnScrollListener(object: RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                canScroll = item_list.canScrollVertically(-1) || appBarOffset != 0
+                item_swipe.setOnChildScrollUpCallback { _, _ -> canScroll }
+            }
         })
     }
 
@@ -170,10 +183,10 @@ class TopicActivity : AppCompatActivity() {
         title_collapse.text = topic.title
         title_expand.text = title_collapse.text
         title_collapse.setOnClickListener {
-            WebActivity.launchUrl(this@TopicActivity, topic.links.toList().last().second, openUrl)
+            WebActivity.launchUrl(this@TopicActivity, openUrl)
         }
         title_expand.setOnClickListener {
-            WebActivity.launchUrl(this@TopicActivity, topic.links.toList().last().second, openUrl)
+            WebActivity.launchUrl(this@TopicActivity, openUrl)
         }
         topic.links.toList().getOrNull(0)?.let{link ->
             title_slice_0.text = link.first
@@ -187,20 +200,19 @@ class TopicActivity : AppCompatActivity() {
                 WebActivity.launchUrl(this@TopicActivity, link.second, openUrl)
             }
         }
-        title_slice_divider.visibility = if(topic.links.size>2) View.VISIBLE else View.GONE
+        title_slice_divider.visibility = if(title_slice_1.text.isNotEmpty()) View.VISIBLE else View.GONE
         title_slice_1.visibility = title_slice_divider.visibility
         title_slice_0.post{
             title_slice_0.maxWidth = title_expand.width - if(title_slice_divider.visibility == View.VISIBLE) 2*title_slice_divider.width + title_slice_1.width else 0
         }
 
-        //toolbar.subtitle = topic.group
-        if(topic.replies.isEmpty())
-            finish()
-        Glide.with(item_cover_blur)
+        if(!topic.replies.isEmpty())
+            Glide.with(item_cover_blur)
                 .applyDefaultRequestOptions(RequestOptions.placeholderOf(item_cover_blur.drawable))
                 .load(HttpUtil.getUrl(topic.replies.firstOrNull()?.avatar?:"", URI.create(Bangumi.SERVER)))
                 .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)))
                 .into(item_cover_blur)
+        adapter.isUseEmpty(true)
         setNewData(topic.replies)
         (item_list?.layoutManager as? LinearLayoutManager)?.let{ it.scrollToPositionWithOffset(adapter.data.indexOfFirst { it.pst_id == openPost.toString() }, 0) }
         adapter.setOnLoadMoreListener({adapter.loadMoreEnd()}, item_list)
@@ -208,6 +220,7 @@ class TopicActivity : AppCompatActivity() {
         item_reply.text = when {
             !topic.formhash.isNullOrEmpty() -> getString(R.string.reply_hint)
             !topic.error.isNullOrEmpty() -> topic.error
+            topic.replies.isEmpty() -> "这里什么都没有哟"
             else -> "登录后才可以评论哦"
         }
         item_reply.setCompoundDrawablesWithIntrinsicBounds(

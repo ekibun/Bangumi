@@ -20,10 +20,8 @@ class SmallEpisodeAdapter(data: MutableList<Episode>? = null) :
                     item.progress != null -> R.attr.colorPrimary
                     else -> android.R.attr.textColorSecondary
                 })
-        val alpha = if((item.status?:"") in listOf("Air"))1f else 0.6f
         helper.itemView.item_title.setTextColor(color)
         helper.itemView.item_desc.setTextColor(color)
         helper.itemView.item_layout.backgroundTintList = ColorStateList.valueOf(color)
-        helper.itemView.item_layout.alpha = alpha
     }
 }
