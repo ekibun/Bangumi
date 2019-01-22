@@ -19,7 +19,7 @@ class UserView(private val context: MainActivity, onUserFigureClickListener: Vie
     fun setUser(user: UserInfo?){
         context.runOnUiThread {
             if(context.isDestroyed) return@runOnUiThread
-            Glide.with(headerView)
+            Glide.with(headerView.user_figure)
                     .load(user?.avatar?.large)
                     .apply(RequestOptions.placeholderOf(R.drawable.akkarin))
                     .apply(RequestOptions.circleCropTransform())

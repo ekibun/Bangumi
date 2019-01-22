@@ -20,7 +20,7 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
     @SuppressLint("SetTextI18n")
     override fun convert(helper: BaseViewHolder, item: CalendarSection) {
         helper.addOnClickListener(R.id.item_layout)
-        helper.setText(R.id.item_title, (if(item.t.subject.collect) " " else "")+if(item.t.subject.name_cn.isNullOrEmpty()) item.t.subject.name else item.t.subject.name_cn)
+        helper.setText(R.id.item_title, (if(item.t.subject.collect) " " else "")+item.t.subject.getPrettyName())
         helper.setText(R.id.item_ep_name, item.t.episode?.parseSort() + " " + (if(item.t.episode?.name_cn.isNullOrEmpty()) item.t.episode?.name?:"" else item.t.episode?.name_cn))
         helper.addOnClickListener(R.id.item_layout)
         Glide.with(helper.itemView.item_cover)

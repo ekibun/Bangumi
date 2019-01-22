@@ -12,7 +12,7 @@ class LinkedSubjectAdapter(data: MutableList<Subject>? = null) :
         BaseQuickAdapter<Subject, BaseViewHolder>(R.layout.item_subject_small, data) {
 
     override fun convert(helper: BaseViewHolder, item: Subject) {
-        helper.setText(R.id.item_title, item.name)
+        helper.setText(R.id.item_title, item.getPrettyName())
         helper.setText(R.id.item_summary, item.summary)
         Glide.with(helper.itemView.item_cover)
                 .load(item.images?.common)

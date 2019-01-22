@@ -5,7 +5,6 @@ import android.content.DialogInterface
 import android.net.Uri
 import android.support.customtabs.CustomTabsIntent
 import android.support.v7.app.AlertDialog
-import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import kotlinx.android.synthetic.main.activity_subject.*
@@ -26,7 +25,6 @@ import soko.ekibun.bangumi.api.trim21.BgmIpViewer
 import soko.ekibun.bangumi.api.trim21.bean.IpView
 import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.ui.web.WebActivity
-import soko.ekibun.bangumi.util.AppUtil
 import soko.ekibun.bangumi.util.PlayerBridge
 import java.util.*
 
@@ -61,6 +59,11 @@ class SubjectPresenter(private val context: SubjectActivity){
         context.item_play.setOnClickListener {
             if(PlayerBridge.checkActivity(context))
                 PlayerBridge.startActivity(context, subject, userModel.getToken())
+        }
+
+        subjectView.episodeAdapter.setOnItemLongClickListener { _, _, position ->
+            subjectView.episodeAdapter.data[position]?.let{ openEpisode(it, subject) }
+            true
         }
 
         subjectView.episodeAdapter.setOnItemClickListener { _, _, position ->

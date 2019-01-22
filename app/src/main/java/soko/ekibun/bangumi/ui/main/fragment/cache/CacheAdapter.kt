@@ -12,7 +12,7 @@ class CacheAdapter(data: MutableList<PlayerBridge.VideoCache>? = null) :
         BaseQuickAdapter<PlayerBridge.VideoCache, BaseViewHolder>
         (R.layout.item_subject, data) {
     override fun convert(helper: BaseViewHolder, item: PlayerBridge.VideoCache) {
-        helper.setText(R.id.item_title, if(!item.bangumi.name_cn.isNullOrEmpty()) item.bangumi.name_cn else item.bangumi.name)
+        helper.setText(R.id.item_title, item.bangumi.getPrettyName())
         helper.setText(R.id.item_name_jp, item.bangumi.name)
         helper.setText(R.id.item_summary, "已缓存 ${item.videoList.size} 话")
         Glide.with(helper.itemView.item_cover)

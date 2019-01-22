@@ -22,6 +22,7 @@ object PlayerBridge {
 
     private fun parseIntent(subject: Subject, token: AccessToken?): Intent {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("bangumi://player/${subject.id}"))
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK
         intent.putExtra(EXTRA_SUBJECT, JsonUtil.toJson(subject))
         intent.putExtra(EXTRA_TOKEN, JsonUtil.toJson(token?:AccessToken()))
         return intent

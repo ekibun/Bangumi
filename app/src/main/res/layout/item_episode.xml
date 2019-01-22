@@ -2,26 +2,17 @@
 <android.support.constraint.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/item_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:layout_marginEnd="4dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="9dp"
         android:clickable="true"
         android:foreground="?android:attr/selectableItemBackground"
         android:background="?android:colorBackground"
         android:focusable="true">
-    <View
-            android:id="@+id/item_ep_mask"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:background="@drawable/bg_episode_fill"
-            android:backgroundTint="?colorAccent"
-            android:alpha="0.1"
-            android:backgroundTintMode="src_in"/>
     <LinearLayout
             android:id="@+id/item_ep_box"
             android:layout_width="match_parent"
@@ -48,4 +39,32 @@
                 android:paddingTop="4dp"
                 android:maxLines="1"/>
     </LinearLayout>
+    <TextView
+            android:id="@+id/item_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:background="@drawable/bg_episode_badge"
+            android:paddingLeft="6dp"
+            android:paddingRight="6dp"
+            android:paddingTop="1dp"
+            android:paddingBottom="1dp"
+            android:textColor="@android:color/white"
+            android:backgroundTintMode="src_in"
+            android:backgroundTint="?colorAccent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:textSize="@dimen/textSizeSmall"/>
+    <ImageView
+            android:visibility="invisible"
+            android:id="@+id/item_select"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_check_circle"
+            android:tint="?colorAccent"
+            android:layout_margin="4dp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:ignore="ContentDescription"/>
 </android.support.constraint.ConstraintLayout>

@@ -13,7 +13,7 @@ class SearchAdapter(data: MutableList<Subject>? = null) :
         BaseQuickAdapter<Subject, BaseViewHolder>(R.layout.item_subject, data) {
 
     override fun convert(helper: BaseViewHolder, item: Subject) {
-        helper.setText(R.id.item_title, if(item.name_cn.isNullOrEmpty()) item.name else item.name_cn)
+        helper.setText(R.id.item_title, item.getPrettyName())
         helper.setText(R.id.item_name_jp, item.name)
         helper.setText(R.id.item_summary, SubjectType.getDescription(item.type))
         Glide.with(helper.itemView.item_cover)

@@ -5,9 +5,10 @@ import android.support.constraint.ConstraintLayout
 import android.support.design.widget.AppBarLayout
 import android.support.design.widget.CollapsingToolbarLayout
 import android.support.v7.app.AlertDialog
-import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.StaggeredGridLayoutManager
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -16,7 +17,6 @@ import android.widget.LinearLayout
 import android.widget.PopupWindow
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import com.chad.library.adapter.base.entity.SectionEntity
 import com.xiaofeng.flowlayoutmanager.FlowLayoutManager
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_subject.*
@@ -54,9 +54,10 @@ class SubjectView(private val context: SubjectActivity){
         val marginEnd = (context.item_buttons.layoutParams as CollapsingToolbarLayout.LayoutParams).marginEnd
         (context.title_expand.layoutParams as ConstraintLayout.LayoutParams).marginEnd = 3 * marginEnd
 
+        var nestScrollDistance = context.app_bar.totalScrollRange
         context.app_bar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener{ appBarLayout, verticalOffset ->
              val ratio = Math.abs(verticalOffset.toFloat() / appBarLayout.totalScrollRange)
-
+            nestScrollDistance = appBarLayout.totalScrollRange + verticalOffset
             context.item_scrim.alpha = ratio
             context.item_subject.alpha = 1 - ratio
             context.item_buttons.translationY = -(context.toolbar.height - context.item_buttons.height * 9 / 8) * ratio / 2 - context.item_buttons.height / 16
@@ -77,7 +78,19 @@ class SubjectView(private val context: SubjectActivity){
         context.episode_list.layoutManager = layoutManager
         context.episode_list.isNestedScrollingEnabled = false
 
-        episodeDetailAdapter.setUpWithRecyclerView(context.episode_detail_list)
+        val scrollListener = object: RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                context.shouldCancelActivity = false
+            }
+        }
+        context.episode_list.addOnScrollListener(scrollListener)
+        context.season_list.addOnScrollListener(scrollListener)
+        context.subject_list.addOnScrollListener(scrollListener)
+
+        val touchListener = episodeDetailAdapter.setUpWithRecyclerView(context.episode_detail_list)
+        touchListener.nestScrollDistance = {
+            nestScrollDistance
+        }
         context.episode_detail_list.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
 
         context.item_close.setOnClickListener {
@@ -137,7 +150,7 @@ class SubjectView(private val context: SubjectActivity){
     fun updateSubject(subject: Subject){
         if(context.isDestroyed) return
         context.title = ""//if(subject.name_cn.isNullOrEmpty()) subject.name else subject.name_cn
-        context.title_collapse.text = if(subject.name_cn.isNullOrEmpty()) subject.name else subject.name_cn
+        context.title_collapse.text = subject.getPrettyName()
         context.title_expand.text = context.title_collapse.text
         context.title_expand.post {
             val layoutParams = (context.title_collapse.layoutParams as ConstraintLayout.LayoutParams)
@@ -208,7 +221,7 @@ class SubjectView(private val context: SubjectActivity){
     private fun updateEpisode(episodes: List<Episode>){
         val mainEps = episodes.filter { it.type == Episode.TYPE_MAIN }
         val eps = mainEps.filter { (it.status ?: "") in listOf("Air") }.size
-        context.episode_detail.text = context.getString(if(eps == mainEps.size) R.string.phrase_full else R.string.phrase_updating, eps)
+        context.episode_detail?.text = context.getString(if(eps == mainEps.size) R.string.phrase_full else R.string.phrase_updating, eps)
 
         val maps = HashMap<Int, List<Episode>>()
         episodes.forEach {
@@ -257,7 +270,7 @@ class SubjectView(private val context: SubjectActivity){
             }
         }
 
-    fun showEpisodeDetail(show: Boolean){
+    private fun showEpisodeDetail(show: Boolean){
         context.episode_detail_list_header.visibility = if(show) View.VISIBLE else View.INVISIBLE
         context.episode_detail_list_header.animation = AnimationUtils.loadAnimation(context, if(show) R.anim.move_in else R.anim.move_out)
         context.episode_detail_list.visibility = if(show) View.VISIBLE else View.INVISIBLE

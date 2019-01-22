@@ -24,6 +24,9 @@ data class Subject(
         var blog: List<BlogBean>? = null,
         var collect: Boolean = false
 ){
+    fun getPrettyName(): String{
+        return ((if(name_cn.isNullOrEmpty()) name else name_cn)?:"").replace("&amp;", "&")
+    }
     data class BlogBean(
             var id: Int = 0,
             var url: String? = null,

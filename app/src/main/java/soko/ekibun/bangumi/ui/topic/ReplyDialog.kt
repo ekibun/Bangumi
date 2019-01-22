@@ -2,6 +2,7 @@ package soko.ekibun.bangumi.ui.topic
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
@@ -20,7 +21,7 @@ import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import soko.ekibun.bangumi.api.ApiHelper
-import soko.ekibun.bangumi.api.smms.SmMs
+import soko.ekibun.bangumi.api.catbox.CatBox
 
 class ReplyDialog: DialogFragment() {
     private var contentView: View? = null
@@ -46,7 +47,8 @@ class ReplyDialog: DialogFragment() {
     }
 
     var hint: String = ""
-    var callback = {_:String->}
+    var callback: (String, Boolean)->Unit = {_, _->}
+    var draft: String = ""
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val contentView = contentView?:inflater.inflate(R.layout.dialog_reply, container)
         this.contentView = contentView
@@ -97,7 +99,7 @@ class ReplyDialog: DialogFragment() {
             startActivityForResult(intent, 1)
         }
         contentView.item_btn_send.setOnClickListener {
-            callback(contentView.item_input.text.toString())
+            callback(contentView.item_input.text.toString(), true)
             dismiss()
         }
 
@@ -132,9 +134,15 @@ class ReplyDialog: DialogFragment() {
 
         contentView.item_lock.setOnClickListener { dismiss() }
         contentView.item_input.hint = hint
+        contentView.item_input.setText(draft)
 
         dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         return contentView
+    }
+
+    override fun onDismiss(dialog: DialogInterface?) {
+        super.onDismiss(dialog)
+        callback(contentView?.item_input?.text.toString(), false)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -155,48 +163,10 @@ class ReplyDialog: DialogFragment() {
         val inputStream = activity?.contentResolver?.openInputStream(data?.data?:return)?:return
         val bytes = inputStream.readBytes()
         val requestBody = RequestBody.create(MediaType.parse("image/*"),bytes)
-        val body = MultipartBody.Part.createFormData("smfile", "image", requestBody)
-        val call = SmMs.createInstance().upload(body)
+        val body = MultipartBody.Part.createFormData("fileToUpload", "image", requestBody)
+        val call = CatBox.createInstance().upload(body)
         call.enqueue(ApiHelper.buildCallback(activity, {
-            insertText("[img]${it.data?.url}[/img]")
+            insertText("[img]$it[/img]")
         }, {}))
     }
-/*
-    fun reply(context: Activity, view: View, hint: String, onPost: (String)->Unit){
-
-        val contentView = LayoutInflater.from(context).inflate(R.layout.dialog_reply, null)
-        val popWindow = PopupWindow(contentView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, true)
-
-        popWindow.contentView = contentView
-
-        val emojiList = ArrayList<Pair<String,String>>()
-        for(i in 1..23)
-            emojiList.add(String.format("(bgm%02d)", i) to String.format("${Bangumi.SERVER}/img/smiles/bgm/%02d${if(i == 11 || i == 23)".gif" else ".png"}", i) )
-        for(i in 1..100)
-            emojiList.add(String.format("(bgm%02d)", i + 23) to String.format("${Bangumi.SERVER}/img/smiles/tv/%02d.gif", i) )
-        "(=A=) (=w=) (-w=) (S_S) (=v=) (@_@) (=W=) (TAT) (T_T) (='=) (=3=) (= =') (=///=) (=.,=) (:P) (LOL)".split(" ").forEachIndexed {i, s->
-            emojiList.add(s to "${Bangumi.SERVER}/img/smiles/${i+1}.gif") }
-        val emojiAdapter = EmojiAdapter(emojiList)
-        emojiAdapter.setOnItemChildClickListener { _, _, position ->
-            contentView.item_input.text.replace(contentView.item_input.selectionStart, contentView.item_input.selectionEnd, emojiList[position].first)
-        }
-        contentView.item_emoji_list.adapter = emojiAdapter
-        contentView.item_emoji_list.layoutManager = GridLayoutManager(context, 7)
-        EmotionInputDetector.with(context)
-                .setEmotionView(contentView.item_emoji_list)
-                .bindToContent(contentView.item_margin)
-                .bindToEditText(contentView.item_input)
-                .bindToEmotionButton(contentView.item_btn_emoji)
-                .build()
-        //mPopWindow.setSoftInputMode(PopupWindow.INPUT_METHOD_NEEDED);
-        //popWindow.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
-        val inputMethodManager = context.applicationContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        inputMethodManager.toggleSoftInput(1000, InputMethodManager.HIDE_NOT_ALWAYS)//这里给它设置了弹出的时间
-        contentView.setOnClickListener { popWindow.dismiss() }
-        contentView.item_input.hint = hint
-        //是否具有获取焦点的能力
-        popWindow.isFocusable = true
-        popWindow.showAtLocation(view, Gravity.BOTTOM, 0, 0)
-    }
-    */
 }

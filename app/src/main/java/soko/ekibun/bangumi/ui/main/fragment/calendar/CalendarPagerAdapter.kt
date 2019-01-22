@@ -168,23 +168,4 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
     override fun isViewFromObject(view: View, `object`: Any): Boolean {
         return view === `object`
     }
-
-    companion object {
-        private fun mixSubject(new:Subject, old:Subject?): Subject{
-            return Subject(new.id,
-                    "${Bangumi.SERVER}/subject/${new.id}",
-                    SubjectType.ANIME,
-                    if(new.name.isNullOrEmpty()) old?.name else new.name,
-                    if(new.name_cn.isNullOrEmpty()) old?.name_cn else new.name_cn,
-                    images = new.images?:old?.images)
-        }
-
-        private fun findSubject(map: Map<Int, Map<String,List<OnAir>>>?, subject: Subject):Subject?{
-            map?.forEach {it.value.forEach { it.value.forEach {
-                if(it.subject.id == subject.id)
-                    return it.subject
-            }}}
-            return null
-        }
-    }
 }

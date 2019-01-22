@@ -8,35 +8,51 @@
         android:layout_marginStart="4dp"
         android:layout_marginEnd="4dp"
         android:layout_marginBottom="8dp"
-        android:padding="8dp"
         android:clickable="true"
         android:foreground="?android:attr/selectableItemBackground"
-        android:backgroundTint="?colorAccent"
-        android:backgroundTintMode="src_in"
-        android:background="@drawable/bg_episode_outline"
+        android:background="?android:colorBackground"
         android:focusable="true">
+    <LinearLayout
+            android:id="@+id/item_ep_box"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:backgroundTint="?colorAccent"
+            android:backgroundTintMode="src_in"
+            android:background="@drawable/bg_episode_outline"
+            android:orientation="vertical">
+        <TextView
+                android:id="@+id/item_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textSize="@dimen/textSizeSmall"/>
 
+        <TextView
+                android:id="@+id/item_desc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/textSizeMedium"
+                android:ellipsize="end"
+                android:paddingTop="4dp"
+                android:maxLines="1"/>
+    </LinearLayout>
     <TextView
-            android:id="@+id/item_title"
-            android:layout_width="0dp"
+            android:id="@+id/item_badge"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textSize="@dimen/textSizeSmall"
-            app:layout_constraintLeft_toLeftOf="parent"
+            android:background="@drawable/bg_episode_badge"
+            android:paddingLeft="6dp"
+            android:paddingRight="6dp"
+            android:paddingTop="1dp"
+            android:paddingBottom="1dp"
+            android:textColor="@android:color/white"
+            android:backgroundTintMode="src_in"
+            android:backgroundTint="?colorAccent"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
-
-    <TextView
-            android:id="@+id/item_desc"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textSize="@dimen/textSizeMedium"
-            android:ellipsize="end"
-            android:paddingTop="4dp"
-            android:maxLines="1"
-            app:layout_constraintLeft_toLeftOf="@+id/item_title"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/item_title"/>
-
+            android:textSize="@dimen/textSizeSmall"/>
 </android.support.constraint.ConstraintLayout>

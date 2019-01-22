@@ -31,8 +31,8 @@ class SubjectProgress {
 
             var id: Int = 0
             //var css_name: String? = null
-            //var url_name: String? = null
-            //var cn_name: String? = null
+            var url_name: String? = null
+            var cn_name: String? = null
 
             companion object {
                 /*

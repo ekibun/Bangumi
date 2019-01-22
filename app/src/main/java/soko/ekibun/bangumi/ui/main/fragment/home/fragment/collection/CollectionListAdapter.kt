@@ -12,7 +12,7 @@ class CollectionListAdapter(data: MutableList<SubjectCollection>? = null) :
         BaseQuickAdapter<SubjectCollection, BaseViewHolder>(R.layout.item_subject, data) {
 
     override fun convert(helper: BaseViewHolder, item: SubjectCollection) {
-        helper.setText(R.id.item_title, if(!item.subject?.name_cn.isNullOrEmpty()) item.subject?.name_cn else item.subject?.name)
+        helper.setText(R.id.item_title, item.subject?.getPrettyName())
         helper.setText(R.id.item_name_jp, item.subject?.name)
         val status = Math.max(item.ep_status, item.vol_status)
         helper.setText(R.id.item_summary, if(status == -1) item.subject?.summary else parseDesc(status))

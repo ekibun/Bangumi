@@ -11,7 +11,8 @@ import kotlinx.android.synthetic.main.item_episode.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.util.ResourceUtil
-import com.weigan.googlephotoselect.DragSelectTouchListener
+import soko.ekibun.bangumi.api.bangumi.bean.SubjectProgress
+import soko.ekibun.bangumi.ui.view.DragSelectTouchListener
 
 class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null) :
         BaseSectionQuickAdapter<EpisodeAdapter.SelectableSectionEntity<Episode>, BaseViewHolder>
@@ -31,12 +32,22 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
         helper.setText(R.id.item_desc, if(item.t.name_cn.isNullOrEmpty()) item.t.name else item.t.name_cn)
         val color = ResourceUtil.resolveColorAttr(helper.itemView.context,
                 when {
-                    item.t.progress != null -> R.attr.colorPrimary
+                    item.isSelected -> R.attr.colorPrimary
                     else -> android.R.attr.textColorSecondary
                 })
+        helper.itemView.item_select.visibility = if(item.isSelected) View.VISIBLE else View.INVISIBLE
+        helper.itemView.item_ep_box.setPadding(helper.itemView.item_ep_box.paddingLeft,helper.itemView.item_ep_box.paddingTop,
+                helper.itemView.item_ep_box.paddingLeft * if(item.isSelected) 4 else 1, helper.itemView.item_ep_box.paddingBottom)
         helper.itemView.item_title.setTextColor(color)
         helper.itemView.item_desc.setTextColor(color)
-        helper.itemView.item_ep_mask.visibility = if(item.isSelected) View.VISIBLE else View.INVISIBLE
+        helper.itemView.item_badge.visibility = if(item.t.progress != null) View.VISIBLE else View.INVISIBLE
+        helper.itemView.item_badge.backgroundTintList = ColorStateList.valueOf(
+                ResourceUtil.resolveColorAttr(helper.itemView.context,
+                        when {
+                            item.t.progress?.status?.url_name?:"" in listOf(SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH, SubjectProgress.EpisodeProgress.EpisodeStatus.QUEUE) -> R.attr.colorPrimary
+                            else -> android.R.attr.textColorSecondary
+                        }))
+        helper.itemView.item_badge.text = item.t.progress?.status?.cn_name?:""
         helper.itemView.item_ep_box.backgroundTintList = ColorStateList.valueOf(color)
         helper.itemView.item_ep_box.alpha = if((item.t.status?:"") in listOf("Air"))1f else 0.6f
     }
@@ -46,7 +57,7 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
 
     var updateSelection: ()->Unit = {}
 
-    fun setUpWithRecyclerView(recyclerView: RecyclerView){
+    fun setUpWithRecyclerView(recyclerView: RecyclerView): DragSelectTouchListener{
         recyclerView.adapter = this
         val touchListener = DragSelectTouchListener()
         recyclerView.addOnItemTouchListener(touchListener)
@@ -62,9 +73,10 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
                 false
             }else true
         }
-        touchListener.setSelectListener { start, end, isSelected ->
+        touchListener.selectListener = { start, end, isSelected ->
             for (i in start..end) setSelect(i, isSelected)
         }
+        return touchListener
     }
 
     private fun setSelect(position: Int, isSelected: Boolean){

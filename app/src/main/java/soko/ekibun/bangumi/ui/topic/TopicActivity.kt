@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
 import android.support.design.widget.AppBarLayout
@@ -58,7 +57,7 @@ class TopicActivity : SwipeBackActivity() {
         item_swipe.setOnRefreshListener {
             getTopic()
         }
-        getTopic()
+        getTopic(intent.getIntExtra(EXTRA_POST, 0).toString())
 
         var appBarOffset = 0
         var canScroll = false
@@ -88,44 +87,55 @@ class TopicActivity : SwipeBackActivity() {
             window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
     }
 
-    @SuppressLint("InflateParams")
-    private fun showPopupWindow(post: String, data: FormBody.Builder, comment: String = "", hint: String = "") {
+    fun buildPopupWindow(hint: String = "", draft: String = "", callback: (String, Boolean)->Unit) {
         val dialog = ReplyDialog()
         dialog.hint = hint
-        dialog.callback = { inputString->
-            data.add("submit", "submit")
-            data.add("content", comment + inputString)
-            ApiHelper.buildHttpCall(post, mapOf("cookie" to (CookieManager.getInstance().getCookie(Bangumi.SERVER)?:"")), data.build()){
-                val replies = ArrayList(adapter.data)
-                val posts = JsonUtil.toJsonObject(it.body()?.string()?:"").getAsJsonObject("posts")
-                val main = JsonUtil.toEntity<Map<String, TopicPost>>(posts.get("main")?.toString()?:"", object: TypeToken<Map<String, TopicPost>>(){}.type)?: HashMap()
-                main.forEach {
-                    it.value.floor = (replies.last()?.floor?:0)+1
-                    it.value.relate = it.key
-                    replies.removeAll { o-> o.pst_id == it.value.pst_id }
-                    replies.add(it.value)
-                    //adapter.addData(it.value)
-                }
-                val sub = JsonUtil.toEntity<Map<String, PostList>>(posts.get("sub")?.toString()?:"", object: TypeToken<Map<String, PostList>>(){}.type)?:HashMap()
-                sub.forEach {
-                    var relate = replies.lastOrNull { old-> old.relate == it.key }?:return@forEach
-                    it.value.forEach {
-                        it.isSub = true
-                        it.floor = relate.floor
-                        it.sub_floor = relate.sub_floor+1
-                        it.editable = it.is_self
-                        it.relate = relate.relate
-                        replies.removeAll { o-> o.pst_id == it.pst_id }
-                        replies.add(it)
-                        relate = it
-                    }
-                }
-                replies.sortedBy { it.floor + it.sub_floor * 1.0f/replies.size }
-            }.enqueue(ApiHelper.buildCallback<List<TopicPost>>(this@TopicActivity, {
-                setNewData(it)
-            }) {})
-        }
+        dialog.draft = draft
+        dialog.callback = callback
         dialog.show(supportFragmentManager, "reply")
+    }
+
+    val drafts = HashMap<String, String>()
+    @SuppressLint("InflateParams")
+    private fun showPopupWindow(post: String, data: FormBody.Builder, comment: String = "", hint: String = "", draftId: String = "topic") {
+        buildPopupWindow(hint, drafts[draftId]?:"") { inputString, send->
+            if(send){
+                data.add("submit", "submit")
+                data.add("content", comment + inputString)
+                ApiHelper.buildHttpCall(post, mapOf("cookie" to (CookieManager.getInstance().getCookie(Bangumi.SERVER)?:"")), data.build()){
+                    val replies = ArrayList(adapter.data)
+                    val posts = JsonUtil.toJsonObject(it.body()?.string()?:"").getAsJsonObject("posts")
+                    val main = JsonUtil.toEntity<Map<String, TopicPost>>(posts.get("main")?.toString()?:"", object: TypeToken<Map<String, TopicPost>>(){}.type)?: HashMap()
+                    main.forEach {
+                        it.value.floor = (replies.last()?.floor?:0)+1
+                        it.value.relate = it.key
+                        replies.removeAll { o-> o.pst_id == it.value.pst_id }
+                        replies.add(it.value)
+                        //adapter.addData(it.value)
+                    }
+                    val sub = JsonUtil.toEntity<Map<String, PostList>>(posts.get("sub")?.toString()?:"", object: TypeToken<Map<String, PostList>>(){}.type)?:HashMap()
+                    sub.forEach {
+                        var relate = replies.lastOrNull { old-> old.relate == it.key }?:return@forEach
+                        it.value.forEach {
+                            it.isSub = true
+                            it.floor = relate.floor
+                            it.sub_floor = relate.sub_floor+1
+                            it.editable = it.is_self
+                            it.relate = relate.relate
+                            replies.removeAll { o-> o.pst_id == it.pst_id }
+                            replies.add(it)
+                            relate = it
+                        }
+                    }
+                    replies.sortedBy { it.floor + it.sub_floor * 1.0f/replies.size }
+                }.enqueue(ApiHelper.buildCallback<List<TopicPost>>(this@TopicActivity, {
+                    setNewData(it)
+                }) {})
+            }
+            else{
+                drafts[draftId] = inputString
+            }
+        }
     }
 
     private fun setNewData(data: List<TopicPost>){
@@ -161,7 +171,7 @@ class TopicActivity : SwipeBackActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun getTopic(){
+    private fun getTopic(scrollPost: String = ""){
         item_swipe.isRefreshing = true
         getTopicApi{
             if(it.user_id.isNullOrEmpty() && UserModel(this).getToken() != null){
@@ -170,15 +180,15 @@ class TopicActivity : SwipeBackActivity() {
                 webView.loadUrl("${Bangumi.SERVER}/m")
                 webView.onPageFinished = {
                     getTopicApi{
-                        processTopic(it)
+                        processTopic(it, scrollPost)
                     }
                     webView.onPageFinished = {}
                 }
-            }else processTopic(it)
+            }else processTopic(it, scrollPost)
         }
     }
 
-    private fun processTopic(topic: Topic){
+    private fun processTopic(topic: Topic, scrollPost: String){
         title = ""//topic.title
         title_collapse.text = topic.title
         title_expand.text = title_collapse.text
@@ -214,7 +224,7 @@ class TopicActivity : SwipeBackActivity() {
                 .into(item_cover_blur)
         adapter.isUseEmpty(true)
         setNewData(topic.replies)
-        (item_list?.layoutManager as? LinearLayoutManager)?.let{ it.scrollToPositionWithOffset(adapter.data.indexOfFirst { it.pst_id == openPost.toString() }, 0) }
+        (item_list?.layoutManager as? LinearLayoutManager)?.let{ it.scrollToPositionWithOffset(adapter.data.indexOfFirst { it.pst_id == scrollPost }, 0) }
         adapter.setOnLoadMoreListener({adapter.loadMoreEnd()}, item_list)
         adapter.setEnableLoadMore(true)
         item_reply.text = when {
@@ -248,7 +258,7 @@ class TopicActivity : SwipeBackActivity() {
                             .add("formhash", topic.formhash!!)
                             .add("topic_id", post.pst_mid)
                             .add("related", post.relate)
-                            .add("post_uid", post.pst_uid), comment, "回复 ${post.nickname} 的评论")
+                            .add("post_uid", post.pst_uid), comment, "回复 ${post.nickname} 的评论", post.pst_id)
                 }
                 R.id.item_del -> {
                     AlertDialog.Builder(this@TopicActivity).setTitle("确认删除？")
@@ -290,14 +300,33 @@ class TopicActivity : SwipeBackActivity() {
                         "subject" -> "/subject/reply/${post.pst_id}/edit"
                         else -> ""
                     }
-                    WebActivity.launchUrl(this@TopicActivity, url)
+                    //WebActivity.launchUrl(this@TopicActivity, url)
+                    ApiHelper.buildHttpCall(url, mapOf("cookie" to (CookieManager.getInstance().getCookie(Bangumi.SERVER)?:""))){
+                        val doc = Jsoup.parse(it.body()?.string()?:return@buildHttpCall null)
+                        doc.selectFirst("#content")?.text()
+                    }.enqueue(ApiHelper.buildCallback(this@TopicActivity, {
+                        if(it == null){
+                            WebActivity.launchUrl(this@TopicActivity, url)
+                            return@buildCallback
+                        }else{
+                            buildPopupWindow("修改主题\"${topic.title}\"的回复", it){inputString, send->
+                                if(send){
+                                    ApiHelper.buildHttpCall(url, mapOf("cookie" to (CookieManager.getInstance().getCookie(Bangumi.SERVER)?:"")), FormBody.Builder()
+                                            .add("formhash", topic.formhash!!)
+                                            .add("submit", "改好了")
+                                            .add("content", inputString).build()){true}.enqueue(ApiHelper.buildCallback(this@TopicActivity, {
+                                        getTopic(post.pst_id)
+                                    }))
+                                }
+                            }
+                        }
+                    }) {})
                 }
             }
         }
     }
 
     val openUrl by lazy{ intent.getStringExtra(EXTRA_TOPIC) }
-    val openPost by lazy{ intent.getIntExtra(EXTRA_POST, 0) }
     private fun getTopicApi(callback: (Topic)->Unit){
         Bangumi.getTopic(openUrl).enqueue(ApiHelper.buildCallback(this, {topic->
             callback(topic)
