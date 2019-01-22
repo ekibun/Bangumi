@@ -309,10 +309,11 @@ class TopicActivity : SwipeBackActivity() {
                             WebActivity.launchUrl(this@TopicActivity, url)
                             return@buildCallback
                         }else{
-                            buildPopupWindow("修改主题\"${topic.title}\"的回复", it){inputString, send->
+                            buildPopupWindow("修改主题\"${topic.title}\""+if(post.floor == 1) "" else "的回复", it){inputString, send->
                                 if(send){
                                     ApiHelper.buildHttpCall(url, mapOf("cookie" to (CookieManager.getInstance().getCookie(Bangumi.SERVER)?:"")), FormBody.Builder()
                                             .add("formhash", topic.formhash!!)
+                                            .add("title", topic.title)
                                             .add("submit", "改好了")
                                             .add("content", inputString).build()){true}.enqueue(ApiHelper.buildCallback(this@TopicActivity, {
                                         getTopic(post.pst_id)

@@ -133,7 +133,7 @@ class ReplyDialog: DialogFragment() {
 
 
         contentView.item_lock.setOnClickListener { dismiss() }
-        contentView.item_input.hint = hint
+        contentView.item_hint.text = hint
         contentView.item_input.setText(draft)
 
         dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)

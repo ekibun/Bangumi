@@ -13,7 +13,14 @@
             android:orientation="vertical"
             android:elevation="20dp"
             android:background="?android:colorBackground">
-
+        <TextView
+                android:id="@+id/item_hint"
+                android:layout_marginTop="12dp"
+                android:layout_marginLeft="12dp"
+                android:layout_marginRight="12dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:singleLine="true"/>
         <EditText
                 android:id="@+id/item_input"
                 android:layout_width="match_parent"
@@ -23,6 +30,7 @@
                 android:textSize="@dimen/textSizeMedium"
                 android:textIsSelectable="true"
                 android:focusable="true"
+                android:maxHeight="300dp"
                 android:focusableInTouchMode="true"
                 android:inputType="textMultiLine"
                 tools:ignore="LabelFor">
