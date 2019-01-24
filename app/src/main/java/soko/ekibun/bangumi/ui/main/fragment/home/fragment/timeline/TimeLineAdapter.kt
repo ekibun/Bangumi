@@ -46,7 +46,11 @@ class TimeLineAdapter(data: MutableList<TimeLine>? = null) :
                         ApiHelper.buildHttpCall("${item.t.delUrl}&ajax=1", mapOf("cookie" to (CookieManager.getInstance().getCookie(Bangumi.SERVER)?:""))) {
                             it.body()?.string()?.contains("\"status\":\"ok\"") == true
                         }.enqueue(ApiHelper.buildCallback<Boolean>(helper.itemView.context, {
-                            if(it) remove(data.indexOfFirst { it === item })
+                            if(!it) return@buildCallback
+                            val index = data.indexOfFirst { it === item }
+                            val removeHeader = data.getOrNull(index-1)?.isHeader == true && data.getOrNull(index+1)?.isHeader == true
+                            remove(index)
+                            if(removeHeader) remove(index-1)
                         }) {})
                     }.show()
         }

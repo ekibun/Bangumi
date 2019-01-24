@@ -100,6 +100,7 @@ class ReplyDialog: DialogFragment() {
         }
         contentView.item_btn_send.setOnClickListener {
             callback(contentView.item_input.text.toString(), true)
+            callback = {_, _ -> }
             dismiss()
         }
 

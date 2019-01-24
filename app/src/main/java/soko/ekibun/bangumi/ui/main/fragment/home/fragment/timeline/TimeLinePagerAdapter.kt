@@ -18,7 +18,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.TimeLine
 class TimeLinePagerAdapter(context: Context, val fragment: TimeLineFragment, private val pager: ViewPager) : PagerAdapter(){
     private val tabList = context.resources.getStringArray(R.array.timeline_list)
     private var topicCall = HashMap<Int, Call<List<TimeLine>>>()
-    private val pageIndex = HashMap<Int, Int>()
+    val pageIndex = HashMap<Int, Int>()
 
     init{
         pager.addOnPageChangeListener(object: ViewPager.OnPageChangeListener{
@@ -30,7 +30,6 @@ class TimeLinePagerAdapter(context: Context, val fragment: TimeLineFragment, pri
                     loadTopicList(position)
                 }
             } })
-        pageIndex[pager.currentItem] = 0
     }
 
     private val items = HashMap<Int, Pair<TimeLineAdapter, SwipeRefreshLayout>>()
@@ -61,12 +60,6 @@ class TimeLinePagerAdapter(context: Context, val fragment: TimeLineFragment, pri
         return item.second
     }
 
-    fun reset() {
-        items.forEach {  (it.value.second.tag as? RecyclerView)?.tag = null }
-        pageIndex.clear()
-        loadTopicList()
-    }
-
     fun loadTopicList(position: Int = pager.currentItem){
         val item = items[position]?:return
         item.first.isUseEmpty(false)
@@ -82,7 +75,7 @@ class TimeLinePagerAdapter(context: Context, val fragment: TimeLineFragment, pri
             if(it.isEmpty()) item.first.loadMoreEnd()
             else item.first.loadMoreComplete()
             val list = it.toMutableList()
-            if(item.first.data.lastOrNull { it.isHeader }?.header == it.getOrNull(0)?.header)
+            if(it.isNotEmpty() && item.first.data.lastOrNull { it.isHeader }?.header == it.getOrNull(0)?.header)
                 list.removeAt(0)
             item.first.addData(list)
             (item.second.tag as? RecyclerView)?.tag = true

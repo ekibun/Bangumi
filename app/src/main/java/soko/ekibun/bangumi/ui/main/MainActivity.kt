@@ -34,13 +34,16 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         val webView = BackgroundWebView(this)
-        webView.loadUrl("${Bangumi.SERVER}/m")
+        webView.loadUrl(Bangumi.SERVER)
         webView.onPageFinished = {
             Bangumi.getNotify().enqueue(ApiHelper.buildCallback(this, {
                 notifyMenu?.badge = it.count()
             },{}))
             webView.onPageFinished = {}
         }
+        Bangumi.getNotify().enqueue(ApiHelper.buildCallback(this, {
+            notifyMenu?.badge = it.count()
+        },{}))
     }
 
     var notifyMenu: NotifyActionProvider? = null

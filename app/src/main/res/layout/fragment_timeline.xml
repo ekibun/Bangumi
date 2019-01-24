@@ -19,4 +19,15 @@
             app:layout_constraintTop_toBottomOf="@+id/item_tabs"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
+    <android.support.design.widget.FloatingActionButton
+            android:id="@+id/item_new"
+            app:fabSize="normal"
+
+            android:background="?colorAccent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" app:srcCompat="@drawable/ic_add"
+            android:tint="@android:color/white"/>
 </android.support.constraint.ConstraintLayout>
