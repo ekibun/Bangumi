@@ -172,7 +172,7 @@ class SubjectView(private val context: SubjectActivity){
         }
         Glide.with(context.item_cover)
                 .applyDefaultRequestOptions(RequestOptions.placeholderOf(context.item_cover.drawable))
-                .load(subject.images?.common)
+                .load(subject.images?.getImage(context))
                 .apply(RequestOptions.errorOf(R.drawable.ic_404))
                 .into(context.item_cover)
         context.item_cover.setOnClickListener {
@@ -208,7 +208,7 @@ class SubjectView(private val context: SubjectActivity){
 
         Glide.with(context.item_cover_blur)
                 .applyDefaultRequestOptions(RequestOptions.placeholderOf(context.item_cover_blur.drawable))
-                .load(subject.images?.common)
+                .load(subject.images?.getImage(context))
                 .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)))
                 .into(context.item_cover_blur)
         ((subject.eps as? List<*>)?.map{ JsonUtil.toEntity(JsonUtil.toJson(it!!), Episode::class.java)!!})?.let{

@@ -1,6 +1,7 @@
 package soko.ekibun.bangumi.ui.main.fragment.calendar
 
 import android.annotation.SuppressLint
+import android.preference.PreferenceManager
 import android.view.View
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -24,25 +25,37 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
         helper.setText(R.id.item_ep_name, item.t.episode?.parseSort() + " " + (if(item.t.episode?.name_cn.isNullOrEmpty()) item.t.episode?.name?:"" else item.t.episode?.name_cn))
         helper.addOnClickListener(R.id.item_layout)
         Glide.with(helper.itemView.item_cover)
-                .load(item.t.subject.images?.common)
+                .load(item.t.subject.images?.small)
                 .apply(RequestOptions.errorOf(R.drawable.ic_404))
                 .into(helper.itemView.item_cover)
         helper.itemView.item_time.text = ""
         helper.itemView.item_chase.visibility = if(item.t.subject.collect) View.VISIBLE else View.GONE
 
-        val past = pastTime(item.date, item.time)
+        val sp = PreferenceManager.getDefaultSharedPreferences(helper.itemView.context)
+        val use30h = sp.getBoolean("calendar_use_30h", false)
+
+        val past = pastTime(item.date, item.time, use30h)
         val color = ResourceUtil.resolveColorAttr(helper.itemView.context, if(past) R.attr.colorPrimary else android.R.attr.textColorSecondary)
         helper.itemView.item_ep_name.setTextColor(color)
         helper.itemView.item_time.alpha = if(past) 0.6f else 1.0f
 
         helper.itemView.item_now_time.visibility = View.GONE
 
-        if(item.date != getNowInt()) return
-        val prev = data.getOrNull(data.indexOfFirst { it === item }-1)?.let{pastTime(it.date, it.time)}?: true
-        if(prev != past){
+        if(item.date != getNowInt(use30h)) return
+        val index = data.indexOfFirst { it === item }
+        if((index + 1 == data.size && past) || ((data.getOrNull(index-1)?.let{pastTime(it.date, it.time, use30h)} != false) != past)){
+            if(index + 1 == data.size && past){//最后一个
+                helper.itemView.item_now_time.bringToFront()
+            }else{
+                helper.itemView.item_layout.bringToFront()
+            }
             helper.itemView.item_now_time.visibility = View.VISIBLE
+
+
+
             val cal = Calendar.getInstance()
-            val hourNow = cal.get(Calendar.HOUR_OF_DAY)
+            val hour = cal.get(Calendar.HOUR_OF_DAY)
+            val hourNow = if(use30h) (hour -6 + 24) % 24 +6 else hour
             val minuteNow = cal.get(Calendar.MINUTE)
             val format = DecimalFormat("00")
             helper.itemView.item_now_time_text.text = "${format.format(hourNow)}:${format.format(minuteNow)}"
@@ -64,15 +77,16 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
         val weekJp = listOf("", "月", "火", "水", "木", "金", "土", "日")
         val weekSmall = listOf("", "周一", "周二", "周三", "周四", "周五", "周六", "周日")
 
-        fun pastTime(date: Int, time: String): Boolean{
+        fun pastTime(date: Int, time: String, use_30h: Boolean): Boolean{
             val match = Regex("""([0-9]*):([0-9]*)""").find(time)
             val hour=match?.groupValues?.get(1)?.toIntOrNull()?:0
             val minute=match?.groupValues?.get(2)?.toIntOrNull()?:0
             val cal = Calendar.getInstance()
-            val nowInt = getCalendarInt(cal)
+            val nowInt = getNowInt(use_30h)
             val hourNow = cal.get(Calendar.HOUR_OF_DAY)
+            val hourNow30h = if(use_30h) (hourNow -6 + 24) % 24 + 6 else hourNow
             val minuteNow = cal.get(Calendar.MINUTE)
-            return nowInt > date || (nowInt == date && (hour<hourNow || (hour == hourNow && minute <= minuteNow)))
+            return nowInt > date || (nowInt == date && (hour<hourNow30h || (hour == hourNow30h && minute < minuteNow)))
         }
 
         fun getIntCalendar(date: Int):Calendar{
@@ -97,13 +111,14 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
             return weekDay
         }
 
-        fun getNowInt():Int{
-            return getCalendarInt(Calendar.getInstance())
-        }
-
-        fun currentWeek():Int{
-            val now = Calendar.getInstance()
-            return getWeek(now)
+        fun getNowInt(use_30h: Boolean):Int{
+            val cal = Calendar.getInstance()
+            val hourNow = cal.get(Calendar.HOUR_OF_DAY)
+            cal.add(java.util.Calendar.DAY_OF_MONTH, when{
+                hourNow < if(use_30h) 6 else 0 -> -1
+                else -> 0
+            })
+            return getCalendarInt(cal)
         }
     }
 }

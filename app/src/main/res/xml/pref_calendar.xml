@@ -1,0 +1,16 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <SwitchPreference
+        android:key="calendar_use_cn"
+        android:title="使用大陆放送时间"
+        android:summaryOn="使用大陆放送时间推测番组放送时间"
+        android:summaryOff="使用日本放送时间推测番组放送时间"
+        android:defaultValue="false"/>
+
+    <SwitchPreference
+            android:key="calendar_use_30h"
+            android:title="修仙模式"
+            android:summary="开启后深夜0点-6点的动画将在前一天展示"
+            android:defaultValue="false"/>
+
+</PreferenceScreen>

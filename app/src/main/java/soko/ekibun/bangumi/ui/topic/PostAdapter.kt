@@ -149,6 +149,10 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
                                 override fun onClick(widget: View) {
                                     onCLick(url)
                                 }
+                                override fun updateDrawState(ds: TextPaint){
+                                    ds.color = ds.linkColor
+                                    ds.isUnderlineText = false
+                                }
                             }, start, end, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
                         }
                     }

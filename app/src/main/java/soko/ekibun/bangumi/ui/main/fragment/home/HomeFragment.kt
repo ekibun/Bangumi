@@ -22,6 +22,7 @@ class HomeFragment: DrawerFragment(R.layout.content_home){
         for(i in 0 until frame_tabs.tabCount){
             frame_tabs.getTabAt(i)?.icon =  view.context.getDrawable(adapter.getItem(i).iconRes)
         }
+        frame_pager?.currentItem = 1
         changeIconImgBottomMargin(frame_tabs, 0, frame_tabs.tabTextColors)
     }
 
@@ -40,8 +41,8 @@ class HomeFragment: DrawerFragment(R.layout.content_home){
     }
 
     override fun processBack(): Boolean{
-        if(frame_pager == null || frame_pager?.currentItem == 0) return false
-        frame_pager?.currentItem = 0
+        if(frame_pager == null || frame_pager?.currentItem == 1) return false
+        frame_pager?.currentItem = 1
         return true
     }
 

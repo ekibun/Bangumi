@@ -1,5 +1,6 @@
 package soko.ekibun.bangumi.ui.main
 
+import android.content.Intent
 import android.os.Bundle
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.switch_item.view.*
@@ -10,6 +11,7 @@ import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarFragment
 import soko.ekibun.bangumi.ui.main.fragment.home.HomeFragment
 import soko.ekibun.bangumi.ui.main.fragment.index.IndexFragment
 import soko.ekibun.bangumi.ui.search.SearchActivity
+import soko.ekibun.bangumi.ui.setting.SettingsActivity
 import soko.ekibun.bangumi.util.PlayerBridge
 
 class DrawerView(private val context: MainActivity, onNightModeChange: (Boolean)->Unit, onLogout: ()->Unit){
@@ -38,6 +40,7 @@ class DrawerView(private val context: MainActivity, onNightModeChange: (Boolean)
             else{
                 when(it.itemId){
                     R.id.nav_search -> SearchActivity.startActivity(context)
+                    R.id.nav_setting -> context.startActivity(Intent(context, SettingsActivity::class.java))
                     R.id.nav_night -> switch.isChecked = !switch.isChecked
                     R.id.nav_logout -> onLogout()
                 }

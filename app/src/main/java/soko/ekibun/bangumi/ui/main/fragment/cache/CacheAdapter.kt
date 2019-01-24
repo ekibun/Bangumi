@@ -16,7 +16,7 @@ class CacheAdapter(data: MutableList<PlayerBridge.VideoCache>? = null) :
         helper.setText(R.id.item_name_jp, item.bangumi.name)
         helper.setText(R.id.item_summary, "已缓存 ${item.videoList.size} 话")
         Glide.with(helper.itemView.item_cover)
-                .load(item.bangumi.images?.common)
+                .load(item.bangumi.images?.getImage(helper.itemView.context))
                 .apply(RequestOptions.errorOf(R.drawable.ic_404))
                 .into(helper.itemView.item_cover)
     }

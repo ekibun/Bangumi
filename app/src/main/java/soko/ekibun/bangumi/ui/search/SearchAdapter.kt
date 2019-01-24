@@ -17,7 +17,7 @@ class SearchAdapter(data: MutableList<Subject>? = null) :
         helper.setText(R.id.item_name_jp, item.name)
         helper.setText(R.id.item_summary, SubjectType.getDescription(item.type))
         Glide.with(helper.itemView.item_cover)
-                .load(item.images?.common)
+                .load(item.images?.getImage(helper.itemView.context))
                 .apply(RequestOptions.errorOf(R.drawable.ic_404))
                 .into(helper.itemView.item_cover)
     }

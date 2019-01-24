@@ -27,6 +27,10 @@
               android:icon="@drawable/ic_search"
               android:title="@string/search"
               app:showAsAction="ifRoom"/>
+        <item android:id="@+id/nav_setting"
+              android:icon="@drawable/ic_settings"
+              android:title="@string/title_activity_settings"
+              app:showAsAction="ifRoom"/>
         <item
             android:id="@+id/nav_night"
             android:icon="@drawable/ic_night"

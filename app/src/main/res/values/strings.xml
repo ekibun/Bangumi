@@ -40,6 +40,7 @@
     <string name="index">索引</string>
     <string name="home">主页</string>
     <string name="rakuen">超展开</string>
+    <string name="timeline">时间胶囊</string>
     <string name="reply">回复</string>
     <string name="delete">删除</string>
     <string name="edit">编辑</string>
@@ -62,6 +63,20 @@
         <item>人物</item>
     </string-array>
 
+    <string-array name="timeline_list">
+        <item>全部</item>
+        <item>吐槽</item>
+        <item>收藏</item>
+        <item>进度</item>
+        <item>日志</item>
+        <item>人物</item>
+        <item>好友</item>
+        <item>小组</item>
+        <item>维基</item>
+        <item>目录</item>
+        <item>天窗</item>
+    </string-array>
+
     <string-array name="collection_status">
         <item>想看</item>
         <item>看过</item>
@@ -74,5 +89,20 @@
         <item>想看</item>
         <item>抛弃</item>
         <item>未看</item>
+    </string-array>
+    <string name="title_activity_settings">设置</string>
+    <string name="pref_miscellaneous">其他设置</string>
+
+    <string-array name="pref_image_quality">
+        <item>清晰</item>
+        <item>普通</item>
+        <item>中等</item>
+        <item>小图</item>
+    </string-array>
+    <string-array name="pref_image_quality_values">
+        <item>l</item>
+        <item>c</item>
+        <item>m</item>
+        <item>s</item>
     </string-array>
 </resources>

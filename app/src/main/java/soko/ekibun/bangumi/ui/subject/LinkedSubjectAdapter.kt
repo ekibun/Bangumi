@@ -15,7 +15,7 @@ class LinkedSubjectAdapter(data: MutableList<Subject>? = null) :
         helper.setText(R.id.item_title, item.getPrettyName())
         helper.setText(R.id.item_summary, item.summary)
         Glide.with(helper.itemView.item_cover)
-                .load(item.images?.common)
+                .load(item.images?.getImage(helper.itemView.context))
                 .apply(RequestOptions.errorOf(R.drawable.ic_404))
                 .into(helper.itemView.item_cover)
     }

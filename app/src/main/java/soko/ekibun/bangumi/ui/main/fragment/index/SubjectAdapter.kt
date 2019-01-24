@@ -18,7 +18,7 @@ class SubjectAdapter(data: MutableList<Subject>? = null) :
         helper.setText(R.id.item_summary, item.summary)
         helper.itemView.item_chase.visibility = if(item.collect) View.VISIBLE else View.GONE
         Glide.with(helper.itemView.item_cover)
-                .load(item.images?.common)
+                .load(item.images?.getImage(helper.itemView.context))
                 .apply(RequestOptions.errorOf(R.drawable.ic_404))
                 .into(helper.itemView.item_cover)
     }

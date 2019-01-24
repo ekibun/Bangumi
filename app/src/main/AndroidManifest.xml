@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:tools="http://schemas.android.com/tools"
-          package="soko.ekibun.bangumi">
+<manifest
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        package="soko.ekibun.bangumi">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -20,12 +21,13 @@
         <provider
                 android:name="android.support.v4.content.FileProvider"
                 android:authorities="soko.ekibun.bangumi.fileprovider"
-                android:grantUriPermissions="true"
-                android:exported="false">
+                android:exported="false"
+                android:grantUriPermissions="true">
             <meta-data
                     android:name="android.support.FILE_PROVIDER_PATHS"
-                    android:resource="@xml/filepaths" />
+                    android:resource="@xml/filepaths"/>
         </provider>
+
         <activity
                 android:name=".ui.splash.SplashActivity"
                 android:theme="@style/AppTheme.Splash">
@@ -39,7 +41,8 @@
                 android:name=".ui.main.MainActivity"
                 android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|uiMode">
         </activity>
-        <activity android:name=".ui.web.WebActivity">
+        <activity android:name=".ui.web.WebActivity"
+                  android:theme="@style/AppTheme.ActionBar">
         </activity>
         <activity android:name=".ui.search.SearchActivity">
         </activity>
@@ -47,35 +50,47 @@
                 android:name=".ui.subject.SubjectActivity"
                 android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|uiMode">
             <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
+                <action android:name="android.intent.action.VIEW"/>
+
+                <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
+
                 <data
-                        android:scheme="http"
                         android:host="bgm.tv"
-                        android:pathPrefix="/subject"/>
+                        android:pathPrefix="/subject"
+                        android:scheme="http"/>
             </intent-filter>
             <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
+                <action android:name="android.intent.action.VIEW"/>
+
+                <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
+
                 <data
-                        android:scheme="https"
                         android:host="bgm.tv"
-                        android:pathPrefix="/subject"/>
+                        android:pathPrefix="/subject"
+                        android:scheme="https"/>
             </intent-filter>
             <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
+                <action android:name="android.intent.action.VIEW"/>
+
+                <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
+
                 <data
-                        android:scheme="bangumi"
-                        android:host="subject"/>
+                        android:host="subject"
+                        android:scheme="bangumi"/>
             </intent-filter>
         </activity>
         <activity android:name=".ui.topic.TopicActivity">
         </activity>
-        <activity android:name=".ui.crash.CrashActivity">
+        <activity android:name=".ui.crash.CrashActivity"
+                  android:theme="@style/AppTheme.ActionBar">
+        </activity>
+        <activity
+                android:name=".ui.setting.SettingsActivity"
+                android:label="@string/title_activity_settings"
+                android:theme="@style/AppTheme.ActionBar">
         </activity>
     </application>
 

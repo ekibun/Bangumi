@@ -7,10 +7,12 @@ import android.support.v4.view.ViewPager
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.HomeTabFragment
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.collection.CollectionFragment
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.rakuen.RakuenFragment
+import soko.ekibun.bangumi.ui.main.fragment.home.fragment.timeline.TimeLineFragment
 
 class HomePagerAdapter(private val context: Context, fragmentManager: FragmentManager, pager: ViewPager): FragmentPagerAdapter(fragmentManager) {
     val collectionFragment = CollectionFragment()
     private val fragments: List<HomeTabFragment> = listOf(
+            TimeLineFragment(),
             collectionFragment,
             RakuenFragment()
     )

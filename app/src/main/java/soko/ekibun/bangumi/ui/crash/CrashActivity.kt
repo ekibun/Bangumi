@@ -21,7 +21,7 @@ class CrashActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_crash)
-        setSupportActionBar(toolbar)
+
         val content = intent.getStringExtra(EXTRA_CRASH)
         item_content.text = content
         item_upload.setOnClickListener {

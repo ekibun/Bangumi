@@ -2,6 +2,8 @@ package soko.ekibun.bangumi.api.bangumi
 
 import android.webkit.CookieManager
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
+import org.jsoup.nodes.TextNode
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -247,6 +249,57 @@ interface Bangumi {
                     ret+= Rakuen(img, title.text(), group?.text(), time, plus,
                             HttpUtil.getUrl(title.attr("href")?:"", URI.create(SERVER)),
                             HttpUtil.getUrl(group?.attr("href")?:"", URI.create(SERVER)))
+                }
+                return@buildHttpCall ret
+            }
+        }
+
+        //timeline
+        //type: global
+        fun getTimeLine(type: String, page: Int): Call<List<TimeLine>>{
+            val cookie = CookieManager.getInstance().getCookie(Bangumi.SERVER)?:""
+            return ApiHelper.buildHttpCall("$SERVER/timeline?type=$type&page=$page&ajax=1", mapOf("cookie" to cookie)){rsp ->
+                val doc = Jsoup.parse(rsp.body()?.string()?:"")
+                val ret = ArrayList<TimeLine>()
+                var usrImg = ""
+                var userUrl = ""
+                doc.selectFirst("#timeline")?.children()?.forEach{ timeline ->
+                    if(timeline.hasClass("Header")){
+                        ret += TimeLine(true, timeline.text())
+                    }else timeline.select(".tml_item")?.forEach { item ->
+                        //user
+                        val user = item.selectFirst("a.avatar")
+                        val img = Regex("""background-image:url\('([^']*)'\)""").find(user?.html()?:"")?.groupValues?.get(1)?:""
+                        if(img.isNotEmpty()){
+                            usrImg = HttpUtil.getUrl(img, URI.create(SERVER))
+                            userUrl = HttpUtil.getUrl(user?.attr("href")?:"", URI.create(SERVER))
+                        }
+                        //action
+                        val action = item.selectFirst(".info")?.childNodes()?.map {
+                            if(it is TextNode || (it as? Element)?.tagName() == "a" && it.selectFirst("img") == null)
+                                it.outerHtml()
+                            else if((it as? Element)?.hasClass("status") == true)
+                                "<br/>"+it.html()
+                            else ""
+                        }?.reduce { acc, s -> acc + s }?:""
+                        //time
+                        val time = item.selectFirst(".date")?.text()?.trim('·', ' ', '回', '复')?:""
+                        val content = item.selectFirst(".collectInfo")?.text()?:
+                                item.selectFirst(".info_sub")?.text()
+                        val contentUrl = item.selectFirst(".info_sub a")?.attr("href")
+                        val collectStar = Regex("""sstars([0-9]*)""").find(item.selectFirst(".starsinfo")?.outerHtml()?:"")?.groupValues?.get(1)?.toIntOrNull()?:0
+                        //thumb
+                        val thumbs = ArrayList<TimeLine.TimeLineItem.ThumbItem>()
+                        item.select(".info img")?.forEach {
+                            val url = it.parent().attr("href")
+                            val text = item.select("a[href=\"$url\"]")?.text()?:""
+                            val src = HttpUtil.getUrl(it.attr("src")?:"", URI.create(SERVER))
+                            thumbs += TimeLine.TimeLineItem.ThumbItem(src, text, url)
+                        }
+                        val delUrl: String? = item.selectFirst(".tml_del")?.attr("href")
+                        val sayUrl: String? = item.selectFirst("a.tml_comment")?.attr("href")
+                        ret += TimeLine(TimeLine.TimeLineItem(usrImg, userUrl, action, time, content, contentUrl, collectStar, thumbs, delUrl, sayUrl))
+                    }
                 }
                 return@buildHttpCall ret
             }
