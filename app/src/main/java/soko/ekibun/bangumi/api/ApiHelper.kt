@@ -22,7 +22,7 @@ object ApiHelper {
                 Log.e("errUrl", call.request().url().toString())
                 t.printStackTrace()
                 if(!t.toString().contains("Canceled") && context is Activity)
-                    Snackbar.make(context.window.decorView, "出错啦\n" + t.toString(), Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(context.window.decorView, t.toString(), Snackbar.LENGTH_SHORT).show()
                 finish(t)
             }
 
