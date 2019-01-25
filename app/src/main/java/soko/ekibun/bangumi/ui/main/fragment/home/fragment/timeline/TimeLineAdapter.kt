@@ -4,7 +4,6 @@ import android.support.v7.app.AlertDialog
 import android.text.Html
 import android.text.method.LinkMovementMethod
 import android.view.View
-import android.webkit.CookieManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseSectionQuickAdapter
@@ -43,7 +42,7 @@ class TimeLineAdapter(data: MutableList<TimeLine>? = null) :
         helper.itemView.item_del.setOnClickListener {
             AlertDialog.Builder(helper.itemView.context).setTitle("删除这条时间线？")
                     .setNegativeButton("取消") { _, _ -> }.setPositiveButton("确定") { _, _ ->
-                        ApiHelper.buildHttpCall("${item.t.delUrl}&ajax=1", mapOf("cookie" to (CookieManager.getInstance().getCookie(Bangumi.SERVER)?:""))) {
+                        ApiHelper.buildHttpCall("${item.t.delUrl}&ajax=1") {
                             it.body()?.string()?.contains("\"status\":\"ok\"") == true
                         }.enqueue(ApiHelper.buildCallback<Boolean>(helper.itemView.context, {
                             if(!it) return@buildCallback

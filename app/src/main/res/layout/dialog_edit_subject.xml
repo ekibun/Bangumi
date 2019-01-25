@@ -2,25 +2,83 @@
 <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="8dp"
+        android:layout_height="wrap_content"
+        android:padding="12dp"
         android:orientation="vertical">
-    <TextView android:layout_width="match_parent"
+    <TextView android:id="@+id/item_subject_title"
+              android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:padding="8dp"
-              android:textAppearance="@android:style/TextAppearance.Material.Subhead"
-              android:text="@string/status"/>
-    <Spinner
-            android:id="@+id/item_status"
-            android:layout_margin="8dp"
+              android:textColor="?colorAccent"
+              android:textAppearance="@android:style/TextAppearance.Material.Title"/>
+    <RadioGroup
+            android:id="@+id/item_subject_status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:entries="@array/collection_status"/>
-    <TextView android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:padding="8dp"
-              android:textAppearance="@android:style/TextAppearance.Material.Subhead"
-              android:text="@string/rate"/>
+            android:layout_marginBottom="12dp"
+            android:orientation="horizontal">
+        <RadioButton
+                android:text="想看"
+                android:button="@null"
+                android:textAlignment="center"
+                android:textColor="@drawable/color_checkable"
+                android:background="@drawable/bg_selectable"
+                android:layout_margin="8dp"
+                android:padding="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/radio_wish"
+                android:layout_weight="1"/>
+        <RadioButton
+                android:text="看过"
+                android:button="@null"
+                android:checked="true"
+                android:textAlignment="center"
+                android:textColor="@drawable/color_checkable"
+                android:background="@drawable/bg_selectable"
+                android:layout_margin="8dp"
+                android:padding="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/radio_collect"
+                android:layout_weight="1"/>
+        <RadioButton
+                android:text="在看"
+                android:button="@null"
+                android:textAlignment="center"
+                android:textColor="@drawable/color_checkable"
+                android:background="@drawable/bg_selectable"
+                android:layout_margin="8dp"
+                android:padding="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/radio_do"
+                android:layout_weight="1"/>
+        <RadioButton
+                android:text="搁置"
+                android:button="@null"
+                android:textAlignment="center"
+                android:textColor="@drawable/color_checkable"
+                android:background="@drawable/bg_selectable"
+                android:layout_margin="8dp"
+                android:padding="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/radio_hold"
+                android:layout_weight="1"/>
+        <RadioButton
+                android:text="抛弃"
+                android:button="@null"
+                android:textAlignment="center"
+                android:textColor="@drawable/color_checkable"
+                android:background="@drawable/bg_selectable"
+                android:layout_margin="8dp"
+                android:padding="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/radio_dropped"
+                android:layout_weight="1"/>
+    </RadioGroup>
     <RatingBar
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" android:id="@+id/item_rating"
@@ -35,6 +93,8 @@
               android:text="@string/comment"/>
     <soko.ekibun.bangumi.ui.view.CleanableEditText
             android:id="@+id/item_comment"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
     <Switch
@@ -44,4 +104,30 @@
             android:textAppearance="@android:style/TextAppearance.Material.Subhead"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <TextView
+                android:id="@+id/item_remove"
+                android:layout_width="wrap_content"
+                android:tint="?android:textColorSecondary"
+                android:padding="12dp"
+                android:tintMode="src_in"
+                android:background="?android:attr/selectableItemBackground"
+                android:layout_height="wrap_content"
+                android:text="删除收藏"/>
+        <View android:layout_weight="1"
+              android:layout_height="match_parent"
+              android:layout_width="0dp"/>
+        <TextView
+                android:id="@+id/item_submit"
+                android:layout_width="wrap_content"
+                android:tint="?android:textColorSecondary"
+                android:padding="12dp"
+                android:tintMode="src_in"
+                android:background="?android:attr/selectableItemBackground"
+                android:layout_height="wrap_content"
+                android:textColor="?colorAccent"
+                android:text="提交"/>
+    </LinearLayout>
 </LinearLayout>

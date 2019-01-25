@@ -8,7 +8,9 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
 import android.view.ViewGroup
 import android.widget.ImageView
+import soko.ekibun.bangumi.ui.main.fragment.home.fragment.HomeTabFragment
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.collection.CollectionFragment
+import soko.ekibun.bangumi.ui.main.fragment.home.fragment.timeline.TimeLineFragment
 
 
 class HomeFragment: DrawerFragment(R.layout.content_home){
@@ -47,6 +49,14 @@ class HomeFragment: DrawerFragment(R.layout.content_home){
     }
 
     fun collectionFragment(): CollectionFragment?{
-        return (frame_pager?.adapter as? HomePagerAdapter)?.collectionFragment
+        return fragments()?.firstOrNull { it is CollectionFragment } as? CollectionFragment
+    }
+
+    fun timelineFragment(): TimeLineFragment?{
+        return fragments()?.firstOrNull { it is TimeLineFragment } as? TimeLineFragment
+    }
+
+    fun fragments(): List<HomeTabFragment>?{
+        return (frame_pager?.adapter as? HomePagerAdapter)?.fragments
     }
 }

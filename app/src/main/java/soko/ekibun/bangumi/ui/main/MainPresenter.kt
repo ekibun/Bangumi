@@ -63,6 +63,10 @@ class MainPresenter(private val context: MainActivity){
         return false
     }
 
+    fun reload(){
+        drawerView.homeFragment.timelineFragment()?.onSelect()
+    }
+
     private var userCall : Call<UserInfo>? = null
     fun refreshUser(){
         userCall?.cancel()

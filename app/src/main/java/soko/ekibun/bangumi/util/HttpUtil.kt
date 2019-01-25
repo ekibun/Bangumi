@@ -20,7 +20,7 @@ object HttpUtil {
                 .headers(Headers.of(header))
         if (body != null)
             request.post(body)
-        return OkHttpClient().newCall(request.build())
+        return OkHttpClient.Builder().cookieJar(WebViewCookieHandler()).build().newCall(request.build())
     }
 
     fun getUrl(url: String, baseUri: URI?): String{

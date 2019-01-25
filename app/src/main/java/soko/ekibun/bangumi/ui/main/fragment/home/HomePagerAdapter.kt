@@ -10,10 +10,9 @@ import soko.ekibun.bangumi.ui.main.fragment.home.fragment.rakuen.RakuenFragment
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.timeline.TimeLineFragment
 
 class HomePagerAdapter(private val context: Context, fragmentManager: FragmentManager, pager: ViewPager): FragmentPagerAdapter(fragmentManager) {
-    val collectionFragment = CollectionFragment()
-    private val fragments: List<HomeTabFragment> = listOf(
+    val fragments: List<HomeTabFragment> = listOf(
             TimeLineFragment(),
-            collectionFragment,
+            CollectionFragment(),
             RakuenFragment()
     )
 

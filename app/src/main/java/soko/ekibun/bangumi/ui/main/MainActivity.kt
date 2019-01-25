@@ -11,10 +11,12 @@ import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.search.SearchActivity
-import soko.ekibun.bangumi.ui.view.BackgroundWebView
 import android.support.v4.view.MenuItemCompat
 import android.view.KeyEvent
+import android.webkit.CookieManager
+import android.webkit.WebView
 import android.widget.Toast
+import org.jsoup.Jsoup
 import soko.ekibun.bangumi.ui.view.NotifyActionProvider
 import soko.ekibun.bangumi.ui.web.WebActivity
 
@@ -31,16 +33,28 @@ class MainActivity : AppCompatActivity() {
             mainPresenter.refreshUser()
     }
 
+    val ua by lazy { WebView(this).settings.userAgentString }
+    var formhash = ""
     override fun onStart() {
         super.onStart()
-        val webView = BackgroundWebView(this)
-        webView.loadUrl(Bangumi.SERVER)
-        webView.onPageFinished = {
+
+        var needReload = false
+        val cookieManager = CookieManager.getInstance()
+        ApiHelper.buildHttpCall(Bangumi.SERVER, mapOf("User-Agent" to ua)){
+            val doc = Jsoup.parse(it.body()?.string()?:"")
+            if(doc.selectFirst(".guest") != null) return@buildHttpCall null
+            it.headers("set-cookie").forEach {
+                needReload = true
+                cookieManager.setCookie(Bangumi.SERVER, it) }
+            if(needReload) mainPresenter.reload()
+            doc.selectFirst("input[name=formhash]")?.attr("value")
+        }.enqueue(ApiHelper.buildCallback(this, {hash->
+            if(hash.isNullOrEmpty()) return@buildCallback
+            formhash = hash?:formhash
             Bangumi.getNotify().enqueue(ApiHelper.buildCallback(this, {
                 notifyMenu?.badge = it.count()
             },{}))
-            webView.onPageFinished = {}
-        }
+        }))
         Bangumi.getNotify().enqueue(ApiHelper.buildCallback(this, {
             notifyMenu?.badge = it.count()
         },{}))

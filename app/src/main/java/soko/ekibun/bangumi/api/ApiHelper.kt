@@ -11,7 +11,6 @@ import okhttp3.RequestBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import soko.ekibun.bangumi.ui.view.BackgroundWebView
 import soko.ekibun.bangumi.util.HttpUtil
 import java.io.IOException
 
@@ -81,37 +80,6 @@ object ApiHelper {
             override fun cancel() { okHttpCall.cancel() }
             override fun execute(): retrofit2.Response<T> {return createResponse(okHttpCall.execute()) }
             override fun request(): Request { return okHttpCall.request() }
-
-        }
-    }
-
-    fun buildWebViewCall(webView: BackgroundWebView, url: String, header: Map<String, String> = HashMap(), js: String = ""): Call<String>{
-        return object: retrofit2.Call<String>{
-            override fun enqueue(callback: retrofit2.Callback<String>) {
-                webView.onCatchVideo={
-                    Log.v("video", it.url.toString())
-                    callback.onResponse(this, Response.success(it.url.toString()))
-                    webView.onCatchVideo={}
-                }
-                webView.onPageFinished={
-                    webView.evaluateJavascript(js){
-                        Log.v("javascript", it.toString())
-                        val url = it?.trim('"', '\'')?:""
-                        if(url.startsWith("http") == true)
-                            callback.onResponse(this, Response.success(url))
-                    }
-                }
-                val map = HashMap<String, String>()
-                map["referer"]=url
-                map.putAll(header)
-                webView.loadUrl(url, map)
-            }
-            override fun isExecuted(): Boolean { return webView.url == "about:blank" }
-            override fun clone(): retrofit2.Call<String> { return this }
-            override fun isCanceled(): Boolean { return webView.url == "about:blank" }
-            override fun cancel() { webView.loadUrl("about:blank") }
-            override fun execute(): retrofit2.Response<String>? {return null }
-            override fun request(): Request { return Request.Builder().url(url).build() }
 
         }
     }

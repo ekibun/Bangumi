@@ -18,11 +18,11 @@ import com.google.gson.reflect.TypeToken
 import okhttp3.FormBody
 import org.jsoup.Jsoup
 import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
-import soko.ekibun.bangumi.ui.view.BackgroundWebView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.JsonUtil
 import android.support.v7.widget.RecyclerView
 import android.view.*
+import android.webkit.WebView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import jp.wasabeef.glide.transformations.BlurTransformation
@@ -102,7 +102,7 @@ class TopicActivity : SwipeBackActivity() {
             if(send){
                 data.add("submit", "submit")
                 data.add("content", comment + inputString)
-                ApiHelper.buildHttpCall(post, mapOf("cookie" to (CookieManager.getInstance().getCookie(Bangumi.SERVER)?:"")), data.build()){
+                ApiHelper.buildHttpCall(post, body = data.build()){
                     val replies = ArrayList(adapter.data)
                     val posts = JsonUtil.toJsonObject(it.body()?.string()?:"").getAsJsonObject("posts")
                     val main = JsonUtil.toEntity<Map<String, TopicPost>>(posts.get("main")?.toString()?:"", object: TypeToken<Map<String, TopicPost>>(){}.type)?: HashMap()
@@ -171,19 +171,25 @@ class TopicActivity : SwipeBackActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    val ua by lazy { WebView(this).settings.userAgentString }
     private fun getTopic(scrollPost: String = ""){
         item_swipe.isRefreshing = true
         getTopicApi{
             if(it.user_id.isNullOrEmpty() && UserModel(this).getToken() != null){
                 item_swipe.isRefreshing = true
-                val webView = BackgroundWebView(this)
-                webView.loadUrl("${Bangumi.SERVER}/m")
-                webView.onPageFinished = {
-                    getTopicApi{
+                val cookieManager = CookieManager.getInstance()
+                ApiHelper.buildHttpCall(Bangumi.SERVER, mapOf("User-Agent" to ua)){
+                    val doc = Jsoup.parse(it.body()?.string()?:"")
+                    if(doc.selectFirst(".guest") != null) return@buildHttpCall null
+                    it.headers("set-cookie").forEach {
+                        cookieManager.setCookie(Bangumi.SERVER, it) }
+                    doc.selectFirst("input[name=formhash]")?.attr("value")
+                }.enqueue(ApiHelper.buildCallback(this, {hash->
+                    if(hash.isNullOrEmpty()) processTopic(it, scrollPost)
+                    else getTopicApi{
                         processTopic(it, scrollPost)
                     }
-                    webView.onPageFinished = {}
-                }
+                }))
             }else processTopic(it, scrollPost)
         }
     }
@@ -265,7 +271,7 @@ class TopicActivity : SwipeBackActivity() {
                             .setNegativeButton("取消") { _, _ -> }.setPositiveButton("确定") { _, _ ->
                                 if (post.floor == 1) {
                                     val url = topic.post.replace(Bangumi.SERVER, "${Bangumi.SERVER}/erase").replace("/new_reply", "?gh=${topic.formhash}&ajax=1")
-                                    ApiHelper.buildHttpCall(url, mapOf("cookie" to (CookieManager.getInstance().getCookie(Bangumi.SERVER)?:""))) {
+                                    ApiHelper.buildHttpCall(url) {
                                         true
                                     }.enqueue(ApiHelper.buildCallback<Boolean>(this@TopicActivity, {
                                         if (it) finish()
@@ -279,7 +285,7 @@ class TopicActivity : SwipeBackActivity() {
                                         "subject" -> "/erase/subject/reply/"//http://bangumi.tv/subject/reply/114260/edit
                                         else -> ""
                                     } + "${post.pst_id}?gh=${topic.formhash}&ajax=1"
-                                    ApiHelper.buildHttpCall(url, mapOf("cookie" to (CookieManager.getInstance().getCookie(Bangumi.SERVER)?:""))) {
+                                    ApiHelper.buildHttpCall(url) {
                                         it.body()?.string()?.contains("\"status\":\"ok\"") == true
                                     }.enqueue(ApiHelper.buildCallback<Boolean>(this@TopicActivity, {
                                         val data = ArrayList(adapter.data)
@@ -301,7 +307,7 @@ class TopicActivity : SwipeBackActivity() {
                         else -> ""
                     }
                     //WebActivity.launchUrl(this@TopicActivity, url)
-                    ApiHelper.buildHttpCall(url, mapOf("cookie" to (CookieManager.getInstance().getCookie(Bangumi.SERVER)?:""))){
+                    ApiHelper.buildHttpCall(url){
                         val doc = Jsoup.parse(it.body()?.string()?:return@buildHttpCall null)
                         doc.selectFirst("#content")?.text()
                     }.enqueue(ApiHelper.buildCallback(this@TopicActivity, {
@@ -311,7 +317,7 @@ class TopicActivity : SwipeBackActivity() {
                         }else{
                             buildPopupWindow("修改主题\"${topic.title}\""+if(post.floor == 1) "" else "的回复", it){inputString, send->
                                 if(send){
-                                    ApiHelper.buildHttpCall(url, mapOf("cookie" to (CookieManager.getInstance().getCookie(Bangumi.SERVER)?:"")), FormBody.Builder()
+                                    ApiHelper.buildHttpCall(url, body = FormBody.Builder()
                                             .add("formhash", topic.formhash!!)
                                             .add("title", topic.title)
                                             .add("submit", "改好了")

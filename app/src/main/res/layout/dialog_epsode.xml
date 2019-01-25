@@ -2,26 +2,94 @@
 <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="8dp"
+        android:layout_height="wrap_content"
         android:orientation="vertical">
     <TextView android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:id="@+id/item_episode_title"
               android:padding="8dp"
+              android:layout_marginTop="12dp"
+              android:layout_marginLeft="12dp"
+              android:layout_marginRight="12dp"
               android:textColor="?colorAccent"
-              android:textAppearance="@android:style/TextAppearance.Material.Title"
-              android:text="@string/status"/>
+              android:textAppearance="@android:style/TextAppearance.Material.Title"/>
     <TextView android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:id="@+id/item_episode_desc"
               android:padding="8dp"
-              android:textAppearance="@android:style/TextAppearance.Material.Subhead"
-              android:text="@string/status"/>
-    <Spinner
+              android:layout_marginLeft="18dp"
+              android:layout_marginRight="18dp"
+              android:textAppearance="@android:style/TextAppearance.Material.Subhead"/>
+
+    <RadioGroup
             android:id="@+id/item_episode_status"
-            android:layout_margin="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:entries="@array/episode_status"/>
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="12dp"
+            android:layout_marginBottom="12dp"
+            android:orientation="horizontal">
+
+        <RadioButton
+                android:text="看过"
+                android:button="@null"
+                android:checked="true"
+                android:textAlignment="center"
+                android:textColor="@drawable/color_checkable"
+                android:background="@drawable/bg_selectable"
+                android:layout_margin="8dp"
+                android:padding="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/radio_watch"
+                android:layout_weight="1"/>
+        <RadioButton
+                android:text="看到"
+                android:button="@null"
+                android:textAlignment="center"
+                android:textColor="@drawable/color_checkable"
+                android:background="@drawable/bg_selectable"
+                android:layout_margin="8dp"
+                android:padding="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/radio_watch_to"
+                android:layout_weight="1"/>
+        <RadioButton
+                android:text="想看"
+                android:button="@null"
+                android:textAlignment="center"
+                android:textColor="@drawable/color_checkable"
+                android:background="@drawable/bg_selectable"
+                android:layout_margin="8dp"
+                android:padding="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/radio_queue"
+                android:layout_weight="1"/>
+        <RadioButton
+                android:text="抛弃"
+                android:button="@null"
+                android:textAlignment="center"
+                android:textColor="@drawable/color_checkable"
+                android:background="@drawable/bg_selectable"
+                android:layout_margin="8dp"
+                android:padding="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/radio_drop"
+                android:layout_weight="1"/>
+        <RadioButton
+                android:text="未看"
+                android:button="@null"
+                android:textAlignment="center"
+                android:textColor="@drawable/color_checkable"
+                android:background="@drawable/bg_selectable"
+                android:layout_margin="8dp"
+                android:padding="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/radio_remove"
+                android:layout_weight="1"/>
+    </RadioGroup>
 </LinearLayout>

@@ -86,6 +86,7 @@
     </string-array>
     <string-array name="episode_status">
         <item>看过</item>
+        <item>看到</item>
         <item>想看</item>
         <item>抛弃</item>
         <item>未看</item>

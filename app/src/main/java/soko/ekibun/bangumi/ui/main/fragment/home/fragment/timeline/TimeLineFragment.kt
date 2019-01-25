@@ -3,21 +3,18 @@ package soko.ekibun.bangumi.ui.main.fragment.home.fragment.timeline
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.view.View
-import android.webkit.CookieManager
 import kotlinx.android.synthetic.main.fragment_timeline.*
 import okhttp3.FormBody
-import org.jsoup.Jsoup
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
+import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.HomeTabFragment
 import soko.ekibun.bangumi.ui.topic.ReplyDialog
 
 class TimeLineFragment: HomeTabFragment(R.layout.fragment_timeline){
     override val titleRes: Int = R.string.timeline
     override val iconRes: Int = R.drawable.ic_timelapse
-
-    private var formhash = ""
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -30,16 +27,9 @@ class TimeLineFragment: HomeTabFragment(R.layout.fragment_timeline){
 
     override fun onSelect() {
         val adapter = (item_pager?.adapter as? TimeLinePagerAdapter)?:return
+        val formhash = (activity as? MainActivity)?.formhash?:""
         if(formhash.isEmpty()){
             item_new?.hide()
-            ApiHelper.buildHttpCall(Bangumi.SERVER,  mapOf("cookie" to CookieManager.getInstance().getCookie(Bangumi.SERVER))){
-                val doc = Jsoup.parse(it.body()?.string()?:"")
-                doc.selectFirst("input[name=formhash]")?.attr("value")
-            }.enqueue(ApiHelper.buildCallback(context, {hash->
-                if(!hash.isNullOrEmpty()) formhash = hash!!
-                if(formhash.isEmpty()) return@buildCallback
-                onSelect()
-            }))
         }else {
             item_new?.show()
             var draft = ""
@@ -49,7 +39,7 @@ class TimeLineFragment: HomeTabFragment(R.layout.fragment_timeline){
                 dialog.draft = draft
                 dialog.callback = {string, send ->
                     if(send){
-                        ApiHelper.buildHttpCall("${Bangumi.SERVER}/update/user/say?ajax=1",  mapOf("cookie" to CookieManager.getInstance().getCookie(Bangumi.SERVER)), FormBody.Builder()
+                        ApiHelper.buildHttpCall("${Bangumi.SERVER}/update/user/say?ajax=1", body = FormBody.Builder()
                                 .add("say_input", string)
                                 .add("formhash", formhash)
                                 .add("submit", "submit").build()){

@@ -1,6 +1,5 @@
 package soko.ekibun.bangumi.api.bangumi
 
-import android.webkit.CookieManager
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.TextNode
@@ -49,6 +48,13 @@ interface Bangumi {
     fun updateProgress(@Path("id") id: Int,
                        @SubjectProgress.EpisodeProgress.EpisodeStatus.Companion.EpStatusType
                        @Path("status") status: String,
+                       @Query("access_token") access_token: String
+    ): Call<StatusCode>
+
+    @FormUrlEncoded
+    @POST("/subject/{subject_id}/update/watched_eps")
+    fun updateWatchEps(@Path("subject_id") subject_id: Int,
+                       @Field("watched_eps") watched_eps: String,
                        @Query("access_token") access_token: String
     ): Call<StatusCode>
 
@@ -131,8 +137,7 @@ interface Bangumi {
                               @CollectionStatusType.CollectionStatusType collection_status: String,
                               page: Int = 1
         ): Call<List<SubjectCollection>>{
-            val cookie = CookieManager.getInstance().getCookie(Bangumi.SERVER)?:""
-            return ApiHelper.buildHttpCall("$SERVER/$subject_type/list/$username/$collection_status?page=$page", mapOf("cookie" to cookie)){
+            return ApiHelper.buildHttpCall("$SERVER/$subject_type/list/$username/$collection_status?page=$page"){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<SubjectCollection>()
                 doc.select(".item").forEach {
@@ -160,8 +165,7 @@ interface Bangumi {
         }
 
         fun getSubject(subject: Subject): Call<List<Subject>>{
-            val cookie = CookieManager.getInstance().getCookie(Bangumi.SERVER)?:""
-            return ApiHelper.buildHttpCall(subject.url?:"", mapOf("cookie" to cookie)){
+            return ApiHelper.buildHttpCall(subject.url?:""){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<Subject>()
                 doc.select(".subject_section").filter { it.select(".subtitle").text() == "关联条目" }.getOrNull(0)?.let{
@@ -187,8 +191,7 @@ interface Bangumi {
         }
 
         fun getComments(subject: Subject, page: Int): Call<List<Comment>>{
-            val cookie = CookieManager.getInstance().getCookie(Bangumi.SERVER)?:""
-            return ApiHelper.buildHttpCall("${subject.url?:""}/comments?page=$page", mapOf("cookie" to cookie)){
+            return ApiHelper.buildHttpCall("${subject.url?:""}/comments?page=$page"){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<Comment>()
                 doc.selectFirst("#comment_box")?.let{
@@ -210,8 +213,7 @@ interface Bangumi {
         fun browserAirTime(@SubjectType.SubjectTypeName subject_type: String,
                             year: Int, month: Int,
                             page: Int = 1): Call<List<Subject>>{
-            val cookie = CookieManager.getInstance().getCookie(Bangumi.SERVER)?:""
-            return ApiHelper.buildHttpCall("$SERVER/$subject_type/browser/airtime/$year-$month?page=$page", mapOf("cookie" to cookie)){
+            return ApiHelper.buildHttpCall("$SERVER/$subject_type/browser/airtime/$year-$month?page=$page"){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<Subject>()
                 doc.select(".item")?.forEach{
@@ -257,8 +259,7 @@ interface Bangumi {
         //timeline
         //type: global
         fun getTimeLine(type: String, page: Int): Call<List<TimeLine>>{
-            val cookie = CookieManager.getInstance().getCookie(Bangumi.SERVER)?:""
-            return ApiHelper.buildHttpCall("$SERVER/timeline?type=$type&page=$page&ajax=1", mapOf("cookie" to cookie)){rsp ->
+            return ApiHelper.buildHttpCall("$SERVER/timeline?type=$type&page=$page&ajax=1"){rsp ->
                 val doc = Jsoup.parse(rsp.body()?.string()?:"")
                 val ret = ArrayList<TimeLine>()
                 var usrImg = ""
@@ -307,8 +308,7 @@ interface Bangumi {
 
         //讨论
         fun getTopic(url: String): Call<Topic>{
-            val cookie = CookieManager.getInstance().getCookie(Bangumi.SERVER)?:""
-            return ApiHelper.buildHttpCall(url, mapOf("cookie" to cookie)){
+            return ApiHelper.buildHttpCall(url){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val replies = ArrayList<TopicPost>()
                 doc.select(".re_info")?.map{ it.parent() }?.forEach{
@@ -362,8 +362,7 @@ interface Bangumi {
 
         //通知
         fun getNotify(): Call<List<Notify>>{
-            val cookie = CookieManager.getInstance().getCookie(Bangumi.SERVER)?:""
-            return ApiHelper.buildHttpCall("$SERVER/notify", mapOf("cookie" to cookie)){
+            return ApiHelper.buildHttpCall("$SERVER/notify"){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<Notify>()
                 doc.select(".tml_item")?.forEach {
