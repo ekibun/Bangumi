@@ -13,6 +13,7 @@ import kotlinx.android.synthetic.main.dialog_edit_subject.view.*
 import kotlinx.android.synthetic.main.dialog_epsode.view.*
 import kotlinx.android.synthetic.main.subject_blog.view.*
 import kotlinx.android.synthetic.main.subject_buttons.*
+import kotlinx.android.synthetic.main.subject_character.view.*
 import kotlinx.android.synthetic.main.subject_topic.view.*
 import retrofit2.Call
 import soko.ekibun.bangumi.R
@@ -43,6 +44,10 @@ class SubjectPresenter(private val context: SubjectActivity){
     fun init(subject: Subject){
         subjectView.updateSubject(subject)
         refresh(subject)
+
+        subjectView.detail.character_detail.setOnClickListener {
+            WebActivity.launchUrl(context, "${subject.url}/characters")
+        }
 
         subjectView.detail.item_detail.setOnClickListener {
             WebActivity.launchUrl(context, subject.url)
@@ -147,12 +152,20 @@ class SubjectPresenter(private val context: SubjectActivity){
             subjectView.linkedSubjectsAdapter.data[position]?.let{ SubjectActivity.startActivity(context, it) }
         }
 
+        subjectView.commendSubjectsAdapter.setOnItemClickListener { _, _, position ->
+            subjectView.commendSubjectsAdapter.data[position]?.let{ SubjectActivity.startActivity(context, it) }
+        }
+
+        subjectView.characterAdapter.setOnItemClickListener { _, _, position ->
+            WebActivity.launchUrl(context, subjectView.characterAdapter.data[position]?.url, "")
+        }
+
         subjectView.topicAdapter.setOnItemClickListener { _, _, position ->
-            WebActivity.launchUrl(context, subjectView.topicAdapter.data[position].url, "")
+            WebActivity.launchUrl(context, subjectView.topicAdapter.data[position]?.url, "")
         }
 
         subjectView.blogAdapter.setOnItemClickListener { _, _, position ->
-            WebActivity.launchUrl(context, subjectView.blogAdapter.data[position].url)
+            WebActivity.launchUrl(context, subjectView.blogAdapter.data[position]?.url, "")
         }
 
         subjectView.sitesAdapter.setOnItemClickListener { _, _, position ->
@@ -237,15 +250,16 @@ class SubjectPresenter(private val context: SubjectActivity){
 
     private var subjectCall : Call<Subject>? = null
     private fun refreshSubject(subject: Subject){
-        //context.data_layout.visibility = View.GONE
-        //context.subject_swipe.isRefreshing = true
         subjectCall?.cancel()
-        subjectCall = api.subject(subject.id)
+        subjectCall = Bangumi.getSubject(subject)
         subjectCall?.enqueue(ApiHelper.buildCallback(context, {
             refreshLines(it)
             subjectView.updateSubject(it)
         }, {}))
 
+        api.subjectEp(subject.id).enqueue(ApiHelper.buildCallback(context, {
+            subjectView.updateEpisode(it)
+        }, {}))
         BgmIpViewer.createInstance().subject(subject.id).enqueue(ApiHelper.buildCallback(context, {
             val bgmIp = it.nodes?.firstOrNull { it.subject_id == subject.id }?:return@buildCallback
             val id = it.edges?.firstOrNull{edge-> edge.source == bgmIp.id && edge.relation == "主线故事"}?.target?:bgmIp.id
@@ -276,11 +290,12 @@ class SubjectPresenter(private val context: SubjectActivity){
                 subjectView.seasonLayoutManager.scrollToPositionWithOffset(subjectView.seasonAdapter.data.indexOfFirst { it.id == bgmIp.id }, 0)
             }
         }, {}))
-
-        Bangumi.getSubject(subject).enqueue(ApiHelper.buildCallback(context, {
+/*
+        Bangumi.getLinkedSubject(subject).enqueue(ApiHelper.buildCallback(context, {
             subjectView.linkedSubjectsAdapter.setNewData(it)
             //Log.v("list", it.toString())
         }, {}))
+        */
 
         var commentPage = 1
         subjectView.commentAdapter.setEnableLoadMore(true)
@@ -302,6 +317,7 @@ class SubjectPresenter(private val context: SubjectActivity){
                 subjectView.commentAdapter.loadMoreComplete()
                 subjectView.commentAdapter.addData(it)
             }
+            subjectView.detail.item_comment_header.visibility = View.VISIBLE
         }, {subjectView.commentAdapter.loadMoreFail()}))
     }
 
@@ -316,6 +332,7 @@ class SubjectPresenter(private val context: SubjectActivity){
                     subjectView.sitesAdapter.addData(BangumiItem.SitesBean("official", "", it.officialSite))
                 subjectView.sitesAdapter.addData(it.sites?.filter { it.site != "bangumi" }?:ArrayList())
             }
+            subjectView.detail.site_list.visibility = if(subjectView.sitesAdapter.data.isEmpty()) View.GONE else View.VISIBLE
         }, {}))
     }
 

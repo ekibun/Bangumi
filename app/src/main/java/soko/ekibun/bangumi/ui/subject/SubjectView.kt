@@ -1,5 +1,6 @@
 package soko.ekibun.bangumi.ui.subject
 
+import android.animation.LayoutTransition
 import android.annotation.SuppressLint
 import android.support.constraint.ConstraintLayout
 import android.support.design.widget.AppBarLayout
@@ -8,7 +9,6 @@ import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.StaggeredGridLayoutManager
-import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -23,6 +23,7 @@ import kotlinx.android.synthetic.main.activity_subject.*
 import kotlinx.android.synthetic.main.activity_subject.view.*
 import kotlinx.android.synthetic.main.subject_blog.*
 import kotlinx.android.synthetic.main.subject_buttons.*
+import kotlinx.android.synthetic.main.subject_character.*
 import kotlinx.android.synthetic.main.subject_detail.*
 import kotlinx.android.synthetic.main.subject_episode.*
 import kotlinx.android.synthetic.main.subject_topic.*
@@ -41,6 +42,8 @@ class SubjectView(private val context: SubjectActivity){
     val episodeAdapter = SmallEpisodeAdapter()
     val episodeDetailAdapter = EpisodeAdapter()
     val linkedSubjectsAdapter = LinkedSubjectAdapter()
+    val commendSubjectsAdapter = LinkedSubjectAdapter()
+    val characterAdapter = CharacterAdapter()
     val topicAdapter = TopicAdapter()
     val blogAdapter = BlogAdapter()
     val sitesAdapter = SitesAdapter()
@@ -85,7 +88,9 @@ class SubjectView(private val context: SubjectActivity){
         }
         context.episode_list.addOnScrollListener(scrollListener)
         context.season_list.addOnScrollListener(scrollListener)
-        context.subject_list.addOnScrollListener(scrollListener)
+        context.commend_list.addOnScrollListener(scrollListener)
+        context.linked_list.addOnScrollListener(scrollListener)
+        context.character_list.addOnScrollListener(scrollListener)
 
         val touchListener = episodeDetailAdapter.setUpWithRecyclerView(context.episode_detail_list)
         touchListener.nestScrollDistance = {
@@ -100,11 +105,24 @@ class SubjectView(private val context: SubjectActivity){
             showEpisodeDetail(true)
         }
 
-        context.subject_list.adapter = linkedSubjectsAdapter
+        context.linked_list.adapter = linkedSubjectsAdapter
         val subjectLayoutManager = LinearLayoutManager(context)
         subjectLayoutManager.orientation = LinearLayoutManager.HORIZONTAL
-        context.subject_list.layoutManager = subjectLayoutManager
-        context.subject_list.isNestedScrollingEnabled = false
+        context.linked_list.layoutManager = subjectLayoutManager
+        context.linked_list.isNestedScrollingEnabled = false
+
+
+        context.commend_list.adapter = commendSubjectsAdapter
+        val subjectLayoutManager2 = LinearLayoutManager(context)
+        subjectLayoutManager2.orientation = LinearLayoutManager.HORIZONTAL
+        context.commend_list.layoutManager = subjectLayoutManager2
+        context.commend_list.isNestedScrollingEnabled = false
+
+        context.character_list.adapter = characterAdapter
+        val characterLayoutManager = LinearLayoutManager(context)
+        characterLayoutManager.orientation = LinearLayoutManager.HORIZONTAL
+        context.character_list.layoutManager = characterLayoutManager
+        context.character_list.isNestedScrollingEnabled = false
 
         context.topic_list.adapter = topicAdapter
         context.topic_list.layoutManager = LinearLayoutManager(context)
@@ -122,6 +140,8 @@ class SubjectView(private val context: SubjectActivity){
 
         context.comment_list.adapter = commentAdapter
         context.comment_list.layoutManager = LinearLayoutManager(context)
+
+        detail.layoutTransition.enableTransitionType(LayoutTransition.CHANGING)
 
         context.root_layout.removeView(detail)
         commentAdapter.setHeaderView(detail)
@@ -149,7 +169,7 @@ class SubjectView(private val context: SubjectActivity){
     @SuppressLint("SetTextI18n")
     fun updateSubject(subject: Subject){
         if(context.isDestroyed) return
-        context.title = ""//if(subject.name_cn.isNullOrEmpty()) subject.name else subject.name_cn
+
         context.title_collapse.text = subject.getPrettyName()
         context.title_expand.text = context.title_collapse.text
         context.title_expand.post {
@@ -214,27 +234,43 @@ class SubjectView(private val context: SubjectActivity){
         ((subject.eps as? List<*>)?.map{ JsonUtil.toEntity(JsonUtil.toJson(it!!), Episode::class.java)!!})?.let{
             updateEpisode(it)
         }
+        detail.item_topics.visibility = if(subject.topic?.isNotEmpty() == true) View.VISIBLE else View.GONE
         topicAdapter.setNewData(subject.topic)
+        detail.item_blogs.visibility = if(subject.blog?.isNotEmpty() == true) View.VISIBLE else View.GONE
         blogAdapter.setNewData(subject.blog)
+        detail.item_character.visibility = if(subject.crt?.isNotEmpty() == true) View.VISIBLE else View.GONE
+        characterAdapter.setNewData(subject.crt)
+        detail.item_linked.visibility = if(subject.linked?.isNotEmpty() == true) View.VISIBLE else View.GONE
+        linkedSubjectsAdapter.setNewData(subject.linked)
+        detail.item_commend.visibility = if(subject.commend?.isNotEmpty() == true) View.VISIBLE else View.GONE
+        commendSubjectsAdapter.setNewData(subject.commend)
+    }
+
+    fun updateEpisode(subject: Subject){
+        ((subject.eps as? List<*>)?.map{ JsonUtil.toEntity(JsonUtil.toJson(it!!), Episode::class.java)!!})?.let{
+            updateEpisode(it)
+        }
     }
 
     private fun updateEpisode(episodes: List<Episode>){
+        if(episodes.none { it.id != 0 }) return
         val mainEps = episodes.filter { it.type == Episode.TYPE_MAIN }
         val eps = mainEps.filter { (it.status ?: "") in listOf("Air") }.size
         context.episode_detail?.text = context.getString(if(eps == mainEps.size) R.string.phrase_full else R.string.phrase_updating, eps)
 
-        val maps = HashMap<Int, List<Episode>>()
+        val maps = HashMap<String, List<Episode>>()
         episodes.forEach {
-            maps[it.type] = (maps[it.type]?:ArrayList()).plus(it)
+            val key = it.cat?:Episode.getTypeName(it.type)
+            maps[key] = (maps[key]?:ArrayList()).plus(it)
         }
         episodeAdapter.setNewData(null)
         episodeDetailAdapter.setNewData(null)
         maps.forEach {
-            episodeDetailAdapter.addData(EpisodeAdapter.SelectableSectionEntity(true, Episode.getTypeName(it.key)))
-            it.value.forEach {
-                if((it.status?:"") in listOf("Air"))
-                    episodeAdapter.addData(it)
-                episodeDetailAdapter.addData(EpisodeAdapter.SelectableSectionEntity(it))
+            episodeDetailAdapter.addData(EpisodeAdapter.SelectableSectionEntity(true, it.key))
+            it.value.forEach { ep ->
+                if((ep.status?:"") in listOf("Air"))
+                    episodeAdapter.addData(ep)
+                episodeDetailAdapter.addData(EpisodeAdapter.SelectableSectionEntity(ep))
             }
         }
         progress = progress
@@ -268,6 +304,7 @@ class SubjectView(private val context: SubjectActivity){
                 layoutManager.scrollToPositionWithOffset(lastView, 0)
                 layoutManager.stackFromEnd = false
             }
+            detail.item_episodes.visibility = if(episodeDetailAdapter.data.isEmpty()) View.GONE else View.VISIBLE
         }
 
     private fun showEpisodeDetail(show: Boolean){

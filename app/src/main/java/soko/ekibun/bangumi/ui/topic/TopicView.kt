@@ -80,7 +80,7 @@ class TopicView(private val context: TopicActivity){
             context.title_slice_0.maxWidth = context.title_expand.width - if(context.title_slice_divider.visibility == View.VISIBLE) 2*context.title_slice_divider.width + context.title_slice_1.width else 0
         }
 
-        if(!topic.replies.isEmpty())
+        if(!topic.replies.isEmpty() && !context.isDestroyed)
             Glide.with(context.item_cover_blur)
                     .applyDefaultRequestOptions(RequestOptions.placeholderOf(context.item_cover_blur.drawable))
                     .load(HttpUtil.getUrl(topic.replies.firstOrNull()?.avatar?:"", URI.create(Bangumi.SERVER)))
@@ -89,7 +89,7 @@ class TopicView(private val context: TopicActivity){
         adapter.isUseEmpty(true)
         setNewData(topic.replies)
         (context.item_list?.layoutManager as? LinearLayoutManager)?.let{ layoutManager ->
-            layoutManager.scrollToPositionWithOffset(topic.replies.indexOfFirst { it.pst_id == scrollPost }, 0) }
+            layoutManager.scrollToPositionWithOffset(adapter.data.indexOfFirst { it.pst_id == scrollPost }, 0) }
         adapter.setOnLoadMoreListener({adapter.loadMoreEnd()}, context.item_list)
         adapter.setEnableLoadMore(true)
         context.item_reply.text = when {

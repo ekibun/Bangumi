@@ -33,6 +33,7 @@ class SubjectActivity : SwipeBackActivity() {
 
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        title=""
 
         subjectPresenter.init(subject)
     }

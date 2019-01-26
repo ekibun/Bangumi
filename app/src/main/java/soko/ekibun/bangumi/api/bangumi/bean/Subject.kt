@@ -22,7 +22,14 @@ data class Subject(
         var staff: List<Person>? = null,
         var topic: List<TopicBean>? = null,
         var blog: List<BlogBean>? = null,
-        var collect: Boolean = false
+        var collect: Boolean = false,
+        //web
+        var infobox: List<Pair<String, String>>? = null,
+        var linked: List<Subject>? = null,
+        var commend: List<Subject>? = null,
+        var tags: List<Pair<String, Int>>? = null,
+        var typeString: String? = null,
+        var formhash: String? = null
 ){
     fun getPrettyName(): String{
         return ((if(name_cn.isNullOrEmpty()) name else name_cn)?:"").replace("&amp;", "&")

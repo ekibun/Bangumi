@@ -17,7 +17,9 @@ data class Episode(
         var comment: Int = 0,
         var desc: String? = null,
         var status: String? = null,
-        var progress: SubjectProgress.EpisodeProgress? = null
+        var progress: SubjectProgress.EpisodeProgress? = null,
+        //music
+        var cat: String? = null
 ) {
     /**
      * id : 4835

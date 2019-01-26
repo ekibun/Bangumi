@@ -1,5 +1,6 @@
 package soko.ekibun.bangumi.ui.subject
 
+import android.view.View
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseQuickAdapter
@@ -13,6 +14,7 @@ class LinkedSubjectAdapter(data: MutableList<Subject>? = null) :
 
     override fun convert(helper: BaseViewHolder, item: Subject) {
         helper.setText(R.id.item_title, item.getPrettyName())
+        helper.itemView.item_summary.visibility = if(item.summary.isNullOrEmpty()) View.GONE else View.VISIBLE
         helper.setText(R.id.item_summary, item.summary)
         Glide.with(helper.itemView.item_cover)
                 .load(item.images?.getImage(helper.itemView.context))

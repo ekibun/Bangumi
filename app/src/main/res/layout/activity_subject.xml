@@ -115,6 +115,7 @@
                   android:layout_width="match_parent"
                   android:layout_height="match_parent"
                   android:divider="@drawable/divider"
+                  android:animateLayoutChanges="true"
                   android:showDividers="middle"
                   android:orientation="vertical">
         <LinearLayout android:layout_width="match_parent"
@@ -141,8 +142,13 @@
                     android:layout_height="wrap_content"/>
         </LinearLayout>
         <include android:id="@+id/item_episodes"
+                 android:visibility="gone"
                  layout="@layout/subject_episode"/>
-        <LinearLayout android:id="@+id/item_subjects"
+        <include android:id="@+id/item_character"
+                 android:visibility="gone"
+                 layout="@layout/subject_character"/>
+        <LinearLayout android:id="@+id/item_linked"
+                      android:visibility="gone"
                       android:layout_width="match_parent"
                       android:layout_height="wrap_content"
                       android:orientation="vertical">
@@ -152,7 +158,25 @@
                       android:padding="12dp"
                       android:text="@string/linked_subjects"/>
             <android.support.v7.widget.RecyclerView
-                    android:id="@+id/subject_list"
+                    android:id="@+id/linked_list"
+                    android:layout_width="match_parent"
+                    android:padding="6dp"
+                    android:clipToPadding="false"
+                    android:nestedScrollingEnabled="false"
+                    android:layout_height="wrap_content"/>
+        </LinearLayout>
+        <LinearLayout android:id="@+id/item_commend"
+                      android:visibility="gone"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:orientation="vertical">
+            <TextView android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:textAppearance="@android:style/TextAppearance.Material.Subhead"
+                      android:padding="12dp"
+                      android:text="@string/commend"/>
+            <android.support.v7.widget.RecyclerView
+                    android:id="@+id/commend_list"
                     android:layout_width="match_parent"
                     android:padding="6dp"
                     android:clipToPadding="false"
@@ -160,12 +184,16 @@
                     android:layout_height="wrap_content"/>
         </LinearLayout>
         <include android:id="@+id/item_blogs"
+                 android:visibility="gone"
                  layout="@layout/subject_blog"/>
         <include android:id="@+id/item_topics"
+                 android:visibility="gone"
                  layout="@layout/subject_topic"/>
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
             <TextView android:layout_width="match_parent"
                       android:layout_height="wrap_content"
+                      android:id="@+id/item_comment_header"
+                      android:visibility="gone"
                       android:textAppearance="@android:style/TextAppearance.Material.Subhead"
                       android:padding="12dp"
                       android:text="@string/comment"/>

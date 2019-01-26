@@ -15,14 +15,9 @@ class TopicAdapter(data: MutableList<Subject.TopicBean>? = null) :
 
     override fun convert(helper: BaseViewHolder, item: Subject.TopicBean) {
         @SuppressLint("SetTextI18n")
-        helper.itemView.item_user.text = "${item.user?.nickname}@${item.user?.id}"
+        helper.itemView.item_user.text = item.user?.nickname
         helper.itemView.item_time.text = ResourceUtil.getTimeInterval(item.timestamp)
         helper.itemView.item_title.text = item.title
         helper.itemView.item_comment.text = helper.itemView.context.getString(R.string.phrase_reply,item.replies)
-        Glide.with(helper.itemView.item_avatar)
-                .load(item.user?.avatar?.small)
-                .apply(RequestOptions.errorOf(R.drawable.ic_404))
-                .apply(RequestOptions.circleCropTransform())
-                .into(helper.itemView.item_avatar)
     }
 }
