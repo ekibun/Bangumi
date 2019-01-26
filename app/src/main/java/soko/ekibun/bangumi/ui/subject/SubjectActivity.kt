@@ -74,7 +74,7 @@ class SubjectActivity : SwipeBackActivity() {
         if (keyCode == KeyEvent.KEYCODE_BACK){
             when {
                 episode_detail_list.visibility == View.VISIBLE -> subjectPresenter.subjectView.closeEpisodeDetail()
-                else -> super.processBack()
+                else -> finish()
             }
             return true
         }
@@ -83,7 +83,7 @@ class SubjectActivity : SwipeBackActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            android.R.id.home -> super.processBack()
+            android.R.id.home -> finish()
             R.id.action_share -> AppUtil.shareString(this, subject.getPrettyName() + " " + subject.url)
             R.id.action_refresh -> subjectPresenter.refresh(subject)
         }

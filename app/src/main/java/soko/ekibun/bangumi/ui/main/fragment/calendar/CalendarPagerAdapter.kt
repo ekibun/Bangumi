@@ -100,7 +100,7 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
                 val cal = java.util.Calendar.getInstance()
                 cal.time = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.airdate)
                 val week = (((if(!useCN || subject.timeCN.isNullOrEmpty()) subject.weekDayJP else subject.weekDayCN)?:0) - CalendarAdapter.getWeek(cal) + 7) % 7
-                val dayDif = (if(week>3) 0 else week) + dayCarry
+                val dayDif = week + dayCarry
                 cal.add(java.util.Calendar.DAY_OF_MONTH, dayDif)
                 val date = CalendarAdapter.getCalendarInt(cal)
                 if(date in minDate..maxDate)

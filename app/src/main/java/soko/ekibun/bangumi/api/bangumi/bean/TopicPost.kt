@@ -1,5 +1,8 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
+import com.chad.library.adapter.base.entity.AbstractExpandableItem
+import com.chad.library.adapter.base.entity.MultiItemEntity
+
 data class TopicPost(
         var pst_id: String = "",
         var pst_mid: String = "",
@@ -16,4 +19,9 @@ data class TopicPost(
         val model: String = "",
         var floor: Int = 0,
         var sub_floor: Int = 0
-)
+):  AbstractExpandableItem<TopicPost>(), MultiItemEntity{
+    override fun getItemType(): Int {
+        return if(isSub) 1 else 0
+    }
+    override fun getLevel(): Int { return itemType }
+}

@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import android.widget.PopupWindow
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
 import kotlinx.android.synthetic.main.item_reply.view.*
 import soko.ekibun.bangumi.R
@@ -23,18 +22,24 @@ import android.text.style.ClickableSpan
 import android.text.style.URLSpan
 import android.util.Size
 import android.widget.TextView
+import com.chad.library.adapter.base.BaseMultiItemQuickAdapter
 import org.jsoup.Jsoup
 import soko.ekibun.bangumi.ui.view.FastScrollRecyclerView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.HttpUtil
 
 class PostAdapter(data: MutableList<TopicPost>? = null) :
-        BaseQuickAdapter<TopicPost, BaseViewHolder>(R.layout.item_reply, data), FastScrollRecyclerView.SectionedAdapter {
+        BaseMultiItemQuickAdapter<TopicPost, BaseViewHolder>(data), FastScrollRecyclerView.SectionedAdapter {
+
+    init{
+        addItemType(0, R.layout.item_reply)
+        addItemType(1, R.layout.item_reply)
+    }
+
     override fun getSectionName(position: Int): String {
         val item = data.getOrNull(position)?:data.last()
         return "#${item.floor}"
     }
-
     private val imaageSizes = HashMap<String, Size>()
     @SuppressLint("SetTextI18n")
     override fun convert(helper: BaseViewHolder, item: TopicPost) {
@@ -49,14 +54,22 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
         helper.itemView.item_reply.visibility = if (item.relate.toIntOrNull() ?: 0 > 0) View.VISIBLE else View.GONE
         helper.itemView.item_del.visibility = if (item.editable) View.VISIBLE else View.GONE
         helper.itemView.item_edit.visibility = helper.itemView.item_del.visibility
+
+        helper.itemView.item_expand.visibility = if (item.hasSubItem()) View.VISIBLE else View.GONE
+        helper.itemView.item_expand.text = if(item.isExpanded) "收起" else "展开"
+        helper.itemView.item_expand.setOnClickListener {
+            val index = data.indexOfFirst { post -> post === item }
+            if(item.isExpanded) collapse(index) else expand(index)
+        }
+
         val drawables = ArrayList<String>()
         helper.itemView.item_message.let { item_message ->
             @Suppress("DEPRECATION")
             val htmlText = setTextLinkOpenByWebView(
-                    Html.fromHtml(parseHtml(item.pst_content), HtmlHttpImageGetter(item_message, URI.create(Bangumi.SERVER), drawables, imaageSizes), HtmlTagHandler(item_message) {
+                    Html.fromHtml(parseHtml(item.pst_content), HtmlHttpImageGetter(item_message, URI.create(Bangumi.SERVER), drawables, imaageSizes), HtmlTagHandler(item_message) {imageSpan ->
                         helper.itemView.item_message?.let{itemView->
                             val imageList = drawables.filter { (it.startsWith("http") || !it.contains("smile")) }.toList()
-                            val index = imageList.indexOfFirst { d -> d == it.source }
+                            val index = imageList.indexOfFirst { d -> d == imageSpan.source }
                             if (index < 0) return@HtmlTagHandler
                             val popWindow = PopupWindow(itemView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, true)
                             val viewPager = FixMultiViewPager(itemView.context)

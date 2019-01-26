@@ -93,6 +93,15 @@
                 android:clickable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 android:focusable="true"/>
+        <TextView
+                android:padding="8dp"
+                android:id="@+id/item_expand"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/textSizeSmall"
+                android:clickable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:focusable="true"/>
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>
