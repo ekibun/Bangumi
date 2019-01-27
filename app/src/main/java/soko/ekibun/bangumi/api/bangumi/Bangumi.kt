@@ -187,7 +187,8 @@ interface Bangumi {
                 val name = doc.selectFirst(".nameSingle> a")?.text()?:subject.name
                 val name_cn = doc.selectFirst(".nameSingle> a")?.attr("title")?:subject.name_cn
                 //summary
-                val summary = doc.selectFirst("#subject_summary")?.html()?.replace("\n", "")?.replace("<br>", "\n")?:subject.summary
+                val summary = doc.selectFirst("#subject_summary")?.html()?.replace("\n", "")?.
+                        replace("<br>", "\n")?.replace("&nbsp;", " ")?:subject.summary
 
                 val infobox = doc.select("#infobox li")?.map{
                     val tip = it.selectFirst("span.tip")?.text()?:""
@@ -195,7 +196,7 @@ interface Bangumi {
                             it.text().substring(tip.length).trim())
                 }
                 val eps_count = infobox?.firstOrNull { it.first == "话数" }?.second?.toIntOrNull()?:subject.eps_count
-                val air_date = infobox?.firstOrNull { it.first in arrayOf("放送开始", "发售日期") }?.second?.
+                val air_date = infobox?.firstOrNull { it.first in arrayOf("放送开始", "发售日期", "发售日", "上映年度") }?.second?.
                         replace("年", "-")?.replace("月", "-")?.replace("日", "")?:subject.air_date
                 val air_weekday = "一二三四五六日".map { "星期$it" }.indexOf(infobox?.firstOrNull { it.first == "放送星期" }?.second?:"") + 1
 
@@ -315,7 +316,7 @@ interface Bangumi {
                     val title = it.selectFirst(".title")
                     val url = HttpUtil.getUrl(title?.attr("href")?:"", URI.create(Bangumi.SERVER))
                     val id = Regex("""/subject/([0-9]*)""").find(url)?.groupValues?.get(1)?.toIntOrNull()?:0
-                    Subject(id, url, 0, title?.text(), avatar.attr("title"), summary = sub,
+                    Subject(id, url, 0, title?.text(), avatar.attr("title"), typeString = sub,
                             images = Images(subjectImg.replace("/m/", "/l/"),
                                     subjectImg.replace("/m/", "/c/"), subjectImg,
                                     subjectImg.replace("/m/", "/s/"),

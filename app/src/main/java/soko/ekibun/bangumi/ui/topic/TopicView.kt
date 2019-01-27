@@ -82,8 +82,8 @@ class TopicView(private val context: TopicActivity){
 
         if(!topic.replies.isEmpty() && !context.isDestroyed)
             Glide.with(context.item_cover_blur)
-                    .applyDefaultRequestOptions(RequestOptions.placeholderOf(context.item_cover_blur.drawable))
                     .load(HttpUtil.getUrl(topic.replies.firstOrNull()?.avatar?:"", URI.create(Bangumi.SERVER)))
+                    .apply(RequestOptions.placeholderOf(context.item_cover_blur.drawable))
                     .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)))
                     .into(context.item_cover_blur)
         adapter.isUseEmpty(true)

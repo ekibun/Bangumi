@@ -7,7 +7,6 @@ import android.support.design.widget.AppBarLayout
 import android.support.design.widget.CollapsingToolbarLayout
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.StaggeredGridLayoutManager
 import android.view.Gravity
 import android.view.View
@@ -28,12 +27,14 @@ import kotlinx.android.synthetic.main.subject_detail.*
 import kotlinx.android.synthetic.main.subject_episode.*
 import kotlinx.android.synthetic.main.subject_topic.*
 import soko.ekibun.bangumi.R
+import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectProgress
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
 import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarAdapter
 import soko.ekibun.bangumi.ui.view.DragPhotoView
+import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.AppUtil
 import soko.ekibun.bangumi.util.JsonUtil
 import soko.ekibun.bangumi.util.PlayerBridge
@@ -44,6 +45,7 @@ class SubjectView(private val context: SubjectActivity){
     val linkedSubjectsAdapter = LinkedSubjectAdapter()
     val commendSubjectsAdapter = LinkedSubjectAdapter()
     val characterAdapter = CharacterAdapter()
+    val tagAdapter = TagAdapter()
     val topicAdapter = TopicAdapter()
     val blogAdapter = BlogAdapter()
     val sitesAdapter = SitesAdapter()
@@ -80,18 +82,31 @@ class SubjectView(private val context: SubjectActivity){
         layoutManager.orientation = LinearLayoutManager.HORIZONTAL
         context.episode_list.layoutManager = layoutManager
         context.episode_list.isNestedScrollingEnabled = false
-
+/*
         val scrollListener = object: RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 context.shouldCancelActivity = false
             }
         }
+        */
+        val swipeTouchListener = View.OnTouchListener{ _, _ ->
+            context.shouldCancelActivity = false
+            false
+        }
+        context.episode_list.setOnTouchListener(swipeTouchListener)
+        context.season_list.setOnTouchListener(swipeTouchListener)
+        context.commend_list.setOnTouchListener(swipeTouchListener)
+        context.linked_list.setOnTouchListener(swipeTouchListener)
+        context.character_list.setOnTouchListener(swipeTouchListener)
+        context.tag_list.setOnTouchListener(swipeTouchListener)
+        /*
         context.episode_list.addOnScrollListener(scrollListener)
         context.season_list.addOnScrollListener(scrollListener)
         context.commend_list.addOnScrollListener(scrollListener)
         context.linked_list.addOnScrollListener(scrollListener)
         context.character_list.addOnScrollListener(scrollListener)
-
+        context.tag_list.addOnScrollListener(scrollListener)
+*/
         val touchListener = episodeDetailAdapter.setUpWithRecyclerView(context.episode_detail_list)
         touchListener.nestScrollDistance = {
             nestScrollDistance
@@ -138,6 +153,12 @@ class SubjectView(private val context: SubjectActivity){
         context.site_list.layoutManager = flowLayoutManager
         context.site_list.isNestedScrollingEnabled = false
 
+        context.tag_list.adapter = tagAdapter
+        val tagLayoutManager = LinearLayoutManager(context)
+        tagLayoutManager.orientation = LinearLayoutManager.HORIZONTAL
+        context.tag_list.layoutManager = tagLayoutManager
+        context.tag_list.isNestedScrollingEnabled = false
+
         context.comment_list.adapter = commentAdapter
         context.comment_list.layoutManager = LinearLayoutManager(context)
 
@@ -178,9 +199,9 @@ class SubjectView(private val context: SubjectActivity){
             context.title_collapse.layoutParams = layoutParams
             (context.item_subject.layoutParams as CollapsingToolbarLayout.LayoutParams).topMargin = context.toolbar_container.height
         }
-        context.item_info.text = SubjectType.getDescription(subject.type)
+        context.item_info.text = if(subject.typeString.isNullOrEmpty()) SubjectType.getDescription(subject.type) else subject.typeString
         context.item_subject_title.visibility = View.GONE
-        context.item_air_time.text = "开播时间：${subject.air_date}"
+        context.item_air_time.text = "开播时间：${subject.air_date?:""}"
         context.item_air_week.text = parseAirWeek(subject)
         detail.item_detail.text = subject.summary
 
@@ -191,16 +212,17 @@ class SubjectView(private val context: SubjectActivity){
             context.item_score_count.text = context.getString(R.string.rate_count, it.total)
         }
         Glide.with(context.item_cover)
-                .applyDefaultRequestOptions(RequestOptions.placeholderOf(context.item_cover.drawable))
                 .load(subject.images?.getImage(context))
+                .apply(RequestOptions.placeholderOf(context.item_cover.drawable))
                 .apply(RequestOptions.errorOf(R.drawable.ic_404))
                 .into(context.item_cover)
         context.item_cover.setOnClickListener {
             val popWindow = PopupWindow(it, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, true)
             val photoView = DragPhotoView(it.context)
             popWindow.contentView = photoView
-            Glide.with(photoView).applyDefaultRequestOptions(RequestOptions.placeholderOf(context.item_cover.drawable))
-                    .load(subject.images?.large).into(photoView)
+            Glide.with(photoView).load(subject.images?.large)
+                    .apply(RequestOptions.placeholderOf(context.item_cover.drawable))
+                    .into(photoView)
             photoView.mTapListener={
                 popWindow.dismiss()
             }
@@ -227,8 +249,8 @@ class SubjectView(private val context: SubjectActivity){
         }
 
         Glide.with(context.item_cover_blur)
-                .applyDefaultRequestOptions(RequestOptions.placeholderOf(context.item_cover_blur.drawable))
                 .load(subject.images?.getImage(context))
+                .apply(RequestOptions.placeholderOf(context.item_cover_blur.drawable))
                 .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)))
                 .into(context.item_cover_blur)
         ((subject.eps as? List<*>)?.map{ JsonUtil.toEntity(JsonUtil.toJson(it!!), Episode::class.java)!!})?.let{
@@ -244,6 +266,11 @@ class SubjectView(private val context: SubjectActivity){
         linkedSubjectsAdapter.setNewData(subject.linked)
         detail.item_commend.visibility = if(subject.commend?.isNotEmpty() == true) View.VISIBLE else View.GONE
         commendSubjectsAdapter.setNewData(subject.commend)
+
+        tagAdapter.setNewData(subject.tags)
+        tagAdapter.setOnItemClickListener { _, _, position ->
+            WebActivity.launchUrl(context, "${Bangumi.SERVER}/${SubjectType.typeNameMap[subject.type]}/tag/${tagAdapter.data[position].first}")
+        }
     }
 
     fun updateEpisode(subject: Subject){
@@ -258,7 +285,7 @@ class SubjectView(private val context: SubjectActivity){
         val eps = mainEps.filter { (it.status ?: "") in listOf("Air") }.size
         context.episode_detail?.text = context.getString(if(eps == mainEps.size) R.string.phrase_full else R.string.phrase_updating, eps)
 
-        val maps = HashMap<String, List<Episode>>()
+        val maps = LinkedHashMap<String, List<Episode>>()
         episodes.forEach {
             val key = it.cat?:Episode.getTypeName(it.type)
             maps[key] = (maps[key]?:ArrayList()).plus(it)

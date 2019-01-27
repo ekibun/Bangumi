@@ -22,6 +22,14 @@ object SubjectType{
     @StringDef(NAME_BOOK,NAME_ANIME,NAME_MUSIC,NAME_GAME,NAME_REAL)
     annotation class SubjectTypeName
 
+    val typeNameMap = mapOf(
+            BOOK to NAME_BOOK,
+            ANIME to NAME_ANIME,
+            MUSIC to NAME_MUSIC,
+            GAME to NAME_GAME,
+            REAL to NAME_REAL
+    )
+
     @SuppressLint("SwitchIntDef")
     fun getDescription(@SubjectType type: Int): String{
         return when (type) {

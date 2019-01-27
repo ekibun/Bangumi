@@ -13,7 +13,8 @@ class CharacterAdapter(data: MutableList<Character>? = null) :
 
     override fun convert(helper: BaseViewHolder, item: Character) {
         helper.setText(R.id.item_name, if(item.name_cn.isNullOrEmpty())item.name else item.name_cn)
-        helper.setText(R.id.item_cv, item.actors?.map{if(it.name_cn.isNullOrEmpty())it.name else it.name_cn}?.reduce { acc, s -> "$acc/$s" })
+        if(item.actors?.size?:0 != 0)
+            helper.setText(R.id.item_cv, item.actors?.map{if(it.name_cn.isNullOrEmpty())it.name else it.name_cn}?.reduce { acc, s -> "$acc/$s" })
         helper.setText(R.id.item_role, item.role_name)
         Glide.with(helper.itemView.item_avatar)
                 .load(item.images?.grid)
