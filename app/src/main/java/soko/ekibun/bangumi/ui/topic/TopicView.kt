@@ -110,8 +110,6 @@ class TopicView(private val context: TopicActivity){
         var subFloor = 0
         var referPost: TopicPost? = null
 
-        val firstLoad = adapter.data.size == 0
-
         adapter.setNewData(data.filter {
             if(it.isSub){
                 subFloor++
@@ -132,13 +130,6 @@ class TopicView(private val context: TopicActivity){
                 false
             }
         })
-        if(firstLoad)
-            adapter.expandAll()
-        else{
-            adapter.data.forEachIndexed { index, topicPost ->
-                if(topicPost.isExpanded)
-                    adapter.expand(index)
-            }
-        }
+        adapter.expandAll()
     }
 }

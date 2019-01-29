@@ -2,10 +2,15 @@ package soko.ekibun.bangumi.ui.subject
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.DialogInterface
 import android.net.Uri
+import android.support.constraint.ConstraintLayout
 import android.support.customtabs.CustomTabsIntent
 import android.support.v7.app.AlertDialog
+import android.support.v7.widget.LinearLayoutManager
 import android.view.*
+import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.PopupMenu
 import kotlinx.android.synthetic.main.activity_subject.*
 import kotlinx.android.synthetic.main.activity_subject.view.*
@@ -234,7 +239,7 @@ class SubjectPresenter(private val context: SubjectActivity){
     }
 
     private fun showDialog(view: View): Dialog{
-        val dialog = Dialog(context, R.style.AppTheme_BottomDialog)
+        val dialog = Dialog(context, R.style.AppTheme_Dialog_Floating)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialog.setContentView(view)
         dialog.window?.setGravity(Gravity.BOTTOM)
@@ -290,12 +295,6 @@ class SubjectPresenter(private val context: SubjectActivity){
                 subjectView.seasonLayoutManager.scrollToPositionWithOffset(subjectView.seasonAdapter.data.indexOfFirst { it.id == bgmIp.id }, 0)
             }
         }, {}))
-/*
-        Bangumi.getLinkedSubject(subject).enqueue(ApiHelper.buildCallback(context, {
-            subjectView.linkedSubjectsAdapter.setNewData(it)
-            //Log.v("list", it.toString())
-        }, {}))
-        */
 
         var commentPage = 1
         subjectView.commentAdapter.setEnableLoadMore(true)
@@ -368,8 +367,9 @@ class SubjectPresenter(private val context: SubjectActivity){
                             return@setOnMenuItemClickListener false
                         }
                         val newStatus = CollectionStatusType.status[menu.itemId - Menu.FIRST]
+                        val newTags = if(body.tag?.isNotEmpty() == true) body.tag.reduce { acc, s -> "$acc $s" } else ""
                         api.updateCollectionStatus(subject.id, token.access_token?:"",
-                                newStatus, body.comment, body.rating, body.private).enqueue(ApiHelper.buildCallback(context,{},{
+                                newStatus, newTags, body.comment, body.rating, body.private).enqueue(ApiHelper.buildCallback(context,{},{
                             refreshCollection(subject)
                         }))
                         false
@@ -378,6 +378,11 @@ class SubjectPresenter(private val context: SubjectActivity){
                 }
 
                 context.item_collect.setOnLongClickListener {
+                    EditSubjectDialog.showDialog(context, subject, body, context.formhash, token.access_token?:""){
+                        if(it) removeCollection(subject)
+                        else refreshCollection(subject)
+                    }
+                    /*
                     val view = context.layoutInflater.inflate(R.layout.dialog_edit_subject, context.item_collect, false)
                     view.item_subject_title.text = subject.getPrettyName()
                     val selectMap = mapOf(
@@ -386,28 +391,50 @@ class SubjectPresenter(private val context: SubjectActivity){
                             CollectionStatusType.DO to R.id.radio_do,
                             CollectionStatusType.ON_HOLD to R.id.radio_hold,
                             CollectionStatusType.DROPPED to R.id.radio_dropped)
-                    view.item_remove.visibility = if(context.formhash.isEmpty()) View.INVISIBLE else View.VISIBLE
-                    view.item_remove.setOnClickListener {
-                        removeCollection(subject)
-                    }
+                    val adapter = EditTagAdapter()
+                    val layoutManager = LinearLayoutManager(context)
+                    layoutManager.orientation = LinearLayoutManager.HORIZONTAL
+                    view.item_tag_list.layoutManager = layoutManager
+                    view.item_tag_list.adapter = adapter
                     if(status != null){
                         view.item_subject_status.check(selectMap[status.type]!!)
                         view.item_rating.rating = body.rating.toFloat()
                         view.item_comment.setText(body.comment)
                         view.item_private.isChecked = body.private == 1
+                        adapter.setNewData(body.tag?.filter { it.isNotEmpty() })
                     }
                     val dialog = showDialog(view)
+                    dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+                    view.item_remove.visibility = if(context.formhash.isEmpty()) View.INVISIBLE else View.VISIBLE
+                    view.item_tag_add.setOnClickListener {
+                        val editText = EditText(context)
+                        AlertDialog.Builder(context)
+                                .setView(editText)
+                                .setTitle("添加标签")
+                                .setPositiveButton("提交"){ _, _ ->
+                                    adapter.addData(editText.text.split(" ").filter { it.isNotEmpty() })
+                                }.show()
+                    }
+
+                    view.item_remove.setOnClickListener {
+                        dialog.dismiss()
+                        removeCollection(subject)
+                    }
+                    view.item_outside.setOnClickListener {
+                        dialog.dismiss()
+                    }
                     view.item_submit.setOnClickListener {
                         dialog.dismiss()
                         val newStatus = selectMap.toList().first { it.second == view.item_subject_status.checkedRadioButtonId }.first
                         val newRating = view.item_rating.rating.toInt()
                         val newComment = view.item_comment.text.toString()
                         val newPrivacy = if(view.item_private.isChecked) 1 else 0
+                        val newTags = if(adapter.data.isNotEmpty()) adapter.data.reduce { acc, s -> "$acc $s" } else ""
                         api.updateCollectionStatus(subject.id, token.access_token?:"",
-                                newStatus, newComment, newRating, newPrivacy).enqueue(ApiHelper.buildCallback(context,{},{
+                                newStatus, newTags, newComment, newRating, newPrivacy).enqueue(ApiHelper.buildCallback(context,{},{
                             refreshCollection(subject)
                         }))
-                    }
+                    }*/
                     true
                 }
             }, {}))

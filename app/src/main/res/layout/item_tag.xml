@@ -4,6 +4,7 @@
               android:layout_width="wrap_content"
               android:padding="3dp"
               android:layout_height="wrap_content"
+              android:id="@+id/item_tag_layout"
               android:clickable="true"
               android:foreground="?android:attr/selectableItemBackground"
               android:focusable="true">
@@ -27,5 +28,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 tools:ignore="RtlSymmetry"/>
+        <ImageView
+                android:id="@+id/item_tag_del"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_gravity="center_vertical"
+                android:src="@drawable/ic_clear"/>
     </LinearLayout>
 </LinearLayout>

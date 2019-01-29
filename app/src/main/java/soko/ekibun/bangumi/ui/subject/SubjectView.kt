@@ -7,6 +7,7 @@ import android.support.design.widget.AppBarLayout
 import android.support.design.widget.CollapsingToolbarLayout
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.StaggeredGridLayoutManager
 import android.view.Gravity
 import android.view.View
@@ -82,15 +83,9 @@ class SubjectView(private val context: SubjectActivity){
         layoutManager.orientation = LinearLayoutManager.HORIZONTAL
         context.episode_list.layoutManager = layoutManager
         context.episode_list.isNestedScrollingEnabled = false
-/*
-        val scrollListener = object: RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+        val swipeTouchListener = View.OnTouchListener{ v, _ ->
+            if((v as? RecyclerView)?.canScrollHorizontally(1) == true || (v as? RecyclerView)?.canScrollHorizontally(-1) == true)
                 context.shouldCancelActivity = false
-            }
-        }
-        */
-        val swipeTouchListener = View.OnTouchListener{ _, _ ->
-            context.shouldCancelActivity = false
             false
         }
         context.episode_list.setOnTouchListener(swipeTouchListener)
@@ -99,14 +94,7 @@ class SubjectView(private val context: SubjectActivity){
         context.linked_list.setOnTouchListener(swipeTouchListener)
         context.character_list.setOnTouchListener(swipeTouchListener)
         context.tag_list.setOnTouchListener(swipeTouchListener)
-        /*
-        context.episode_list.addOnScrollListener(scrollListener)
-        context.season_list.addOnScrollListener(scrollListener)
-        context.commend_list.addOnScrollListener(scrollListener)
-        context.linked_list.addOnScrollListener(scrollListener)
-        context.character_list.addOnScrollListener(scrollListener)
-        context.tag_list.addOnScrollListener(scrollListener)
-*/
+
         val touchListener = episodeDetailAdapter.setUpWithRecyclerView(context.episode_detail_list)
         touchListener.nestScrollDistance = {
             nestScrollDistance
@@ -179,14 +167,6 @@ class SubjectView(private val context: SubjectActivity){
         }
     }
 
-    private fun parseAirWeek(subject: Subject): String{
-        var ret = "更新时间："
-        subject.air_weekday.toString().forEach {
-            ret += CalendarAdapter.weekSmall[it.toString().toInt()] + " "
-        }
-        return ret
-    }
-
     @SuppressLint("SetTextI18n")
     fun updateSubject(subject: Subject){
         if(context.isDestroyed) return
@@ -201,8 +181,12 @@ class SubjectView(private val context: SubjectActivity){
         }
         context.item_info.text = if(subject.typeString.isNullOrEmpty()) SubjectType.getDescription(subject.type) else subject.typeString
         context.item_subject_title.visibility = View.GONE
-        context.item_air_time.text = "开播时间：${subject.air_date?:""}"
-        context.item_air_week.text = parseAirWeek(subject)
+        val saleDate = subject.infobox?.firstOrNull { it.first in arrayOf("发售日期", "发售日", "发行日期") }
+        val artist = subject.infobox?.firstOrNull { it.first.substringBefore(" ") in arrayOf("动画制作", "作者", "开发", "游戏制作", "艺术家") }
+                ?:subject.infobox?.firstOrNull { it.first.substringBefore(" ") in arrayOf("导演", "发行") }
+        context.item_air_time.text = if(saleDate!= null) "${saleDate.first}：${saleDate.second}"
+            else "放送日期：${subject.air_date?:""} ${if(artist != null)CalendarAdapter.weekSmall[subject.air_weekday] else ""}"
+        context.item_air_week.text = if(artist != null) "${artist.first}：${artist.second}" else "更新时间：${CalendarAdapter.weekSmall[subject.air_weekday]}"
         detail.item_detail.text = subject.summary
 
         context.item_play.visibility = if(PlayerBridge.checkActivity(context) && subject.type in listOf(SubjectType.ANIME, SubjectType.REAL)) View.VISIBLE else View.GONE

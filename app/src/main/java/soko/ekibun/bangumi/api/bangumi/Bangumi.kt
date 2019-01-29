@@ -85,6 +85,7 @@ interface Bangumi {
     fun updateCollectionStatus(@Path("subject_id") subject_id: Int,
                                @Field("access_token") access_token: String,
                                @Field("status") status: String,
+                               @Field("tags") tags: String,
                                @Field("comment") comment: String?,
                                @Field("rating") rating: Int,
                                @Field("privacy") privacy: Int = 0
@@ -187,8 +188,7 @@ interface Bangumi {
                 val name = doc.selectFirst(".nameSingle> a")?.text()?:subject.name
                 val name_cn = doc.selectFirst(".nameSingle> a")?.attr("title")?:subject.name_cn
                 //summary
-                val summary = doc.selectFirst("#subject_summary")?.html()?.replace("\n", "")?.
-                        replace("<br>", "\n")?.replace("&nbsp;", " ")?:subject.summary
+                val summary = Jsoup.parse(doc.selectFirst("#subject_summary")?.html()?.replace("<br>", "$$$$$")?:"")?.text()?.replace("$$$$$", "\n")?:subject.summary
 
                 val infobox = doc.select("#infobox li")?.map{
                     val tip = it.selectFirst("span.tip")?.text()?:""
@@ -196,9 +196,12 @@ interface Bangumi {
                             it.text().substring(tip.length).trim())
                 }
                 val eps_count = infobox?.firstOrNull { it.first == "话数" }?.second?.toIntOrNull()?:subject.eps_count
-                val air_date = infobox?.firstOrNull { it.first in arrayOf("放送开始", "发售日期", "发售日", "上映年度") }?.second?.
-                        replace("年", "-")?.replace("月", "-")?.replace("日", "")?:subject.air_date
-                val air_weekday = "一二三四五六日".map { "星期$it" }.indexOf(infobox?.firstOrNull { it.first == "放送星期" }?.second?:"") + 1
+                //air-date
+                val air_date = infobox?.firstOrNull { it.first in arrayOf("放送开始", "上映年度", "开始") }?.second?.replace("/", "-")?.
+                        replace("年", "-")?.replace("月", "-")?.replace("日", "")?:""
+                var air_weekday = "一二三四五六日".map { "星期$it" }.indexOf(infobox?.firstOrNull { it.first == "放送星期" }?.second?:"") + 1
+                if(air_weekday == 0)
+                    air_weekday = "月火水木金土日".map { "${it}曜日" }.indexOf(infobox?.firstOrNull { it.first == "放送星期" }?.second?:"") + 1
 
                 val counts = HashMap<Int, Int>()
                 doc.select(".horizontalChart li")?.forEach {
@@ -307,6 +310,18 @@ interface Bangumi {
                     )
                 }
                 //linked
+                val tankobon = doc.select(".subject_section").filter { it.select(".subtitle")?.text() == "单行本" }.getOrNull(0)?.select("li")?.map {
+                    val avatar = it.selectFirst(".avatar")
+                    val subjectImg = HttpUtil.getUrl(Regex("""background-image:url\('([^']*)'\)""").find(avatar?.html()?:"")?.groupValues?.get(1)?:"", URI.create(Bangumi.SERVER))
+                    val title = avatar?.attr("title")?.split("/ ")
+                    val url = HttpUtil.getUrl(avatar?.attr("href")?:"", URI.create(Bangumi.SERVER))
+                    val id = Regex("""/subject/([0-9]*)""").find(url)?.groupValues?.get(1)?.toIntOrNull()?:0
+                    Subject(id, url, 0, title?.getOrNull(0), title?.getOrNull(1), typeString = "单行本",
+                            images = Images(subjectImg.replace("/g/", "/l/"),
+                                    subjectImg.replace("/g/", "/m/"),
+                                    subjectImg.replace("/g/", "/c/"),
+                                    subjectImg.replace("/g/", "/s/"), subjectImg))
+                }
                 var sub = ""
                 val linked = doc.select(".subject_section").filter { it.select(".subtitle")?.text() == "关联条目" }.getOrNull(0)?.select("li")?.map {
                     val newSub = it.selectFirst(".sub").text()
@@ -316,12 +331,15 @@ interface Bangumi {
                     val title = it.selectFirst(".title")
                     val url = HttpUtil.getUrl(title?.attr("href")?:"", URI.create(Bangumi.SERVER))
                     val id = Regex("""/subject/([0-9]*)""").find(url)?.groupValues?.get(1)?.toIntOrNull()?:0
-                    Subject(id, url, 0, title?.text(), avatar.attr("title"), typeString = sub,
+                    if(tankobon?.firstOrNull { b -> b.id == id } == null)
+                        Subject(id, url, 0, title?.text(), avatar.attr("title"), typeString = sub,
                             images = Images(subjectImg.replace("/m/", "/l/"),
                                     subjectImg.replace("/m/", "/c/"), subjectImg,
                                     subjectImg.replace("/m/", "/s/"),
                                     subjectImg.replace("/m/", "/g/")))
-                }
+                    else null
+                }?.filterNotNull()?.toMutableList()?:ArrayList()
+                linked.addAll(0, tankobon?:ArrayList())
                 //commend
                 val commend = doc.select(".subject_section").filter { it.select(".subtitle")?.text()?.contains("大概会喜欢") == true }.getOrNull(0)?.select("li")?.map {
                     val avatar = it.selectFirst(".avatar")
@@ -343,11 +361,36 @@ interface Bangumi {
                 val typeString = doc.selectFirst(".nameSingle small")?.text()?:""
                 //formhash
                 val formhash = if(doc.selectFirst(".guest") != null) "" else doc.selectFirst("input[name=formhash]")?.attr("value")
-                Subject(subject.id, subject.url, type, name, name_cn, summary, eps_count, air_date, air_weekday, rating, rank, images,
+                Subject(subject.id, subject.url, type, name, name_cn, summary, eps_count, air_date, air_weekday, rating, rank, images, infobox = infobox,
                         eps = eps, crt=crt, topic = topic, blog = blog, linked = linked, commend = commend, tags = tags, typeString = typeString, formhash = formhash)
             }
         }
 
+        fun searchSubject(keywords: String, @SubjectType.SubjectType @Query("type") type: Int = SubjectType.ALL): Call<List<Subject>>{
+            return ApiHelper.buildHttpCall("$SERVER/subject_search/${java.net.URLEncoder.encode(keywords, "utf-8")}?cat=${type}"){
+                val doc = Jsoup.parse(it.body()?.string()?:"")
+                val ret = ArrayList<Subject>()
+                doc.select(".item")?.forEach{
+                    it.attr("id").split('_').getOrNull(1)?.toIntOrNull()?.let{id->
+                        val subjectType = it.selectFirst(".ico_subject_type")?.classNames()?.mapNotNull { it.split('_').last().toIntOrNull() }?.firstOrNull()?:0
+                        val nameCN = it.selectFirst("h3")?.selectFirst("a")?.text()
+                        val name = it.selectFirst("h3")?.selectFirst("small")?.text()?:nameCN
+                        val img = HttpUtil.getUrl(it.selectFirst("img")?.attr("src")?:"", URI.create(Bangumi.SERVER))
+                        val info = it.selectFirst(".info")?.text()
+                        ret += Subject(id,
+                                HttpUtil.getUrl(it.selectFirst("a")?.attr("href")?:"", URI.create(SERVER)),
+                                subjectType, name, nameCN, info,
+                                images = Images(img.replace("/s/", "/l/"),
+                                        img.replace("/s/", "/c/"),
+                                        img.replace("/s/", "/m/"), img,
+                                        img.replace("/s/", "/g/")),
+                                collect = (it.selectFirst(".collectBlock")?.text()?.contains("修改") == true))
+                    }
+                }
+                return@buildHttpCall ret
+            }
+        }
+        
         fun getLinkedSubject(subject: Subject): Call<List<Subject>>{
             return ApiHelper.buildHttpCall(subject.url?:""){
                 val doc = Jsoup.parse(it.body()?.string()?:"")

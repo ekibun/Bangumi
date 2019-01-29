@@ -137,6 +137,12 @@ class ReplyDialog: DialogFragment() {
         contentView.item_hint.text = hint
         contentView.item_input.setText(draft)
 
+        dialog.window?.attributes?.let{
+            it.dimAmount = 0.6f
+            dialog.window?.attributes = it
+        }
+        dialog.window?.setWindowAnimations(R.style.AnimDialog)
+        dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
         dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         return contentView
     }

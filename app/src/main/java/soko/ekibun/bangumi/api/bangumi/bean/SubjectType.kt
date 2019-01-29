@@ -23,7 +23,6 @@ object SubjectType{
     annotation class SubjectTypeName
 
     val typeNameMap = mapOf(
-            BOOK to NAME_BOOK,
             ANIME to NAME_ANIME,
             MUSIC to NAME_MUSIC,
             GAME to NAME_GAME,
