@@ -17,7 +17,7 @@ class SearchTypeView(view: TextView, onChange:()->Unit){
     val monoTypeList = mapOf(
             R.id.collection_type_mono to "all",
             R.id.collection_type_ctr to "crt",
-            R.id.collection_type_psn to "psn"
+            R.id.collection_type_psn to "prsn"
     )
     var selectedType = R.id.collection_type_all
 
