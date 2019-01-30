@@ -8,24 +8,38 @@ import kotlinx.android.synthetic.main.activity_search.*
 import retrofit2.Call
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
+import soko.ekibun.bangumi.api.bangumi.bean.MonoInfo
 import soko.ekibun.bangumi.api.bangumi.bean.SearchResult
+import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
+import soko.ekibun.bangumi.ui.web.WebActivity
 
 class SearchPresenter(private val context: SearchActivity) {
     val api by lazy { Bangumi.createInstance() }
 
-    private val searchAdapter = SearchAdapter()
+    val typeView = SearchTypeView(context.item_type) {
+        search(lastKey, true)
+    }
+
+    val monoAdapter = MonoAdapter()
+    val subjectAdapter = SearchAdapter()
 
     init{
-        context.search_list.adapter = searchAdapter
         context.search_list.layoutManager = LinearLayoutManager(context)
-        searchAdapter.setEnableLoadMore(true)
-        searchAdapter.setOnLoadMoreListener({
+        subjectAdapter.setEnableLoadMore(true)
+        subjectAdapter.setOnLoadMoreListener({
             search()
         },context.search_list)
-        searchAdapter.setOnItemClickListener { _, _, position ->
-            SubjectActivity.startActivity(context, searchAdapter.data[position])
+        subjectAdapter.setOnItemClickListener { _, _, position ->
+            SubjectActivity.startActivity(context, subjectAdapter.data[position])
+        }
+        monoAdapter.setEnableLoadMore(true)
+        monoAdapter.setOnLoadMoreListener({
+            search()
+        },context.search_list)
+        monoAdapter.setOnItemClickListener { _, _, position ->
+            WebActivity.launchUrl(context, monoAdapter.data[position]?.url, "")
         }
 
         context.search_box.addTextChangedListener(object: TextWatcher {
@@ -41,36 +55,60 @@ class SearchPresenter(private val context: SearchActivity) {
         }
     }
 
-    private var searchCall : Call<SearchResult>? = null
+    private var subjectCall : Call<List<Subject>>? = null
+    private var monoCall : Call<List<MonoInfo>>? = null
     private var lastKey = ""
     private var loadCount = 0
     fun search(key: String = lastKey, refresh: Boolean = false){
         if(refresh || lastKey != key){
             lastKey = key
-            searchAdapter.setNewData(null)
+            subjectAdapter.setNewData(null)
+            monoAdapter.setNewData(null)
             loadCount = 0
         }
         if(key.isEmpty()) {
             context.search_swipe?.isRefreshing = false
-            searchCall?.cancel()
+            subjectCall?.cancel()
+            monoCall?.cancel()
         }else{
             if(loadCount == 0)
                 context.search_swipe?.isRefreshing = true
-            searchCall?.cancel()
-            searchCall = api.search(key, SubjectType.ALL, loadCount)
-            searchCall?.enqueue(ApiHelper.buildCallback(context, {
-                val list =it.list
-                if(list == null)
-                    searchAdapter.loadMoreEnd()
-                else{
-                    searchAdapter.loadMoreComplete()
-                    searchAdapter.addData(list)
-                    loadCount = searchAdapter.data.size
-                }
-            },{
-                searchAdapter.loadMoreFail()
-                context.search_swipe?.isRefreshing = false
-            }))
+            subjectCall?.cancel()
+            monoCall?.cancel()
+            val page = loadCount
+            context.search_list.adapter = if(typeView.subjectTypeList.containsKey(typeView.selectedType)){
+                subjectCall = Bangumi.searchSubject(key, typeView.subjectTypeList[typeView.selectedType]?:0, page+1)//api.search(key, SubjectType.ALL, loadCount)
+                subjectCall?.enqueue(ApiHelper.buildCallback(context, {list->
+                    //val list =it.list
+                    if(list == null || list.isEmpty())
+                        subjectAdapter.loadMoreEnd()
+                    else{
+                        subjectAdapter.loadMoreComplete()
+                        subjectAdapter.addData(list)
+                        loadCount = page + 1 //searchAdapter.data.size
+                    }
+                },{
+                    subjectAdapter.loadMoreFail()
+                    context.search_swipe?.isRefreshing = false
+                }))
+                subjectAdapter
+            }else{
+                monoCall = Bangumi.searchMono(key, typeView.monoTypeList[typeView.selectedType]?:"all", page+1)//api.search(key, SubjectType.ALL, loadCount)
+                monoCall?.enqueue(ApiHelper.buildCallback(context, {list->
+                    //val list =it.list
+                    if(list == null || list.isEmpty())
+                        monoAdapter.loadMoreEnd()
+                    else{
+                        monoAdapter.loadMoreComplete()
+                        monoAdapter.addData(list)
+                        loadCount = page + 1 //searchAdapter.data.size
+                    }
+                },{
+                    monoAdapter.loadMoreFail()
+                    context.search_swipe?.isRefreshing = false
+                }))
+                monoAdapter
+            }
         }
     }
 }

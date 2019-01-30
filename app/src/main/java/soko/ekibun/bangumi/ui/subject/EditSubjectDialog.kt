@@ -49,7 +49,6 @@ class EditSubjectDialog: DialogFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.dialog_edit_subject, container)
 
-        view.item_subject_title.text = subject.getPrettyName()
         val selectMap = mapOf(
                 CollectionStatusType.WISH to R.id.radio_wish,
                 CollectionStatusType.COLLECT to R.id.radio_collect,

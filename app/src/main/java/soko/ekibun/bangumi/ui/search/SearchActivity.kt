@@ -7,8 +7,9 @@ import android.os.Bundle
 import android.view.MenuItem
 import kotlinx.android.synthetic.main.activity_search.*
 import soko.ekibun.bangumi.R
+import soko.ekibun.bangumi.ui.view.SwipeBackActivity
 
-class SearchActivity : AppCompatActivity() {
+class SearchActivity : SwipeBackActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

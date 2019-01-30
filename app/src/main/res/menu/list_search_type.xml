@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/collection_type_all"
+          android:title="@string/subject"/>
+    <item android:id="@+id/collection_type_anime"
+          android:title="@string/anime"/>
+    <item android:id="@+id/collection_type_book"
+          android:title="@string/book"/>
+    <item android:id="@+id/collection_type_game"
+          android:title="@string/game"/>
+    <item android:id="@+id/collection_type_music"
+          android:title="@string/music"/>
+    <item android:id="@+id/collection_type_real"
+          android:title="@string/real"/>
+    <item android:id="@+id/collection_type_mono"
+          android:title="人物"/>
+    <item android:id="@+id/collection_type_ctr"
+          android:title="虚构角色"/>
+    <item android:id="@+id/collection_type_psn"
+          android:title="现实人物"/>
+</menu>

@@ -24,7 +24,7 @@ object HttpUtil {
     }
 
     fun getUrl(url: String, baseUri: URI?): String{
-        if(url in arrayOf("/img/info_only_m.png", "/img/no_icon_subject.png")
+        if(url in arrayOf("/img/info_only.png", "/img/info_only_m.png", "/img/no_icon_subject.png")
                 && baseUri?.toASCIIString()?.startsWith(Bangumi.SERVER) == true) return ""
         return try{
             baseUri?.resolve(url)?.toASCIIString() ?: URI.create(url).toASCIIString()

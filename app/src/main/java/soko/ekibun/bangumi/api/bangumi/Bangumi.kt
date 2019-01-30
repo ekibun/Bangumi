@@ -217,11 +217,11 @@ interface Bangumi {
                 )
                 val rank = doc.selectFirst(".global_score .alarm")?.text()?.trim('#')?.toIntOrNull()?:subject.rank
                 val img = HttpUtil.getUrl(doc.selectFirst(".infobox img.cover")?.attr("src")?:"", URI.create(Bangumi.SERVER))
-                val images = Images(img,
-                        img.replace("/l/", "/c/"),
-                        img.replace("/l/", "/m/"),
-                        img.replace("/l/", "/s/"),
-                        img.replace("/l/", "/g/"))
+                val images = Images(
+                        img.replace("/c/", "/l/"),img,
+                        img.replace("/c/", "/m/"),
+                        img.replace("/c/", "/s/"),
+                        img.replace("/c/", "/g/"))
                 //TODO Collection
                 //no eps
                 var cat = ""
@@ -366,8 +366,8 @@ interface Bangumi {
             }
         }
 
-        fun searchSubject(keywords: String, @SubjectType.SubjectType @Query("type") type: Int = SubjectType.ALL): Call<List<Subject>>{
-            return ApiHelper.buildHttpCall("$SERVER/subject_search/${java.net.URLEncoder.encode(keywords, "utf-8")}?cat=${type}"){
+        fun searchSubject(keywords: String, @SubjectType.SubjectType @Query("type") type: Int = SubjectType.ALL, page: Int): Call<List<Subject>>{
+            return ApiHelper.buildHttpCall("$SERVER/subject_search/${java.net.URLEncoder.encode(keywords, "utf-8")}?cat=$type&page=$page"){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<Subject>()
                 doc.select(".item")?.forEach{
@@ -390,7 +390,24 @@ interface Bangumi {
                 return@buildHttpCall ret
             }
         }
-        
+
+        fun searchMono(keywords: String, type: String, page: Int): Call<List<MonoInfo>>{
+            return ApiHelper.buildHttpCall("$SERVER/mono_search/${java.net.URLEncoder.encode(keywords, "utf-8")}?cat=$type&page=$page"){
+                val doc = Jsoup.parse(it.body()?.string()?:"")
+                val ret = ArrayList<MonoInfo>()
+                doc.select(".light_odd")?.forEach{
+                    val a = it.selectFirst("h2 a")
+                    val url =  HttpUtil.getUrl(a?.attr("href")?:"", URI.create(SERVER))
+                    val name = a?.ownText()?.trim('/', ' ')
+                    val nameCN = a?.selectFirst("span.tip")?.text()?:""
+                    val img = HttpUtil.getUrl(it.selectFirst("img")?.attr("src")?:"", URI.create(Bangumi.SERVER))
+                    val summary = it.selectFirst(".prsn_info")?.text()
+                    ret += MonoInfo(nameCN, name = name, url = url, img = img, summary = summary)
+                }
+                return@buildHttpCall ret
+            }
+        }
+
         fun getLinkedSubject(subject: Subject): Call<List<Subject>>{
             return ApiHelper.buildHttpCall(subject.url?:""){
                 val doc = Jsoup.parse(it.body()?.string()?:"")

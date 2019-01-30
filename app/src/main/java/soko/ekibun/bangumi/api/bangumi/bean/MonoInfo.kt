@@ -7,7 +7,12 @@ data class MonoInfo(
         var birth: String? = null,
         var bloodtype: String? = null,
         var height: Any? = null,
-        var weight: Any? = null
+        var weight: Any? = null,
+        //web
+        var name: String? = null,
+        var img: String? = null,
+        var summary: String? = null,
+        var url: String? = null
 ) {
     /**
      * name_cn : 江户川柯南

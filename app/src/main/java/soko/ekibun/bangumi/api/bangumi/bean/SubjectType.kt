@@ -32,7 +32,7 @@ object SubjectType{
     @SuppressLint("SwitchIntDef")
     fun getDescription(@SubjectType type: Int): String{
         return when (type) {
-            ALL -> ""
+            ALL -> "条目"
             BOOK -> "书籍"
             ANIME -> "动画"
             MUSIC -> "音乐"

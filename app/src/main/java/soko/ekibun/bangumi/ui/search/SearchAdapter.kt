@@ -1,5 +1,6 @@
 package soko.ekibun.bangumi.ui.search
 
+import android.view.View
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseQuickAdapter
@@ -13,9 +14,10 @@ class SearchAdapter(data: MutableList<Subject>? = null) :
         BaseQuickAdapter<Subject, BaseViewHolder>(R.layout.item_subject, data) {
 
     override fun convert(helper: BaseViewHolder, item: Subject) {
-        helper.setText(R.id.item_title, item.getPrettyName())
+        helper.setText(R.id.item_title, (if(item.collect) " " else "")+ item.getPrettyName())
         helper.setText(R.id.item_name_jp, item.name)
         helper.setText(R.id.item_summary, SubjectType.getDescription(item.type))
+        helper.itemView.item_chase.visibility = if(item.collect) View.VISIBLE else View.GONE
         Glide.with(helper.itemView.item_cover)
                 .load(item.images?.getImage(helper.itemView.context))
                 .apply(RequestOptions.errorOf(R.drawable.ic_404))

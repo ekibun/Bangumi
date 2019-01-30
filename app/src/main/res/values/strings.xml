@@ -95,6 +95,7 @@
     <string name="pref_miscellaneous">其他设置</string>
     <string name="commend">相似推荐</string>
     <string name="character_info">角色介绍</string>
+    <string name="subject">条目</string>
 
     <string-array name="pref_image_quality">
         <item>清晰</item>

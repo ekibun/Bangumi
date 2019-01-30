@@ -16,12 +16,6 @@
             android:padding="12dp"
             android:background="?android:colorBackground"
             android:orientation="vertical">
-        <TextView android:id="@+id/item_subject_title"
-                  android:layout_width="match_parent"
-                  android:layout_height="wrap_content"
-                  android:padding="8dp"
-                  android:textColor="?colorAccent"
-                  android:textAppearance="@android:style/TextAppearance.Material.Title"/>
         <RadioGroup
                 android:id="@+id/item_subject_status"
                 android:layout_width="match_parent"
@@ -113,6 +107,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
+                    android:paddingEnd="20dp"
                     tools:ignore="RtlSymmetry"/>
             <ImageView
                     android:id="@+id/item_tag_add"
@@ -120,6 +115,7 @@
                     android:layout_height="20dp"
                     android:layout_gravity="center_vertical"
                     android:padding="2dp"
+                    android:translationX="-20dp"
                     android:src="@drawable/ic_add"
                     android:background="@drawable/bg_round_rect_unchecked"
                     app:layout_constraintTop_toTopOf="@+id/item_tag_title"

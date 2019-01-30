@@ -2,19 +2,13 @@ package soko.ekibun.bangumi.ui.subject
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.DialogInterface
 import android.net.Uri
-import android.support.constraint.ConstraintLayout
 import android.support.customtabs.CustomTabsIntent
 import android.support.v7.app.AlertDialog
-import android.support.v7.widget.LinearLayoutManager
 import android.view.*
-import android.widget.EditText
-import android.widget.LinearLayout
 import android.widget.PopupMenu
 import kotlinx.android.synthetic.main.activity_subject.*
 import kotlinx.android.synthetic.main.activity_subject.view.*
-import kotlinx.android.synthetic.main.dialog_edit_subject.view.*
 import kotlinx.android.synthetic.main.dialog_epsode.view.*
 import kotlinx.android.synthetic.main.subject_blog.view.*
 import kotlinx.android.synthetic.main.subject_buttons.*

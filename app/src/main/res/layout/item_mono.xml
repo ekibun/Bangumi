@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/item_layout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:clickable="true"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:focusable="true"
+        android:transitionName="container"
+        tools:ignore="RtlHardcoded,HardcodedText">
+
+    <com.github.siyamed.shapeimageview.CircularImageView
+            app:siBorderAlpha="0"
+            android:id="@+id/item_cover"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:scaleType="centerCrop"
+            tools:ignore="ContentDescription"/>
+
+    <TextView
+            android:transitionName="title"
+            android:id="@+id/item_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="?android:textColorPrimary"
+            android:textSize="@dimen/textSizeMedium"
+            app:layout_constraintLeft_toLeftOf="@+id/item_name_jp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+            android:layout_marginTop="4dp"
+            android:id="@+id/item_name_jp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/textSizeSmall"
+            android:ellipsize="end"
+            android:maxLines="1"
+            app:layout_constraintLeft_toRightOf="@+id/item_cover"
+            android:layout_marginLeft="8dp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/item_title"/>
+    <TextView
+            android:layout_marginTop="6dp"
+            android:id="@+id/item_summary"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:textSize="@dimen/textSizeSmall"
+            android:ellipsize="end"
+            android:maxLines="1"
+            app:layout_constraintLeft_toLeftOf="@+id/item_name_jp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/item_name_jp"
+            app:layout_constraintBottom_toBottomOf="@+id/item_cover"/>
+
+</android.support.constraint.ConstraintLayout>
