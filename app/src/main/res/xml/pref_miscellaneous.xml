@@ -7,4 +7,10 @@
             android:entryValues="@array/pref_image_quality_values"
             android:defaultValue="c"/>
 
+    <SwitchPreference
+            android:key="check_update"
+            android:title="检查更新"
+            android:summary="启动应用时检查更新"
+            android:defaultValue="true"/>
+
 </PreferenceScreen>

@@ -255,6 +255,14 @@ class SubjectView(private val context: SubjectActivity){
         tagAdapter.setOnItemClickListener { _, _, position ->
             WebActivity.launchUrl(context, "${Bangumi.SERVER}/${SubjectType.typeNameMap[subject.type]}/tag/${tagAdapter.data[position].first}")
         }
+
+        detail.item_detail.setOnClickListener {
+            if(subject.infobox?.isNotEmpty() == true)
+                AlertDialog.Builder(context)
+                        .setMessage(subject.infobox?.map{"${it.first}: ${it.second}"}?.reduce { acc, s -> "$acc\n$s" })
+                        .show()
+            else WebActivity.launchUrl(context, subject.url)
+        }
     }
 
     fun updateEpisode(subject: Subject){

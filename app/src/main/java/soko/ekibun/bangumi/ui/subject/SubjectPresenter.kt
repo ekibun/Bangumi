@@ -19,7 +19,7 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.*
-import soko.ekibun.bangumi.api.github.Github
+import soko.ekibun.bangumi.api.github.GithubRaw
 import soko.ekibun.bangumi.api.github.bean.BangumiItem
 import soko.ekibun.bangumi.api.trim21.BgmIpViewer
 import soko.ekibun.bangumi.api.trim21.bean.IpView
@@ -48,7 +48,10 @@ class SubjectPresenter(private val context: SubjectActivity){
             WebActivity.launchUrl(context, "${subject.url}/characters")
         }
 
-        subjectView.detail.item_detail.setOnClickListener {
+        context.title_expand.setOnClickListener {
+            WebActivity.launchUrl(context, subject.url)
+        }
+        context.title_collapse.setOnClickListener {
             WebActivity.launchUrl(context, subject.url)
         }
 
@@ -318,7 +321,7 @@ class SubjectPresenter(private val context: SubjectActivity){
         val dateList = subject.air_date?.split("-") ?: return
         val year = dateList.getOrNull(0)?.toIntOrNull()?:0
         val month = dateList.getOrNull(1)?.toIntOrNull()?:1
-        Github.createInstance().bangumiData(year, String.format("%02d", month)).enqueue(ApiHelper.buildCallback(context, {
+        GithubRaw.createInstance().bangumiData(year, String.format("%02d", month)).enqueue(ApiHelper.buildCallback(context, {
             subjectView.sitesAdapter.setNewData(null)
             it.filter { it.sites?.filter { it.site == "bangumi" }?.getOrNull(0)?.id?.toIntOrNull() == subject.id }.forEach {
                 if(subjectView.sitesAdapter.data.size == 0 && !it.officialSite.isNullOrEmpty())

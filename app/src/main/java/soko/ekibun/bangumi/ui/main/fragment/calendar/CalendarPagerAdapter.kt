@@ -16,7 +16,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectCollection
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
-import soko.ekibun.bangumi.api.github.Github
+import soko.ekibun.bangumi.api.github.GithubRaw
 import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
 import soko.ekibun.bangumi.api.tinygrail.bean.OnAir
 import soko.ekibun.bangumi.model.UserModel
@@ -137,7 +137,7 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
         items.forEach { it.value.second.isRefreshing = true }
 
         calendarCall?.cancel()
-        calendarCall = Github.createInstance().bangumiCalendar()
+        calendarCall = GithubRaw.createInstance().bangumiCalendar()
         calendarCall?.enqueue(ApiHelper.buildCallback(pager.context, {
             raw = it
             setOnAirList(raw?:return@buildCallback)
