@@ -90,7 +90,7 @@ class WebActivity : AppCompatActivity() {
                         webview.loadUrl("about:blank")
                         setResult(Activity.RESULT_OK, Intent())
                         finish()
-                    }else if(url != authUrl) {
+                    }else if(url != authUrl && !url.contains("${Bangumi.SERVER}/FollowTheRabbit")) {
                         Log.v("redirect", url)
                         webview.loadUrl(authUrl)
                     }
