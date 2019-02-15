@@ -721,7 +721,7 @@ interface Bangumi {
                         //val epId = it.selectFirst(".checkbox")?.attr("value")?.toIntOrNull()?:return@mapNotNull null
                         val epId = Regex("""/ep/([0-9]*)""").find(it.selectFirst("h6>a")?.attr("href")?: "")?.groupValues?.get(1)?.toIntOrNull() ?: return@mapNotNull null
 
-                        val values = Regex("^\\D*(\\d+\\.?\\d?)\\.(.+)").find(it.selectFirst("h6>a")?.text()?:"")?.groupValues
+                        val values = Regex("^\\D*(\\d+\\.?\\d?)\\.(.*)").find(it.selectFirst("h6>a")?.text()?:"")?.groupValues
                         val sort = values?.getOrNull(1)?.toFloatOrNull()?:0f
                         val progress = it.selectFirst(".listEpPrgManager>span")
                         val status = if(type == SubjectType.MUSIC) "Air" else it.selectFirst(".epAirStatus span")?.className()

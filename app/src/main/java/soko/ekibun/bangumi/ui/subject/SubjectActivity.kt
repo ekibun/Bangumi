@@ -100,7 +100,7 @@ class SubjectActivity : SwipeBackActivity() {
         }
 
         private fun parseIntent(context: Context, subject: Subject): Intent {
-            val intent = Intent(context.applicationContext, SubjectActivity::class.java)
+            val intent = Intent(context, SubjectActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK // or Intent.FLAG_ACTIVITY_CLEAR_TOP
             intent.putExtra(EXTRA_SUBJECT, JsonUtil.toJson(subject))
             return intent

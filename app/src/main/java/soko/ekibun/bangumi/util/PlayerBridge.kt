@@ -3,11 +3,13 @@ package soko.ekibun.bangumi.util
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.preference.PreferenceManager
 import android.webkit.CookieManager
+import com.google.gson.reflect.TypeToken
 import soko.ekibun.bangumi.api.bangumi.Bangumi
-import soko.ekibun.bangumi.api.bangumi.bean.AccessToken
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
+import java.lang.Exception
 
 object PlayerBridge {
     private const val EXTRA_SUBJECT = "extraSubject"
@@ -41,15 +43,15 @@ object PlayerBridge {
         )
     }
 
+    private const val PACKAGE_NAME = "soko.ekibun.bangumiplayer"
     fun getVideoCacheList(context: Context): ArrayList<VideoCache>{
-        val uri = Uri.parse("content://soko.ekibun.bangumiplayer/cache")
-        val cursor = context.contentResolver.query(uri,
-                arrayOf("_id", "data"), null, null, null)
-        val ret = ArrayList<VideoCache>()
-        while(cursor?.moveToNext() == true){
-            ret += JsonUtil.toEntity(cursor.getString(1), VideoCache::class.java)?:continue
-        }
-        cursor?.close()
-        return ret
+        return try {
+            val bridgeContext = context.createPackageContext(PACKAGE_NAME, Context.CONTEXT_IGNORE_SECURITY)
+            val sp = PreferenceManager.getDefaultSharedPreferences(bridgeContext)
+            ArrayList((JsonUtil.toEntity<Map<Int, VideoCache>>(sp.getString("videoCache", JsonUtil.toJson(HashMap<Int, VideoCache>()))!!,
+                    object : TypeToken<Map<Int, VideoCache>>() {}.type) ?: HashMap()).values)
+        }catch (e: Exception){
+            e.printStackTrace()
+            ArrayList() }
     }
 }

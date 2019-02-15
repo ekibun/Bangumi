@@ -57,7 +57,7 @@ class TopicActivity : SwipeBackActivity() {
         }
 
         private fun parseIntent(context: Context, topic: String, post: Int): Intent {
-            val intent = Intent(context.applicationContext, TopicActivity::class.java)
+            val intent = Intent(context, TopicActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK // or Intent.FLAG_ACTIVITY_CLEAR_TOP
             intent.putExtra(EXTRA_TOPIC, topic)
             intent.putExtra(EXTRA_POST, post)

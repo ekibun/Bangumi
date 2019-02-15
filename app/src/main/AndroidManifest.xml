@@ -2,6 +2,7 @@
 <manifest
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
+        android:sharedUserId="soko.ekibun.bangumi.share"
         android:sharedUserLabel="@string/app_name"
         package="soko.ekibun.bangumi">
 
