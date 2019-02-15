@@ -243,7 +243,7 @@ class SubjectPresenter(private val context: SubjectActivity){
     private var subjectCall : Call<Subject>? = null
     private fun refreshSubject(subject: Subject){
         subjectCall?.cancel()
-        subjectCall = Bangumi.getSubject(subject)
+        subjectCall = Bangumi.getSubject(subject, context.ua)
         subjectCall?.enqueue(ApiHelper.buildCallback(context, {
             refreshLines(it)
             refreshCollection(it)
@@ -376,7 +376,7 @@ class SubjectPresenter(private val context: SubjectActivity){
     private var epCalls: Call<List<Episode>>? = null
     private fun refreshProgress(subject: Subject){
         epCalls?.cancel()
-        epCalls = Bangumi.getSubjectEps(subject.id)
+        epCalls = Bangumi.getSubjectEps(subject.id, context.ua)
         epCalls?.enqueue(ApiHelper.buildCallback(context, {
             subjectView.updateEpisode(it)
         }, {}))

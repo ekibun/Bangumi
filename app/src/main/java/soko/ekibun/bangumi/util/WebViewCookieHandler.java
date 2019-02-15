@@ -1,6 +1,9 @@
 package soko.ekibun.bangumi.util;
 
+import android.content.Context;
+import android.support.annotation.Keep;
 import android.webkit.CookieManager;
+import android.webkit.WebView;
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
 import okhttp3.HttpUrl;
@@ -33,5 +36,20 @@ public class WebViewCookieHandler implements CookieJar {
         }
 
         return Collections.emptyList();
+    }
+
+    @Keep
+    public static String getCookie(String url){
+        return  CookieManager.getInstance().getCookie(url);
+    }
+
+    @Keep
+    public static String getUserAgent(Context context){
+        return (new WebView(context)).getSettings().getUserAgentString();
+    }
+
+    @Keep
+    public static void setCookie(String url, String cookie){
+        CookieManager.getInstance().setCookie(url, cookie);
     }
 }

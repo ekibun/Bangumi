@@ -155,7 +155,7 @@ interface Bangumi {
                     it.attr("id").split('_').getOrNull(1)?.toIntOrNull()?.let{id->
                         val nameCN = it.selectFirst("h3")?.selectFirst("a")?.text()
                         val name = it.selectFirst("h3")?.selectFirst("small")?.text()?:nameCN
-                        val img = HttpUtil.getUrl(it.selectFirst("img")?.attr("src")?:"", URI.create(Bangumi.SERVER))
+                        val img = getImageUrl(it.selectFirst("img"))
                         val info = it.selectFirst(".info")?.text()
                         val subject = Subject(id,
                                 HttpUtil.getUrl(it.selectFirst("a")?.attr("href")?:"", URI.create(Bangumi.SERVER)),
@@ -175,9 +175,13 @@ interface Bangumi {
             }
         }
 
+        private fun getImageUrl(cover: Element?): String{
+            return HttpUtil.getUrl(if(cover?.hasAttr("src") == true) cover.attr("src")?:"" else cover?.attr("data-cfsrc")?:"", URI.create(Bangumi.SERVER))
+        }
+
         @SuppressLint("UseSparseArrays")
-        fun getSubject(subject: Subject): Call<Subject>{
-            return ApiHelper.buildHttpCall(subject.url?:""){ response ->
+        fun getSubject(subject: Subject, ua: String): Call<Subject>{
+            return ApiHelper.buildHttpCall(subject.url?:"", mapOf("User-Agent" to ua)){ response ->
                 val doc = Jsoup.parse(response.body()?.string()?:"")
                 val type = when(doc.selectFirst("#navMenuNeue .focus").text()){
                     "动画" -> SubjectType.ANIME
@@ -219,7 +223,7 @@ interface Bangumi {
                         doc.selectFirst(".global_score .number")?.text()?.toDoubleOrNull()?:subject.rating?.score?:0.0
                 )
                 val rank = doc.selectFirst(".global_score .alarm")?.text()?.trim('#')?.toIntOrNull()?:subject.rank
-                val img = HttpUtil.getUrl(doc.selectFirst(".infobox img.cover")?.attr("src")?:"", URI.create(Bangumi.SERVER))
+                val img = getImageUrl(doc.selectFirst(".infobox img.cover"))
                 val images = Images(
                         img.replace("/c/", "/l/"),img,
                         img.replace("/c/", "/m/"),
@@ -285,7 +289,7 @@ interface Bangumi {
                             HttpUtil.getUrl(a?.attr("href")?: "", URI.create(Bangumi.SERVER)),
                             a?.text() ?: "",
                             it.selectFirst(".content")?.ownText()?:"",
-                            HttpUtil.getUrl(it.selectFirst("img")?.attr("src")?:"", URI.create(Bangumi.SERVER)),
+                            getImageUrl(it.selectFirst("img")),
                             it.selectFirst("small.orange")?.text()?.trim('(', '+', ')')?.toIntOrNull() ?: 0, time,
                             it.selectFirst("small.time")?.text()?:"",
                             UserInfo(user_id?.toIntOrNull()?:0, HttpUtil.getUrl(user?.attr("href")?:"", URI.create(SERVER)), user_id, user?.text())
@@ -367,7 +371,7 @@ interface Bangumi {
                         val subjectType = it.selectFirst(".ico_subject_type")?.classNames()?.mapNotNull { it.split('_').last().toIntOrNull() }?.firstOrNull()?:0
                         val nameCN = it.selectFirst("h3")?.selectFirst("a")?.text()
                         val name = it.selectFirst("h3")?.selectFirst("small")?.text()?:nameCN
-                        val img = HttpUtil.getUrl(it.selectFirst("img")?.attr("src")?:"", URI.create(Bangumi.SERVER))
+                        val img = getImageUrl(it.selectFirst("img"))
                         val info = it.selectFirst(".info")?.text()
                         ret += Subject(id,
                                 HttpUtil.getUrl(it.selectFirst("a")?.attr("href")?:"", URI.create(SERVER)),
@@ -392,7 +396,7 @@ interface Bangumi {
                     val url =  HttpUtil.getUrl(a?.attr("href")?:"", URI.create(SERVER))
                     val name = a?.ownText()?.trim('/', ' ')
                     val nameCN = a?.selectFirst("span.tip")?.text()?:""
-                    val img = HttpUtil.getUrl(it.selectFirst("img")?.attr("src")?:"", URI.create(Bangumi.SERVER))
+                    val img = getImageUrl(it.selectFirst("img"))
                     val summary = it.selectFirst(".prsn_info")?.text()
                     ret += MonoInfo(nameCN, name = name, url = url, img = img, summary = summary)
                 }
@@ -433,7 +437,7 @@ interface Bangumi {
                     it.attr("id").split('_').getOrNull(1)?.toIntOrNull()?.let{id->
                         val nameCN = it.selectFirst("h3")?.selectFirst("a")?.text()
                         val name = it.selectFirst("h3")?.selectFirst("small")?.text()?:nameCN
-                        val img = HttpUtil.getUrl(it.selectFirst("img")?.attr("src")?:"", URI.create(Bangumi.SERVER))
+                        val img = getImageUrl(it.selectFirst("img"))
                         val info = it.selectFirst(".info")?.text()
                         ret += Subject(id,
                                 HttpUtil.getUrl(it.selectFirst("a")?.attr("href")?:"", URI.create(SERVER)),
@@ -471,8 +475,8 @@ interface Bangumi {
 
         //timeline
         //type: global
-        fun getTimeLine(type: String, page: Int): Call<List<TimeLine>>{
-            return ApiHelper.buildHttpCall("$SERVER/timeline?type=$type&page=$page&ajax=1"){rsp ->
+        fun getTimeLine(type: String, page: Int, ua: String): Call<List<TimeLine>>{
+            return ApiHelper.buildHttpCall("$SERVER/timeline?type=$type&page=$page&ajax=1", mapOf("User-Agent" to ua)){rsp ->
                 val doc = Jsoup.parse(rsp.body()?.string()?:"")
                 val ret = ArrayList<TimeLine>()
                 var usrImg = ""
@@ -507,7 +511,7 @@ interface Bangumi {
                         item.select(".info img")?.forEach {
                             val url = it.parent().attr("href")
                             val text = item.select("a[href=\"$url\"]")?.text()?:""
-                            val src = HttpUtil.getUrl(it.attr("src")?:"", URI.create(SERVER))
+                            val src = getImageUrl(it)
                             thumbs += TimeLine.TimeLineItem.ThumbItem(src, text, url)
                         }
                         val delUrl: String? = item.selectFirst(".tml_del")?.attr("href")
@@ -636,8 +640,8 @@ interface Bangumi {
         }
 
         //prg
-        fun getCollection(): Call<List<SubjectCollection>>{
-            return ApiHelper.buildHttpCall(SERVER){
+        fun getCollection(ua: String): Call<List<SubjectCollection>>{
+            return ApiHelper.buildHttpCall(SERVER, mapOf("User-Agent" to ua)){
                 val ret = ArrayList<SubjectCollection>()
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 if(doc.selectFirst(".idBadgerNeue a.avatar") == null) throw Exception("no login")
@@ -647,7 +651,7 @@ interface Bangumi {
                     val type = it.attr("subject_type")?.toIntOrNull()?:return@forEach
                     val name = data.attr("data-subject-name")
                     val name_cn = data.attr("data-subject-name-cn")
-                    val img = HttpUtil.getUrl(it.selectFirst("img")?.attr("src")?:"", URI.create(Bangumi.SERVER))
+                    val img = getImageUrl(it.selectFirst("img"))
                     val eps_count = it.selectFirst(".prgBatchManagerForm .grey")?.text()?.trim(' ', '/')?.toIntOrNull()?:0
                     val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
                     val now = Date().time
@@ -701,8 +705,8 @@ interface Bangumi {
         }
 
         //eps
-        fun getSubjectEps(subject: Int): Call<List<Episode>>{
-            return ApiHelper.buildHttpCall("$SERVER/subject/$subject/ep"){
+        fun getSubjectEps(subject: Int, ua: String): Call<List<Episode>>{
+            return ApiHelper.buildHttpCall("$SERVER/subject/$subject/ep", mapOf("User-Agent" to ua)){
                 var cat = ""
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val type = when(doc.selectFirst("#navMenuNeue .focus").text()){

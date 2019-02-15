@@ -14,6 +14,7 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.TimeLine
+import soko.ekibun.bangumi.ui.main.MainActivity
 
 class TimeLinePagerAdapter(context: Context, val fragment: TimeLineFragment, private val pager: ViewPager) : PagerAdapter(){
     private val tabList = context.resources.getStringArray(R.array.timeline_list)
@@ -69,7 +70,7 @@ class TimeLinePagerAdapter(context: Context, val fragment: TimeLineFragment, pri
             item.first.setNewData(null)
         }
         topicCall[position]?.cancel()
-        topicCall[position] = Bangumi.getTimeLine(listOf("all", "say", "subject", "progress", "blog", "mono", "relation", "group", "wiki", "index", "doujin")[position], page + 1)
+        topicCall[position] = Bangumi.getTimeLine(listOf("all", "say", "subject", "progress", "blog", "mono", "relation", "group", "wiki", "index", "doujin")[position], page + 1, (fragment.activity as? MainActivity)?.ua?:"")
         topicCall[position]?.enqueue(ApiHelper.buildCallback(item.second.context, {
             item.first.isUseEmpty(true)
             if(it.isEmpty()) item.first.loadMoreEnd()
