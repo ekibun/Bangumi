@@ -23,7 +23,10 @@ class CacheFragment: DrawerFragment(R.layout.content_cache) {
         adapter.setOnItemClickListener { _, _, position ->
             PlayerBridge.startActivity(view.context, adapter.data[position].bangumi)
         }
-
+        item_swipe?.setOnRefreshListener {
+            adapter.setNewData(PlayerBridge.getVideoCacheList(view.context))
+            item_swipe?.isRefreshing = false
+        }
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
