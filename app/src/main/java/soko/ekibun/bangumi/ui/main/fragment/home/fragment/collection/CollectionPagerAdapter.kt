@@ -15,8 +15,9 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.CollectionStatusType
+import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectCollection
-import soko.ekibun.bangumi.model.UserModel
+import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 
 class CollectionPagerAdapter(context: Context, val fragment: CollectionFragment, private val pager: ViewPager) : PagerAdapter(){
@@ -75,25 +76,25 @@ class CollectionPagerAdapter(context: Context, val fragment: CollectionFragment,
     private val pageIndex = HashMap<Int, Int>()
     private fun loadCollectionList(position: Int = pager.currentItem){
         val item = items[position]?:return
+        item.second.isRefreshing = false
         item.first.isUseEmpty(false)
         val page = pageIndex.getOrPut(position) {0}
         collectionCalls[position]?.cancel()
         if(page == 0)
             item.first.setNewData(null)
-        val user =  UserModel(item.second.context).getUser()?:return
-        if(UserModel(item.second.context).getToken()?.user_id?.toString() != user.id.toString()) return
+        val user =  (fragment.activity as? MainActivity)?.user?:return
         val userName = user.username?:user.id.toString()
         if(page == 0)
             item.second.isRefreshing = true
         val useApi = position == 2 && subjectTypeView.selectedType in arrayOf(R.id.collection_type_anime, R.id.collection_type_book, R.id.collection_type_real)
-        collectionCalls[position] = if(useApi) api.collection(userName)
+        collectionCalls[position] = if(useApi) Bangumi.getCollection()//api.collection(userName)
         else Bangumi.getCollectionList(subjectTypeView.getTypeName(), userName, CollectionStatusType.status[position], page+1)
         collectionCalls[position]?.enqueue(ApiHelper.buildCallback(item.second.context, {
             item.first.isUseEmpty(true)
             it.filter { !useApi || it.subject?.type == subjectTypeView.getType() }.let{
                 if(!useApi) it.forEach {
                     it.subject?.type = subjectTypeView.getType() }
-                item.first.addData(it) }
+                item.first.addData(it.sortedByDescending { (it.subject?.eps as? List<*>)?.mapNotNull { it as? Episode }?.lastOrNull { it.status == "Air" }?.airdate }) }
             if(useApi || it.size < 10)
                 item.first.loadMoreEnd()
             else

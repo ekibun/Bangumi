@@ -24,8 +24,6 @@ import soko.ekibun.bangumi.util.AppUtil
 import java.net.URI
 
 class WebActivity : AppCompatActivity() {
-    val api by lazy { Bangumi.createInstance(false) }
-
     private val isAuth by lazy{ intent.getBooleanExtra(IS_AUTH, false)}
     private val openUrl by lazy{ intent.getStringExtra(OPEN_URL)}
 
@@ -80,7 +78,7 @@ class WebActivity : AppCompatActivity() {
             }
         }else{
             title = getString(R.string.login_auth)
-            val authUrl = "${Bangumi.SERVER}/oauth/authorize?client_id=${Bangumi.APP_ID}&response_type=code"
+            val authUrl = "${Bangumi.SERVER}/login"
             webview.webChromeClient = object: WebChromeClient() {
                 override fun onProgressChanged(view: WebView, newProgress: Int) {
                     setProgress(newProgress)
@@ -88,22 +86,17 @@ class WebActivity : AppCompatActivity() {
             }
             webview.webViewClient = object : WebViewClient() {
                 override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
-                    if(url.startsWith(Bangumi.REDIRECT_URL)){
+                    if(url.trim('/') == Bangumi.SERVER){
                         webview.loadUrl("about:blank")
-                        val uri = Uri.parse(url)
-                        val code = uri.getQueryParameter("code")
-
-                        val intent = Intent()
-                        intent.putExtra(RESULT_CODE, code)
-                        setResult(Activity.RESULT_OK, intent)
+                        setResult(Activity.RESULT_OK, Intent())
                         finish()
-                    }else if(url == authUrl || !url.startsWith(authUrl) && !url.startsWith("${Bangumi.SERVER}/login") && !url.startsWith("${Bangumi.SERVER}/FollowTheRabbit")){
+                    }else if(url != authUrl) {
                         Log.v("redirect", url)
-                        webview.loadUrl("$authUrl&redirect_uri=${Bangumi.REDIRECT_URL}")
+                        webview.loadUrl(authUrl)
                     }
                 }
             }
-            webview.loadUrl("$authUrl&redirect_uri=${Bangumi.REDIRECT_URL}")
+            webview.loadUrl(authUrl)
         }
     }
 
@@ -147,7 +140,6 @@ class WebActivity : AppCompatActivity() {
         const val REQUEST_AUTH = 1
         const val IS_AUTH = "auth"
         const val OPEN_URL = "openUrl"
-        const val RESULT_CODE = "code"
         fun startActivityForAuth(context: Activity){
             val intent = Intent(context, WebActivity::class.java)
             intent.putExtra(IS_AUTH, true)

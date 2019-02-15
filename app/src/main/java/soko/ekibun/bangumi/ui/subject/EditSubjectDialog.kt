@@ -10,7 +10,6 @@ import android.support.v7.widget.LinearLayoutManager
 import android.util.DisplayMetrics
 import android.view.*
 import android.widget.EditText
-import android.widget.LinearLayout
 import kotlinx.android.synthetic.main.dialog_edit_subject.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
@@ -21,14 +20,14 @@ import soko.ekibun.bangumi.api.bangumi.bean.Subject
 
 class EditSubjectDialog: DialogFragment() {
     companion object {
-        fun showDialog(context:AppCompatActivity, subject: Subject, status: Collection, formhash: String, token: String, callback: (Boolean)->Unit){
+        fun showDialog(context:AppCompatActivity, subject: Subject, status: Collection, formhash: String, ua: String, callback: (Boolean)->Unit){
             val dialog = EditSubjectDialog()
             dialog.subject = subject
             dialog.status = status
             dialog.status = status
             dialog.formhash = formhash
-            dialog.token = token
             dialog.callback = callback
+            dialog.ua = ua
             dialog.show(context.supportFragmentManager, "edit")
         }
     }
@@ -44,7 +43,7 @@ class EditSubjectDialog: DialogFragment() {
     lateinit var subject: Subject
     lateinit var status: Collection
     lateinit var formhash: String
-    lateinit var token: String
+    lateinit var ua: String
     lateinit var callback: (Boolean)->Unit
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.dialog_edit_subject, container)
@@ -92,10 +91,11 @@ class EditSubjectDialog: DialogFragment() {
             val newComment = view.item_comment.text.toString()
             val newPrivacy = if(view.item_private.isChecked) 1 else 0
             val newTags = if(adapter.data.isNotEmpty()) adapter.data.reduce { acc, s -> "$acc $s" } else ""
-            Bangumi.createInstance().updateCollectionStatus(subject.id, token,
-                    newStatus, newTags, newComment, newRating, newPrivacy).enqueue(ApiHelper.buildCallback(context,{},{
+            Bangumi.updateCollectionStatus(subject, formhash,ua,
+                    newStatus, newTags, newComment, newRating, newPrivacy).enqueue(ApiHelper.buildCallback(context,{
+                subject.interest = it
                 callback(false)
-            }))
+            },{}))
         }
 
         activity?.window?.decorView?.viewTreeObserver?.addOnGlobalLayoutListener{

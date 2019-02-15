@@ -1,6 +1,9 @@
 package soko.ekibun.bangumi.api.bangumi
 
 import android.annotation.SuppressLint
+import android.util.Log
+import android.webkit.CookieManager
+import okhttp3.FormBody
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.TextNode
@@ -134,9 +137,9 @@ interface Bangumi {
         const val APP_ID = "bgm2315af5554b7f887"
         const val APP_SECRET = "adaf4941f83f2fb3c4336ee80a087f75"
         const val REDIRECT_URL = "bangumi://redirect"
-        fun createInstance(api: Boolean = true): Bangumi{
-            return Retrofit.Builder().baseUrl(if(api) SERVER_API else SERVER)
-                    .addConverterFactory( GsonConverterFactory.create())
+        fun createInstance(): Bangumi{
+            return Retrofit.Builder().baseUrl(SERVER_API)
+                    .addConverterFactory(GsonConverterFactory.create())
                     .build().create(Bangumi::class.java)
         }
 
@@ -224,26 +227,6 @@ interface Bangumi {
                         img.replace("/c/", "/g/"))
                 //TODO Collection
                 //no eps
-                var cat = ""
-                val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                val status = if( try{
-                    dateFormat.parse(air_date).time
-                }catch (e: Exception){
-                    e.printStackTrace()
-                    0L } < Date().time ) "Air" else ""
-                val eps = doc.select(".line_list li")?.map {
-                    if(it.hasClass("cat")){
-                        cat = it.text()
-                        null
-                    } else{
-                        val a = it.selectFirst("h6 a")
-                        val ep_id = Regex("""/ep/([^/]*)""").find(a?.attr("href")?:"")?.groupValues?.get(1)?.toIntOrNull()?:0
-                        val sort = a?.text()?.split(" ")?.get(0)?.toFloatOrNull()?:0f
-                        val ep_name = a?.text()?.substringAfter(" ")?:""
-                        Episode(ep_id, a?.attr("href")?:"", 0, sort, ep_name,
-                                status = status, cat = cat)
-                    }
-                }?.filterNotNull()
                 //crt
                 val crt = doc.select(".subject_section").filter { it.select(".subtitle")?.text() == "角色介绍" }.getOrNull(0)?.select("li")?.map {
                     val a = it.selectFirst("a.avatar")
@@ -269,6 +252,7 @@ interface Bangumi {
                 }
                 //TODO staff
                 //topic
+                val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
                 val topic = doc.select(".topic_list tr")?.map {
                     val tds = it.select("td")
                     val td0 = tds?.get(0)?.selectFirst("a")
@@ -277,9 +261,7 @@ interface Bangumi {
                     val user_id = Regex("""/user/([^/]*)""").find(user?.attr("href")?:"")?.groupValues?.get(1)
                     val time  = try{
                         dateFormat.parse(tds?.get(3)?.text()?:"").time /1000
-                    }catch (e: Exception){
-                        e.printStackTrace()
-                        0L }
+                    }catch (e: Exception){ 0L }
                     if(td0?.attr("href").isNullOrEmpty()) null else
                     Subject.TopicBean(topic_id,
                             HttpUtil.getUrl(td0?.attr("href")?: "", URI.create(Bangumi.SERVER)),
@@ -359,10 +341,20 @@ interface Bangumi {
                 }
                 //typeString
                 val typeString = doc.selectFirst(".nameSingle small")?.text()?:""
+                //collection
+                val interest = doc.selectFirst("#collectBoxForm")?.let{
+                    val collectType = it.selectFirst(".collectType input[checked=checked]")
+                    val collectStatus = Collection.StatusBean(collectType?.attr("value")?.toIntOrNull()?:return@let null, collectType.id(), collectType.parent()?.text())
+                    val rate = it.selectFirst(".rating[checked]")?.attr("value")?.toIntOrNull()?:0
+                    val collectTags = it.selectFirst("#tags")?.attr("value")?.split(" ")?.filter { it.isNotEmpty() }?:ArrayList()
+                    val collectComment = it.selectFirst("#comment")?.text()
+                    val private = it.selectFirst("#privacy[checked]")?.attr("value")?.toIntOrNull()?:0
+                    return@let Collection(collectStatus, rate, collectComment, private, collectTags)
+                }
                 //formhash
                 val formhash = if(doc.selectFirst(".guest") != null) "" else doc.selectFirst("input[name=formhash]")?.attr("value")
                 Subject(subject.id, subject.url, type, name, name_cn, summary, eps_count, air_date, air_weekday, rating, rank, images, infobox = infobox,
-                        eps = eps, crt=crt, topic = topic, blog = blog, linked = linked, commend = commend, tags = tags, typeString = typeString, formhash = formhash)
+                        crt=crt, topic = topic, blog = blog, linked = linked, commend = commend, tags = tags, typeString = typeString, formhash = formhash, interest = interest)
             }
         }
 
@@ -408,32 +400,6 @@ interface Bangumi {
             }
         }
 
-        fun getLinkedSubject(subject: Subject): Call<List<Subject>>{
-            return ApiHelper.buildHttpCall(subject.url?:""){
-                val doc = Jsoup.parse(it.body()?.string()?:"")
-                val ret = ArrayList<Subject>()
-                doc.select(".subject_section").filter { it.select(".subtitle").text() == "关联条目" }.getOrNull(0)?.let{
-                    var sub = ""
-                    it.select("li").forEach {
-                        val newSub = it.selectFirst(".sub").text()
-                        if(!newSub.isNullOrEmpty()) sub = newSub
-                        val avatar = it.selectFirst(".avatar")
-                        val img = HttpUtil.getUrl(Regex("""background-image:url\('([^']*)'\)""").find(avatar.html())?.groupValues?.get(1)?:"", URI.create(Bangumi.SERVER))
-                        val title = it.selectFirst(".title")
-                        val url = HttpUtil.getUrl(title.attr("href")?:"", URI.create(Bangumi.SERVER))
-                        val id = Regex("""/subject/([0-9]*)""").find(url)?.groupValues?.get(1)?.toIntOrNull()?:0
-                        val name = title.text()
-                        ret += Subject(id, url, 0, name, summary = sub,
-                                images = Images(img.replace("/m/", "/l/"),
-                                        img.replace("/m/", "/c/"), img,
-                                        img.replace("/m/", "/s/"),
-                                        img.replace("/m/", "/g/")))
-                    }
-                }
-                return@buildHttpCall ret
-            }
-        }
-
         fun getComments(subject: Subject, page: Int): Call<List<Comment>>{
             return ApiHelper.buildHttpCall("${subject.url?:""}/comments?page=$page"){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
@@ -443,7 +409,10 @@ interface Bangumi {
                         val img = HttpUtil.getUrl(Regex("""background-image:url\('([^']*)'\)""").find(it.selectFirst(".avatar")?.html()?:"")?.groupValues?.get(1)?:"", URI.create(Bangumi.SERVER))
                         val user = it.selectFirst(".text")?.selectFirst("a")
                         val id = Regex("""/user/([^/]*)""").find(user?.attr("href")?:"")?.groupValues?.get(1)
-                        val userInfo = UserInfo(id?.toIntOrNull()?:0, HttpUtil.getUrl(user?.attr("href")?:"", URI.create(SERVER)), id, user?.text(), Images(img, img, img, img, img))
+                        val userInfo = UserInfo(id?.toIntOrNull()?:0, HttpUtil.getUrl(user?.attr("href")?:"", URI.create(SERVER)), id, user?.text(), Images(img.replace("/s/", "/l/"),
+                                img.replace("/s/", "/l/"),
+                                img.replace("/s/", "/m/"), img,
+                                img.replace("/s/", "/m/")))
                         val time = it.selectFirst(".grey")?.text()?.replace("@", "")?.trim()
                         val rate = Regex("""sstars([0-9]*)""").find(it.selectFirst(".text")?.selectFirst("span").toString())?.groupValues?.get(1)?.toIntOrNull()?:0
                         val comment = it.selectFirst("p")?.text()
@@ -616,9 +585,169 @@ interface Bangumi {
                     val userName = it.selectFirst(".inner")?.selectFirst("strong")?.text()
                     val content = it.selectFirst(".inner")?.text()?:""
                     val url = it.selectFirst(".nt_link")?.attr("href")?:""
-                    ret += Notify(url, content, UserInfo(0, "$SERVER/user/$userId", userId, userName, Images(img, img, img, img, img)))
+                    ret += Notify(url, content, UserInfo(0, "$SERVER/user/$userId", userId, userName, Images(img.replace("/s/", "/l/"),
+                            img.replace("/s/", "/l/"),
+                            img.replace("/s/", "/m/"), img,
+                            img.replace("/s/", "/m/"))))
                 }
                 ret
+            }
+        }
+
+        //userInfo
+        fun getUserInfo(ua: String): Call<UserInfo>{
+            val cookieManager = CookieManager.getInstance()
+            return ApiHelper.buildHttpCall(Bangumi.SERVER, mapOf("User-Agent" to ua)){
+                var needReload = false
+                val doc = Jsoup.parse(it.body()?.string()?:"")
+                val user = doc.selectFirst(".idBadgerNeue a.avatar")?: throw Exception("login failed")
+                val userName = doc.selectFirst("#header a")?.text()
+                val img = HttpUtil.getUrl(Regex("""background-image:url\('([^']*)'\)""").find(user.html()?:"")?.groupValues?.get(1)?:"", URI.create(Bangumi.SERVER))
+                val id = Regex("""/user/([^/]*)""").find(user.attr("href")?:"")?.groupValues?.get(1)
+                it.headers("set-cookie").forEach {
+                    needReload = true
+                    cookieManager.setCookie(Bangumi.SERVER, it) }
+                val formhash = doc.selectFirst("input[name=formhash]")?.attr("value")
+                UserInfo(id?.toIntOrNull()?:0, HttpUtil.getUrl(user.attr("href")?:"", URI.create(SERVER)), id, userName,
+                        Images(img.replace("/s/", "/l/"),
+                                img.replace("/s/", "/l/"),
+                                img.replace("/s/", "/m/"), img,
+                                img.replace("/s/", "/m/")), sign = formhash, needReload = needReload)
+            }
+        }
+
+        fun updateCollectionStatus(subject: Subject, formhash: String, ua: String, status: String, tags: String, comment: String, rating: Int, privacy: Int = 0): Call<Collection>{
+            val index = CollectionStatusType.status.indexOf(status)
+            return ApiHelper.buildHttpCall("$SERVER/subject/${subject.id}/interest/update?gh=$formhash", mapOf("User-Agent" to ua), FormBody.Builder()
+                    .add("referer", "ajax")
+                    .add("interest", (index + 1).toString())
+                    .add("rating", rating.toString())
+                    .add("tags", tags)
+                    .add("comment", comment)
+                    .add("privacy", privacy.toString())
+                    .add("update", "保存").build()){
+                Collection(Collection.StatusBean(index + 1, status, when(subject.type){
+                    SubjectType.BOOK -> listOf("想读", "读过", "在读", "搁置", "抛弃").getOrNull(index)
+                    SubjectType.MUSIC -> listOf("想听", "听过", "在听", "搁置", "抛弃").getOrNull(index)
+                    SubjectType.GAME -> listOf("想玩", "玩过", "在玩", "搁置", "抛弃").getOrNull(index)
+                    else -> listOf("想看", "看过", "在看", "搁置", "抛弃").getOrNull(index)
+                }), rating, comment, privacy, tags.split(" ").filter { it.isNotEmpty() })
+            }
+        }
+
+        //prg
+        fun getCollection(): Call<List<SubjectCollection>>{
+            return ApiHelper.buildHttpCall(SERVER){
+                val ret = ArrayList<SubjectCollection>()
+                val doc = Jsoup.parse(it.body()?.string()?:"")
+                if(doc.selectFirst(".idBadgerNeue a.avatar") == null) throw Exception("no login")
+                doc.select("#cloumnSubjectInfo .infoWrapper")?.forEach {
+                    val data = it.selectFirst(".headerInner a.textTip")?:return@forEach
+                    val id = data.attr("data-subject-id")?.toIntOrNull()?:return@forEach
+                    val type = it.attr("subject_type")?.toIntOrNull()?:return@forEach
+                    val name = data.attr("data-subject-name")
+                    val name_cn = data.attr("data-subject-name-cn")
+                    val img = HttpUtil.getUrl(it.selectFirst("img")?.attr("src")?:"", URI.create(Bangumi.SERVER))
+                    val eps_count = it.selectFirst(".prgBatchManagerForm .grey")?.text()?.trim(' ', '/')?.toIntOrNull()?:0
+                    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                    val now = Date().time
+                    var cat = "MAIN"
+                    val eps = it.select("ul.prg_list>li")?.mapNotNull {li->
+                        if(li.hasClass("subtitle")) cat = li.text()
+                        val it = li.selectFirst("a")?:return@mapNotNull null
+                        val epInfo = doc.selectFirst(it.attr("rel"))?.selectFirst(".tip")?.textNodes()?.map { it.text() }
+                        val ep_name_cn = epInfo?.firstOrNull { it.startsWith("中文标题") }?.substringAfter(":")
+                        val air_date = epInfo?.firstOrNull { it.startsWith("首播") }?.substringAfter(":")
+                        val duration = epInfo?.firstOrNull { it.startsWith("时长") }?.substringAfter(":")
+                        val status  = if(it.hasClass("epBtnToday")) "Today" else if(it.hasClass("epBtnAir") || try{ dateFormat.parse(air_date).time }catch (e: Exception){ 0L } < now) "Air" else "NA"
+                        val epId = it.id().substringAfter("_").toIntOrNull()?:return@mapNotNull null
+                        val cmt = doc.selectFirst(it.attr("rel"))?.selectFirst(".cmt .na")?.text()?.trim('(', ')', '+')?.toIntOrNull()?:0
+                        Episode(epId, HttpUtil.getUrl(it.attr("href")?:"", URI.create(Bangumi.SERVER)), when(cat){
+                            "MAIN" -> Episode.TYPE_MAIN
+                            "SP" -> Episode.TYPE_SP
+                            "OP" -> Episode.TYPE_OP
+                            "ED" -> Episode.TYPE_ED
+                            "PV" -> Episode.TYPE_PV
+                            "MAD" -> Episode.TYPE_MAD
+                            else -> Episode.TYPE_OTHER
+                        },
+                                it.text().toFloat(), it.attr("title")?.substringAfter(" "), ep_name_cn, duration, air_date, cmt, status =  status, progress =  when{
+                                    it.hasClass("epBtnWatched") -> SubjectProgress.EpisodeProgress(epId, SubjectProgress.EpisodeProgress.EpisodeStatus(SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH_ID, url_name = SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH, cn_name = "看过"))
+                                    it.hasClass("epBtnQueue") -> SubjectProgress.EpisodeProgress(epId, SubjectProgress.EpisodeProgress.EpisodeStatus(SubjectProgress.EpisodeProgress.EpisodeStatus.QUEUE_ID, url_name = SubjectProgress.EpisodeProgress.EpisodeStatus.QUEUE, cn_name = "想看"))
+                                    it.hasClass("epBtnDrop") -> SubjectProgress.EpisodeProgress(epId, SubjectProgress.EpisodeProgress.EpisodeStatus(SubjectProgress.EpisodeProgress.EpisodeStatus.DROP_ID, url_name = SubjectProgress.EpisodeProgress.EpisodeStatus.DROP, cn_name = "抛弃"))
+                                    else -> null
+                                })
+                    }
+                    val watched_eps = it.selectFirst("input[name=watchedeps]")?.attr("value")?.toIntOrNull()?:0
+                    val watched_vols = it.selectFirst("input[name=watched_vols]")?.attr("value")?.toIntOrNull()?:0
+                    ret += SubjectCollection(name, id, watched_eps, watched_vols, 0, Subject(
+                            id, "$SERVER/subject/$id", type, name, name_cn, eps = eps, eps_count = eps_count,
+                            images = Images(img.replace("/g/", "/l/"),
+                                    img.replace("/g/", "/m/"),
+                                    img.replace("/g/", "/c/"),
+                                    img.replace("/g/", "/s/"), img)))
+                }
+                return@buildHttpCall ret
+            }
+        }
+
+        fun updateProgress(id: Int,
+                           @SubjectProgress.EpisodeProgress.EpisodeStatus.Companion.EpStatusType status: String,
+                           formhash: String, ua: String,
+                           epIds: String? = null): Call<Boolean>{
+            return ApiHelper.buildHttpCall("$SERVER/subject/ep/$id/status/$status?gh=$formhash&ajax=1", mapOf("User-Agent" to ua), FormBody.Builder().add("ep_id", epIds?:id.toString()).build() ){
+                return@buildHttpCall it.body()?.string()?.contains("\"status\":\"ok\"") == true
+            }
+        }
+
+        //eps
+        fun getSubjectEps(subject: Int): Call<List<Episode>>{
+            return ApiHelper.buildHttpCall("$SERVER/subject/$subject/ep"){
+                var cat = ""
+                val doc = Jsoup.parse(it.body()?.string()?:"")
+                val type = when(doc.selectFirst("#navMenuNeue .focus").text()){
+                    "动画" -> SubjectType.ANIME
+                    "书籍" -> SubjectType.BOOK
+                    "音乐" -> SubjectType.MUSIC
+                    "游戏" -> SubjectType.GAME
+                    "三次元" -> SubjectType.REAL
+                    else -> SubjectType.ALL
+                }
+                doc.select("ul.line_list>li")?.mapNotNull {
+                    if(it.hasClass("cat")){
+                        cat = it.text()
+                        null
+                    }else{
+                        //val epId = it.selectFirst(".checkbox")?.attr("value")?.toIntOrNull()?:return@mapNotNull null
+                        val epId = Regex("""/ep/([0-9]*)""").find(it.selectFirst("h6>a")?.attr("href")?: "")?.groupValues?.get(1)?.toIntOrNull() ?: return@mapNotNull null
+
+                        val values = Regex("^\\D*(\\d+\\.?\\d?)\\.(.+)").find(it.selectFirst("h6>a")?.text()?:"")?.groupValues
+                        val sort = values?.getOrNull(1)?.toFloatOrNull()?:0f
+                        val progress = it.selectFirst(".listEpPrgManager>span")
+                        val status = if(type == SubjectType.MUSIC) "Air" else it.selectFirst(".epAirStatus span")?.className()
+                        val ep_name = values?.getOrNull(2)?:it.selectFirst("h6>a")?.text()?.substringAfter(".")
+                        val ep_name_cn = it.selectFirst("h6>span.tip")?.text()?.substringAfter(" ")
+                        val epInfo = it.select("small.grey")?.text()?.split("/")
+                        val air_date = epInfo?.firstOrNull { it.trim().startsWith("首播") }?.substringAfter(":")
+                        val duration = epInfo?.firstOrNull { it.trim().startsWith("时长") }?.substringAfter(":")
+                        val comment = epInfo?.firstOrNull { it.trim().startsWith("讨论") }?.trim()?.substringAfter("+")?.toIntOrNull()?:0
+
+                        Episode(epId, "$SERVER/ep/$epId", if(type == SubjectType.MUSIC) Episode.TYPE_MUSIC else when(cat){
+                            "本篇" -> Episode.TYPE_MAIN
+                            "特别篇" -> Episode.TYPE_SP
+                            "OP" -> Episode.TYPE_OP
+                            "ED" -> Episode.TYPE_ED
+                            "PV" -> Episode.TYPE_PV
+                            "MAD" -> Episode.TYPE_MAD
+                            else -> Episode.TYPE_OTHER
+                        }, sort, ep_name, ep_name_cn, duration, air_date, comment, status = status, progress =  when{
+                            progress?.hasClass("statusWatched") == true -> SubjectProgress.EpisodeProgress(epId, SubjectProgress.EpisodeProgress.EpisodeStatus(SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH_ID, url_name = SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH, cn_name = "看过"))
+                            progress?.hasClass("statusQueue") == true -> SubjectProgress.EpisodeProgress(epId, SubjectProgress.EpisodeProgress.EpisodeStatus(SubjectProgress.EpisodeProgress.EpisodeStatus.QUEUE_ID, url_name = SubjectProgress.EpisodeProgress.EpisodeStatus.QUEUE, cn_name = "想看"))
+                            progress?.hasClass("statusDrop") == true -> SubjectProgress.EpisodeProgress(epId, SubjectProgress.EpisodeProgress.EpisodeStatus(SubjectProgress.EpisodeProgress.EpisodeStatus.DROP_ID, url_name = SubjectProgress.EpisodeProgress.EpisodeStatus.DROP, cn_name = "抛弃"))
+                            else -> null
+                        }, cat = cat)
+                    }
+                }?:ArrayList()
             }
         }
     }

@@ -19,7 +19,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
 import soko.ekibun.bangumi.api.github.GithubRaw
 import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
 import soko.ekibun.bangumi.api.tinygrail.bean.OnAir
-import soko.ekibun.bangumi.model.UserModel
+import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import java.lang.StringBuilder
 import java.text.SimpleDateFormat
@@ -146,8 +146,7 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
         }}))
 
         chaseCall?.cancel()
-        val user =  UserModel(pager.context).getUser()?:return
-        if(UserModel(pager.context).getToken()?.user_id?.toString() != user.id.toString()) return
+        val user = (fragment.activity as? MainActivity)?.user?:return
         val userName = user.username?:user.id.toString()
         chaseCall = Bangumi.createInstance().collection(userName)
         chaseCall?.enqueue(ApiHelper.buildCallback(pager.context, {

@@ -122,6 +122,7 @@ class TopicView(private val context: TopicActivity){
             if(subFloor == 0) {
                 referPost = it
                 referPost?.subItems?.clear()
+                it.isExpanded = false
                 true
             }
             else {

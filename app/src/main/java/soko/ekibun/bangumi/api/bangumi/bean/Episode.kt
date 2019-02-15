@@ -52,8 +52,9 @@ data class Episode(
         const val TYPE_PV = 4
         const val TYPE_MAD = 5
         const val TYPE_OTHER = 6
+        const val TYPE_MUSIC = 7
 
-        @IntDef(TYPE_MAIN, TYPE_SP, TYPE_OP, TYPE_ED, TYPE_PV, TYPE_MAD, TYPE_OTHER)
+        @IntDef(TYPE_MAIN, TYPE_SP, TYPE_OP, TYPE_ED, TYPE_PV, TYPE_MAD, TYPE_OTHER, TYPE_MUSIC)
         annotation class EpisodeType
 
         @SuppressLint("SwitchIntDef")
@@ -65,6 +66,7 @@ data class Episode(
                 TYPE_ED -> "ED"
                 TYPE_PV -> "PV"
                 TYPE_MAD -> "MAD"
+                TYPE_MUSIC -> "曲目"
                 else -> "其他"
             }
         }

@@ -3,28 +3,30 @@ package soko.ekibun.bangumi.util
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.webkit.CookieManager
+import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.AccessToken
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 
 object PlayerBridge {
     private const val EXTRA_SUBJECT = "extraSubject"
-    private const val EXTRA_TOKEN = "extraToken"
+    private const val EXTRA_COOKIE = "extraCookie"
 
     fun checkActivity(context: Context): Boolean {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("bangumi://player/0"))
         return context.packageManager.queryIntentActivities(intent, 0).size != 0
     }
 
-    fun startActivity(context: Context, subject: Subject, token: AccessToken?) {
-        context.startActivity(parseIntent(subject, token))
+    fun startActivity(context: Context, subject: Subject) {
+        context.startActivity(parseIntent(subject))
     }
 
-    private fun parseIntent(subject: Subject, token: AccessToken?): Intent {
+    private fun parseIntent(subject: Subject): Intent {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("bangumi://player/${subject.id}"))
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK
         intent.putExtra(EXTRA_SUBJECT, JsonUtil.toJson(subject))
-        intent.putExtra(EXTRA_TOKEN, JsonUtil.toJson(token?:AccessToken()))
+        intent.putExtra(EXTRA_COOKIE, CookieManager.getInstance().getCookie(Bangumi.SERVER))
         return intent
     }
 

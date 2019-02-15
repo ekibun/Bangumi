@@ -7,7 +7,6 @@ import android.view.Menu
 import android.view.View
 import kotlinx.android.synthetic.main.content_cache.*
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
 import soko.ekibun.bangumi.util.PlayerBridge
 
@@ -22,7 +21,7 @@ class CacheFragment: DrawerFragment(R.layout.content_cache) {
         item_list?.adapter = adapter
         item_list?.let{ adapter.emptyView = LayoutInflater.from(view.context).inflate(R.layout.view_empty, it, false) }
         adapter.setOnItemClickListener { _, _, position ->
-            PlayerBridge.startActivity(view.context, adapter.data[position].bangumi, UserModel(view.context).getToken())
+            PlayerBridge.startActivity(view.context, adapter.data[position].bangumi)
         }
 
     }

@@ -27,7 +27,7 @@ class TimeLineFragment: HomeTabFragment(R.layout.fragment_timeline){
 
     override fun onSelect() {
         val adapter = (item_pager?.adapter as? TimeLinePagerAdapter)?:return
-        val formhash = (activity as? MainActivity)?.formhash?:""
+        val formhash = (activity as? MainActivity)?.user?.sign?:""
         if(formhash.isEmpty()){
             item_new?.hide()
         }else {

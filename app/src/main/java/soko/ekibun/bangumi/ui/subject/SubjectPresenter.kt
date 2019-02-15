@@ -19,24 +19,21 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.*
+import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.github.GithubRaw
 import soko.ekibun.bangumi.api.github.bean.BangumiItem
 import soko.ekibun.bangumi.api.trim21.BgmIpViewer
 import soko.ekibun.bangumi.api.trim21.bean.IpView
-import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.PlayerBridge
 import java.util.*
 
 class SubjectPresenter(private val context: SubjectActivity){
-    val api by lazy { Bangumi.createInstance() }
     val subjectView by lazy{ SubjectView(context) }
-    private val userModel by lazy { UserModel(context) }
 
     fun refresh(subject: Subject){
         refreshSubject(subject)
         refreshProgress(subject)
-        refreshCollection(subject)
     }
 
     @SuppressLint("SetTextI18n")
@@ -65,7 +62,7 @@ class SubjectPresenter(private val context: SubjectActivity){
 
         context.item_play.setOnClickListener {
             if(PlayerBridge.checkActivity(context))
-                PlayerBridge.startActivity(context, subject, userModel.getToken())
+                PlayerBridge.startActivity(context, subject)
         }
 
         subjectView.episodeAdapter.setOnItemLongClickListener { _, _, position ->
@@ -75,7 +72,7 @@ class SubjectPresenter(private val context: SubjectActivity){
         }
         subjectView.episodeAdapter.setOnItemClickListener { _, view, position ->
             val eps = subjectView.episodeAdapter.data.subList(0, position + 1)
-            subjectView.episodeAdapter.data[position]?.let { userModel.getToken()?.let { token ->
+            subjectView.episodeAdapter.data[position]?.let { if(eps.last().type != Episode.TYPE_MUSIC) {
                 val epStatus = context.resources.getStringArray(R.array.episode_status)
 
                 val popupMenu = PopupMenu(context, view)
@@ -83,70 +80,47 @@ class SubjectPresenter(private val context: SubjectActivity){
                     popupMenu.menu.add(Menu.NONE, Menu.FIRST + index, index, s) }
                 popupMenu.setOnMenuItemClickListener {menu->
                     val index = menu.itemId - Menu.FIRST
-
-                    if (index == 1) {//看到
-                        val epIds = eps.map { it.id.toString() }.reduce { acc, s -> "$acc,$s" }
-                        api.updateProgress(eps.last().id, SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH, token.access_token
-                                ?: "", epIds).enqueue(
-                                ApiHelper.buildCallback(context, {
-                                    refreshProgress(subject)
-                                }, {}))
-                    } else {
-                        val newStatus = SubjectProgress.EpisodeProgress.EpisodeStatus.types[if (index > 1) index - 1 else index]
-                        api.updateProgress(it.id, newStatus, token.access_token ?: "").enqueue(
-                                ApiHelper.buildCallback(context, {
-                                    refreshProgress(subject)
-                                }, {}))
-                    }
+                    updateProgress(subject,  if (index == 1)eps else listOf(eps.last()), if (index == 1) WATCH_TO else SubjectProgress.EpisodeProgress.EpisodeStatus.types[if (index > 1) index - 1 else index] )
                     false
                 }
                 popupMenu.show()
-            } ?: { openEpisode(it, subject, eps) }() }
+            } else { openEpisode(it, subject, eps) } }
             //subjectView.episodeAdapter.data[position]?.let{ WebActivity.launchUrl(context, it.url) }
         }
 
-        userModel.getToken()?.let { token ->
+        context.item_edit_ep.setOnClickListener {
+            val eps = subjectView.episodeDetailAdapter.data.filter { it.isSelected }
+            if(eps.isEmpty()) return@setOnClickListener
+            val epStatus = context.resources.getStringArray(R.array.episode_status).toMutableList()
+            epStatus.removeAt(1)
 
-            context.item_edit_ep.setOnClickListener {
-                val eps = subjectView.episodeDetailAdapter.data.filter { it.isSelected }
-                if(eps.isEmpty()) return@setOnClickListener
-                val epStatus = context.resources.getStringArray(R.array.episode_status).toMutableList()
-                epStatus.removeAt(1)
+            val popupMenu = PopupMenu(context, context.item_edit_ep)
+            epStatus.forEachIndexed { index, s ->
+                popupMenu.menu.add(Menu.NONE, Menu.FIRST + index, index, s) }
+            popupMenu.setOnMenuItemClickListener {menu->
+                val newStatus = SubjectProgress.EpisodeProgress.EpisodeStatus.types[menu.itemId - Menu.FIRST]
+                updateProgress(subject, eps.map{it.t}, newStatus)
+                false
+            }
+            popupMenu.show()
+        }
+        subjectView.episodeDetailAdapter.updateSelection = {
+            val eps = subjectView.episodeDetailAdapter.data.filter { it.isSelected }
+            context.item_edit_ep.visibility = if(eps.isEmpty()) View.GONE else View.VISIBLE
+            context.item_ep_title.text = "${context.getText(R.string.episodes)}${if(eps.isEmpty()) "" else "(${eps.size})"}"
+        }
 
-                val popupMenu = PopupMenu(context, context.item_edit_ep)
-                epStatus.forEachIndexed { index, s ->
-                    popupMenu.menu.add(Menu.NONE, Menu.FIRST + index, index, s) }
-                popupMenu.setOnMenuItemClickListener {menu->
-                    val newStatus = SubjectProgress.EpisodeProgress.EpisodeStatus.types[menu.itemId - Menu.FIRST]
-                    val epIds = eps.map{ it.t.id.toString()}.reduce { acc, s -> "$acc,$s" }
-                    if(newStatus == SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH)
-                        api.updateProgress(eps.last().t.id, newStatus, token.access_token ?: "", epIds).enqueue(
-                                ApiHelper.buildCallback(context, {
-                                    refreshProgress(subject)
-                                }, {}))
-                    else for(ep in eps) //issues 25
-                        api.updateProgress(ep.t.id, newStatus, token.access_token ?: "").enqueue(
-                                ApiHelper.buildCallback(context, {
-                                    refreshProgress(subject)
-                                }, {}))
-                    false
-                }
-                popupMenu.show()
-            }
-            subjectView.episodeDetailAdapter.updateSelection = {
-                val eps = subjectView.episodeDetailAdapter.data.filter { it.isSelected }
-                context.item_edit_ep.visibility = if(eps.isEmpty()) View.GONE else View.VISIBLE
-                context.item_ep_title.text = "${context.getText(R.string.episodes)}${if(eps.isEmpty()) "" else "(${eps.size})"}"
-            }
-
-            subjectView.episodeDetailAdapter.setOnItemLongClickListener { _, _, position ->
-                subjectView.episodeDetailAdapter.longClickListener(position)
-            }
+        subjectView.episodeDetailAdapter.setOnItemLongClickListener { _, _, position ->
+            val eps = subjectView.episodeDetailAdapter.data.subList(0, position + 1).filter { !it.isHeader }.map { it.t }
+            if(eps.last().type == Episode.TYPE_MUSIC)
+                subjectView.episodeDetailAdapter.data[position]?.t?.let{ openEpisode(it, subject, eps)
+                    true }?:false
+            else subjectView.episodeDetailAdapter.longClickListener(position)
         }
 
         subjectView.episodeDetailAdapter.setOnItemClickListener { _, _, position ->
             val eps = subjectView.episodeDetailAdapter.data.subList(0, position + 1).filter { !it.isHeader }.map { it.t }
-            if(subjectView.episodeDetailAdapter.clickListener(position))
+            if(eps.last().type == Episode.TYPE_MUSIC || subjectView.episodeDetailAdapter.clickListener(position))
                 subjectView.episodeDetailAdapter.data[position]?.t?.let{ openEpisode(it, subject, eps) }
         }
 
@@ -210,29 +184,45 @@ class SubjectPresenter(private val context: SubjectActivity){
             else -> view.radio_remove.isChecked = true
         }
         //view.item_episode_status.setSelection(intArrayOf(4,2,0,3)[episode.progress?.status?.id?:0])
-        userModel.getToken()?.let { token ->
+        if(episode.type != Episode.TYPE_MUSIC) {
             view.item_episode_status.setOnCheckedChangeListener { _, checkedId ->
-                val newStatus = when(checkedId){
-                    R.id.radio_watch_to ->{
-                        val epIds = eps.map{ it.id.toString()}.reduce { acc, s -> "$acc,$s" }
-                        api.updateProgress(eps.last().id, SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH, token.access_token ?: "", epIds).enqueue(
-                                ApiHelper.buildCallback(context, {
-                                    refreshProgress(subject)
-                                }, {}))
-                        return@setOnCheckedChangeListener }
+                updateProgress(subject, if(checkedId == R.id.radio_watch_to)eps else listOf(episode), when(checkedId){
+                    R.id.radio_watch_to -> WATCH_TO
                     R.id.radio_watch -> SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH
                     R.id.radio_queue -> SubjectProgress.EpisodeProgress.EpisodeStatus.QUEUE
                     R.id.radio_drop -> SubjectProgress.EpisodeProgress.EpisodeStatus.DROP
-                    else -> SubjectProgress.EpisodeProgress.EpisodeStatus.REMOVE }
-                api.updateProgress(episode.id, newStatus, token.access_token ?: "").enqueue(
-                        ApiHelper.buildCallback(context, {
-                            refreshProgress(subject)
-                        }, {}))
+                    else -> SubjectProgress.EpisodeProgress.EpisodeStatus.REMOVE
+                })
             }
-        }?:{
+        }else {
             view.item_episode_status.visibility = View.GONE
-        }()
+        }
         showDialog(view)
+    }
+
+    fun updateProgress(subject: Subject, eps: List<Episode>, newStatus: String){
+        if(newStatus == WATCH_TO){
+            val epIds = eps.map{ it.id.toString()}.reduce { acc, s -> "$acc,$s" }
+            Bangumi.updateProgress(eps.last().id, SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH, context.formhash, context.ua, epIds).enqueue(
+                    ApiHelper.buildCallback(context, {
+                        val epStatus = SubjectProgress.EpisodeProgress.EpisodeStatus.getStatus(SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH)
+                        eps.forEach { it.progress = if(epStatus != null) SubjectProgress.EpisodeProgress(it.id, epStatus) else null }
+                        subjectView.episodeAdapter.notifyDataSetChanged()
+                        subjectView.episodeDetailAdapter.notifyDataSetChanged()
+                        refreshProgress(subject)
+                    }, {}))
+            return
+        }
+        eps.forEach {episode->
+            Bangumi.updateProgress(episode.id, newStatus, context.formhash, context.ua).enqueue(
+                    ApiHelper.buildCallback(context, {
+                        val epStatus = SubjectProgress.EpisodeProgress.EpisodeStatus.getStatus(newStatus)
+                        episode.progress = if(epStatus != null) SubjectProgress.EpisodeProgress(episode.id, epStatus) else null
+                        subjectView.episodeAdapter.notifyDataSetChanged()
+                        subjectView.episodeDetailAdapter.notifyDataSetChanged()
+                        refreshProgress(subject)
+                    }, {}))
+        }
     }
 
     private fun showDialog(view: View): Dialog{
@@ -256,12 +246,10 @@ class SubjectPresenter(private val context: SubjectActivity){
         subjectCall = Bangumi.getSubject(subject)
         subjectCall?.enqueue(ApiHelper.buildCallback(context, {
             refreshLines(it)
+            refreshCollection(it)
             subjectView.updateSubject(it)
         }, {}))
 
-        api.subjectEp(subject.id).enqueue(ApiHelper.buildCallback(context, {
-            subjectView.updateEpisode(it)
-        }, {}))
         BgmIpViewer.createInstance().subject(subject.id).enqueue(ApiHelper.buildCallback(context, {
             val bgmIp = it.nodes?.firstOrNull { it.subject_id == subject.id }?:return@buildCallback
             val id = it.edges?.firstOrNull{edge-> edge.source == bgmIp.id && edge.relation == "主线故事"}?.target?:bgmIp.id
@@ -313,8 +301,9 @@ class SubjectPresenter(private val context: SubjectActivity){
                 subjectView.commentAdapter.loadMoreComplete()
                 subjectView.commentAdapter.addData(it)
             }
+        }, {
             subjectView.detail.item_comment_header.visibility = View.VISIBLE
-        }, {subjectView.commentAdapter.loadMoreFail()}))
+            subjectView.commentAdapter.loadMoreFail()}))
     }
 
     private fun refreshLines(subject: Subject){
@@ -337,114 +326,63 @@ class SubjectPresenter(private val context: SubjectActivity){
                 .setNegativeButton("取消") { _, _ -> }.setPositiveButton("确定") { _, _ ->
                     ApiHelper.buildHttpCall("${Bangumi.SERVER}/subject/${subject.id}/remove?gh=${context.formhash}", mapOf("User-Agent" to context.ua)){ it.code() == 200 }
                             .enqueue(ApiHelper.buildCallback(context, {
+                                if(it) subject.interest = Collection()
                                 refreshCollection(subject)
                             }, {}))
                 }.show()
     }
 
     private fun refreshCollection(subject: Subject){
-        userModel.getToken()?.let{token ->
-            //Log.v("token", token.toString())
-            api.collectionStatus(subject.id, token.access_token?:"").enqueue(ApiHelper.buildCallback(context, { body->
-                val status = body.status
-                context.item_collect_image.setImageDrawable(context.resources.getDrawable(
-                        if(status?.id in listOf(1, 2, 3, 4)) R.drawable.ic_heart else R.drawable.ic_heart_outline, context.theme))
-                context.item_collect_info.text = status?.name?:context.getString(R.string.collect)
+        val body = subject.interest?:Collection()
+        val status = body.status
+        context.item_collect_image.setImageDrawable(context.resources.getDrawable(
+                if(status?.id in listOf(1, 2, 3, 4)) R.drawable.ic_heart else R.drawable.ic_heart_outline, context.theme))
+        context.item_collect_info.text = status?.name?:context.getString(R.string.collect)
 
-                context.item_collect.setOnClickListener{
-                    val popupMenu = PopupMenu(context, context.item_collect)
-                    val statusList = context.resources.getStringArray(R.array.collection_status)
-                    statusList.forEachIndexed { index, s ->
-                        popupMenu.menu.add(Menu.NONE, Menu.FIRST + index, index, s) }
-                    if(status != null && context.formhash.isNotEmpty())
-                        popupMenu.menu.add(Menu.NONE, Menu.FIRST + statusList.size, statusList.size, "删除")
-                    popupMenu.setOnMenuItemClickListener {menu->
-                        if(menu.itemId == Menu.FIRST + statusList.size){
-                            removeCollection(subject)
-                            return@setOnMenuItemClickListener false
-                        }
-                        val newStatus = CollectionStatusType.status[menu.itemId - Menu.FIRST]
-                        val newTags = if(body.tag?.isNotEmpty() == true) body.tag.reduce { acc, s -> "$acc $s" } else ""
-                        api.updateCollectionStatus(subject.id, token.access_token?:"",
-                                newStatus, newTags, body.comment, body.rating, body.private).enqueue(ApiHelper.buildCallback(context,{},{
-                            refreshCollection(subject)
-                        }))
-                        false
-                    }
-                    popupMenu.show()
+        context.item_collect.setOnClickListener{
+            if(context.formhash.isEmpty()) return@setOnClickListener
+            val popupMenu = PopupMenu(context, context.item_collect)
+            val statusList = context.resources.getStringArray(R.array.collection_status)
+            statusList.forEachIndexed { index, s ->
+                popupMenu.menu.add(Menu.NONE, Menu.FIRST + index, index, s) }
+            if(status != null)
+                popupMenu.menu.add(Menu.NONE, Menu.FIRST + statusList.size, statusList.size, "删除")
+            popupMenu.setOnMenuItemClickListener {menu->
+                if(menu.itemId == Menu.FIRST + statusList.size){
+                    removeCollection(subject)
+                    return@setOnMenuItemClickListener false
                 }
+                val newStatus = CollectionStatusType.status[menu.itemId - Menu.FIRST]
+                val newTags = if(body.tag?.isNotEmpty() == true) body.tag.reduce { acc, s -> "$acc $s" } else ""
+                Bangumi.updateCollectionStatus(subject, context.formhash, context.ua,
+                        newStatus, newTags, body.comment?:"", body.rating, body.private).enqueue(ApiHelper.buildCallback(context,{
+                    subject.interest = it
+                    refreshCollection(subject)
+                },{}))
+                false
+            }
+            popupMenu.show()
+        }
 
-                context.item_collect.setOnLongClickListener {
-                    EditSubjectDialog.showDialog(context, subject, body, context.formhash, token.access_token?:""){
-                        if(it) removeCollection(subject)
-                        else refreshCollection(subject)
-                    }
-                    /*
-                    val view = context.layoutInflater.inflate(R.layout.dialog_edit_subject, context.item_collect, false)
-                    view.item_subject_title.text = subject.getPrettyName()
-                    val selectMap = mapOf(
-                            CollectionStatusType.WISH to R.id.radio_wish,
-                            CollectionStatusType.COLLECT to R.id.radio_collect,
-                            CollectionStatusType.DO to R.id.radio_do,
-                            CollectionStatusType.ON_HOLD to R.id.radio_hold,
-                            CollectionStatusType.DROPPED to R.id.radio_dropped)
-                    val adapter = EditTagAdapter()
-                    val layoutManager = LinearLayoutManager(context)
-                    layoutManager.orientation = LinearLayoutManager.HORIZONTAL
-                    view.item_tag_list.layoutManager = layoutManager
-                    view.item_tag_list.adapter = adapter
-                    if(status != null){
-                        view.item_subject_status.check(selectMap[status.type]!!)
-                        view.item_rating.rating = body.rating.toFloat()
-                        view.item_comment.setText(body.comment)
-                        view.item_private.isChecked = body.private == 1
-                        adapter.setNewData(body.tag?.filter { it.isNotEmpty() })
-                    }
-                    val dialog = showDialog(view)
-                    dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-                    view.item_remove.visibility = if(context.formhash.isEmpty()) View.INVISIBLE else View.VISIBLE
-                    view.item_tag_add.setOnClickListener {
-                        val editText = EditText(context)
-                        AlertDialog.Builder(context)
-                                .setView(editText)
-                                .setTitle("添加标签")
-                                .setPositiveButton("提交"){ _, _ ->
-                                    adapter.addData(editText.text.split(" ").filter { it.isNotEmpty() })
-                                }.show()
-                    }
-
-                    view.item_remove.setOnClickListener {
-                        dialog.dismiss()
-                        removeCollection(subject)
-                    }
-                    view.item_outside.setOnClickListener {
-                        dialog.dismiss()
-                    }
-                    view.item_submit.setOnClickListener {
-                        dialog.dismiss()
-                        val newStatus = selectMap.toList().first { it.second == view.item_subject_status.checkedRadioButtonId }.first
-                        val newRating = view.item_rating.rating.toInt()
-                        val newComment = view.item_comment.text.toString()
-                        val newPrivacy = if(view.item_private.isChecked) 1 else 0
-                        val newTags = if(adapter.data.isNotEmpty()) adapter.data.reduce { acc, s -> "$acc $s" } else ""
-                        api.updateCollectionStatus(subject.id, token.access_token?:"",
-                                newStatus, newTags, newComment, newRating, newPrivacy).enqueue(ApiHelper.buildCallback(context,{},{
-                            refreshCollection(subject)
-                        }))
-                    }*/
-                    true
-                }
-            }, {}))
+        context.item_collect.setOnLongClickListener {
+            EditSubjectDialog.showDialog(context, subject, body, context.formhash, context.ua){
+                if(it) removeCollection(subject)
+                else refreshCollection(subject)
+            }
+            true
         }
     }
 
+    private var epCalls: Call<List<Episode>>? = null
     private fun refreshProgress(subject: Subject){
-        userModel.getToken()?.let{token ->
-            api.progress(token.user_id.toString(), subject.id, token.access_token?:"").enqueue(ApiHelper.buildCallback(context, {
-                subjectView.progress = it
-            }, {
-                subjectView.progress = null
-                subjectView.loadedProgress = true }))
-        }
+        epCalls?.cancel()
+        epCalls = Bangumi.getSubjectEps(subject.id)
+        epCalls?.enqueue(ApiHelper.buildCallback(context, {
+            subjectView.updateEpisode(it)
+        }, {}))
+    }
+
+    companion object {
+        const val WATCH_TO = "watch_to"
     }
 }

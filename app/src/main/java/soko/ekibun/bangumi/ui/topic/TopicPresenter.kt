@@ -13,7 +13,6 @@ import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
-import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.JsonUtil
 import soko.ekibun.bangumi.util.ResourceUtil
@@ -31,7 +30,7 @@ class TopicPresenter(private val context: TopicActivity) {
     fun getTopic(scrollPost: String = ""){
         context.item_swipe.isRefreshing = true
         getTopicApi{ topic ->
-            if(topic.user_id.isNullOrEmpty() && UserModel(context).getToken() != null){
+            if(topic.user_id.isNullOrEmpty()){
                 context.item_swipe.isRefreshing = true
                 val cookieManager = CookieManager.getInstance()
                 ApiHelper.buildHttpCall(Bangumi.SERVER, mapOf("User-Agent" to ua)){ response ->
@@ -166,6 +165,8 @@ class TopicPresenter(private val context: TopicActivity) {
                 data.add("content", comment + inputString)
                 ApiHelper.buildHttpCall(post, body = data.build()){ response ->
                     val replies = ArrayList(topicView.adapter.data)
+                    replies.removeAll { it.sub_floor > 0 }
+                    replies.toTypedArray().forEach { replies.addAll(it.subItems?:return@forEach) }
                     val posts = JsonUtil.toJsonObject(response.body()?.string()?:"").getAsJsonObject("posts")
                     val main = JsonUtil.toEntity<Map<String, TopicPost>>(posts.get("main")?.toString()?:"", object: TypeToken<Map<String, TopicPost>>(){}.type)?: HashMap()
                     main.forEach {

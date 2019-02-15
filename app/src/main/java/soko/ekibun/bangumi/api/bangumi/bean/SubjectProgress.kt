@@ -1,5 +1,6 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
+import android.support.annotation.IntDef
 import android.support.annotation.StringDef
 
 class SubjectProgress {
@@ -12,16 +13,21 @@ class SubjectProgress {
     //var subject_id: Int = 0
     var eps: List<EpisodeProgress>? = null
 
-    class EpisodeProgress {
+    data class EpisodeProgress(
+            var id: Int = 0,
+            var status: EpisodeStatus? = null
+    ) {
         /**
          * id : 730511
          * status : {"id":2,"css_name":"Watched","url_name":"watched","cn_name":"看过"}
          */
 
-        var id: Int = 0
-        var status: EpisodeStatus? = null
-
-        class EpisodeStatus {
+        data class EpisodeStatus(
+                @EpStatusId var id: Int = 0,
+                //var css_name: String? = null,
+                @EpStatusType var url_name: String? = null,
+                var cn_name: String? = null
+        ) {
             /**
              * id : 2
              * css_name : Watched
@@ -29,19 +35,12 @@ class SubjectProgress {
              * cn_name : 看过
              */
 
-            var id: Int = 0
-            //var css_name: String? = null
-            var url_name: String? = null
-            var cn_name: String? = null
-
             companion object {
-                /*
                 const val WATCH_ID = 2
                 const val QUEUE_ID = 1
                 const val DROP_ID = 3
                 @IntDef(WATCH_ID, QUEUE_ID, DROP_ID)
                 annotation class EpStatusId
-                */
 
                 const val WATCH = "watched"
                 const val QUEUE = "queue"
@@ -50,6 +49,15 @@ class SubjectProgress {
                 @StringDef(WATCH, QUEUE, DROP, REMOVE)
                 annotation class EpStatusType
                 val types = arrayOf(WATCH, QUEUE, DROP, REMOVE)
+
+                fun getStatus(status: String): EpisodeStatus?{
+                    return when(status){
+                        WATCH -> EpisodeStatus(WATCH_ID, status, "看过")
+                        QUEUE -> EpisodeStatus(QUEUE_ID, status, "想看")
+                        DROP -> EpisodeStatus(DROP_ID, status, "抛弃")
+                        else -> return null
+                    }
+                }
             }
         }
     }

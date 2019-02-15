@@ -29,7 +29,8 @@ data class Subject(
         var commend: List<Subject>? = null,
         var tags: List<Pair<String, Int>>? = null,
         var typeString: String? = null,
-        var formhash: String? = null
+        var formhash: String? = null,
+        var interest: Collection? = null
 ){
     fun getPrettyName(): String{
         return ((if(name_cn.isNullOrEmpty()) name else name_cn)?:"").replace("&amp;", "&")

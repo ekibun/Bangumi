@@ -32,5 +32,6 @@
             app:layout_constraintTop_toBottomOf="@+id/item_tabs"
             app:layout_constraintBottom_toBottomOf="parent"/>
     <include android:id="@+id/item_login_info"
+             android:visibility="invisible"
              layout="@layout/view_login"/>
 </android.support.constraint.ConstraintLayout>

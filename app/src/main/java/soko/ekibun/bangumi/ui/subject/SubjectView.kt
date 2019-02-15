@@ -26,12 +26,12 @@ import kotlinx.android.synthetic.main.subject_buttons.*
 import kotlinx.android.synthetic.main.subject_character.*
 import kotlinx.android.synthetic.main.subject_detail.*
 import kotlinx.android.synthetic.main.subject_episode.*
+import kotlinx.android.synthetic.main.subject_episode.view.*
 import kotlinx.android.synthetic.main.subject_topic.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
-import soko.ekibun.bangumi.api.bangumi.bean.SubjectProgress
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
 import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarAdapter
 import soko.ekibun.bangumi.ui.view.DragPhotoView
@@ -265,17 +265,11 @@ class SubjectView(private val context: SubjectActivity){
         }
     }
 
-    fun updateEpisode(subject: Subject){
-        ((subject.eps as? List<*>)?.map{ JsonUtil.toEntity(JsonUtil.toJson(it!!), Episode::class.java)!!})?.let{
-            updateEpisode(it)
-        }
-    }
-
-    private fun updateEpisode(episodes: List<Episode>){
+    fun updateEpisode(episodes: List<Episode>){
         if(episodes.none { it.id != 0 }) return
-        val mainEps = episodes.filter { it.type == Episode.TYPE_MAIN }
+        val mainEps = episodes.filter { it.type == Episode.TYPE_MAIN || it.type == Episode.TYPE_MUSIC }
         val eps = mainEps.filter { (it.status ?: "") in listOf("Air") }.size
-        context.episode_detail?.text = context.getString(if(eps == mainEps.size) R.string.phrase_full else R.string.phrase_updating, eps)
+        detail.episode_detail.text = context.getString(if(eps == mainEps.size) R.string.phrase_full else R.string.phrase_updating, eps)
 
         val maps = LinkedHashMap<String, List<Episode>>()
         episodes.forEach {
@@ -292,39 +286,22 @@ class SubjectView(private val context: SubjectActivity){
                 episodeDetailAdapter.addData(EpisodeAdapter.SelectableSectionEntity(ep))
             }
         }
-        progress = progress
+        if(!scrolled && episodeAdapter.data.size>0){
+            scrolled = true
+
+            var lastView = 0
+            episodeAdapter.data.forEachIndexed { index, episode ->
+                if(episode.progress != null)
+                    lastView = index
+            }
+            val layoutManager = (detail.episode_list.layoutManager as LinearLayoutManager)
+            layoutManager.scrollToPositionWithOffset(lastView, 0)
+            layoutManager.stackFromEnd = false
+        }
+        detail.item_episodes.visibility = if(episodeDetailAdapter.data.isEmpty()) View.GONE else View.VISIBLE
     }
 
     private var scrolled = false
-    var loadedProgress = false
-    var progress: SubjectProgress? = null
-        set(value) {
-            episodeDetailAdapter.data.forEach { ep ->
-                ep.t?.progress = null
-                value?.eps?.forEach {
-                    if (ep.t?.id == it.id) {
-                        ep.t?.progress = it
-                    }
-                }
-            }
-            episodeAdapter.notifyDataSetChanged()
-            episodeDetailAdapter.notifyDataSetChanged()
-            field = value
-
-            if(!scrolled && loadedProgress && episodeAdapter.data.size>0){
-                scrolled = true
-
-                var lastView = 0
-                episodeAdapter.data.forEachIndexed { index, episode ->
-                    if(episode.progress != null)
-                        lastView = index
-                }
-                val layoutManager = (context.episode_list.layoutManager as LinearLayoutManager)
-                layoutManager.scrollToPositionWithOffset(lastView, 0)
-                layoutManager.stackFromEnd = false
-            }
-            detail.item_episodes.visibility = if(episodeDetailAdapter.data.isEmpty()) View.GONE else View.VISIBLE
-        }
 
     private fun showEpisodeDetail(show: Boolean){
         context.episode_detail_list_header.visibility = if(show) View.VISIBLE else View.INVISIBLE
