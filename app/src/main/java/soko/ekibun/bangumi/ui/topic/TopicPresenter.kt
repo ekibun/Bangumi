@@ -2,7 +2,6 @@ package soko.ekibun.bangumi.ui.topic
 
 import android.annotation.SuppressLint
 import android.support.v7.app.AlertDialog
-import android.webkit.CookieManager
 import android.webkit.WebView
 import com.google.gson.reflect.TypeToken
 import kotlinx.android.synthetic.main.activity_topic.*
@@ -28,29 +27,8 @@ class TopicPresenter(private val context: TopicActivity) {
 
     private val ua by lazy { WebView(context).settings.userAgentString }
     fun getTopic(scrollPost: String = ""){
-        context.item_swipe.isRefreshing = true
-        getTopicApi{ topic ->
-            if(topic.user_id.isNullOrEmpty()){
-                context.item_swipe.isRefreshing = true
-                val cookieManager = CookieManager.getInstance()
-                ApiHelper.buildHttpCall(Bangumi.SERVER, mapOf("User-Agent" to ua)){ response ->
-                    val doc = Jsoup.parse(response.body()?.string()?:"")
-                    if(doc.selectFirst(".guest") != null) return@buildHttpCall null
-                    response.headers("set-cookie").forEach {
-                        cookieManager.setCookie(Bangumi.SERVER, it) }
-                    doc.selectFirst("input[name=formhash]")?.attr("value")
-                }.enqueue(ApiHelper.buildCallback(context, { hash->
-                    if(hash.isNullOrEmpty()) processTopic(topic, scrollPost)
-                    else getTopicApi{
-                        processTopic(it, scrollPost)
-                    }
-                }))
-            }else processTopic(topic, scrollPost)
-        }
-    }
-    private fun getTopicApi(callback: (Topic)->Unit){
-        Bangumi.getTopic(context.openUrl).enqueue(ApiHelper.buildCallback(context, {topic->
-            callback(topic)
+        Bangumi.getTopic(context.openUrl, ua).enqueue(ApiHelper.buildCallback(context, {topic->
+            processTopic(topic, scrollPost)
         }){context.item_swipe.isRefreshing = false})
     }
 

@@ -2,6 +2,7 @@ package soko.ekibun.bangumi.ui.main.fragment.home.fragment.timeline
 
 import android.os.Bundle
 import android.support.design.widget.Snackbar
+import android.support.v7.widget.PopupMenu
 import android.view.View
 import kotlinx.android.synthetic.main.fragment_timeline.*
 import okhttp3.FormBody
@@ -22,6 +23,19 @@ class TimeLineFragment: HomeTabFragment(R.layout.fragment_timeline){
         val adapter = TimeLinePagerAdapter(view.context, this, item_pager)
         item_pager?.adapter = adapter
         item_tabs?.setupWithViewPager(item_pager)
+        item_type?.text = "好友"
+        item_type?.setOnClickListener {
+            val popup = PopupMenu(view.context, item_type)
+            popup.menuInflater.inflate(R.menu.list_timeline, popup.menu)
+            popup.menu.findItem(R.id.timeline_type_self)?.isVisible = ((activity as? MainActivity)?.user?.username?:"").isNotEmpty()
+            popup.setOnMenuItemClickListener{
+                item_type?.text = it.title
+                adapter.selectedType = it.itemId
+                adapter.reset()
+                true
+            }
+            popup.show()
+        }
         onSelect()
     }
 
@@ -39,7 +53,7 @@ class TimeLineFragment: HomeTabFragment(R.layout.fragment_timeline){
                 dialog.draft = draft
                 dialog.callback = {string, send ->
                     if(send){
-                        ApiHelper.buildHttpCall("${Bangumi.SERVER}/update/user/say?ajax=1", body = FormBody.Builder()
+                        ApiHelper.buildHttpCall("${Bangumi.SERVER}/update/user/say?ajax=1", mapOf("User-Agent" to ((activity as? MainActivity)?.ua?:"")), body = FormBody.Builder()
                                 .add("say_input", string)
                                 .add("formhash", formhash)
                                 .add("submit", "submit").build()){

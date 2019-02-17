@@ -475,12 +475,13 @@ interface Bangumi {
 
         //timeline
         //type: global
-        fun getTimeLine(type: String, page: Int, ua: String): Call<List<TimeLine>>{
-            return ApiHelper.buildHttpCall("$SERVER/timeline?type=$type&page=$page&ajax=1", mapOf("User-Agent" to ua)){rsp ->
+        fun getTimeLine(type: String, page: Int, ua: String, usr: UserInfo?): Call<List<TimeLine>>{
+            return ApiHelper.buildHttpCall("$SERVER${if(usr == null) "" else "/user/${usr.username}"}/timeline?type=$type&page=$page&ajax=1", if(ua.isEmpty()) mapOf() else mapOf("User-Agent" to ua), useCookie = ua.isNotEmpty()){rsp ->
                 val doc = Jsoup.parse(rsp.body()?.string()?:"")
                 val ret = ArrayList<TimeLine>()
-                var usrImg = ""
-                var userUrl = ""
+                var usrImg = usr?.avatar?.large?:""
+                var userUrl = usr?.url?:""
+                val cssInfo = if(usr == null) ".info" else ".info_full"
                 doc.selectFirst("#timeline")?.children()?.forEach{ timeline ->
                     if(timeline.hasClass("Header")){
                         ret += TimeLine(true, timeline.text())
@@ -493,7 +494,7 @@ interface Bangumi {
                             userUrl = HttpUtil.getUrl(user?.attr("href")?:"", URI.create(SERVER))
                         }
                         //action
-                        val action = item.selectFirst(".info")?.childNodes()?.map {
+                        val action = item.selectFirst(cssInfo)?.childNodes()?.map {
                             if(it is TextNode || (it as? Element)?.tagName() == "a" && it.selectFirst("img") == null)
                                 it.outerHtml()
                             else if((it as? Element)?.hasClass("status") == true)
@@ -508,7 +509,7 @@ interface Bangumi {
                         val collectStar = Regex("""sstars([0-9]*)""").find(item.selectFirst(".starsinfo")?.outerHtml()?:"")?.groupValues?.get(1)?.toIntOrNull()?:0
                         //thumb
                         val thumbs = ArrayList<TimeLine.TimeLineItem.ThumbItem>()
-                        item.select(".info img")?.forEach {
+                        item.select("$cssInfo img")?.forEach {
                             val url = it.parent().attr("href")
                             val text = item.select("a[href=\"$url\"]")?.text()?:""
                             val src = getImageUrl(it)
@@ -524,8 +525,8 @@ interface Bangumi {
         }
 
         //讨论
-        fun getTopic(url: String): Call<Topic>{
-            return ApiHelper.buildHttpCall(url){
+        fun getTopic(url: String, ua: String): Call<Topic>{
+            return ApiHelper.buildHttpCall(url, mapOf("User-Agent" to ua)){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val replies = ArrayList<TopicPost>()
                 doc.select(".re_info")?.map{ it.parent() }?.forEach{

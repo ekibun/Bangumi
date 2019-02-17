@@ -116,6 +116,10 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
     companion object {
         fun parseHtml(html: String): String{
             val doc= Jsoup.parse(html, Bangumi.SERVER)
+            doc.select("img").forEach {
+                if(it.hasAttr("src")) return@forEach
+                it.attr("src", it.attr("data-cfsrc"))
+            }
             doc.body().children().forEach {
                 var appendBefore = ""
                 var appendEnd = ""

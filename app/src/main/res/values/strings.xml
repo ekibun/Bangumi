@@ -96,6 +96,9 @@
     <string name="commend">相似推荐</string>
     <string name="character_info">角色介绍</string>
     <string name="subject">条目</string>
+    <string name="friend">好友</string>
+    <string name="all">全部</string>
+    <string name="self">自己</string>
 
     <string-array name="pref_image_quality">
         <item>清晰</item>

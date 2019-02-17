@@ -21,6 +21,8 @@ class TimeLinePagerAdapter(context: Context, val fragment: TimeLineFragment, pri
     private var topicCall = HashMap<Int, Call<List<TimeLine>>>()
     val pageIndex = HashMap<Int, Int>()
 
+    var selectedType = R.id.timeline_type_friend
+
     init{
         pager.addOnPageChangeListener(object: ViewPager.OnPageChangeListener{
             override fun onPageScrollStateChanged(state: Int) {}
@@ -33,12 +35,18 @@ class TimeLinePagerAdapter(context: Context, val fragment: TimeLineFragment, pri
             } })
     }
 
+    fun reset() {
+        items.forEach {  (it.value.second.tag as? RecyclerView)?.tag = null }
+        pageIndex.clear()
+        loadTopicList()
+    }
+
     private val items = HashMap<Int, Pair<TimeLineAdapter, SwipeRefreshLayout>>()
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
         val item = items.getOrPut(position){
             val swipeRefreshLayout = SwipeRefreshLayout(container.context)
             val recyclerView = RecyclerView(container.context)
-            val adapter = TimeLineAdapter()
+            val adapter = TimeLineAdapter((fragment.activity as? MainActivity)?.ua?:"")
             adapter.emptyView = LayoutInflater.from(container.context).inflate(R.layout.view_empty, container, false)
             adapter.isUseEmpty(false)
             adapter.setEnableLoadMore(true)
@@ -70,7 +78,8 @@ class TimeLinePagerAdapter(context: Context, val fragment: TimeLineFragment, pri
             item.first.setNewData(null)
         }
         topicCall[position]?.cancel()
-        topicCall[position] = Bangumi.getTimeLine(listOf("all", "say", "subject", "progress", "blog", "mono", "relation", "group", "wiki", "index", "doujin")[position], page + 1, (fragment.activity as? MainActivity)?.ua?:"")
+        topicCall[position] = Bangumi.getTimeLine(listOf("all", "say", "subject", "progress", "blog", "mono", "relation", "group", "wiki", "index", "doujin")[position], page + 1,
+                if(selectedType != R.id.timeline_type_all) item.first.ua else "",  if(selectedType == R.id.timeline_type_self) (fragment.activity as? MainActivity)?.user else null)
         topicCall[position]?.enqueue(ApiHelper.buildCallback(item.second.context, {
             item.first.isUseEmpty(true)
             if(it.isEmpty()) item.first.loadMoreEnd()

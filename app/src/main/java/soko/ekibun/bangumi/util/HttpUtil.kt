@@ -14,13 +14,14 @@ object HttpUtil {
                 .enqueue(callback)
     }
 
-    fun getCall(url: String, header: Map<String, String> = HashMap(), body: RequestBody? = null): Call {
+    fun getCall(url: String, header: Map<String, String> = HashMap(), body: RequestBody? = null, useCookie: Boolean = true): Call {
         val request = Request.Builder()
                 .url(url)
                 .headers(Headers.of(header))
-        if (body != null)
-            request.post(body)
-        return OkHttpClient.Builder().cookieJar(WebViewCookieHandler()).build().newCall(request.build())
+        if (body != null) request.post(body)
+        val httpClient = OkHttpClient.Builder()
+        if(useCookie) httpClient.cookieJar(WebViewCookieHandler())
+        return httpClient.build().newCall(request.build())
     }
 
     fun getUrl(url: String, baseUri: URI?): String{

@@ -31,15 +31,17 @@ import java.util.*
 class SubjectPresenter(private val context: SubjectActivity){
     val subjectView by lazy{ SubjectView(context) }
 
-    fun refresh(subject: Subject){
-        refreshSubject(subject)
+    lateinit var subject: Subject
+
+    fun refresh(){
+        refreshSubject()
         refreshProgress(subject)
     }
 
     @SuppressLint("SetTextI18n")
     fun init(subject: Subject){
+        this.subject = subject
         subjectView.updateSubject(subject)
-        refresh(subject)
 
         subjectView.detail.character_detail.setOnClickListener {
             WebActivity.launchUrl(context, "${subject.url}/characters")
@@ -241,10 +243,11 @@ class SubjectPresenter(private val context: SubjectActivity){
     }
 
     private var subjectCall : Call<Subject>? = null
-    private fun refreshSubject(subject: Subject){
+    private fun refreshSubject(){
         subjectCall?.cancel()
         subjectCall = Bangumi.getSubject(subject, context.ua)
         subjectCall?.enqueue(ApiHelper.buildCallback(context, {
+            subject = it
             refreshLines(it)
             refreshCollection(it)
             subjectView.updateSubject(it)

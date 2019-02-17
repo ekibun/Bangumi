@@ -18,7 +18,7 @@ import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.HttpUtil
 import java.net.URI
 
-class TimeLineAdapter(data: MutableList<TimeLine>? = null) :
+class TimeLineAdapter(val ua: String, data: MutableList<TimeLine>? = null) :
         BaseSectionQuickAdapter<TimeLine, BaseViewHolder>
         (R.layout.item_timeline, R.layout.header_episode, data){
     override fun convertHead(helper: BaseViewHolder, item: TimeLine) {
@@ -42,7 +42,7 @@ class TimeLineAdapter(data: MutableList<TimeLine>? = null) :
         helper.itemView.item_del.setOnClickListener {
             AlertDialog.Builder(helper.itemView.context).setTitle("删除这条时间线？")
                     .setNegativeButton("取消") { _, _ -> }.setPositiveButton("确定") { _, _ ->
-                        ApiHelper.buildHttpCall("${item.t.delUrl}&ajax=1") {
+                        ApiHelper.buildHttpCall("${item.t.delUrl}&ajax=1", mapOf("User-Agent" to ua)) {
                             it.body()?.string()?.contains("\"status\":\"ok\"") == true
                         }.enqueue(ApiHelper.buildCallback<Boolean>(helper.itemView.context, {
                             if(!it) return@buildCallback

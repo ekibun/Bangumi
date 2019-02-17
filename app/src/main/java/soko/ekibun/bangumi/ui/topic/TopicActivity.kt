@@ -44,7 +44,7 @@ class TopicActivity : SwipeBackActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    val openUrl by lazy{ intent.getStringExtra(EXTRA_TOPIC) }
+    val openUrl: String by lazy{ intent.getStringExtra(EXTRA_TOPIC) }
 
     class PostList: ArrayList<TopicPost>()
 
