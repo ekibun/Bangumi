@@ -20,6 +20,7 @@ import soko.ekibun.bangumi.util.HtmlTagHandler
 import java.net.URI
 import android.text.style.ClickableSpan
 import android.text.style.URLSpan
+import android.util.Log
 import android.util.Size
 import android.widget.TextView
 import com.chad.library.adapter.base.BaseMultiItemQuickAdapter
@@ -116,6 +117,7 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
     companion object {
         fun parseHtml(html: String): String{
             val doc= Jsoup.parse(html, Bangumi.SERVER)
+            doc.select("script").remove()
             doc.select("img").forEach {
                 if(!it.hasAttr("src")) it.remove()
             }

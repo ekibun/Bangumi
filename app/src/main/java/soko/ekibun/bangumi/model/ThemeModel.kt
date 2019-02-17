@@ -23,7 +23,7 @@ class ThemeModel(context: Context){
         const val PREF_NIGHT="night"
 
         fun setTheme(context: Activity, night: Boolean){
-            if((AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) != night){
+            if((night && (AppCompatDelegate.getDefaultNightMode() != AppCompatDelegate.MODE_NIGHT_YES)) || (!night && (AppCompatDelegate.getDefaultNightMode() != AppCompatDelegate.MODE_NIGHT_NO))){
                 AppCompatDelegate.setDefaultNightMode(if(night) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO)
                 context.recreate()
             }
