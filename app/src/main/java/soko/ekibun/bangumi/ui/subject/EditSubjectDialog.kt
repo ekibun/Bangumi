@@ -24,7 +24,6 @@ class EditSubjectDialog: DialogFragment() {
             val dialog = EditSubjectDialog()
             dialog.subject = subject
             dialog.status = status
-            dialog.status = status
             dialog.formhash = formhash
             dialog.callback = callback
             dialog.ua = ua

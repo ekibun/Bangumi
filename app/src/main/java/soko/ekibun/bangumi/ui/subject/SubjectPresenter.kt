@@ -47,6 +47,12 @@ class SubjectPresenter(private val context: SubjectActivity){
             WebActivity.launchUrl(context, "${subject.url}/characters")
         }
 
+        subjectView.detail.item_progress_edit.setOnClickListener {
+            EditProgressDialog.showDialog(context, this.subject, context.formhash, context.ua){
+                refresh()
+            }
+        }
+
         context.title_expand.setOnClickListener {
             WebActivity.launchUrl(context, subject.url)
         }
@@ -295,9 +301,9 @@ class SubjectPresenter(private val context: SubjectActivity){
     }
 
     private fun loadComment(subject: Subject, page: Int){
-        if(page == 1)
-            subjectView.commentAdapter.setNewData(null)
         Bangumi.getComments(subject, page, context.ua).enqueue(ApiHelper.buildCallback(context, {
+            if(page == 1)
+                subjectView.commentAdapter.setNewData(null)
             if(it?.isEmpty() == true)
                 subjectView.commentAdapter.loadMoreEnd()
             else{

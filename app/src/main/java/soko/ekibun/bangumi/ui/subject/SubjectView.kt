@@ -30,9 +30,7 @@ import kotlinx.android.synthetic.main.subject_episode.view.*
 import kotlinx.android.synthetic.main.subject_topic.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
-import soko.ekibun.bangumi.api.bangumi.bean.Episode
-import soko.ekibun.bangumi.api.bangumi.bean.Subject
-import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
+import soko.ekibun.bangumi.api.bangumi.bean.*
 import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarAdapter
 import soko.ekibun.bangumi.ui.view.DragPhotoView
 import soko.ekibun.bangumi.ui.web.WebActivity
@@ -263,6 +261,9 @@ class SubjectView(private val context: SubjectActivity){
                         .show()
             else WebActivity.launchUrl(context, subject.url)
         }
+
+        detail.item_progress.visibility = if(subject.formhash?.isNotEmpty() == true && subject.interest?.status?.type == CollectionStatusType.DO && subject.type in listOf(SubjectType.ANIME, SubjectType.REAL, SubjectType.BOOK)) View.VISIBLE else View.GONE
+        detail.item_progress_info.text = "看到 ${ if(subject.has_vol) "第 ${subject.vol_status}${ if(subject.vol_count == 0) "" else "/${subject.vol_count}" } 章 " else ""}第 ${subject.ep_status}${ if(subject.eps_count == 0) "" else "/${subject.eps_count}" } 话"
     }
 
     fun updateEpisode(episodes: List<Episode>){

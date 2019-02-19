@@ -30,7 +30,11 @@ data class Subject(
         var tags: List<Pair<String, Int>>? = null,
         var typeString: String? = null,
         var formhash: String? = null,
-        var interest: Collection? = null
+        var interest: Collection? = null,
+        var ep_status: Int = 0,
+        var vol_status: Int = 0,
+        var vol_count: Int = 0,
+        var has_vol: Boolean = false
 ){
     fun getPrettyName(): String{
         return ((if(name_cn.isNullOrEmpty()) name else name_cn)?:"").replace("&amp;", "&")

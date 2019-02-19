@@ -202,7 +202,7 @@ interface Bangumi {
                     Pair(tip.trim(':',' '),
                             it.text().substring(tip.length).trim())
                 }
-                val eps_count = infobox?.firstOrNull { it.first == "话数" }?.second?.toIntOrNull()?:subject.eps_count
+                var eps_count = infobox?.firstOrNull { it.first == "话数" }?.second?.toIntOrNull()?:subject.eps_count
                 //air-date
                 val air_date = infobox?.firstOrNull { it.first in arrayOf("放送开始", "上映年度", "开始") }?.second?.replace("/", "-")?.
                         replace("年", "-")?.replace("月", "-")?.replace("日", "")?:""
@@ -230,7 +230,20 @@ interface Bangumi {
                         img.replace("/c/", "/s/"),
                         img.replace("/c/", "/g/"))
                 //TODO Collection
-                //no eps
+                //prg
+                val ep_status = doc.selectFirst("input[name=watchedeps]")?.attr("value")?.toIntOrNull()?:0
+                val vol_status = doc.selectFirst("input[name=watched_vols]")?.attr("value")?.toIntOrNull()?:0
+                var vol_count = 0
+                var has_vol = false
+                doc.select(".prgText")?.forEach {
+                    when(it.selectFirst(".type")?.text()){
+                        "Vol." -> {
+                            has_vol = true
+                            vol_count = it.ownText()?.trim(' ', '/')?.toIntOrNull()?:0
+                        }
+                        else -> eps_count = it.ownText()?.trim(' ', '/')?.toIntOrNull()?:0
+                    }
+                }
                 //crt
                 val crt = doc.select(".subject_section").filter { it.select(".subtitle")?.text() == "角色介绍" }.getOrNull(0)?.select("li")?.map {
                     val a = it.selectFirst("a.avatar")
@@ -358,6 +371,7 @@ interface Bangumi {
                 //formhash
                 val formhash = if(doc.selectFirst(".guest") != null) "" else doc.selectFirst("input[name=formhash]")?.attr("value")
                 Subject(subject.id, subject.url, type, name, name_cn, summary, eps_count, air_date, air_weekday, rating, rank, images, infobox = infobox,
+                        ep_status = ep_status, vol_count = vol_count, vol_status = vol_status, has_vol = has_vol,
                         crt=crt, topic = topic, blog = blog, linked = linked, commend = commend, tags = tags, typeString = typeString, formhash = formhash, interest = interest)
             }
         }
@@ -653,7 +667,20 @@ interface Bangumi {
                     val name = data.attr("data-subject-name")
                     val name_cn = data.attr("data-subject-name-cn")
                     val img = getImageUrl(it.selectFirst("img"))
-                    val eps_count = it.selectFirst(".prgBatchManagerForm .grey")?.text()?.trim(' ', '/')?.toIntOrNull()?:0
+                    val ep_status = it.selectFirst("input[name=watchedeps]")?.attr("value")?.toIntOrNull()?:0
+                    var eps_count = it.selectFirst(".prgBatchManagerForm .grey")?.text()?.trim(' ', '/')?.toIntOrNull()?:0
+                    val vol_status = it.selectFirst("input[name=watched_vols]")?.attr("value")?.toIntOrNull()?:0
+                    var vol_count = 0
+                    var has_vol = false
+                    it.select(".prgText")?.forEach {
+                        when(it.selectFirst(".type")?.text()){
+                            "Chap." -> eps_count = it.ownText()?.trim(' ', '/')?.toIntOrNull()?:0
+                            "Vol." -> {
+                                has_vol = true
+                                vol_count = it.ownText()?.trim(' ', '/')?.toIntOrNull()?:0
+                            }
+                        }
+                    }
                     val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
                     val now = Date().time
                     var cat = "MAIN"
@@ -686,11 +713,12 @@ interface Bangumi {
                     val watched_eps = it.selectFirst("input[name=watchedeps]")?.attr("value")?.toIntOrNull()?:0
                     val watched_vols = it.selectFirst("input[name=watched_vols]")?.attr("value")?.toIntOrNull()?:0
                     ret += SubjectCollection(name, id, watched_eps, watched_vols, 0, Subject(
-                            id, "$SERVER/subject/$id", type, name, name_cn, eps = eps, eps_count = eps_count,
-                            images = Images(img.replace("/g/", "/l/"),
-                                    img.replace("/g/", "/m/"),
-                                    img.replace("/g/", "/c/"),
-                                    img.replace("/g/", "/s/"), img)))
+                            id, "$SERVER/subject/$id", type, name, name_cn, eps = eps,
+                            eps_count = eps_count, ep_status = ep_status, vol_count = vol_count, vol_status = vol_status, has_vol = has_vol,
+                            images = Images(img.replace("/s/", "/l/"),
+                                    img.replace("/s/", "/m/"),
+                                    img.replace("/s/", "/c/"), img,
+                                    img.replace("/s/", "/s/"))))
                 }
                 return@buildHttpCall ret
             }
