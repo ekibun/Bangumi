@@ -65,7 +65,7 @@ class TopicPresenter(private val context: TopicActivity) {
                             .setNegativeButton("取消") { _, _ -> }.setPositiveButton("确定") { _, _ ->
                                 if (post.floor == 1) {
                                     val url = topic.post.replace(Bangumi.SERVER, "${Bangumi.SERVER}/erase").replace("/new_reply", "?gh=${topic.formhash}&ajax=1")
-                                    ApiHelper.buildHttpCall(url) {
+                                    ApiHelper.buildHttpCall(url, mapOf("User-Agent" to ua)) {
                                         true
                                     }.enqueue(ApiHelper.buildCallback<Boolean>(context, {
                                         if (it) context.finish()
@@ -79,7 +79,7 @@ class TopicPresenter(private val context: TopicActivity) {
                                         "subject" -> "/erase/subject/reply/"//http://bangumi.tv/subject/reply/114260/edit
                                         else -> ""
                                     } + "${post.pst_id}?gh=${topic.formhash}&ajax=1"
-                                    ApiHelper.buildHttpCall(url) {
+                                    ApiHelper.buildHttpCall(url, mapOf("User-Agent" to ua)) {
                                         it.body()?.string()?.contains("\"status\":\"ok\"") == true
                                     }.enqueue(ApiHelper.buildCallback<Boolean>(context, {
                                         val data = ArrayList(topicView.adapter.data)
@@ -101,7 +101,7 @@ class TopicPresenter(private val context: TopicActivity) {
                         else -> ""
                     }
                     //WebActivity.launchUrl(this@TopicActivity, url)
-                    ApiHelper.buildHttpCall(url){
+                    ApiHelper.buildHttpCall(url, mapOf("User-Agent" to ua)){
                         val doc = Jsoup.parse(it.body()?.string()?:return@buildHttpCall null)
                         doc.selectFirst("#content")?.text()
                     }.enqueue(ApiHelper.buildCallback(context, {
@@ -111,7 +111,7 @@ class TopicPresenter(private val context: TopicActivity) {
                         }else{
                             buildPopupWindow("修改主题\"${topic.title}\""+if(post.floor == 1) "" else "的回复", it){inputString, send->
                                 if(send){
-                                    ApiHelper.buildHttpCall(url, body = FormBody.Builder()
+                                    ApiHelper.buildHttpCall(url, mapOf("User-Agent" to ua), body = FormBody.Builder()
                                             .add("formhash", topic.formhash!!)
                                             .add("title", topic.title)
                                             .add("submit", "改好了")
@@ -141,10 +141,11 @@ class TopicPresenter(private val context: TopicActivity) {
             if(send){
                 data.add("submit", "submit")
                 data.add("content", comment + inputString)
-                ApiHelper.buildHttpCall(post, body = data.build()){ response ->
+                ApiHelper.buildHttpCall(post, mapOf("User-Agent" to ua), body = data.build()){ response ->
                     val replies = ArrayList(topicView.adapter.data)
                     replies.removeAll { it.sub_floor > 0 }
                     replies.toTypedArray().forEach { replies.addAll(it.subItems?:return@forEach) }
+                    replies.sortedBy { it.floor + it.sub_floor * 1.0f/replies.size }
                     val posts = JsonUtil.toJsonObject(response.body()?.string()?:"").getAsJsonObject("posts")
                     val main = JsonUtil.toEntity<Map<String, TopicPost>>(posts.get("main")?.toString()?:"", object: TypeToken<Map<String, TopicPost>>(){}.type)?: HashMap()
                     main.forEach {

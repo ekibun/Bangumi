@@ -3,21 +3,17 @@ package soko.ekibun.bangumi.ui.search
 import android.support.v7.widget.LinearLayoutManager
 import android.text.Editable
 import android.text.TextWatcher
-//import android.util.Log
+import android.webkit.WebView
 import kotlinx.android.synthetic.main.activity_search.*
 import retrofit2.Call
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.MonoInfo
-import soko.ekibun.bangumi.api.bangumi.bean.SearchResult
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
-import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.ui.web.WebActivity
 
 class SearchPresenter(private val context: SearchActivity) {
-    val api by lazy { Bangumi.createInstance() }
-
     val typeView = SearchTypeView(context.item_type) {
         search(lastKey, true)
     }
@@ -59,6 +55,7 @@ class SearchPresenter(private val context: SearchActivity) {
     private var monoCall : Call<List<MonoInfo>>? = null
     private var lastKey = ""
     private var loadCount = 0
+    private val ua by lazy { WebView(context).settings.userAgentString }
     fun search(key: String = lastKey, refresh: Boolean = false){
         if(refresh || lastKey != key){
             lastKey = key
@@ -77,7 +74,7 @@ class SearchPresenter(private val context: SearchActivity) {
             monoCall?.cancel()
             val page = loadCount
             context.search_list.adapter = if(typeView.subjectTypeList.containsKey(typeView.selectedType)){
-                subjectCall = Bangumi.searchSubject(key, typeView.subjectTypeList[typeView.selectedType]?:0, page+1)//api.search(key, SubjectType.ALL, loadCount)
+                subjectCall = Bangumi.searchSubject(key, typeView.subjectTypeList[typeView.selectedType]?:0, page+1, ua)//api.search(key, SubjectType.ALL, loadCount)
                 subjectCall?.enqueue(ApiHelper.buildCallback(context, {list->
                     //val list =it.list
                     if(list == null || list.isEmpty())
@@ -93,7 +90,7 @@ class SearchPresenter(private val context: SearchActivity) {
                 }))
                 subjectAdapter
             }else{
-                monoCall = Bangumi.searchMono(key, typeView.monoTypeList[typeView.selectedType]?:"all", page+1)//api.search(key, SubjectType.ALL, loadCount)
+                monoCall = Bangumi.searchMono(key, typeView.monoTypeList[typeView.selectedType]?:"all", page+1, ua)//api.search(key, SubjectType.ALL, loadCount)
                 monoCall?.enqueue(ApiHelper.buildCallback(context, {list->
                     //val list =it.list
                     if(list == null || list.isEmpty())

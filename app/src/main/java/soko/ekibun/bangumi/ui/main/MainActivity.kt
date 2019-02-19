@@ -51,7 +51,7 @@ class MainActivity : AppCompatActivity() {
         }
         mainPresenter.refreshUser{
             mainPresenter.reload()
-            Bangumi.getNotify().enqueue(ApiHelper.buildCallback(this, {
+            Bangumi.getNotify(ua).enqueue(ApiHelper.buildCallback(this, {
                 notifyMenu?.badge = it.count()
             },{}))
         }
@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
-        Bangumi.getNotify().enqueue(ApiHelper.buildCallback(this, {
+        Bangumi.getNotify(ua).enqueue(ApiHelper.buildCallback(this, {
             notifyMenu?.badge = it.count()
         },{}))
     }

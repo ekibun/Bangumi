@@ -23,7 +23,6 @@ import soko.ekibun.bangumi.ui.subject.SubjectActivity
 class CollectionPagerAdapter(context: Context, val fragment: CollectionFragment, private val pager: ViewPager) : PagerAdapter(){
     private val tabList = context.resources.getStringArray(R.array.collection_status)
     private val subjectTypeView = SubjectTypeView(fragment.item_type) { reset() }
-    private val api by lazy { Bangumi.createInstance() }
 
     init{
         pager.addOnPageChangeListener(object: ViewPager.OnPageChangeListener{
@@ -87,8 +86,9 @@ class CollectionPagerAdapter(context: Context, val fragment: CollectionFragment,
         if(page == 0)
             item.second.isRefreshing = true
         val useApi = position == 2 && subjectTypeView.selectedType in arrayOf(R.id.collection_type_anime, R.id.collection_type_book, R.id.collection_type_real)
-        collectionCalls[position] = if(useApi) Bangumi.getCollection((fragment.activity as? MainActivity)?.ua?:"")//api.collection(userName)
-        else Bangumi.getCollectionList(subjectTypeView.getTypeName(), userName, CollectionStatusType.status[position], page+1)
+        val ua = (fragment.activity as? MainActivity)?.ua?:""
+        collectionCalls[position] = if(useApi) Bangumi.getCollection(ua)//api.collection(userName)
+        else Bangumi.getCollectionList(subjectTypeView.getTypeName(), userName, ua, CollectionStatusType.status[position], page+1)
         collectionCalls[position]?.enqueue(ApiHelper.buildCallback(item.second.context, {
             item.first.isUseEmpty(true)
             it.filter { !useApi || it.subject?.type == subjectTypeView.getType() }.let{

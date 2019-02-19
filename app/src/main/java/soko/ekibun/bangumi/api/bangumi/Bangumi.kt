@@ -144,11 +144,11 @@ interface Bangumi {
         }
 
         fun getCollectionList(@SubjectType.SubjectTypeName subject_type: String,
-                              username: String,
+                              username: String, ua: String,
                               @CollectionStatusType.CollectionStatusType collection_status: String,
                               page: Int = 1
         ): Call<List<SubjectCollection>>{
-            return ApiHelper.buildHttpCall("$SERVER/$subject_type/list/$username/$collection_status?page=$page"){
+            return ApiHelper.buildHttpCall("$SERVER/$subject_type/list/$username/$collection_status?page=$page", mapOf("User-Agent" to ua)){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<SubjectCollection>()
                 doc.select(".item").forEach {
@@ -362,8 +362,8 @@ interface Bangumi {
             }
         }
 
-        fun searchSubject(keywords: String, @SubjectType.SubjectType @Query("type") type: Int = SubjectType.ALL, page: Int): Call<List<Subject>>{
-            return ApiHelper.buildHttpCall("$SERVER/subject_search/${java.net.URLEncoder.encode(keywords, "utf-8")}?cat=$type&page=$page"){
+        fun searchSubject(keywords: String, @SubjectType.SubjectType @Query("type") type: Int = SubjectType.ALL, page: Int, ua: String): Call<List<Subject>>{
+            return ApiHelper.buildHttpCall("$SERVER/subject_search/${java.net.URLEncoder.encode(keywords, "utf-8")}?cat=$type&page=$page", mapOf("User-Agent" to ua)){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<Subject>()
                 doc.select(".item")?.forEach{
@@ -387,8 +387,8 @@ interface Bangumi {
             }
         }
 
-        fun searchMono(keywords: String, type: String, page: Int): Call<List<MonoInfo>>{
-            return ApiHelper.buildHttpCall("$SERVER/mono_search/${java.net.URLEncoder.encode(keywords, "utf-8")}?cat=$type&page=$page"){
+        fun searchMono(keywords: String, type: String, page: Int, ua: String): Call<List<MonoInfo>>{
+            return ApiHelper.buildHttpCall("$SERVER/mono_search/${java.net.URLEncoder.encode(keywords, "utf-8")}?cat=$type&page=$page", mapOf("User-Agent" to ua)){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<MonoInfo>()
                 doc.select(".light_odd")?.forEach{
@@ -404,8 +404,8 @@ interface Bangumi {
             }
         }
 
-        fun getComments(subject: Subject, page: Int): Call<List<Comment>>{
-            return ApiHelper.buildHttpCall("${subject.url?:""}/comments?page=$page"){
+        fun getComments(subject: Subject, page: Int, ua: String): Call<List<Comment>>{
+            return ApiHelper.buildHttpCall("${subject.url?:""}/comments?page=$page", mapOf("User-Agent" to ua)){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<Comment>()
                 doc.selectFirst("#comment_box")?.let{
@@ -429,8 +429,8 @@ interface Bangumi {
 
         fun browserAirTime(@SubjectType.SubjectTypeName subject_type: String,
                             year: Int, month: Int,
-                            page: Int = 1): Call<List<Subject>>{
-            return ApiHelper.buildHttpCall("$SERVER/$subject_type/browser/airtime/$year-$month?page=$page"){
+                            page: Int = 1, ua: String): Call<List<Subject>>{
+            return ApiHelper.buildHttpCall("$SERVER/$subject_type/browser/airtime/$year-$month?page=$page", mapOf("User-Agent" to ua)){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<Subject>()
                 doc.select(".item")?.forEach{
@@ -454,9 +454,9 @@ interface Bangumi {
         }
 
         //超展开
-        fun getRakuen(type: String): Call<List<Rakuen>>{
+        fun getRakuen(type: String, ua: String): Call<List<Rakuen>>{
             val url = "$SERVER/m" + if(type.isEmpty()) "" else "?type=$type"
-            return ApiHelper.buildHttpCall(url){
+            return ApiHelper.buildHttpCall(url, mapOf("User-Agent" to ua)){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<Rakuen>()
                 doc.select(".item_list")?.forEach{
@@ -579,8 +579,8 @@ interface Bangumi {
         }
 
         //通知
-        fun getNotify(): Call<List<Notify>>{
-            return ApiHelper.buildHttpCall("$SERVER/notify"){
+        fun getNotify(ua: String): Call<List<Notify>>{
+            return ApiHelper.buildHttpCall("$SERVER/notify", mapOf("User-Agent" to ua)){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<Notify>()
                 doc.select(".tml_item")?.forEach {

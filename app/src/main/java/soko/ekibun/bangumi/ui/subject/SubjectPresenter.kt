@@ -297,7 +297,7 @@ class SubjectPresenter(private val context: SubjectActivity){
     private fun loadComment(subject: Subject, page: Int){
         if(page == 1)
             subjectView.commentAdapter.setNewData(null)
-        Bangumi.getComments(subject, page).enqueue(ApiHelper.buildCallback(context, {
+        Bangumi.getComments(subject, page, context.ua).enqueue(ApiHelper.buildCallback(context, {
             if(it?.isEmpty() == true)
                 subjectView.commentAdapter.loadMoreEnd()
             else{

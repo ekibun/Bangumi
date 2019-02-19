@@ -14,6 +14,7 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Rakuen
+import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.topic.TopicActivity
 
 class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private val pager: ViewPager) : PagerAdapter(){
@@ -59,7 +60,7 @@ class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private
         val item = items[position]?:return
         item.first.isUseEmpty(false)
         topicCall[position]?.cancel()
-        topicCall[position] = Bangumi.getRakuen(listOf("", "group", "subject", "ep", "mono")[position])
+        topicCall[position] = Bangumi.getRakuen(listOf("", "group", "subject", "ep", "mono")[position], (fragment.activity as? MainActivity)?.ua?:"")
         item.second.isRefreshing = true
         topicCall[position]?.enqueue(ApiHelper.buildCallback(item.second.context, {
             item.first.isUseEmpty(true)
