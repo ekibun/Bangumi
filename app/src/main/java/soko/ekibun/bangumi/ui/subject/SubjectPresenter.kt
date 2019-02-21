@@ -119,6 +119,7 @@ class SubjectPresenter(private val context: SubjectActivity){
         subjectView.episodeDetailAdapter.updateSelection = {
             val eps = subjectView.episodeDetailAdapter.data.filter { it.isSelected }
             context.item_edit_ep.visibility = if(eps.isEmpty()) View.GONE else View.VISIBLE
+            context.item_ep_title.visibility = context.item_edit_ep.visibility
             context.item_ep_title.text = "${context.getText(R.string.episodes)}${if(eps.isEmpty()) "" else "(${eps.size})"}"
         }
 
@@ -225,7 +226,7 @@ class SubjectPresenter(private val context: SubjectActivity){
         showDialog(view)
     }
 
-    fun updateProgress(subject: Subject, eps: List<Episode>, newStatus: String){
+    private fun updateProgress(subject: Subject, eps: List<Episode>, newStatus: String){
         if(newStatus == WATCH_TO){
             val epIds = eps.map{ it.id.toString()}.reduce { acc, s -> "$acc,$s" }
             Bangumi.updateProgress(eps.last().id, SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH, context.formhash, context.ua, epIds).enqueue(
@@ -332,7 +333,7 @@ class SubjectPresenter(private val context: SubjectActivity){
             subjectView.commentAdapter.loadMoreFail()}))
     }
 
-    var onAirInfo: OnAirInfo? = null;
+    private var onAirInfo: OnAirInfo? = null
     private fun refreshLines(subject: Subject){
         val dateList = subject.air_date?.split("-") ?: return
         val year = dateList.getOrNull(0)?.toIntOrNull()?:0

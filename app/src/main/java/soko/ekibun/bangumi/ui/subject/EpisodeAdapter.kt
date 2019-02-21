@@ -3,16 +3,19 @@ package soko.ekibun.bangumi.ui.subject
 import android.content.res.ColorStateList
 import android.support.v7.widget.RecyclerView
 import android.view.View
-import android.widget.TextView
 import com.chad.library.adapter.base.BaseSectionQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
 import com.chad.library.adapter.base.entity.SectionEntity
+import com.oushangfeng.pinnedsectionitemdecoration.PinnedHeaderItemDecoration
 import kotlinx.android.synthetic.main.item_episode.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.util.ResourceUtil
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectProgress
 import soko.ekibun.bangumi.ui.view.DragSelectTouchListener
+import com.oushangfeng.pinnedsectionitemdecoration.utils.FullSpanUtil
+
+
 
 class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null) :
         BaseSectionQuickAdapter<EpisodeAdapter.SelectableSectionEntity<Episode>, BaseViewHolder>
@@ -23,7 +26,7 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
         constructor(t: T): super(t)
     }
     override fun convertHead(helper: BaseViewHolder, item: SelectableSectionEntity<Episode>) {
-        helper.getView<TextView>(R.id.item_header).visibility = if(data.indexOf(item) == 0) View.GONE else View.VISIBLE
+        //helper.getView<TextView>(R.id.item_header).visibility = if(data.indexOf(item) == 0) View.GONE else View.VISIBLE
         helper.setText(R.id.item_header, item.header)
     }
 
@@ -59,6 +62,9 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
 
     fun setUpWithRecyclerView(recyclerView: RecyclerView): DragSelectTouchListener{
         recyclerView.adapter = this
+
+        recyclerView.addItemDecoration(PinnedHeaderItemDecoration.Builder(SECTION_HEADER_VIEW).create())
+
         val touchListener = DragSelectTouchListener()
         recyclerView.addOnItemTouchListener(touchListener)
         longClickListener = {position ->
@@ -86,5 +92,15 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
             notifyItemChanged(position)
         }
         updateSelection()
+    }
+
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        super.onAttachedToRecyclerView(recyclerView)
+        FullSpanUtil.onAttachedToRecyclerView(recyclerView, this, SECTION_HEADER_VIEW)
+    }
+
+    override fun onViewAttachedToWindow(holder: BaseViewHolder) {
+        super.onViewAttachedToWindow(holder)
+        FullSpanUtil.onViewAttachedToWindow(holder, this, SECTION_HEADER_VIEW)
     }
 }
