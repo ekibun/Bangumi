@@ -5,8 +5,10 @@ import android.app.Dialog
 import android.net.Uri
 import android.support.customtabs.CustomTabsIntent
 import android.support.v7.app.AlertDialog
+import android.support.v7.widget.LinearLayoutManager
 import android.view.*
 import android.widget.PopupMenu
+import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_subject.*
 import kotlinx.android.synthetic.main.activity_subject.view.*
 import kotlinx.android.synthetic.main.dialog_epsode.view.*
@@ -22,6 +24,8 @@ import soko.ekibun.bangumi.api.bangumi.bean.*
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.github.GithubRaw
 import soko.ekibun.bangumi.api.github.bean.BangumiItem
+import soko.ekibun.bangumi.api.tinygrail.Tinygrail
+import soko.ekibun.bangumi.api.tinygrail.bean.OnAirInfo
 import soko.ekibun.bangumi.api.trim21.BgmIpViewer
 import soko.ekibun.bangumi.api.trim21.bean.IpView
 import soko.ekibun.bangumi.ui.web.WebActivity
@@ -185,6 +189,19 @@ class SubjectPresenter(private val context: SubjectActivity){
         view.item_episode_title.setOnClickListener {
             WebActivity.launchUrl(context, "${Bangumi.SERVER}/m/topic/ep/${episode.id}", "")
         }
+        val adapter = SitesAdapter(onAirInfo?.Value?.filter { it.EpisodeId == episode.id }?.map{BangumiItem.SitesBean(it.Site, it.Name, it.Link)}?.toMutableList())
+        val emptyTextView = TextView(context)
+        val dp4 = (context.resources.displayMetrics.density * 4 + 0.5f).toInt()
+        emptyTextView.setPadding(dp4,dp4,dp4,dp4)
+        emptyTextView.text = "暂无播放源"
+        adapter.emptyView = emptyTextView
+        adapter.setOnItemClickListener { _, _, position ->
+            WebActivity.launchUrl(context, adapter.data[position].url, "")
+        }
+        view.item_site_list.adapter = adapter
+        val linearLayoutManager = LinearLayoutManager(context)
+        linearLayoutManager.orientation = LinearLayoutManager.HORIZONTAL
+        view.item_site_list.layoutManager = linearLayoutManager
         when(episode.progress?.status?.id?:0){
             1 -> view.radio_queue.isChecked = true
             2 -> view.radio_watch.isChecked = true
@@ -315,6 +332,7 @@ class SubjectPresenter(private val context: SubjectActivity){
             subjectView.commentAdapter.loadMoreFail()}))
     }
 
+    var onAirInfo: OnAirInfo? = null;
     private fun refreshLines(subject: Subject){
         val dateList = subject.air_date?.split("-") ?: return
         val year = dateList.getOrNull(0)?.toIntOrNull()?:0
@@ -327,6 +345,10 @@ class SubjectPresenter(private val context: SubjectActivity){
                 subjectView.sitesAdapter.addData(it.sites?.filter { it.site != "bangumi" }?:ArrayList())
             }
             subjectView.detail.site_list.visibility = if(subjectView.sitesAdapter.data.isEmpty()) View.GONE else View.VISIBLE
+        }, {}))
+
+        Tinygrail.createInstance().onAirInfo(subject.id).enqueue(ApiHelper.buildCallback(context, {
+            onAirInfo = it
         }, {}))
     }
 

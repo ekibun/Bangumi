@@ -9,7 +9,10 @@ import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.StaggeredGridLayoutManager
+import android.text.Html
+import android.text.method.LinkMovementMethod
 import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
@@ -21,6 +24,7 @@ import com.xiaofeng.flowlayoutmanager.FlowLayoutManager
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_subject.*
 import kotlinx.android.synthetic.main.activity_subject.view.*
+import kotlinx.android.synthetic.main.dialog_infobox.view.*
 import kotlinx.android.synthetic.main.subject_blog.*
 import kotlinx.android.synthetic.main.subject_buttons.*
 import kotlinx.android.synthetic.main.subject_character.*
@@ -28,15 +32,19 @@ import kotlinx.android.synthetic.main.subject_detail.*
 import kotlinx.android.synthetic.main.subject_episode.*
 import kotlinx.android.synthetic.main.subject_episode.view.*
 import kotlinx.android.synthetic.main.subject_topic.*
+import org.jsoup.Jsoup
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.*
 import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarAdapter
+import soko.ekibun.bangumi.ui.topic.PostAdapter.Companion.setTextLinkOpenByWebView
 import soko.ekibun.bangumi.ui.view.DragPhotoView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.AppUtil
+import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.JsonUtil
 import soko.ekibun.bangumi.util.PlayerBridge
+import java.net.URI
 
 class SubjectView(private val context: SubjectActivity){
     val episodeAdapter = SmallEpisodeAdapter()
@@ -182,9 +190,9 @@ class SubjectView(private val context: SubjectActivity){
         val saleDate = subject.infobox?.firstOrNull { it.first in arrayOf("发售日期", "发售日", "发行日期") }
         val artist = subject.infobox?.firstOrNull { it.first.substringBefore(" ") in arrayOf("动画制作", "作者", "开发", "游戏制作", "艺术家") }
                 ?:subject.infobox?.firstOrNull { it.first.substringBefore(" ") in arrayOf("导演", "发行") }
-        context.item_air_time.text = if(saleDate!= null) "${saleDate.first}：${saleDate.second}"
+        context.item_air_time.text = if(saleDate!= null) "${saleDate.first}：${Jsoup.parse(saleDate.second).body().text()}"
             else "放送日期：${subject.air_date?:""} ${if(artist != null)CalendarAdapter.weekSmall[subject.air_weekday] else ""}"
-        context.item_air_week.text = if(artist != null) "${artist.first}：${artist.second}" else "更新时间：${CalendarAdapter.weekSmall[subject.air_weekday]}"
+        context.item_air_week.text = if(artist != null) "${artist.first}：${Jsoup.parse(artist.second).body().text()}" else "更新时间：${CalendarAdapter.weekSmall[subject.air_weekday]}"
         detail.item_detail.text = subject.summary
 
         context.item_play.visibility = if(PlayerBridge.checkActivity(context) && subject.type in listOf(SubjectType.ANIME, SubjectType.REAL)) View.VISIBLE else View.GONE
@@ -255,10 +263,17 @@ class SubjectView(private val context: SubjectActivity){
         }
 
         detail.item_detail.setOnClickListener {
-            if(subject.infobox?.isNotEmpty() == true)
+            if(subject.infobox?.isNotEmpty() == true) {
+                val view = LayoutInflater.from(context).inflate(R.layout.dialog_infobox, detail, false)
+                @Suppress("DEPRECATION")
+                view.item_infobox_text.text = setTextLinkOpenByWebView(Html.fromHtml(subject.infobox?.map { "${it.first}: ${it.second}" }?.reduce { acc, s -> "$acc<br>$s" })){
+                    WebActivity.launchUrl(context, HttpUtil.getUrl(it, URI.create(Bangumi.SERVER)), "")
+                }
+                view.item_infobox_text.movementMethod = LinkMovementMethod.getInstance()
                 AlertDialog.Builder(context)
-                        .setMessage(subject.infobox?.map{"${it.first}: ${it.second}"}?.reduce { acc, s -> "$acc\n$s" })
+                        .setView(view)
                         .show()
+            }
             else WebActivity.launchUrl(context, subject.url)
         }
 

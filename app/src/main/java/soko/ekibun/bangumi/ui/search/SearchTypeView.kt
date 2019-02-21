@@ -22,14 +22,11 @@ class SearchTypeView(view: TextView, onChange:()->Unit){
     var selectedType = R.id.collection_type_all
 
     init{
-        view.text = mapOf(R.id.collection_type_mono to "人物",
-                R.id.collection_type_ctr to "虚构角色",
-                R.id.collection_type_psn to "现实人物")[selectedType]?:SubjectType.getDescription(subjectTypeList[selectedType]?:0)
-
+        val context = ContextThemeWrapper(view.context, R.style.AppTheme_PopupOverlay)
+        val popup = PopupMenu(context, view)
+        popup.menuInflater.inflate(R.menu.list_search_type, popup.menu)
+        view.text = popup.menu.findItem(selectedType)?.title
         view.setOnClickListener {
-            val context = ContextThemeWrapper(view.context, R.style.AppTheme_PopupOverlay)
-            val popup = PopupMenu(context, view)
-            popup.menuInflater.inflate(R.menu.list_search_type, popup.menu)
             popup.setOnMenuItemClickListener{
                 selectedType = it.itemId
                 view.text = it.title

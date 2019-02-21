@@ -92,7 +92,11 @@
         <activity
                 android:name=".ui.setting.SettingsActivity"
                 android:label="@string/title_activity_settings"
+                android:parentActivityName=".ui.main.MainActivity"
                 android:theme="@style/AppTheme.ActionBar">
+            <meta-data
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value=".ui.main.MainActivity" />
         </activity>
     </application>
 

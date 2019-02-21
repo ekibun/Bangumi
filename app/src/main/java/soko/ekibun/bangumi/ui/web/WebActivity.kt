@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
@@ -20,10 +19,11 @@ import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.ui.topic.TopicActivity
+import soko.ekibun.bangumi.ui.view.SwipeBackActivity
 import soko.ekibun.bangumi.util.AppUtil
 import java.net.URI
 
-class WebActivity : AppCompatActivity() {
+class WebActivity : SwipeBackActivity() {
     private val isAuth by lazy{ intent.getBooleanExtra(IS_AUTH, false)}
     private val openUrl by lazy{ intent.getStringExtra(OPEN_URL)}
 
@@ -107,18 +107,24 @@ class WebActivity : AppCompatActivity() {
     }
 
     //back
-    private fun processBack(){
+    override fun processBack(){
         when {
             webview.canGoBack() -> webview.goBack()
             else -> {
                 if(isAuth) setResult(Activity.RESULT_CANCELED, null)
-                finish()
+                super.processBack()
             }
         }
     }
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         if (keyCode == KeyEvent.KEYCODE_BACK){
-            processBack()
+            when {
+                webview.canGoBack() -> webview.goBack()
+                else -> {
+                    if(isAuth) setResult(Activity.RESULT_CANCELED, null)
+                    finish()
+                }
+            }
             return true
         }
         return super.onKeyDown(keyCode, event)
@@ -170,6 +176,7 @@ class WebActivity : AppCompatActivity() {
             val host = try{
                 URI.create(url).host
             }catch (e: Exception){ return false }
+            if(host.isNullOrEmpty()) return false
             bgmHosts.forEach {
                 if(host.contains(it)) return true
             }

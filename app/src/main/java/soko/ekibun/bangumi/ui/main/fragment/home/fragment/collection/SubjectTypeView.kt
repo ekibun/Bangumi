@@ -23,10 +23,10 @@ class SubjectTypeView(view: TextView, onChange:()->Unit){
     }
 
     init{
-        view.text = SubjectType.getDescription(typeList[selectedType]?.first?:0)
+        val popup = PopupMenu(view.context, view)
+        popup.menuInflater.inflate(R.menu.list_collection_type, popup.menu)
+        view.text = popup.menu.findItem(selectedType)?.title
         view.setOnClickListener {
-            val popup = PopupMenu(view.context, view)
-            popup.menuInflater.inflate(R.menu.list_collection_type, popup.menu)
             popup.setOnMenuItemClickListener{
                 selectedType = it.itemId
                 view.text = it.title

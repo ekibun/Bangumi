@@ -23,10 +23,10 @@ class TimeLineFragment: HomeTabFragment(R.layout.fragment_timeline){
         val adapter = TimeLinePagerAdapter(view.context, this, item_pager)
         item_pager?.adapter = adapter
         item_tabs?.setupWithViewPager(item_pager)
-        item_type?.text = "好友"
+        val popup = PopupMenu(view.context, item_type)
+        popup.menuInflater.inflate(R.menu.list_timeline, popup.menu)
+        item_type?.text = popup.menu.findItem(adapter.selectedType)?.title
         item_type?.setOnClickListener {
-            val popup = PopupMenu(view.context, item_type)
-            popup.menuInflater.inflate(R.menu.list_timeline, popup.menu)
             popup.menu.findItem(R.id.timeline_type_self)?.isVisible = ((activity as? MainActivity)?.user?.username?:"").isNotEmpty()
             popup.setOnMenuItemClickListener{
                 item_type?.text = it.title

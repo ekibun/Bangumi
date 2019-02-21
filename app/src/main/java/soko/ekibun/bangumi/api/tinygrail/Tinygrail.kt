@@ -2,6 +2,10 @@ package soko.ekibun.bangumi.api.tinygrail
 
 import org.jsoup.Jsoup
 import retrofit2.Call
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.GET
+import retrofit2.http.Path
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
@@ -9,9 +13,19 @@ import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
 import soko.ekibun.bangumi.api.tinygrail.bean.OnAir
+import soko.ekibun.bangumi.api.tinygrail.bean.OnAirInfo
 
 interface Tinygrail{
+    @GET("/api/episode/subject/{id}")
+    fun onAirInfo(@Path("id") id: Int): Call<OnAirInfo>
+
     companion object {
+        fun createInstance(): Tinygrail{
+            return Retrofit.Builder().baseUrl("https://www.tinygrail.com")
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build().create(Tinygrail::class.java)
+        }
+
         fun onAirList(): Call<Map<Int, Map<String,List<OnAir>>>> {
             return ApiHelper.buildHttpCall("https://www.tinygrail.com/api/onair/"){
                 val doc = Jsoup.parse(it.body()?.string()?:"")

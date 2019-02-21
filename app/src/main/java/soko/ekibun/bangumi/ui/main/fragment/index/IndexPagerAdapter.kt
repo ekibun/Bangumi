@@ -15,12 +15,11 @@ import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.ui.main.MainActivity
-import soko.ekibun.bangumi.ui.main.fragment.home.fragment.collection.SubjectTypeView
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import java.util.*
 
 class IndexPagerAdapter(private val fragment: IndexFragment, private val pager: ViewPager): RecyclePagerAdapter<IndexPagerAdapter.IndexPagerViewHolder>() {
-    private val subjectTypeView = SubjectTypeView(fragment.item_type) {
+    private val indexTypeView = IndexTypeView(fragment.item_type) {
         pageIndex.clear()
         pager.adapter?.notifyDataSetChanged()
     }
@@ -32,6 +31,8 @@ class IndexPagerAdapter(private val fragment: IndexFragment, private val pager: 
     private val pageIndex = SparseIntArray()
     private var indexCalls = WeakHashMap<Int, Call<List<Subject>>>()
     private fun loadIndex(item: IndexPagerViewHolder){
+        val indexType = IndexTypeView.typeList[indexTypeView.selectedType]?:return
+
         val position = item.position
         val year = position/12 + 1000
         val month = position % 12 + 1
@@ -41,7 +42,7 @@ class IndexPagerAdapter(private val fragment: IndexFragment, private val pager: 
             item.adapter.setNewData(null)
             item.view.isRefreshing = true
         }
-        indexCalls[position] = Bangumi.browserAirTime(subjectTypeView.getTypeName(), year, month, page + 1, (fragment.activity as? MainActivity)?.ua?:"")
+        indexCalls[position] = Bangumi.browserAirTime(indexType.first, year, month, page + 1, (fragment.activity as? MainActivity)?.ua?:"", indexType.second)
         item.adapter.isUseEmpty(false)
         indexCalls[position]?.enqueue(ApiHelper.buildCallback(item.view.context, {
             item.adapter.isUseEmpty(true)

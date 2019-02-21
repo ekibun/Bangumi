@@ -28,7 +28,7 @@ class SubjectActivity : SwipeBackActivity() {
         title=""
 
         subjectPresenter.init(JsonUtil.toEntity(intent.getStringExtra(SubjectActivity.EXTRA_SUBJECT)?:"", Subject::class.java)?: {
-            val id = Regex("""/subject/([0-9]+)""").find(intent.data!!.toString())!!.groupValues[1].toInt()
+            val id = Regex("""/subject/([0-9]+)""").find(intent.data?.toString()?:"")?.groupValues?.get(1)?.toIntOrNull()?:0
             Subject(id, "${Bangumi.SERVER}/subject/$id")
         }())
     }

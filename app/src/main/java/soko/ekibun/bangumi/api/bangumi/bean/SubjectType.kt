@@ -26,7 +26,8 @@ object SubjectType{
             ANIME to NAME_ANIME,
             MUSIC to NAME_MUSIC,
             GAME to NAME_GAME,
-            REAL to NAME_REAL
+            REAL to NAME_REAL,
+            BOOK to NAME_BOOK
     )
 
     @SuppressLint("SwitchIntDef")
