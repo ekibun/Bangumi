@@ -49,7 +49,7 @@ class TimeLineFragment: HomeTabFragment(R.layout.fragment_timeline){
             var draft = ""
             item_new?.setOnClickListener {
                 val dialog = ReplyDialog()
-                dialog.hint = "添加动态"
+                dialog.hint = context?.getString(R.string.timeline_dialog_add)?:""
                 dialog.draft = draft
                 dialog.callback = {string, send ->
                     if(send){
@@ -64,7 +64,7 @@ class TimeLineFragment: HomeTabFragment(R.layout.fragment_timeline){
                                 if(item_pager?.currentItem?:2 !in 0..1) item_pager?.currentItem = 1
                                 adapter.pageIndex[item_pager?.currentItem?:0] = 0
                                 adapter.loadTopicList()
-                            }else Snackbar.make(item_pager, "提交出现了一些问题，请稍后再试", Snackbar.LENGTH_SHORT).show()
+                            }else Snackbar.make(item_pager, R.string.hint_submit_error, Snackbar.LENGTH_SHORT).show()
                         }){ })
                     }else draft = string
                 }

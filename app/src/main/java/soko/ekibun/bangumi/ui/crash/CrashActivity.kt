@@ -28,7 +28,7 @@ class CrashActivity : AppCompatActivity() {
             uploadCall?.cancel()
             uploadCall = Xxxlin.createInstance().crashReport(content, AppUtil.getVersionCode(this), AppUtil.getVersionName(this))
             uploadCall?.enqueue(ApiHelper.buildCallback(this, {
-                        Snackbar.make(item_upload, if(it.code == 0) "日志上传成功" else "日志上传失败：${it.msg}", Snackbar.LENGTH_SHORT).show()
+                        Snackbar.make(item_upload, if(it.code == 0) getString(R.string.crash_upload_ok) else getString(R.string.crash_upload_failed, it.msg?:""), Snackbar.LENGTH_SHORT).show()
                         item_upload.setOnClickListener{}
                     }, {}))
         }

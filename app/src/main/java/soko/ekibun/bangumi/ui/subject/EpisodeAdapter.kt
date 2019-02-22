@@ -31,7 +31,7 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
     }
 
     override fun convert(helper: BaseViewHolder, item: SelectableSectionEntity<Episode>) {
-        helper.setText(R.id.item_title, item.t.parseSort())
+        helper.setText(R.id.item_title, item.t.parseSort(helper.itemView.context))
         helper.setText(R.id.item_desc, if(item.t.name_cn.isNullOrEmpty()) item.t.name else item.t.name_cn)
         val color = ResourceUtil.resolveColorAttr(helper.itemView.context,
                 when {

@@ -14,7 +14,7 @@ class CacheAdapter(data: MutableList<PlayerBridge.VideoCache>? = null) :
     override fun convert(helper: BaseViewHolder, item: PlayerBridge.VideoCache) {
         helper.setText(R.id.item_title, item.bangumi.getPrettyName())
         helper.setText(R.id.item_name_jp, item.bangumi.name)
-        helper.setText(R.id.item_summary, "已缓存 ${item.videoList.size} 话")
+        helper.setText(R.id.item_summary, helper.itemView.context.getString(R.string.parse_cache_eps, item.videoList.size))
         Glide.with(helper.itemView.item_cover)
                 .load(item.bangumi.images?.getImage(helper.itemView.context))
                 .apply(RequestOptions.errorOf(R.drawable.ic_404))

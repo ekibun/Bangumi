@@ -77,7 +77,7 @@ class WebActivity : SwipeBackActivity() {
                 }
             }
         }else{
-            title = getString(R.string.login_auth)
+            title = getString(R.string.login)
             val authUrl = "${Bangumi.SERVER}/login"
             webview.webChromeClient = object: WebChromeClient() {
                 override fun onProgressChanged(view: WebView, newProgress: Int) {

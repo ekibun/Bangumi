@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="horizontal"
+              android:padding="12dp"
+              tools:ignore="UseCompoundDrawables">
+    <TextView android:id="@+id/item_search_key"
+              android:layout_width="0dp"
+              android:layout_height="wrap_content"
+              android:layout_weight="1"
+              android:layout_gravity="center_vertical"
+              android:textAppearance="@android:style/TextAppearance.Material.Subhead"/>
+    <ImageView android:id="@+id/item_remove_key"
+               android:layout_width="24dp"
+               android:layout_height="24dp"
+               android:padding="2dp"
+               android:layout_gravity="center_vertical"
+               android:clickable="true"
+               android:background="?android:attr/selectableItemBackgroundBorderless"
+               android:focusable="true"
+               android:src="@drawable/ic_clear"
+               android:contentDescription="@string/search_history_remove"/>
+</LinearLayout>

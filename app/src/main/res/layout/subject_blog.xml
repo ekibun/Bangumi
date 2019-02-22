@@ -18,7 +18,7 @@
               android:layout_height="wrap_content"
               android:textAppearance="@android:style/TextAppearance.Material.Subhead"
               android:padding="12dp"
-              android:text="@string/blog"
+              android:text="@string/subject_blog"
               android:id="@+id/item_title"
               app:layout_constraintEnd_toStartOf="@+id/blog_detail"
               app:layout_constraintStart_toStartOf="parent"/>

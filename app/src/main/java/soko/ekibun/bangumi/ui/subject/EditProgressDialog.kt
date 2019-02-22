@@ -46,10 +46,11 @@ class EditProgressDialog: DialogFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.dialog_edit_progress, container)
 
+        //TODO
         view.item_eps.setText(subject.ep_status.toString())
-        view.item_eps_info.text = "${ if(subject.eps_count == 0) "" else "/${subject.eps_count}" } 话"
+        view.item_eps_info.text = "${ if(subject.eps_count == 0) "" else "/${subject.eps_count}" } ${view.context.getString(R.string.ep_unit)}"
         view.item_vol.setText(subject.vol_status.toString())
-        view.item_vol_info.text = "${ if(subject.vol_count == 0) "" else "/${subject.vol_count}" } 章"
+        view.item_vol_info.text = "${ if(subject.vol_count == 0) "" else "/${subject.vol_count}" } ${view.context.getString(R.string.vol_unit)}"
         view.item_vol_panel.visibility = if(subject.has_vol) View.VISIBLE else View.GONE
 
         view.item_outside.setOnClickListener {

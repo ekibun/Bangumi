@@ -31,7 +31,7 @@
             android:orientation="horizontal">
 
         <RadioButton
-                android:text="看过"
+                android:text="@string/episode_status_watch"
                 android:button="@null"
                 android:checked="true"
                 android:textAlignment="center"
@@ -44,7 +44,7 @@
                 android:id="@+id/radio_watch"
                 android:layout_weight="1"/>
         <RadioButton
-                android:text="看到"
+                android:text="@string/episode_status_watch_to"
                 android:button="@null"
                 android:textAlignment="center"
                 android:textColor="@drawable/color_checkable"
@@ -56,7 +56,7 @@
                 android:id="@+id/radio_watch_to"
                 android:layout_weight="1"/>
         <RadioButton
-                android:text="想看"
+                android:text="@string/episode_status_wish"
                 android:button="@null"
                 android:textAlignment="center"
                 android:textColor="@drawable/color_checkable"
@@ -68,7 +68,7 @@
                 android:id="@+id/radio_queue"
                 android:layout_weight="1"/>
         <RadioButton
-                android:text="抛弃"
+                android:text="@string/episode_status_drop"
                 android:button="@null"
                 android:textAlignment="center"
                 android:textColor="@drawable/color_checkable"
@@ -80,7 +80,7 @@
                 android:id="@+id/radio_drop"
                 android:layout_weight="1"/>
         <RadioButton
-                android:text="未看"
+                android:text="@string/episode_status_remove"
                 android:button="@null"
                 android:textAlignment="center"
                 android:textColor="@drawable/color_checkable"

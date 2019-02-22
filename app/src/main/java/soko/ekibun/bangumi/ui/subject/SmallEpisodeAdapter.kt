@@ -15,7 +15,7 @@ class SmallEpisodeAdapter(data: MutableList<Episode>? = null) :
         (R.layout.item_episode_small, data) {
 
     override fun convert(helper: BaseViewHolder, item: Episode) {
-        helper.setText(R.id.item_title, item.parseSort())
+        helper.setText(R.id.item_title, item.parseSort(helper.itemView.context))
         helper.setText(R.id.item_desc, if(item.name_cn.isNullOrEmpty()) item.name else item.name_cn)
         val color = ResourceUtil.resolveColorAttr(helper.itemView.context,
                 when {

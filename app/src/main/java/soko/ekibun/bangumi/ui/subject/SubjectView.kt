@@ -185,7 +185,7 @@ class SubjectView(private val context: SubjectActivity){
             context.title_collapse.layoutParams = layoutParams
             (context.item_subject.layoutParams as CollapsingToolbarLayout.LayoutParams).topMargin = context.toolbar_container.height
         }
-        context.item_info.text = if(subject.typeString.isNullOrEmpty()) SubjectType.getDescription(subject.type) else subject.typeString
+        context.item_info.text = if(subject.typeString.isNullOrEmpty()) context.getString(SubjectType.getDescription(subject.type)) else subject.typeString
         context.item_subject_title.visibility = View.GONE
         val saleDate = subject.infobox?.firstOrNull { it.first in arrayOf("发售日期", "发售日", "发行日期") }
         val artist = subject.infobox?.firstOrNull { it.first.substringBefore(" ") in arrayOf("动画制作", "作者", "开发", "游戏制作", "艺术家") }
@@ -222,7 +222,7 @@ class SubjectView(private val context: SubjectActivity){
             photoView.mLongClickListener = {
                 val systemUiVisibility = popWindow.contentView.systemUiVisibility
                 AlertDialog.Builder(context)
-                        .setItems(arrayOf("分享"))
+                        .setItems(arrayOf(context.getString(R.string.share)))
                         { _, _ ->
                             AppUtil.shareDrawable(context, photoView.drawable)
                         }.setOnDismissListener {
@@ -278,18 +278,21 @@ class SubjectView(private val context: SubjectActivity){
         }
 
         detail.item_progress.visibility = if(subject.formhash?.isNotEmpty() == true && subject.interest?.status?.type == CollectionStatusType.DO && subject.type in listOf(SubjectType.ANIME, SubjectType.REAL, SubjectType.BOOK)) View.VISIBLE else View.GONE
-        detail.item_progress_info.text = "看到 ${ if(subject.has_vol) "第 ${subject.vol_status}${ if(subject.vol_count == 0) "" else "/${subject.vol_count}" } 章 " else ""}第 ${subject.ep_status}${ if(subject.eps_count == 0) "" else "/${subject.eps_count}" } 话"
+        detail.item_progress_info.text = context.getString(R.string.phrase_progress,
+                (if(subject.has_vol) context.getString(R.string.parse_sort_vol, "${subject.vol_status}${ if(subject.vol_count == 0) "" else "/${subject.vol_count}" }") + " " else "") +
+                        context.getString(R.string.parse_sort_ep, "${subject.ep_status}${ if(subject.eps_count == 0) "" else "/${subject.eps_count}"}"))
     }
 
     fun updateEpisode(episodes: List<Episode>){
         if(episodes.none { it.id != 0 }) return
         val mainEps = episodes.filter { it.type == Episode.TYPE_MAIN || it.type == Episode.TYPE_MUSIC }
-        val eps = mainEps.filter { (it.status ?: "") in listOf("Air") }.size
-        detail.episode_detail.text = context.getString(if(eps == mainEps.size) R.string.phrase_full else R.string.phrase_updating, eps)
+        val eps = mainEps.filter { (it.status ?: "") in listOf("Air") }
+        detail.episode_detail.text = if(eps.size == mainEps.size) context.getString(R.string.phrase_full_eps, eps.size) else
+            eps.lastOrNull()?.parseSort(context)?.let { context.getString(R.string.parse_update_to, it)}?: context.getString(R.string.hint_air_nothing)
 
         val maps = LinkedHashMap<String, List<Episode>>()
         episodes.forEach {
-            val key = it.cat?:Episode.getTypeName(it.type)
+            val key = it.cat?: context.getString(Episode.getTypeName(it.type))
             maps[key] = (maps[key]?:ArrayList()).plus(it)
         }
         episodeAdapter.setNewData(null)

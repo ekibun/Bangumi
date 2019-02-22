@@ -23,7 +23,6 @@
                 android:layout_marginBottom="12dp"
                 android:orientation="horizontal">
             <RadioButton
-                    android:text="想看"
                     android:button="@null"
                     android:textAlignment="center"
                     android:textColor="@drawable/color_checkable"
@@ -35,7 +34,6 @@
                     android:id="@+id/radio_wish"
                     android:layout_weight="1"/>
             <RadioButton
-                    android:text="看过"
                     android:button="@null"
                     android:checked="true"
                     android:textAlignment="center"
@@ -48,7 +46,6 @@
                     android:id="@+id/radio_collect"
                     android:layout_weight="1"/>
             <RadioButton
-                    android:text="在看"
                     android:button="@null"
                     android:textAlignment="center"
                     android:textColor="@drawable/color_checkable"
@@ -60,7 +57,6 @@
                     android:id="@+id/radio_do"
                     android:layout_weight="1"/>
             <RadioButton
-                    android:text="搁置"
                     android:button="@null"
                     android:textAlignment="center"
                     android:textColor="@drawable/color_checkable"
@@ -72,7 +68,6 @@
                     android:id="@+id/radio_hold"
                     android:layout_weight="1"/>
             <RadioButton
-                    android:text="抛弃"
                     android:button="@null"
                     android:textAlignment="center"
                     android:textColor="@drawable/color_checkable"
@@ -101,7 +96,7 @@
                     android:layout_height="wrap_content"
                     android:padding="8dp"
                     android:textAppearance="@android:style/TextAppearance.Material.Subhead"
-                    android:text="标签"/>
+                    android:text="@string/subject_tag"/>
             <android.support.v7.widget.RecyclerView
                     android:id="@+id/item_tag_list"
                     android:layout_width="wrap_content"
@@ -117,22 +112,24 @@
                     android:padding="2dp"
                     android:translationX="-20dp"
                     android:src="@drawable/ic_add"
+                    android:tint="?android:textColorPrimary"
                     android:background="@drawable/bg_round_rect_unchecked"
                     app:layout_constraintTop_toTopOf="@+id/item_tag_title"
                     app:layout_constraintBottom_toBottomOf="@+id/item_tag_title"
-                    app:layout_constraintRight_toRightOf="@+id/item_tag_list"/>
+                    app:layout_constraintRight_toRightOf="@+id/item_tag_list"
+                    android:contentDescription="@string/subject_dialog_add_tag"/>
         </LinearLayout>
         <soko.ekibun.bangumi.ui.view.CleanableEditText
                 android:id="@+id/item_comment"
                 android:layout_marginLeft="8dp"
                 android:layout_marginRight="8dp"
-                android:hint="@string/comment"
+                android:hint="@string/subject_comment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/textSizeMedium"/>
         <Switch
                 android:id="@+id/item_private"
-                android:text="@string/private_collection"
+                android:text="@string/subject_collection_private"
                 android:padding="8dp"
                 android:textAppearance="@android:style/TextAppearance.Material.Subhead"
                 android:layout_width="match_parent"
@@ -151,7 +148,7 @@
                     android:tintMode="src_in"
                     android:background="?android:attr/selectableItemBackground"
                     android:layout_height="wrap_content"
-                    android:text="删除收藏"/>
+                    android:text="@string/subject_collection_remove"/>
             <View android:layout_weight="1"
                   android:layout_height="match_parent"
                   android:layout_width="0dp"/>
@@ -164,7 +161,7 @@
                     android:background="?android:attr/selectableItemBackground"
                     android:layout_height="wrap_content"
                     android:textColor="?colorAccent"
-                    android:text="提交"/>
+                    android:text="@string/submit"/>
         </LinearLayout>
         <View android:id="@+id/item_keyboard"
               android:layout_width="match_parent"

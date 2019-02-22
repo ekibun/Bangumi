@@ -1,7 +1,9 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.support.annotation.IntDef
+import soko.ekibun.bangumi.R
 import java.text.DecimalFormat
 
 
@@ -37,11 +39,11 @@ data class Episode(
      * status : Air
      */
 
-    fun parseSort(): String{
+    fun parseSort(context: Context): String{
         return if(type == TYPE_MAIN)
-            "第 ${DecimalFormat("#.##").format(sort)} 话"
+            context.getString(R.string.parse_sort_ep, DecimalFormat("#.##").format(sort))
         else
-            getTypeName(type) + " ${DecimalFormat("#.##").format(sort)}"
+            context.getString(getTypeName(type)) + " ${DecimalFormat("#.##").format(sort)}"
     }
 
     companion object {
@@ -58,16 +60,16 @@ data class Episode(
         annotation class EpisodeType
 
         @SuppressLint("SwitchIntDef")
-        fun getTypeName(@EpisodeType type: Int): String{
+        fun getTypeName(@EpisodeType type: Int): Int{
             return when(type){
-                TYPE_MAIN -> "本篇"
-                TYPE_SP -> "特别篇"
-                TYPE_OP -> "OP"
-                TYPE_ED -> "ED"
-                TYPE_PV -> "PV"
-                TYPE_MAD -> "MAD"
-                TYPE_MUSIC -> "曲目"
-                else -> "其他"
+                TYPE_MAIN -> R.string.episode_type_main
+                TYPE_SP -> R.string.episode_type_sp
+                TYPE_OP -> R.string.episode_type_op
+                TYPE_ED -> R.string.episode_type_ed
+                TYPE_PV -> R.string.episode_type_pv
+                TYPE_MAD -> R.string.episode_type_mad
+                TYPE_MUSIC -> R.string.episode_type_music
+                else -> R.string.episode_type_main
             }
         }
     }

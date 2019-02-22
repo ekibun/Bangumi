@@ -70,6 +70,7 @@ class MainPresenter(private val context: MainActivity){
     fun refreshUser(reload: ()->Unit = {}){
         Bangumi.getUserInfo(context.ua).enqueue(ApiHelper.buildCallback(null, {
             updateUser(it)
+            context.notifyMenu?.badge = it.notify?.let{ it.first + it.second}?:0
             if(it.needReload) reload()
         }, { if((it as? Exception)?.message == "login failed") updateUser(null) }))
     }

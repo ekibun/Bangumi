@@ -96,7 +96,7 @@
                     android:paddingStart="4dp"
                     android:paddingEnd="4dp"
                     android:background="@drawable/bg_round_rect"
-                    android:text="已追番"
+                    android:text="@string/hint_chased"
                     android:backgroundTint="?colorAccent"
                     app:layout_constraintLeft_toLeftOf="@+id/item_ep_name"
                     app:layout_constraintTop_toTopOf="@+id/item_title"

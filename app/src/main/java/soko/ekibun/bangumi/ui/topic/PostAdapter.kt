@@ -20,7 +20,6 @@ import soko.ekibun.bangumi.util.HtmlTagHandler
 import java.net.URI
 import android.text.style.ClickableSpan
 import android.text.style.URLSpan
-import android.util.Log
 import android.util.Size
 import android.widget.TextView
 import com.chad.library.adapter.base.BaseMultiItemQuickAdapter
@@ -57,7 +56,7 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
         helper.itemView.item_edit.visibility = helper.itemView.item_del.visibility
 
         helper.itemView.item_expand.visibility = if (item.hasSubItem()) View.VISIBLE else View.GONE
-        helper.itemView.item_expand.text = if(item.isExpanded) "收起" else "展开"
+        helper.itemView.item_expand.setText(if(item.isExpanded) R.string.collapse else R.string.expand)
         helper.itemView.item_expand.setOnClickListener {
             val index = data.indexOfFirst { post -> post === item }
             if(item.isExpanded) collapse(index) else expand(index)

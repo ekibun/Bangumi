@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/notify_type_inbox"
+          android:title="@string/notify_inbox"/>
+    <item android:id="@+id/notify_type_notify"
+          android:title="@string/notify_notify"/>
+</menu>

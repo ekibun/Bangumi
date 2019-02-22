@@ -1,102 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:app="http://schemas.android.com/apk/res-auto"
-      xmlns:tools="http://schemas.android.com/tools"
-      xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/collection_type_anime"
           android:title="@string/anime">
         <menu>
             <item android:id="@+id/collection_type_anime_all"
-                  android:title="全部动画"/>
+                  android:title="@string/anime_all"/>
             <item android:id="@+id/collection_type_anime_tv"
-                  android:title="TV动画"/>
+                  android:title="@string/anime_tv"/>
             <item android:id="@+id/collection_type_anime_web"
-                  android:title="WEB动画"/>
+                  android:title="@string/anime_web"/>
             <item android:id="@+id/collection_type_anime_ova"
-                  android:title="OVA动画"/>
+                  android:title="@string/anime_ova"/>
             <item android:id="@+id/collection_type_anime_movie"
-                  android:title="剧场版动画"/>
+                  android:title="@string/anime_movie"/>
             <item android:id="@+id/collection_type_anime_misc"
-                  android:title="其他动画"/>
+                  android:title="@string/anime_misc"/>
         </menu>
     </item>
     <item android:id="@+id/collection_type_book"
           android:title="@string/book">
         <menu>
             <item android:id="@+id/collection_type_book_all"
-                  android:title="全部书籍"/>
+                  android:title="@string/book_all"/>
             <item android:id="@+id/collection_type_book_comic"
-                  android:title="漫画"/>
+                  android:title="@string/book_comic"/>
             <item android:id="@+id/collection_type_book_novel"
-                  android:title="小说"/>
+                  android:title="@string/book_novel"/>
             <item android:id="@+id/collection_type_book_illustration"
-                  android:title="画集"/>
+                  android:title="@string/book_illustration"/>
             <item android:id="@+id/collection_type_book_misc"
-                  android:title="其他书籍"/>
+                  android:title="@string/book_misc"/>
         </menu>
     </item>
     <item android:id="@+id/collection_type_game"
           android:title="@string/game">
         <menu>
             <item android:id="@+id/collection_type_game_all"
-                  android:title="全部游戏"/>
+                  android:title="@string/game_all"/>
             <item android:id="@+id/collection_type_game_pc"
-                  android:title="PC游戏"/>
+                  android:title="@string/game_pc"/>
             <item android:id="@+id/collection_type_game_mac"
-                  android:title="Mac OS游戏"/>
+                  android:title="@string/game_mac"/>
             <item android:id="@+id/collection_type_game_ps4"
-                  android:title="PS4游戏"/>
+                  android:title="@string/game_ps4"/>
             <item android:id="@+id/collection_type_game_xbox_one"
-                  android:title="Xbox One游戏"/>
+                  android:title="@string/game_xbox_one"/>
             <item android:id="@+id/collection_type_game_ns"
-                  android:title="Nintendo Switch游戏"/>
+                  android:title="@string/game_ns"/>
             <item android:id="@+id/collection_type_game_wii_u"
-                  android:title="Wii U游戏"/>
+                  android:title="@string/game_wii_u"/>
             <item android:id="@+id/collection_type_game_ps3"
-                  android:title="PS3游戏"/>
+                  android:title="@string/game_ps3"/>
             <item android:id="@+id/collection_type_game_xbox360"
-                  android:title="Xbox360游戏"/>
+                  android:title="@string/game_xbox360"/>
             <item android:id="@+id/collection_type_game_wii"
-                  android:title="Wii游戏"/>
+                  android:title="@string/game_wii"/>
             <item android:id="@+id/collection_type_game_psv"
-                  android:title="PS Vita游戏"/>
+                  android:title="@string/game_psv"/>
             <item android:id="@+id/collection_type_game_3ds"
-                  android:title="3DS游戏"/>
+                  android:title="@string/game_3ds"/>
             <item android:id="@+id/collection_type_game_iphone"
-                  android:title="iOS游戏"/>
+                  android:title="@string/game_iphone"/>
             <item android:id="@+id/collection_type_game_android"
-                  android:title="Android游戏"/>
+                  android:title="@string/game_android"/>
             <item android:id="@+id/collection_type_game_arc"
-                  android:title="街机游戏"/>
+                  android:title="@string/game_arc"/>
             <item android:id="@+id/collection_type_game_nds"
-                  android:title="NDS游戏"/>
+                  android:title="@string/game_nds"/>
             <item android:id="@+id/collection_type_game_psp"
-                  android:title="PSP游戏"/>
+                  android:title="@string/game_psp"/>
             <item android:id="@+id/collection_type_game_ps2"
-                  android:title="PS2游戏"/>
+                  android:title="@string/game_ps2"/>
             <item android:id="@+id/collection_type_game_xbox"
-                  android:title="XBOX游戏"/>
+                  android:title="@string/game_xbox"/>
             <item android:id="@+id/collection_type_game_gamecube"
-                  android:title="GameCube游戏"/>
+                  android:title="@string/game_gamecube"/>
             <item android:id="@+id/collection_type_game_dreamcast"
-                  android:title="Dreamcast游戏"/>
+                  android:title="@string/game_dreamcast"/>
             <item android:id="@+id/collection_type_game_n64"
-                  android:title="Nintendo 64游戏"/>
+                  android:title="@string/game_n64"/>
             <item android:id="@+id/collection_type_game_ps"
-                  android:title="PlayStation游戏"/>
+                  android:title="@string/game_ps"/>
             <item android:id="@+id/collection_type_game_sfc"
-                  android:title="SFC游戏"/>
+                  android:title="@string/game_sfc"/>
             <item android:id="@+id/collection_type_game_fc"
-                  android:title="FC游戏"/>
+                  android:title="@string/game_fc"/>
             <item android:id="@+id/collection_type_game_ws"
-                  android:title="WonderSwan游戏"/>
+                  android:title="@string/game_ws"/>
             <item android:id="@+id/collection_type_game_wsc"
-                  android:title="WonderSwan Color游戏"/>
+                  android:title="@string/game_wsc"/>
             <item android:id="@+id/collection_type_game_ngp"
-                  android:title="NEOGEO Pocket Color游戏"/>
+                  android:title="@string/game_ngp"/>
             <item android:id="@+id/collection_type_game_GBA"
-                  android:title="GBA游戏"/>
+                  android:title="@string/game_gba"/>
             <item android:id="@+id/collection_type_game_vb"
-                  android:title="Virtual Boy游戏"/>
+                  android:title="@string/game_vb"/>
         </menu>
     </item>
     <item android:id="@+id/collection_type_music"
@@ -105,13 +103,13 @@
           android:title="@string/real">
         <menu>
             <item android:id="@+id/collection_type_real_all"
-                  android:title="全部剧集"/>
+                  android:title="@string/real_all"/>
             <item android:id="@+id/collection_type_real_jp"
-                  android:title="日剧"/>
+                  android:title="@string/real_jp"/>
             <item android:id="@+id/collection_type_real_en"
-                  android:title="欧美剧"/>
+                  android:title="@string/real_en"/>
             <item android:id="@+id/collection_type_real_cn"
-                  android:title="华语剧"/>
+                  android:title="@string/real_cn"/>
         </menu>
     </item>
 

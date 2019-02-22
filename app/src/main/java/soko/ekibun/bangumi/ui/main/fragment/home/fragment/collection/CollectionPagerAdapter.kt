@@ -20,8 +20,8 @@ import soko.ekibun.bangumi.api.bangumi.bean.SubjectCollection
 import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 
-class CollectionPagerAdapter(context: Context, val fragment: CollectionFragment, private val pager: ViewPager) : PagerAdapter(){
-    private val tabList = context.resources.getStringArray(R.array.collection_status)
+class CollectionPagerAdapter(private val context: Context, val fragment: CollectionFragment, private val pager: ViewPager) : PagerAdapter(){
+    private var tabList = context.resources.getStringArray(R.array.collection_status_anime)
     private val subjectTypeView = SubjectTypeView(fragment.item_type) { reset() }
 
     init{
@@ -66,6 +66,9 @@ class CollectionPagerAdapter(context: Context, val fragment: CollectionFragment,
     }
 
     fun reset() {
+        tabList = context.resources.getStringArray(CollectionStatusType.getTypeNamesResId(subjectTypeView.getType()))
+        notifyDataSetChanged()
+
         items.forEach {  (it.value.second.tag as? RecyclerView)?.tag = null }
         pageIndex.clear()
         loadCollectionList()

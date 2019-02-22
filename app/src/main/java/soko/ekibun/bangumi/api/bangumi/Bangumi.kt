@@ -12,7 +12,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.*
-import soko.ekibun.bangumi.api.bangumi.bean.Calendar
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.util.HttpUtil
 import java.net.URI
@@ -511,22 +510,24 @@ interface Bangumi {
         //userInfo
         fun getUserInfo(ua: String): Call<UserInfo>{
             val cookieManager = CookieManager.getInstance()
-            return ApiHelper.buildHttpCall(Bangumi.SERVER, mapOf("User-Agent" to ua)){
+            return ApiHelper.buildHttpCall("$SERVER/settings", mapOf("User-Agent" to ua)){
                 var needReload = false
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val user = doc.selectFirst(".idBadgerNeue a.avatar")?: throw Exception("login failed")
-                val userName = doc.selectFirst("#header a")?.text()
+                val userName = doc.selectFirst("input[name=nickname]")?.attr("value")//doc.selectFirst("#header a")?.text()
                 val img = HttpUtil.getUrl(Regex("""background-image:url\('([^']*)'\)""").find(user.html()?:"")?.groupValues?.get(1)?:"", URI.create(Bangumi.SERVER))
                 val id = Regex("""/user/([^/]*)""").find(user.attr("href")?:"")?.groupValues?.get(1)
                 it.headers("set-cookie").forEach {
                     needReload = true
                     cookieManager.setCookie(Bangumi.SERVER, it) }
                 val formhash = doc.selectFirst("input[name=formhash]")?.attr("value")
+                val inbox = Regex("叮咚叮咚～你有 ([0-9]+) 条新信息!").find(doc.selectFirst("#robot_speech_js")?.text()?:"")?.groupValues?.get(1)?.toIntOrNull()?:0
+                val notify = doc.selectFirst("#notify_count")?.text()?.toIntOrNull()?:0
                 UserInfo(id?.toIntOrNull()?:0, HttpUtil.getUrl(user.attr("href")?:"", URI.create(SERVER)), id, userName,
                         Images(img.replace("/s/", "/l/"),
                                 img.replace("/s/", "/l/"),
                                 img.replace("/s/", "/m/"), img,
-                                img.replace("/s/", "/m/")), sign = formhash, needReload = needReload)
+                                img.replace("/s/", "/m/")), sign = formhash, needReload = needReload, notify = Pair(inbox, notify))
             }
         }
 

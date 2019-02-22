@@ -39,7 +39,7 @@ class TopicPresenter(private val context: TopicActivity) {
                 if(!topic.formhash.isNullOrEmpty()) ResourceUtil.getDrawable(context, R.drawable.ic_send) else null,//right
                 null)
         context.item_reply.setOnClickListener {
-            topic.formhash?.let{ formhash -> showReplyPopupWindow(topic.post, FormBody.Builder().add("lastview", topic.lastview!!).add("formhash", formhash),"", "回复 ${topic.title}") }?:{
+            topic.formhash?.let{ formhash -> showReplyPopupWindow(topic.post, FormBody.Builder().add("lastview", topic.lastview!!).add("formhash", formhash),"", context.getString(R.string.parse_hint_reply_topic, topic.title)) }?:{
                 if(!topic.errorLink.isNullOrEmpty()) WebActivity.launchUrl(context, topic.errorLink, "")
             }()
         }
@@ -58,11 +58,11 @@ class TopicPresenter(private val context: TopicActivity) {
                             .add("formhash", topic.formhash!!)
                             .add("topic_id", post.pst_mid)
                             .add("related", post.relate)
-                            .add("post_uid", post.pst_uid), comment, "回复 ${post.nickname} 的评论", post.pst_id)
+                            .add("post_uid", post.pst_uid), comment, context.getString(R.string.parse_hint_reply_post, post.nickname), post.pst_id)
                 }
                 R.id.item_del -> {
-                    AlertDialog.Builder(context).setTitle("确认删除？")
-                            .setNegativeButton("取消") { _, _ -> }.setPositiveButton("确定") { _, _ ->
+                    AlertDialog.Builder(context).setMessage(R.string.reply_dialog_remove)
+                            .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
                                 if (post.floor == 1) {
                                     val url = topic.post.replace(Bangumi.SERVER, "${Bangumi.SERVER}/erase").replace("/new_reply", "?gh=${topic.formhash}&ajax=1")
                                     ApiHelper.buildHttpCall(url, mapOf("User-Agent" to ua)) {
@@ -109,7 +109,7 @@ class TopicPresenter(private val context: TopicActivity) {
                             WebActivity.launchUrl(context, url)
                             return@buildCallback
                         }else{
-                            buildPopupWindow("修改主题\"${topic.title}\""+if(post.floor == 1) "" else "的回复", it){inputString, send->
+                            buildPopupWindow(context.getString(if(post.floor == 1) R.string.parse_hint_modify_topic else R.string.parse_hint_modify_post, topic.title), it){inputString, send->
                                 if(send){
                                     ApiHelper.buildHttpCall(url, mapOf("User-Agent" to ua), body = FormBody.Builder()
                                             .add("formhash", topic.formhash!!)

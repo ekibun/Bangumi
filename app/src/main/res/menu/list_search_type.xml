@@ -13,9 +13,9 @@
     <item android:id="@+id/collection_type_real"
           android:title="@string/real"/>
     <item android:id="@+id/collection_type_mono"
-          android:title="人物"/>
+          android:title="@string/mono"/>
     <item android:id="@+id/collection_type_ctr"
-          android:title="虚构角色"/>
+          android:title="@string/mono_ctr"/>
     <item android:id="@+id/collection_type_psn"
-          android:title="现实人物"/>
+          android:title="@string/mono_psn"/>
 </menu>

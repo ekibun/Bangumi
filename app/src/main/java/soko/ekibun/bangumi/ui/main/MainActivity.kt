@@ -14,6 +14,7 @@ import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.search.SearchActivity
 import android.support.v4.view.MenuItemCompat
 import android.support.v7.app.AlertDialog
+import android.support.v7.widget.PopupMenu
 import android.view.KeyEvent
 import android.webkit.WebView
 import android.widget.Toast
@@ -38,32 +39,28 @@ class MainActivity : AppCompatActivity() {
         if(sp.getBoolean("check_update", true)){
             Github.createInstance().releases().enqueue(ApiHelper.buildCallback(this, {
                 val release = it.firstOrNull()?:return@buildCallback
-                if(release.tag_name?.compareTo(packageManager?.getPackageInfo(packageName, 0)?.versionName?:"")?:0 > 0 && sp.getString("ignore_tag", "") != release.tag_name)
+                val current = packageManager?.getPackageInfo(packageName, 0)?.versionName?:""
+                if(release.tag_name?.compareTo(current)?:0 > 0 && sp.getString("ignore_tag", "") != release.tag_name)
                     AlertDialog.Builder(this)
-                            .setTitle("新版本：${release.tag_name}")
-                            .setMessage(release.body)
-                            .setPositiveButton("下载"){_, _ ->
+                            .setTitle( getString(R.string.parse_new_version, release.tag_name))
+                            .setMessage( it.filter { it.tag_name?.compareTo(current)?:0 > 0 }.map { "${it.tag_name}\n${it.body}" }.reduce { acc, s -> "$acc\n$s" } )
+                            .setPositiveButton(R.string.download){_, _ ->
                                 WebActivity.launchUrl(this@MainActivity, release.assets?.firstOrNull()?.browser_download_url, "")
-                            }.setNegativeButton("忽略"){_, _ ->
+                            }.setNegativeButton(R.string.ignore){_, _ ->
                                 sp.edit().putString("ignore_tag", release.tag_name).apply()
                             }.show()
             }) {})
         }
-        mainPresenter.refreshUser{
-            mainPresenter.reload()
-            Bangumi.getNotify(ua).enqueue(ApiHelper.buildCallback(this, {
-                notifyMenu?.badge = it.count()
-            },{}))
-        }
+
     }
 
     val ua by lazy { WebView(this).settings.userAgentString }
     override fun onStart() {
         super.onStart()
 
-        Bangumi.getNotify(ua).enqueue(ApiHelper.buildCallback(this, {
-            notifyMenu?.badge = it.count()
-        },{}))
+        mainPresenter.refreshUser{
+            mainPresenter.reload()
+        }
     }
 
     var notifyMenu: NotifyActionProvider? = null
@@ -73,7 +70,20 @@ class MainActivity : AppCompatActivity() {
         val menuItem = menu.findItem(R.id.action_notify)
         notifyMenu = MenuItemCompat.getActionProvider(menuItem) as NotifyActionProvider
         notifyMenu?.onClick = {
-            WebActivity.launchUrl(this, "${Bangumi.SERVER}/notify")
+            val inbox = mainPresenter.user?.notify?.first?:0
+            val notify = mainPresenter.user?.notify?.second?:0
+            val popup = PopupMenu(this, menuItem.actionView)
+            popup.menuInflater.inflate(R.menu.list_notify, popup.menu)
+            popup.menu.findItem(R.id.notify_type_inbox)?.title = "${getString(R.string.notify_inbox)}${if(inbox != 0) " (+$inbox)" else ""}"
+            popup.menu.findItem(R.id.notify_type_notify)?.title = "${getString(R.string.notify_notify)}${if(notify != 0) " (+$notify)" else ""}"
+            popup.setOnMenuItemClickListener{
+                when(it.itemId){
+                    R.id.notify_type_inbox -> WebActivity.launchUrl(this, "${Bangumi.SERVER}/pm")
+                    R.id.notify_type_notify -> WebActivity.launchUrl(this, "${Bangumi.SERVER}/notify")
+                }
+                true
+            }
+            popup.show()
         }
 
         return true
@@ -85,7 +95,7 @@ class MainActivity : AppCompatActivity() {
             if(mainPresenter.processBack()){
                 return true
             }else if((System.currentTimeMillis()-exitTime) > 2000){
-                Toast.makeText(applicationContext, "再按一次退出程序", Toast.LENGTH_SHORT).show()
+                Toast.makeText(applicationContext, R.string.hint_back_to_close, Toast.LENGTH_SHORT).show()
                 exitTime = System.currentTimeMillis()
                 return true
             }

@@ -1,60 +1,57 @@
 <resources>
     <string name="app_name">Bangumi</string>
-    <string name="search_hint">搜索…</string>
-    <string name="desc_cover">番剧海报</string>
 
-    <string name="phrase_full">全 %1$d 话</string>
-    <string name="rate_count">%1$d人</string>
-    <string name="phrase_reply">%1$d 回复</string>
-    <string name="phrase_updating">更新至第 %1$d 话</string>
-
-    <string name="navigation_drawer_open">导航开</string>
-    <string name="navigation_drawer_close">导航关</string>
-    <string name="play_pause">播放</string>
-
-    <string name="share">分享</string>
-    <string name="calendar">时间表</string>
-    <string name="login_hint">点击头像登录</string>
-    <string name="login">登录</string>
-    <string name="night_mode">夜间模式</string>
-    <string name="login_auth">登录</string>
-    <string name="search">搜索</string>
-    <string name="logout">注销</string>
-    <string name="status">状态</string>
-    <string name="rate">评分</string>
-    <string name="comment">吐槽</string>
-    <string name="private_collection">仅自己可见</string>
-    <string name="anime">动画</string>
-    <string name="book">图书</string>
-    <string name="game">游戏</string>
-    <string name="music">音乐</string>
-    <string name="real">三次元</string>
-    <string name="episodes">章节</string>
-    <string name="linked_subjects">关联条目</string>
-    <string name="topics">讨论版</string>
-    <string name="blog">评论</string>
-    <string name="more">更多</string>
-    <string name="info_empty">什么都没有哦</string>
+    <!-- common -->
     <string name="collect">收藏</string>
-    <string name="open_browser">在浏览器中打开</string>
-    <string name="index">索引</string>
-    <string name="home">主页</string>
-    <string name="rakuen">超展开</string>
-    <string name="timeline">时间胶囊</string>
-    <string name="reply">回复</string>
-    <string name="delete">删除</string>
-    <string name="edit">编辑</string>
-    <string name="reply_hint">不吐槽一下吗</string>
-    <string name="bold">粗体字</string>
-    <string name="italic">斜体字</string>
-    <string name="strike">删除线</string>
-    <string name="underline">下划线</string>
-    <string name="mask">马赛克</string>
-    <string name="upload_crash">上传崩溃日志</string>
-    <string name="restart_app">重新启动应用</string>
-    <string name="cache">离线缓存</string>
-    <string name="refresh">刷新</string>
-
+    <string name="subject">条目</string>
+    <string name="episodes">章节</string>
+    <string-array name="collection_status_anime">
+        <item>想看</item>
+        <item>看过</item>
+        <item>在看</item>
+        <item>搁置</item>
+        <item>抛弃</item>
+    </string-array>
+    <string-array name="collection_status_book">
+        <item>想读</item>
+        <item>读过</item>
+        <item>在读</item>
+        <item>搁置</item>
+        <item>抛弃</item>
+    </string-array>
+    <string-array name="collection_status_music">
+        <item>想听</item>
+        <item>听过</item>
+        <item>在听</item>
+        <item>搁置</item>
+        <item>抛弃</item>
+    </string-array>
+    <string-array name="collection_status_game">
+        <item>想玩</item>
+        <item>玩过</item>
+        <item>在玩</item>
+        <item>搁置</item>
+        <item>抛弃</item>
+    </string-array>
+    <string-array name="collection_status_real">
+        <item>想看</item>
+        <item>看过</item>
+        <item>在看</item>
+        <item>搁置</item>
+        <item>抛弃</item>
+    </string-array>
+    <string name="episode_status_watch">看过</string>
+    <string name="episode_status_watch_to">看到</string>
+    <string name="episode_status_wish">想看</string>
+    <string name="episode_status_drop">抛弃</string>
+    <string name="episode_status_remove">未看</string>
+    <string-array name="episode_status">
+        <item>@string/episode_status_watch</item>
+        <item>@string/episode_status_watch_to</item>
+        <item>@string/episode_status_wish</item>
+        <item>@string/episode_status_drop</item>
+        <item>@string/episode_status_remove</item>
+    </string-array>
     <string-array name="topic_list">
         <item>全部</item>
         <item>小组</item>
@@ -62,7 +59,6 @@
         <item>章节</item>
         <item>人物</item>
     </string-array>
-
     <string-array name="timeline_list">
         <item>全部</item>
         <item>吐槽</item>
@@ -77,29 +73,142 @@
         <item>天窗</item>
     </string-array>
 
-    <string-array name="collection_status">
-        <item>想看</item>
-        <item>看过</item>
-        <item>在看</item>
-        <item>搁置</item>
-        <item>抛弃</item>
-    </string-array>
-    <string-array name="episode_status">
-        <item>看过</item>
-        <item>看到</item>
-        <item>想看</item>
-        <item>抛弃</item>
-        <item>未看</item>
-    </string-array>
-    <string name="title_activity_settings">设置</string>
-    <string name="pref_miscellaneous">其他设置</string>
-    <string name="commend">相似推荐</string>
-    <string name="character_info">角色介绍</string>
-    <string name="subject">条目</string>
+    <string name="anime">动画</string>
+    <string name="anime_all">全部动画</string>
+    <string name="anime_tv">TV动画</string>
+    <string name="anime_web">WEB动画</string>
+    <string name="anime_ova">OVA动画</string>
+    <string name="anime_movie">剧场版动画</string>
+    <string name="anime_misc">其他动画</string>
+    <string name="book">书籍</string>
+    <string name="book_all">全部书籍</string>
+    <string name="book_comic">漫画</string>
+    <string name="book_novel">小说</string>
+    <string name="book_illustration">画集</string>
+    <string name="book_misc">其他书籍</string>
+    <string name="game">游戏</string>
+    <string name="game_all">全部游戏</string>
+    <string name="game_pc">PC游戏</string>
+    <string name="game_mac">Mac OS游戏</string>
+    <string name="game_ps4">PS4游戏</string>
+    <string name="game_xbox_one">Xbox One游戏</string>
+    <string name="game_ns">Nintendo Switch游戏</string>
+    <string name="game_wii_u">Wii U游戏</string>
+    <string name="game_ps3">PS3游戏</string>
+    <string name="game_xbox360">Xbox360游戏</string>
+    <string name="game_wii">Wii游戏</string>
+    <string name="game_psv">PS Vita游戏</string>
+    <string name="game_3ds">3DS游戏</string>
+    <string name="game_iphone">iOS游戏</string>
+    <string name="game_android">Android游戏</string>
+    <string name="game_arc">街机游戏</string>
+    <string name="game_nds">NDS游戏</string>
+    <string name="game_psp">PSP游戏</string>
+    <string name="game_ps2">PS2游戏</string>
+    <string name="game_xbox">XBOX游戏</string>
+    <string name="game_gamecube">GameCube游戏</string>
+    <string name="game_dreamcast">Dreamcast游戏</string>
+    <string name="game_n64">Nintendo 64游戏</string>
+    <string name="game_ps">PlayStation游戏</string>
+    <string name="game_sfc">SFC游戏</string>
+    <string name="game_fc">FC游戏</string>
+    <string name="game_ws">WonderSwan游戏</string>
+    <string name="game_wsc">WonderSwan Color游戏</string>
+    <string name="game_ngp">NEOGEO Pocket Color游戏</string>
+    <string name="game_gba">GBA游戏</string>
+    <string name="game_vb">Virtual Boy游戏</string>
+    <string name="music">音乐</string>
+    <string name="real">三次元</string>
+    <string name="real_all">全部剧集</string>
+    <string name="real_jp">日剧</string>
+    <string name="real_en">欧美剧</string>
+    <string name="real_cn">华语剧</string>
+
+    <string name="mono">人物</string>
+    <string name="mono_ctr">虚构角色</string>
+    <string name="mono_psn">现实人物</string>
+
+    <string name="episode_type_main">本篇</string>
+    <string name="episode_type_sp">特别篇</string>
+    <string name="episode_type_op">OP</string>
+    <string name="episode_type_ed">ED</string>
+    <string name="episode_type_pv">PV</string>
+    <string name="episode_type_mad">MAD</string>
+    <string name="episode_type_music">曲目</string>
+    <string name="episode_type_other">其他</string>
+
+    <string name="cancel">取消</string>
+    <string name="ok">确定</string>
+    <string name="submit">提交</string>
+    <string name="more">更多</string>
+    <string name="reply">回复</string>
+    <string name="delete">删除</string>
+    <string name="edit">编辑</string>
+    <string name="refresh">刷新</string>
+    <string name="collapse">收起</string>
+    <string name="expand">展开</string>
+    <string name="share">分享</string>
+    <string name="open_browser">在浏览器中打开</string>
+    <string name="login">登录</string>
+
+    <string name="download">下载</string>
+    <string name="ignore">忽略</string>
+
+    <string name="bold">粗体字</string>
+    <string name="italic">斜体字</string>
+    <string name="strike">删除线</string>
+    <string name="underline">下划线</string>
+    <string name="mask">马赛克</string>
+
     <string name="friend">好友</string>
-    <string name="all">全部</string>
+    <string name="all_site">全站</string>
     <string name="self">自己</string>
 
+    <!-- drawer -->
+    <string name="home">主页</string>
+    <string name="calendar">时间表</string>
+    <string name="index">索引</string>
+    <string name="cache">离线缓存</string>
+    <string name="search">搜索</string>
+    <string name="settings">设置</string>
+    <string name="night_mode">夜间模式</string>
+    <string name="logout">注销</string>
+
+    <string name="rakuen">超展开</string>
+    <string name="timeline">时间胶囊</string>
+
+    <!-- Crash -->
+    <string name="crash_upload_crash">上传崩溃日志</string>
+    <string name="crash_restart_app">重新启动应用</string>
+    <string name="crash_upload_ok">日志上传成功</string>
+    <string name="crash_upload_failed">日志上传失败 %1$s</string>
+
+    <!-- 搜索页 -->
+    <string name="search_hint">搜索…</string>
+    <string name="search_history">搜索历史</string>
+    <string name="search_history_clear">删除搜索历史</string>
+    <string name="search_hint_no_history">没有搜索的历史记录</string>
+    <string name="search_history_remove">删除搜索历史</string>
+
+    <!-- 条目页 -->
+    <string name="desc_cover">番剧海报</string>
+    <string name="subject_progress_edit">修改</string>
+    <string name="subject_linked">关联条目</string>
+    <string name="subject_commend">相似推荐</string>
+    <string name="subject_comment">吐槽</string>
+    <string name="subject_tag">标签</string>
+    <string name="subject_topics">讨论版</string>
+    <string name="subject_blog">评论</string>
+    <string name="character_info">角色介绍</string>
+
+    <string name="subject_dialog_update_progress">更新</string>
+    <string name="subject_dialog_add_tag">添加标签</string>
+    <string name="subject_dialog_remove_tag">删除标签</string>
+    <string name="subject_collection_private">仅自己可见</string>
+    <string name="subject_collection_remove">删除收藏</string>
+
+    <!-- 设置 -->
+    <string name="pref_miscellaneous">其他设置</string>
     <string-array name="pref_image_quality">
         <item>清晰</item>
         <item>普通</item>
@@ -112,4 +221,60 @@
         <item>m</item>
         <item>s</item>
     </string-array>
+
+    <!-- 回复对话框 -->
+    <string name="desc_emoji">表情</string>
+    <string name="desc_image">图片</string>
+    <string name="desc_format">字体</string>
+    <string name="desc_send">发送</string>
+
+    <!-- hint -->
+    <string name="hint_chased">已追番</string>
+    <string name="hint_collected">已收藏</string>
+    <string name="hint_empty">什么都没有哦</string>
+    <string name="hint_login">点击头像登录</string>
+    <string name="hint_reply">不吐槽一下吗</string>
+    <string name="hint_empty_topic">这里什么都没有哟</string>
+    <string name="hint_login_topic">登录后才可以评论哦</string>
+    <string name="hint_submit_error">提交出现了一些问题，请稍后再试</string>
+    <string name="hint_back_to_close">再按一次退出程序</string>
+    <string name="hint_no_play_source">暂无播放源</string>
+    <string name="navigation_drawer_open">导航开</string>
+    <string name="navigation_drawer_close">导航关</string>
+
+    <string name="search_dialog_history_clear">删除搜索历史?</string>
+    <string name="collection_dialog_remove">删除这个条目收藏?</string>
+    <string name="timeline_dialog_remove">删除这条时间线?</string>
+    <string name="reply_dialog_remove">删除这条回复?</string>
+    <string name="timeline_dialog_add">添加动态</string>
+
+    <string name="parse_new_version">新版本：%1$s</string>
+
+    <string name="ep_unit">话</string>
+    <string name="vol_unit">章</string>
+    <string name="phrase_progress">看到 %1$s</string>
+    <string name="parse_sort_ep">第 %1$s 话</string>
+    <string name="parse_sort_vol">第 %1$s 章</string>
+    <string name="parse_cache_eps">已缓存 %1$d 话</string>
+    <string name="parse_watch_to">看到%1$s</string>
+    <string name="hint_watch_nothing">尚未观看</string>
+    <string name="hint_air_nothing">尚未开播</string>
+    <string name="parse_update_to">更新到%1$s</string>
+    <string name="phrase_full_eps">全 %1$d 话</string>
+
+    <string name="phrase_air_date">首播：%1$s</string>
+    <string name="phrase_duration">时长：%1$s</string>
+    <string name="phrase_comment">讨论（+%1$d）</string>
+
+    <string name="rate_count">%1$d人</string>
+    <string name="phrase_reply">%1$d 回复</string>
+
+    <!-- 超展开 -->
+    <string name="parse_hint_reply_topic">回复 %1$s</string>
+    <string name="parse_hint_reply_post">回复 %1$s 的评论</string>
+    <string name="parse_hint_modify_topic">修改主题 %1$s</string>
+    <string name="parse_hint_modify_post">修改主题 %1$s 的回复</string>
+    <string name="notify_inbox">收件箱</string>
+    <string name="notify_notify">电波提醒</string>
+
 </resources>

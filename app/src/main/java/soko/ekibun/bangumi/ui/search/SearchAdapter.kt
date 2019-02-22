@@ -16,7 +16,7 @@ class SearchAdapter(data: MutableList<Subject>? = null) :
     override fun convert(helper: BaseViewHolder, item: Subject) {
         helper.setText(R.id.item_title, (if(item.collect) " " else "")+ item.getPrettyName())
         helper.setText(R.id.item_name_jp, item.name)
-        helper.setText(R.id.item_summary, SubjectType.getDescription(item.type))
+        helper.setText(R.id.item_summary, helper.itemView.context.getString(SubjectType.getDescription(item.type)))
         helper.itemView.item_chase.visibility = if(item.collect) View.VISIBLE else View.GONE
         Glide.with(helper.itemView.item_cover)
                 .load(item.images?.getImage(helper.itemView.context))

@@ -24,8 +24,12 @@ class CollectionListAdapter(data: MutableList<SubjectCollection>? = null) :
                 if (watchTo != airTo)R.attr.colorPrimary
                     else android.R.attr.textColorSecondary
                 ))
-        val watchep = (watchTo?.parseSort()?.let{ "看到$it"}?:"尚未观看") +
-                if(eps?.any { it.status != "Air" } == true) airTo?.parseSort()?.let{ " / 更新到$it"  }?:"" else if(item.subject?.eps_count?:0 > 0) " / 全 ${item.subject?.eps_count} 话" else ""
+        val watchep = (watchTo?.parseSort(helper.itemView.context)?.let{ helper.itemView.context.getString(R.string.parse_watch_to, it) }?: helper.itemView.context.getString(R.string.hint_watch_nothing)) +
+                when {
+                    eps?.any { it.status != "Air" } == true -> airTo?.parseSort(helper.itemView.context)?.let{ " / " + helper.itemView.context.getString(R.string.parse_update_to, it)  }?:""
+                    item.subject?.eps_count?:0 > 0 -> " / "+ helper.itemView.context.getString(R.string.phrase_full_eps, item.subject?.eps_count)
+                    else -> ""
+                }
         helper.setText(R.id.item_summary, if(item.ep_status == -1) item.subject?.summary else watchep)
         Glide.with(helper.itemView.item_cover)
                 .load(item.subject?.images?.getImage(helper.itemView.context))

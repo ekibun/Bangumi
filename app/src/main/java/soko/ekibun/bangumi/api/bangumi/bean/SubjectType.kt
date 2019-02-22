@@ -3,6 +3,7 @@ package soko.ekibun.bangumi.api.bangumi.bean
 import android.annotation.SuppressLint
 import android.support.annotation.IntDef
 import android.support.annotation.StringDef
+import soko.ekibun.bangumi.R
 
 object SubjectType{
     const val ALL = 0
@@ -31,15 +32,14 @@ object SubjectType{
     )
 
     @SuppressLint("SwitchIntDef")
-    fun getDescription(@SubjectType type: Int): String{
+    fun getDescription(@SubjectType type: Int): Int{
         return when (type) {
-            ALL -> "条目"
-            BOOK -> "书籍"
-            ANIME -> "动画"
-            MUSIC -> "音乐"
-            GAME -> "游戏"
-            REAL -> "三次元"
-            else -> ""
+            BOOK -> R.string.book
+            ANIME -> R.string.anime
+            MUSIC -> R.string.music
+            GAME ->  R.string.game
+            REAL ->  R.string.real
+            else -> R.string.subject
         }
     }
 }

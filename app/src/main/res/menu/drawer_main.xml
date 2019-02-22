@@ -29,7 +29,7 @@
               app:showAsAction="ifRoom"/>
         <item android:id="@+id/nav_setting"
               android:icon="@drawable/ic_settings"
-              android:title="@string/title_activity_settings"
+              android:title="@string/settings"
               app:showAsAction="ifRoom"/>
         <item
             android:id="@+id/nav_night"
@@ -40,10 +40,6 @@
                 android:id="@+id/nav_logout"
                 android:icon="@drawable/ic_exit"
                 android:title="@string/logout"/>
-        <!--<item
-                android:id="@+id/nav_setting"
-                android:icon="@drawable/ic_settings"
-                android:title="@string/settings"/>-->
     </group>
 
 </menu>

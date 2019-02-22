@@ -110,7 +110,8 @@
                             android:layout_marginRight="6dp"
                             android:layout_gravity="center_vertical"
                             android:tint="@android:color/white"
-                            android:src="@drawable/ic_chevron_right"/>
+                            android:src="@drawable/ic_chevron_right"
+                            tools:ignore="ContentDescription"/>
                     <TextView
                             android:id="@+id/title_slice_1"
                             android:layout_width="wrap_content"

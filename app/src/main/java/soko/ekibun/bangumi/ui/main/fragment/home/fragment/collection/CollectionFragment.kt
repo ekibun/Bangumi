@@ -21,7 +21,6 @@ class CollectionFragment: HomeTabFragment(R.layout.fragment_collection){
 
         item_pager?.currentItem = this.savedInstanceState?.getInt("CollectionPage", 2) ?: 2
 
-        //TODO item_login_info?.visibility = if((activity as? MainActivity)?.user == null) View.VISIBLE else View.GONE
         item_login?.setOnClickListener {
             WebActivity.startActivityForAuth(activity!!) }
     }

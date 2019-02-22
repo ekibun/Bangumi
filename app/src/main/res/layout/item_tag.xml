@@ -33,6 +33,7 @@
                 android:layout_width="12dp"
                 android:layout_height="12dp"
                 android:layout_gravity="center_vertical"
-                android:src="@drawable/ic_clear"/>
+                android:src="@drawable/ic_clear"
+                android:contentDescription="@string/subject_dialog_remove_tag"/>
     </LinearLayout>
 </LinearLayout>

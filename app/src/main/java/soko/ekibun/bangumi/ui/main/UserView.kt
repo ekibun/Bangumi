@@ -25,7 +25,7 @@ class UserView(private val context: MainActivity, onUserFigureClickListener: Vie
                     .into(headerView.user_figure)
             //val token = UserModel(context).getToken()
             headerView.user_id.text = if(user?.username == null) "" else "@${user.username}"
-            headerView.user_name.text = user?.nickname?:context.getString(R.string.login_hint)
+            headerView.user_name.text = user?.nickname?:context.getString(R.string.hint_login)
         }
     }
 

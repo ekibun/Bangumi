@@ -165,7 +165,7 @@
                     android:id="@+id/item_progress_edit"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="修改"
+                    android:text="@string/subject_progress_edit"
                     android:clickable="true"
                     android:foreground="?android:attr/selectableItemBackground"
                     android:focusable="true"
@@ -186,7 +186,7 @@
                       android:layout_height="wrap_content"
                       android:textAppearance="@android:style/TextAppearance.Material.Subhead"
                       android:padding="12dp"
-                      android:text="@string/linked_subjects"/>
+                      android:text="@string/subject_linked"/>
             <android.support.v7.widget.RecyclerView
                     android:id="@+id/linked_list"
                     android:layout_width="match_parent"
@@ -204,7 +204,7 @@
                       android:layout_height="wrap_content"
                       android:textAppearance="@android:style/TextAppearance.Material.Subhead"
                       android:padding="12dp"
-                      android:text="@string/commend"/>
+                      android:text="@string/subject_commend"/>
             <android.support.v7.widget.RecyclerView
                     android:id="@+id/commend_list"
                     android:layout_width="match_parent"
@@ -226,7 +226,7 @@
                       android:visibility="gone"
                       android:textAppearance="@android:style/TextAppearance.Material.Subhead"
                       android:padding="12dp"
-                      android:text="@string/comment"/>
+                      android:text="@string/subject_comment"/>
         </LinearLayout>
     </LinearLayout>
 
@@ -256,7 +256,7 @@
             android:clickable="true"
             android:focusable="true"
             android:visibility="invisible">
-        <RelativeLayout
+        <android.support.constraint.ConstraintLayout
                 android:id="@+id/item_eps_button_box"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -286,12 +286,13 @@
                        app:layout_constraintBottom_toBottomOf="parent"
                        android:id="@+id/item_edit_ep"
                        app:layout_constraintEnd_toStartOf="@+id/item_close"
+                       app:layout_constraintStart_toStartOf="parent"
                        android:src="@drawable/ic_edit"
                        android:clickable="true"
                        android:background="?android:attr/selectableItemBackgroundBorderless"
                        android:focusable="true"
                        android:contentDescription="@string/episodes"/>
-        </RelativeLayout>
+        </android.support.constraint.ConstraintLayout>
         <TextView android:layout_width="0dp"
                   android:layout_height="match_parent"
                   android:textAppearance="@android:style/TextAppearance.Material.Subhead"

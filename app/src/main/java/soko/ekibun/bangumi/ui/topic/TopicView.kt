@@ -93,10 +93,10 @@ class TopicView(private val context: TopicActivity){
         adapter.setOnLoadMoreListener({adapter.loadMoreEnd()}, context.item_list)
         adapter.setEnableLoadMore(true)
         context.item_reply.text = when {
-            !topic.formhash.isNullOrEmpty() -> context.getString(R.string.reply_hint)
+            !topic.formhash.isNullOrEmpty() -> context.getString(R.string.hint_reply)
             !topic.error.isNullOrEmpty() -> topic.error
-            topic.replies.isEmpty() -> "这里什么都没有哟"
-            else -> "登录后才可以评论哦"
+            topic.replies.isEmpty() -> context.getString(R.string.hint_empty_topic)
+            else -> context.getString(R.string.hint_login_topic)
         }
 
         adapter.setOnItemChildClickListener { _, v, position ->

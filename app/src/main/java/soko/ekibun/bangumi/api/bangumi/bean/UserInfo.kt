@@ -7,7 +7,8 @@ data class UserInfo(
         var nickname: String? = null,
         var avatar: Images? = null,
         var sign: String? = null, //formhash
-        var needReload: Boolean = false
+        var needReload: Boolean = false,
+        var notify: Pair<Int, Int>? = null
 ): BaseRequest(){
     /**
      * id : 419012

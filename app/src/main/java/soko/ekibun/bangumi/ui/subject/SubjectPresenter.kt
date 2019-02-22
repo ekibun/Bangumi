@@ -182,11 +182,12 @@ class SubjectPresenter(private val context: SubjectActivity){
     @SuppressLint("SetTextI18n")
     private fun openEpisode(episode: Episode, subject: Subject, eps: List<Episode>){
         val view = context.layoutInflater.inflate(R.layout.dialog_epsode, context.item_collect, false)
-        view.item_episode_title.text = episode.parseSort() + " " + if(episode.name_cn.isNullOrEmpty()) episode.name else episode.name_cn
+        //TODO
+        view.item_episode_title.text = episode.parseSort(context) + " " + if(episode.name_cn.isNullOrEmpty()) episode.name else episode.name_cn
         view.item_episode_desc.text = (if(episode.name_cn.isNullOrEmpty()) "" else episode.name + "\n") +
-                (if(episode.airdate.isNullOrEmpty()) "" else "首播：" + episode.airdate + "\n") +
-                (if(episode.duration.isNullOrEmpty()) "" else "时长：" + episode.duration + "\n") +
-                "讨论 (+" + episode.comment + ")"
+                (if(episode.airdate.isNullOrEmpty()) "" else  context.getString(R.string.phrase_air_date, episode.airdate) + "\n") +
+                (if(episode.duration.isNullOrEmpty()) "" else context.getString(R.string.phrase_duration, episode.duration) + "\n") +
+                context.getString(R.string.phrase_comment, episode.comment)
         view.item_episode_title.setOnClickListener {
             WebActivity.launchUrl(context, "${Bangumi.SERVER}/m/topic/ep/${episode.id}", "")
         }
@@ -194,7 +195,7 @@ class SubjectPresenter(private val context: SubjectActivity){
         val emptyTextView = TextView(context)
         val dp4 = (context.resources.displayMetrics.density * 4 + 0.5f).toInt()
         emptyTextView.setPadding(dp4,dp4,dp4,dp4)
-        emptyTextView.text = "暂无播放源"
+        emptyTextView.setText(R.string.hint_no_play_source)
         adapter.emptyView = emptyTextView
         adapter.setOnItemClickListener { _, _, position ->
             WebActivity.launchUrl(context, adapter.data[position].url, "")
@@ -273,7 +274,7 @@ class SubjectPresenter(private val context: SubjectActivity){
         subjectCall?.enqueue(ApiHelper.buildCallback(context, {
             subject = it
             refreshLines(it)
-            refreshCollection(it)
+            refreshCollection()
             subjectView.updateSubject(it)
         }, {}))
 
@@ -354,17 +355,17 @@ class SubjectPresenter(private val context: SubjectActivity){
     }
 
     private fun removeCollection(subject: Subject){
-        AlertDialog.Builder(context).setTitle("删除这个条目收藏？")
-                .setNegativeButton("取消") { _, _ -> }.setPositiveButton("确定") { _, _ ->
+        AlertDialog.Builder(context).setTitle(R.string.collection_dialog_remove)
+                .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
                     ApiHelper.buildHttpCall("${Bangumi.SERVER}/subject/${subject.id}/remove?gh=${context.formhash}", mapOf("User-Agent" to context.ua)){ it.code() == 200 }
                             .enqueue(ApiHelper.buildCallback(context, {
                                 if(it) subject.interest = Collection()
-                                refreshCollection(subject)
+                                refreshCollection()
                             }, {}))
                 }.show()
     }
 
-    private fun refreshCollection(subject: Subject){
+    private fun refreshCollection(){
         val body = subject.interest?:Collection()
         val status = body.status
         context.item_collect_image.setImageDrawable(context.resources.getDrawable(
@@ -374,11 +375,11 @@ class SubjectPresenter(private val context: SubjectActivity){
         context.item_collect.setOnClickListener{
             if(context.formhash.isEmpty()) return@setOnClickListener
             val popupMenu = PopupMenu(context, context.item_collect)
-            val statusList = context.resources.getStringArray(R.array.collection_status)
+            val statusList = context.resources.getStringArray(CollectionStatusType.getTypeNamesResId(subject.type))
             statusList.forEachIndexed { index, s ->
                 popupMenu.menu.add(Menu.NONE, Menu.FIRST + index, index, s) }
             if(status != null)
-                popupMenu.menu.add(Menu.NONE, Menu.FIRST + statusList.size, statusList.size, "删除")
+                popupMenu.menu.add(Menu.NONE, Menu.FIRST + statusList.size, statusList.size, R.string.delete)
             popupMenu.setOnMenuItemClickListener {menu->
                 if(menu.itemId == Menu.FIRST + statusList.size){
                     removeCollection(subject)
@@ -389,7 +390,7 @@ class SubjectPresenter(private val context: SubjectActivity){
                 Bangumi.updateCollectionStatus(subject, context.formhash, context.ua,
                         newStatus, newTags, body.comment?:"", body.rating, body.private).enqueue(ApiHelper.buildCallback(context,{
                     subject.interest = it
-                    refreshCollection(subject)
+                    refreshCollection()
                 },{}))
                 false
             }
@@ -399,7 +400,7 @@ class SubjectPresenter(private val context: SubjectActivity){
         context.item_collect.setOnLongClickListener {
             EditSubjectDialog.showDialog(context, subject, body, context.formhash, context.ua){
                 if(it) removeCollection(subject)
-                else refreshCollection(subject)
+                else refreshCollection()
             }
             true
         }

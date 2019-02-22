@@ -14,10 +14,10 @@
             app:layout_constraintBottom_toTopOf="@+id/item_info"
             app:layout_constraintVertical_bias="0.4"
             app:layout_constraintVertical_chainStyle="packed"
-            android:contentDescription="@string/info_empty"/>
+            android:contentDescription="@string/hint_empty"/>
     <TextView
             android:id="@+id/item_info"
-            android:text="@string/info_empty"
+            android:text="@string/hint_empty"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@+id/imageView"

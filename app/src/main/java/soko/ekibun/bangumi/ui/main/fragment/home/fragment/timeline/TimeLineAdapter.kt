@@ -40,8 +40,8 @@ class TimeLineAdapter(val ua: String, data: MutableList<TimeLine>? = null) :
         //del
         helper.itemView.item_del.visibility = if(item.t.delUrl.isNullOrEmpty()) View.INVISIBLE else View.VISIBLE
         helper.itemView.item_del.setOnClickListener {
-            AlertDialog.Builder(helper.itemView.context).setTitle("删除这条时间线？")
-                    .setNegativeButton("取消") { _, _ -> }.setPositiveButton("确定") { _, _ ->
+            AlertDialog.Builder(helper.itemView.context).setMessage(R.string.timeline_dialog_remove)
+                    .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
                         ApiHelper.buildHttpCall("${item.t.delUrl}&ajax=1", mapOf("User-Agent" to ua)) {
                             it.body()?.string()?.contains("\"status\":\"ok\"") == true
                         }.enqueue(ApiHelper.buildCallback<Boolean>(helper.itemView.context, {

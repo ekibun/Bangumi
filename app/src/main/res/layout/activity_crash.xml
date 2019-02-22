@@ -33,7 +33,7 @@
                   android:clickable="true"
                   android:foreground="?android:attr/selectableItemBackground"
                   android:focusable="true"
-                  android:text="@string/restart_app"/>
+                  android:text="@string/crash_restart_app"/>
         <TextView android:id="@+id/item_upload"
                   android:gravity="center"
                   android:padding="12dp"
@@ -43,7 +43,7 @@
                   android:clickable="true"
                   android:foreground="?android:attr/selectableItemBackground"
                   android:focusable="true"
-                  android:text="@string/upload_crash"/>
+                  android:text="@string/crash_upload_crash"/>
     </LinearLayout>
 </android.support.design.widget.CoordinatorLayout>
 

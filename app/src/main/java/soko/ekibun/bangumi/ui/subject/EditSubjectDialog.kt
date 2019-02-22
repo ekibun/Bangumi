@@ -47,6 +47,13 @@ class EditSubjectDialog: DialogFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.dialog_edit_subject, container)
 
+        val collectionStatusNames = inflater.context.resources.getStringArray(CollectionStatusType.getTypeNamesResId(subject.type))
+        view.radio_wish.text = collectionStatusNames[0]
+        view.radio_collect.text = collectionStatusNames[1]
+        view.radio_do.text = collectionStatusNames[2]
+        view.radio_hold.text = collectionStatusNames[3]
+        view.radio_dropped.text = collectionStatusNames[4]
+
         val selectMap = mapOf(
                 CollectionStatusType.WISH to R.id.radio_wish,
                 CollectionStatusType.COLLECT to R.id.radio_collect,
@@ -70,8 +77,8 @@ class EditSubjectDialog: DialogFragment() {
             val editText = EditText(view.context)
             AlertDialog.Builder(view.context)
                     .setView(editText)
-                    .setTitle("添加标签")
-                    .setPositiveButton("提交"){ _, _ ->
+                    .setTitle(R.string.subject_dialog_add_tag)
+                    .setPositiveButton(R.string.submit){ _, _ ->
                         adapter.addData(editText.text.split(" ").filter { it.isNotEmpty() })
                     }.show()
         }

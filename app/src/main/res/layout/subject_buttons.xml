@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content">
     <LinearLayout
@@ -18,7 +19,7 @@
                    android:layout_gravity="center_vertical"
                    android:tint="@android:color/white"
                    android:src="@drawable/ic_play"
-                   android:contentDescription="@string/collect"/>
+                   tools:ignore="ContentDescription"/>
         <TextView android:id="@+id/item_play_info"
                   android:textColor="@android:color/white"
                   android:layout_width="wrap_content"

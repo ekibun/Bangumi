@@ -13,7 +13,13 @@ data class Images(
 
     fun getImage(context: Context): String? {
         val quality = PreferenceManager.getDefaultSharedPreferences(context).getString("image_quality", "c")
-        return common?.replace("/c/", "/$quality/")
+        return when(quality){
+            "l" -> large
+            "m" -> medium
+            "s" -> small
+            "g" -> grid
+            else -> common
+        }
     }
     /**
      * large : http://lain.bgm.tv/pic/cover/l/e5/ba/6776_bA2h2.jpg

@@ -5,6 +5,7 @@ import android.support.v7.app.AlertDialog
 import android.view.View
 import android.view.ViewGroup
 import com.bumptech.glide.Glide
+import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.ui.view.DragPhotoView
 import soko.ekibun.bangumi.util.AppUtil
 
@@ -20,7 +21,7 @@ class PhotoPagerAdapter(private val items: List<String>, private val onDismiss: 
         photoView.mLongClickListener = {
             val systemUiVisibility = container.systemUiVisibility
             AlertDialog.Builder(container.context)
-                    .setItems(arrayOf("分享"))
+                    .setItems(arrayOf(container.context.getString(R.string.share)))
                     { _, _ ->
                         AppUtil.shareDrawable(container.context, photoView.drawable)
                     }.setOnDismissListener {

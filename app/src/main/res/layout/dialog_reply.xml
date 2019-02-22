@@ -47,7 +47,8 @@
                     android:tintMode="src_in"
                     android:background="?android:attr/selectableItemBackground"
                     android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/ic_emoji_keyboard"/>
+                    app:srcCompat="@drawable/ic_emoji_keyboard"
+                    android:contentDescription="@string/desc_emoji"/>
             <ImageButton
                     android:id="@+id/item_btn_image"
                     android:layout_width="wrap_content"
@@ -56,7 +57,8 @@
                     android:tintMode="src_in"
                     android:background="?android:attr/selectableItemBackground"
                     android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/ic_image"/>
+                    app:srcCompat="@drawable/ic_image"
+                    android:contentDescription="@string/desc_image"/>
             <ImageButton
                     android:id="@+id/item_btn_format"
                     android:layout_width="wrap_content"
@@ -65,7 +67,8 @@
                     android:tintMode="src_in"
                     android:background="?android:attr/selectableItemBackground"
                     android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/ic_format"/>
+                    app:srcCompat="@drawable/ic_format"
+                    android:contentDescription="@string/desc_format"/>
             <View android:layout_weight="1"
                   android:layout_height="match_parent"
                   android:layout_width="0dp"/>
@@ -75,7 +78,8 @@
                     android:padding="6dp"
                     android:background="?android:attr/selectableItemBackground"
                     android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/ic_send"/>
+                    app:srcCompat="@drawable/ic_send"
+                    android:contentDescription="@string/desc_send"/>
         </LinearLayout>
         <android.support.v7.widget.RecyclerView
                 android:id="@+id/item_emoji_list"

@@ -25,6 +25,7 @@ class IndexPagerAdapter(private val fragment: IndexFragment, private val pager: 
     }
 
     override fun getPageTitle(pos: Int): CharSequence{
+        //TODO
         return "${pos/12 + 1000}\n${pos%12+1}月"
     }
 
