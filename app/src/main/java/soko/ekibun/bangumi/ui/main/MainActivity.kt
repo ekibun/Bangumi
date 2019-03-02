@@ -57,10 +57,7 @@ class MainActivity : AppCompatActivity() {
     val ua by lazy { WebView(this).settings.userAgentString }
     override fun onStart() {
         super.onStart()
-
-        mainPresenter.refreshUser{
-            mainPresenter.reload()
-        }
+        mainPresenter.refreshUser()
     }
 
     var notifyMenu: NotifyActionProvider? = null

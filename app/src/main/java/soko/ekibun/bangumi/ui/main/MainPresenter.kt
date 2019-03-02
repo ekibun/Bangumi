@@ -67,7 +67,7 @@ class MainPresenter(private val context: MainActivity){
         drawerView.homeFragment.timelineFragment()?.onSelect()
     }
 
-    fun refreshUser(reload: ()->Unit = {}){
+    fun refreshUser(){
         Bangumi.getUserInfo(context.ua).enqueue(ApiHelper.buildCallback(null, {
             updateUser(it)
             context.notifyMenu?.badge = it.notify?.let{ it.first + it.second}?:0
@@ -79,8 +79,10 @@ class MainPresenter(private val context: MainActivity){
     private fun updateUser(user: UserInfo?){
         Log.v("updateUser", "${this.user}->$user")
         if(this.user != user || user == null) {
+            val lastName = this.user?.username
             this.user = user
-            drawerView.homeFragment.collectionFragment()?.reset()
+            if(lastName != user?.username)
+                drawerView.homeFragment.collectionFragment()?.reset()
         }
         context.nav_view.menu.findItem(R.id.nav_logout).isVisible = user != null
         userView.setUser(user)
