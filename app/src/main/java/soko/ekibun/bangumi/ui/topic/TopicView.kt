@@ -87,6 +87,7 @@ class TopicView(private val context: TopicActivity){
                     .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)))
                     .into(context.item_cover_blur)
         adapter.isUseEmpty(true)
+        topic.replies.forEach { it.isExpanded = true }
         setNewData(topic.replies)
         (context.item_list?.layoutManager as? LinearLayoutManager)?.let{ layoutManager ->
             layoutManager.scrollToPositionWithOffset(adapter.data.indexOfFirst { it.pst_id == scrollPost }, 0) }
@@ -122,7 +123,6 @@ class TopicView(private val context: TopicActivity){
             if(subFloor == 0) {
                 referPost = it
                 referPost?.subItems?.clear()
-                it.isExpanded = false
                 true
             }
             else {
@@ -131,6 +131,15 @@ class TopicView(private val context: TopicActivity){
                 false
             }
         })
-        adapter.expandAll()
+        var i = 0
+        while(i< adapter.data.size){
+            val topicPost = adapter.data[i]
+            if(topicPost.isExpanded){
+                topicPost.isExpanded = false
+                adapter.expand(i, false, false)
+            }
+            i++
+        }
+        //adapter.expandAll()
     }
 }

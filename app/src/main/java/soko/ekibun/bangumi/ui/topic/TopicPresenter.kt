@@ -27,6 +27,7 @@ class TopicPresenter(private val context: TopicActivity) {
 
     private val ua by lazy { WebView(context).settings.userAgentString }
     fun getTopic(scrollPost: String = ""){
+        context.item_swipe.isRefreshing = true
         Bangumi.getTopic(context.openUrl, ua).enqueue(ApiHelper.buildCallback(context, {topic->
             processTopic(topic, scrollPost)
         }){context.item_swipe.isRefreshing = false})
@@ -151,6 +152,7 @@ class TopicPresenter(private val context: TopicActivity) {
                     main.forEach {
                         it.value.floor = (replies.last()?.floor?:0)+1
                         it.value.relate = it.key
+                        it.value.isExpanded = replies.firstOrNull { o-> o.pst_id == it.value.pst_id }?.isExpanded?: true
                         replies.removeAll { o-> o.pst_id == it.value.pst_id }
                         replies.add(it.value)
                         //adapter.addData(it.value)
