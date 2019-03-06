@@ -97,7 +97,8 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
             it.filter { !useApi || it.subject?.type == subjectTypeView.getType() }.let{
                 if(!useApi) it.forEach {
                     it.subject?.type = subjectTypeView.getType() }
-                item.first.addData(it.reversed().sortedByDescending { (it.subject?.eps as? List<*>)?.mapNotNull { it as? Episode }?.lastOrNull { it.status == "Air" }?.airdate }) }
+                item.first.addData((if(useApi && subjectTypeView.selectedType == R.id.collection_type_anime)it.reversed() else it)
+                        .sortedByDescending { (it.subject?.eps as? List<*>)?.mapNotNull { it as? Episode }?.lastOrNull { it.status == "Air" }?.airdate }) }
             if(useApi || it.size < 10)
                 item.first.loadMoreEnd()
             else
