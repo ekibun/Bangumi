@@ -17,6 +17,7 @@ import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.CollectionStatusType
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectCollection
+import soko.ekibun.bangumi.api.bangumi.bean.SubjectProgress
 import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 
@@ -97,8 +98,13 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
             it.filter { !useApi || it.subject?.type == subjectTypeView.getType() }.let{
                 if(!useApi) it.forEach {
                     it.subject?.type = subjectTypeView.getType() }
-                item.first.addData((if(useApi && subjectTypeView.selectedType == R.id.collection_type_anime)it.reversed() else it)
-                        .sortedByDescending { (it.subject?.eps as? List<*>)?.mapNotNull { it as? Episode }?.lastOrNull { it.status == "Air" }?.airdate }) }
+                item.first.addData(it.sortedByDescending { (it.subject?.eps as? List<*>)?.mapNotNull { it as? Episode }?.lastOrNull { it.status == "Air" }?.airdate }
+                        .sortedByDescending {
+                            val eps = (it.subject?.eps as? List<*>)?.mapNotNull { it as? Episode }
+                            val watchTo = eps?.lastOrNull { it.progress?.status?.id == SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH_ID }
+                            val airTo = eps?.lastOrNull { it.status == "Air" }
+                            watchTo != airTo
+                        }) }
             if(useApi || it.size < 10)
                 item.first.loadMoreEnd()
             else
