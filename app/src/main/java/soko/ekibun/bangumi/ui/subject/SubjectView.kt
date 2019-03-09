@@ -204,7 +204,7 @@ class SubjectView(private val context: SubjectActivity){
         Glide.with(context.item_cover)
                 .load(subject.images?.getImage(context))
                 .apply(RequestOptions.placeholderOf(context.item_cover.drawable))
-                .apply(RequestOptions.errorOf(R.drawable.ic_404))
+                .apply(RequestOptions.errorOf(R.drawable.err_404))
                 .into(context.item_cover)
         context.item_cover.setOnClickListener {
             val popWindow = PopupWindow(it, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, true)

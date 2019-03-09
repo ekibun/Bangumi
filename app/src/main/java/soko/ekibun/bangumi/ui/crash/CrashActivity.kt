@@ -26,7 +26,7 @@ class CrashActivity : AppCompatActivity() {
         item_content.text = content
         item_upload.setOnClickListener {
             uploadCall?.cancel()
-            uploadCall = Xxxlin.createInstance().crashReport(content, AppUtil.getVersionCode(this), AppUtil.getVersionName(this))
+            uploadCall = Xxxlin.createInstance().crashReport(content)
             uploadCall?.enqueue(ApiHelper.buildCallback(this, {
                         Snackbar.make(item_upload, if(it.code == 0) getString(R.string.crash_upload_ok) else getString(R.string.crash_upload_failed, it.msg?:""), Snackbar.LENGTH_SHORT).show()
                         item_upload.setOnClickListener{}

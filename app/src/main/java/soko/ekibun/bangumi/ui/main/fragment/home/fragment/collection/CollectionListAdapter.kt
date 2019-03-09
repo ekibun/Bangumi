@@ -33,7 +33,7 @@ class CollectionListAdapter(data: MutableList<SubjectCollection>? = null) :
         helper.setText(R.id.item_summary, if(item.ep_status == -1) item.subject?.summary else watchep)
         Glide.with(helper.itemView.item_cover)
                 .load(item.subject?.images?.getImage(helper.itemView.context))
-                .apply(RequestOptions.errorOf(R.drawable.ic_404))
+                .apply(RequestOptions.errorOf(R.drawable.err_404))
                 .into(helper.itemView.item_cover)
     }
 }

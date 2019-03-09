@@ -17,7 +17,7 @@ class CacheAdapter(data: MutableList<PlayerBridge.VideoCache>? = null) :
         helper.setText(R.id.item_summary, helper.itemView.context.getString(R.string.parse_cache_eps, item.videoList.size))
         Glide.with(helper.itemView.item_cover)
                 .load(item.bangumi.images?.getImage(helper.itemView.context))
-                .apply(RequestOptions.errorOf(R.drawable.ic_404))
+                .apply(RequestOptions.errorOf(R.drawable.err_404))
                 .into(helper.itemView.item_cover)
     }
 }

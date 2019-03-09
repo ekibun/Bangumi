@@ -24,7 +24,7 @@ class RakuenAdapter(data: MutableList<Rakuen>? = null) :
         }
         Glide.with(helper.itemView.item_avatar)
                 .load(item.img)
-                .apply(RequestOptions.circleCropTransform().error(R.drawable.ic_404))
+                .apply(RequestOptions.circleCropTransform().error(R.drawable.err_404))
                 .into(helper.itemView.item_avatar)
     }
 }

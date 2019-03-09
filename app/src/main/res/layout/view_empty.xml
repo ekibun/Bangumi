@@ -6,7 +6,7 @@
 
     <ImageView
             android:layout_width="200dp"
-            android:layout_height="200dp" app:srcCompat="@drawable/empty"
+            android:layout_height="250dp" app:srcCompat="@drawable/empty"
             android:id="@+id/imageView"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"

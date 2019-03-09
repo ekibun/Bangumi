@@ -81,7 +81,7 @@ class MainPresenter(private val context: MainActivity){
         if(this.user != user || user == null) {
             val lastName = this.user?.username
             this.user = user
-            if(lastName != user?.username)
+            if(user == null || lastName != user.username)
                 drawerView.homeFragment.collectionFragment()?.reset()
         }
         context.nav_view.menu.findItem(R.id.nav_logout).isVisible = user != null

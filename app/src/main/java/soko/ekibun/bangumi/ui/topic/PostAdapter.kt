@@ -99,7 +99,7 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
         helper.itemView.item_message.movementMethod = LinkMovementMethod.getInstance()
         Glide.with(helper.itemView.item_avatar)
                 .load(HttpUtil.getUrl(item.avatar, URI.create(Bangumi.SERVER)))
-                .apply(RequestOptions.errorOf(R.drawable.ic_404))
+                .apply(RequestOptions.errorOf(R.drawable.err_404))
                 .apply(RequestOptions.circleCropTransform())
                 .into(helper.itemView.item_avatar)
     }

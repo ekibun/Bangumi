@@ -7,6 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.POST
+import soko.ekibun.bangumi.BuildConfig
 import soko.ekibun.bangumi.api.xxxlin.bean.BaseResult
 import soko.ekibun.bangumi.util.HttpUtil
 import java.util.*
@@ -15,8 +16,8 @@ interface Xxxlin {
     @FormUrlEncoded
     @POST("/api/soko/bangumi/v1/log/add")
     fun crashReport(@Field("content") content: String,
-                    @Field("appVersionCode") appVersionCode: Int,
-                    @Field("appVersionName") appVersionName: String,
+                    @Field("appVersionCode") appVersionCode: Int = BuildConfig.VERSION_CODE,
+                    @Field("appVersionName") appVersionName: String = BuildConfig.VERSION_NAME,
                     @Field("deviceManufacturer") deviceManufacturer: String = Build.MANUFACTURER,
                     @Field("deviceBrand") deviceBrand: String = Build.BRAND,
                     @Field("deviceModel") deviceModel: String = Build.MODEL,

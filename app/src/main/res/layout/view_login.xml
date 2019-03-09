@@ -6,15 +6,17 @@
 
     <ImageView
             android:layout_width="200dp"
-            android:layout_height="250dp"
-            app:srcCompat="@drawable/stop"
+            android:layout_height="300dp"
+            app:srcCompat="@drawable/err_401"
             android:id="@+id/imageView"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toTopOf="@+id/item_login"
             app:layout_constraintVertical_chainStyle="packed"
-            android:contentDescription="@string/login" android:scaleType="centerCrop"/>
+            android:contentDescription="@string/login"
+            android:scaleType="centerCrop"/>
+
     <TextView
             android:backgroundTint="?colorAccent"
             android:textColor="@android:color/white"

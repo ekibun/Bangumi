@@ -17,7 +17,7 @@ class CharacterAdapter(data: MutableList<Character>? = null) :
         helper.setText(R.id.item_role, item.role_name)
         Glide.with(helper.itemView.item_avatar)
                 .load(item.images?.grid)
-                .apply(RequestOptions.errorOf(R.drawable.ic_404))
+                .apply(RequestOptions.errorOf(R.drawable.err_404))
                 .apply(RequestOptions.circleCropTransform())
                 .into(helper.itemView.item_avatar)
     }

@@ -73,7 +73,7 @@ class TimeLineAdapter(val ua: String, data: MutableList<TimeLine>? = null) :
         if(!userImage.isEmpty())
             Glide.with(helper.itemView.item_avatar)
                     .load(userImage)
-                    .apply(RequestOptions.circleCropTransform().error(R.drawable.ic_404))
+                    .apply(RequestOptions.circleCropTransform().error(R.drawable.err_404))
                     .into(helper.itemView.item_avatar)
     }
 
