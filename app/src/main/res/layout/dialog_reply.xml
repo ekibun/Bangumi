@@ -11,7 +11,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:elevation="20dp"
-            android:background="?android:colorBackground">
+            android:background="@drawable/bg_round_dialog">
         <TextView
                 android:id="@+id/item_hint"
                 android:layout_marginTop="12dp"

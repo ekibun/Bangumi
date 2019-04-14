@@ -5,6 +5,7 @@ import android.support.v4.view.ViewPager
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.util.SparseIntArray
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -18,10 +19,19 @@ import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import java.util.*
 
-class IndexPagerAdapter(private val fragment: IndexFragment, private val pager: ViewPager): RecyclePagerAdapter<IndexPagerAdapter.IndexPagerViewHolder>() {
+class IndexPagerAdapter(private val fragment: IndexFragment, private val pager: ViewPager, private val scrollTrigger: (Boolean)->Unit): RecyclePagerAdapter<IndexPagerAdapter.IndexPagerViewHolder>() {
     private val indexTypeView = IndexTypeView(fragment.item_type) {
         pageIndex.clear()
         pager.adapter?.notifyDataSetChanged()
+    }
+
+    init{
+        pager.addOnPageChangeListener(object: ViewPager.OnPageChangeListener{
+            override fun onPageScrollStateChanged(state: Int) {}
+            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
+            override fun onPageSelected(position: Int) {
+                scrollTrigger((holders.firstOrNull { it.position ==  pager.currentItem}?.view?.tag as? RecyclerView)?.canScrollVertically(-1) == true)
+            } })
     }
 
     override fun getPageTitle(pos: Int): CharSequence{
@@ -66,11 +76,19 @@ class IndexPagerAdapter(private val fragment: IndexFragment, private val pager: 
         loadIndex(item)
     }
 
+    private val holders = ArrayList<IndexPagerViewHolder>()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): IndexPagerViewHolder {
         val swipeRefreshLayout = SwipeRefreshLayout(parent.context)
         val recyclerView = RecyclerView(parent.context)
         val adapter = SubjectAdapter()
         val viewHolder = IndexPagerViewHolder(swipeRefreshLayout, adapter)
+        recyclerView.addOnScrollListener(object: RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                if(viewHolder.position == pager.currentItem)
+                scrollTrigger(recyclerView.canScrollVertically(-1))
+            }
+        })
+
         adapter.emptyView = LayoutInflater.from(parent.context).inflate(R.layout.view_empty, parent, false)
         adapter.isUseEmpty(false)
         adapter.setEnableLoadMore(true)
@@ -86,7 +104,8 @@ class IndexPagerAdapter(private val fragment: IndexFragment, private val pager: 
         swipeRefreshLayout.addView(recyclerView)
         swipeRefreshLayout.tag = recyclerView
         swipeRefreshLayout.setOnRefreshListener { reset(viewHolder) }
-
+        holders.add(viewHolder)
+        Log.v("holder", holders.size.toString())
         return viewHolder
     }
 

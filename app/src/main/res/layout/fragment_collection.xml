@@ -4,32 +4,37 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-    <TextView android:id="@+id/item_type"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:padding="8dp"
-              android:layout_margin="8dp"
-              android:backgroundTint="@color/colorTransGrey"
-              android:background="@drawable/bg_round_rect"
-              app:layout_constraintTop_toTopOf="@+id/item_tabs"
-              app:layout_constraintBottom_toBottomOf="@+id/item_tabs"
-              app:layout_constraintEnd_toStartOf="@+id/item_tabs"
-              app:layout_constraintStart_toStartOf="parent"/>
-    <android.support.design.widget.TabLayout
-            android:id="@+id/item_tabs"
-            app:tabGravity="fill"
-            app:tabMode="fixed"
-            app:tabMaxWidth="0dp"
-            android:layout_width="0dp"
-            app:tabSelectedTextColor="?colorAccent"
-            app:layout_constraintStart_toEndOf="@+id/item_type"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_height="48dp"/>
+    <LinearLayout
+            android:id="@+id/item_tab_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:background="?android:colorBackground"
+            android:stateListAnimator="@animator/elevation">
+        <TextView android:id="@+id/item_type"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:padding="8dp"
+                  android:layout_marginLeft="8dp"
+                  android:layout_marginRight="8dp"
+                  android:backgroundTint="@color/colorTransGrey"
+                  android:background="@drawable/bg_round_rect"/>
+        <android.support.design.widget.TabLayout
+                android:id="@+id/item_tabs"
+                app:tabGravity="fill"
+                app:tabMode="fixed"
+                app:tabMaxWidth="0dp"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                app:tabSelectedTextColor="?colorAccent"
+                android:layout_height="48dp"/>
+    </LinearLayout>
     <android.support.v4.view.ViewPager
             android:id="@+id/item_pager"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            app:layout_constraintTop_toBottomOf="@+id/item_tabs"
+            app:layout_constraintTop_toBottomOf="@+id/item_tab_container"
             app:layout_constraintBottom_toBottomOf="parent"/>
     <include android:id="@+id/item_login_info"
              android:visibility="invisible"

@@ -26,13 +26,28 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.HashMap
 
-class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: ViewPager) : PagerAdapter(){
+class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: ViewPager, private val scrollTrigger: (Boolean)->Unit) : PagerAdapter(){
     val sp by lazy { PreferenceManager.getDefaultSharedPreferences(pager.context) }
+
+    init{
+        pager.addOnPageChangeListener(object: ViewPager.OnPageChangeListener{
+            override fun onPageScrollStateChanged(state: Int) {}
+            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
+            override fun onPageSelected(position: Int) {
+                scrollTrigger((items[CalendarAdapter.getCalendarInt(getPostDate(pager.currentItem))]?.second?.tag as? RecyclerView)?.canScrollVertically(-1) == true)
+            } })
+    }
 
     private fun getItem(position: Int): Pair<CalendarAdapter, SwipeRefreshLayout>{
         return items.getOrPut(position){
             val swipeRefreshLayout = SwipeRefreshLayout(pager.context)
             val recyclerView = RecyclerView(pager.context)
+            recyclerView.addOnScrollListener(object: RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    scrollTrigger((items[CalendarAdapter.getCalendarInt(getPostDate(pager.currentItem))]?.second?.tag as? RecyclerView)?.canScrollVertically(-1) == true)
+                }
+            })
+
             val adapter = CalendarAdapter()
             adapter.setOnItemChildClickListener { _, v, pos ->
                 SubjectActivity.startActivity(v.context, adapter.data[pos].t.subject)
@@ -99,7 +114,11 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
                 val time = mFormatter.format("%02d:%02d", if(use30h) (hour - 6 + 24) % 24 + 6 else (hour+24)%24, minute%60).toString()
                 val cal = java.util.Calendar.getInstance()
                 cal.time = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.airdate)
-                val week = (((if(!useCN || subject.timeCN.isNullOrEmpty()) subject.weekDayJP else subject.weekDayCN)?:0) - CalendarAdapter.getWeek(cal) + 7) % 7
+                val week = (when{
+                    timeInt/100 < 5 -> -1
+                    else -> 0
+                }) + if(!useCN || subject.timeCN.isNullOrEmpty()) 0 else Math.min(if(subject.timeCN?.toIntOrNull()?:0 < subject.timeJP?.toIntOrNull()?:0) 1 else 0, ((subject.weekDayCN?:0) - (subject.weekDayJP?:0) + 7) % 7)
+                //(((if(!useCN || subject.timeCN.isNullOrEmpty()) subject.weekDayJP else subject.weekDayCN)?:0) - CalendarAdapter.getWeek(cal) + 7) % 7
                 val dayDif = week + dayCarry
                 cal.add(java.util.Calendar.DAY_OF_MONTH, dayDif)
                 val date = CalendarAdapter.getCalendarInt(cal)

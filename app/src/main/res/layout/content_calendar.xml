@@ -9,7 +9,8 @@
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
             android:background="?colorPrimaryBackground"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            app:elevation="0dp">
         <android.support.v7.widget.Toolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
@@ -18,16 +19,24 @@
                 app:contentInsetStartWithNavigation="0dp"
                 app:popupTheme="@style/AppTheme.PopupOverlay"/>
     </android.support.design.widget.AppBarLayout>
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            app:layout_constraintTop_toBottomOf="@+id/app_bar"
+            app:layout_constraintBottom_toBottomOf="parent">
     <com.nshmura.recyclertablayout.RecyclerTabLayout
             android:id="@+id/item_tabs"
             android:layout_width="match_parent"
             app:rtl_tabSelectedTextColor="?colorAccent"
             app:layout_constraintTop_toBottomOf="@+id/app_bar"
+            android:background="?android:colorBackground"
+            android:stateListAnimator="@animator/elevation"
             android:layout_height="48dp"/>
     <android.support.v4.view.ViewPager
             android:id="@+id/item_pager"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            app:layout_constraintTop_toBottomOf="@+id/item_tabs"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+            android:layout_weight="1"/>
+    </LinearLayout>
 </android.support.constraint.ConstraintLayout>

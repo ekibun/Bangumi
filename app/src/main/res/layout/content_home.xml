@@ -10,7 +10,8 @@
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
             android:background="?colorPrimaryBackground"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            app:elevation="0dp">
         <android.support.v7.widget.Toolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
@@ -45,5 +46,6 @@
             app:tabSelectedTextColor="?colorAccent"
             app:tabIndicatorColor="@android:color/transparent"
             android:layout_width="match_parent"
-            android:layout_height="48dp"/>
+            android:layout_height="48dp"
+            />
 </LinearLayout>

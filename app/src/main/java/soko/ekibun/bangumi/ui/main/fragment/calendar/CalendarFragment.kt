@@ -13,7 +13,9 @@ class CalendarFragment: DrawerFragment(R.layout.content_calendar) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val adapter = CalendarPagerAdapter(this, item_pager)
+        val adapter = CalendarPagerAdapter(this, item_pager) {
+            item_tabs.isPressed = it
+        }
         item_pager?.adapter = adapter
         item_tabs?.setUpWithViewPager(item_pager)
         item_pager?.currentItem = 7

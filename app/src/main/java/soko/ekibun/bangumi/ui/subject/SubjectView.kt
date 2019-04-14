@@ -75,8 +75,8 @@ class SubjectView(private val context: SubjectActivity){
             context.item_buttons.translationY = -(context.toolbar.height - context.item_buttons.height * 9 / 8) * ratio / 2 - context.item_buttons.height / 16
             context.title_collapse.alpha = 1-(1-ratio)*(1-ratio)*(1-ratio)
             context.title_expand.alpha = 1-ratio
-
             context.item_buttons.translationX = -2.2f * marginEnd * ratio
+            context.app_bar.elevation = Math.max(0f, 12 * (ratio - 0.95f)/ 0.05f)
         })
 
         context.season_list.adapter = seasonAdapter
@@ -271,6 +271,7 @@ class SubjectView(private val context: SubjectActivity){
                 }
                 view.item_infobox_text.movementMethod = LinkMovementMethod.getInstance()
                 AlertDialog.Builder(context)
+                        .setTitle(subject.name)
                         .setView(view)
                         .show()
             }

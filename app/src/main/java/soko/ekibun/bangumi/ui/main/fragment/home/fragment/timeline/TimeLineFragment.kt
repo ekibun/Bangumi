@@ -20,7 +20,9 @@ class TimeLineFragment: HomeTabFragment(R.layout.fragment_timeline){
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val adapter = TimeLinePagerAdapter(view.context, this, item_pager)
+        val adapter = TimeLinePagerAdapter(view.context, this, item_pager){
+            item_tab_container.isPressed = it
+        }
         item_pager?.adapter = adapter
         item_tabs?.setupWithViewPager(item_pager)
         val popup = PopupMenu(view.context, item_type)

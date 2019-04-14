@@ -16,7 +16,7 @@ import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.TimeLine
 import soko.ekibun.bangumi.ui.main.MainActivity
 
-class TimeLinePagerAdapter(context: Context, val fragment: TimeLineFragment, private val pager: ViewPager) : PagerAdapter(){
+class TimeLinePagerAdapter(context: Context, val fragment: TimeLineFragment, private val pager: ViewPager, private val scrollTrigger: (Boolean)->Unit) : PagerAdapter(){
     private val tabList = context.resources.getStringArray(R.array.timeline_list)
     private var topicCall = HashMap<Int, Call<List<TimeLine>>>()
     val pageIndex = HashMap<Int, Int>()
@@ -32,6 +32,7 @@ class TimeLinePagerAdapter(context: Context, val fragment: TimeLineFragment, pri
                     pageIndex[position] = 0
                     loadTopicList(position)
                 }
+                scrollTrigger((items[position]?.second?.tag as? RecyclerView)?.canScrollVertically(-1) == true)
             } })
     }
 
@@ -46,6 +47,12 @@ class TimeLinePagerAdapter(context: Context, val fragment: TimeLineFragment, pri
         val item = items.getOrPut(position){
             val swipeRefreshLayout = SwipeRefreshLayout(container.context)
             val recyclerView = RecyclerView(container.context)
+            recyclerView.addOnScrollListener(object: RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    scrollTrigger((items[pager.currentItem]?.second?.tag as? RecyclerView)?.canScrollVertically(-1) == true)
+                }
+            })
+
             val adapter = TimeLineAdapter((fragment.activity as? MainActivity)?.ua?:"")
             adapter.emptyView = LayoutInflater.from(container.context).inflate(R.layout.view_empty, container, false)
             adapter.isUseEmpty(false)

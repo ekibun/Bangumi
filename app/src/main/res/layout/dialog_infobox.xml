@@ -6,5 +6,6 @@
             android:id="@+id/item_infobox_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:lineSpacingMultiplier="1.5"
             android:padding="18dp"/>
 </android.support.v4.widget.NestedScrollView>

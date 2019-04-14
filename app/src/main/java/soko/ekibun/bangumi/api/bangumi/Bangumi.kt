@@ -98,8 +98,7 @@ interface Bangumi {
                 }
                 var eps_count = infobox?.firstOrNull { it.first == "话数" }?.second?.toIntOrNull()?:subject.eps_count
                 //air-date
-                val air_date = infobox?.firstOrNull { it.first in arrayOf("放送开始", "上映年度", "开始") }?.second?.replace("/", "-")?.
-                        replace("年", "-")?.replace("月", "-")?.replace("日", "")?:""
+                val air_date = infobox?.firstOrNull { it.first in arrayOf("放送开始", "上映年度", "开始") }?.second?:""
                 var air_weekday = "一二三四五六日".map { "星期$it" }.indexOf(infobox?.firstOrNull { it.first == "放送星期" }?.second?:"") + 1
                 if(air_weekday == 0)
                     air_weekday = "月火水木金土日".map { "${it}曜日" }.indexOf(infobox?.firstOrNull { it.first == "放送星期" }?.second?:"") + 1

@@ -22,6 +22,7 @@
                 android:layout_height="wrap_content"
                 android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
                 app:contentScrim="?colorPrimaryBackground"
+                app:scrimVisibleHeightTrigger="?attr/actionBarSize"
                 app:layout_scrollFlags="scroll|exitUntilCollapsed"
                 app:titleEnabled="false"
                 android:fitsSystemWindows="true">

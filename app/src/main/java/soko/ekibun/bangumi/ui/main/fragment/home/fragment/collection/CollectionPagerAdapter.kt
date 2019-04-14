@@ -21,7 +21,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.SubjectProgress
 import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 
-class CollectionPagerAdapter(private val context: Context, val fragment: CollectionFragment, private val pager: ViewPager) : PagerAdapter(){
+class CollectionPagerAdapter(private val context: Context, val fragment: CollectionFragment, private val pager: ViewPager, private val scrollTrigger: (Boolean)->Unit) : PagerAdapter(){
     private var tabList = context.resources.getStringArray(R.array.collection_status_anime)
     private val subjectTypeView = SubjectTypeView(fragment.item_type) { reset() }
 
@@ -34,6 +34,7 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
                     pageIndex[position] = 0
                     loadCollectionList(position)
                 }
+                scrollTrigger((items[position]?.second?.tag as? RecyclerView)?.canScrollVertically(-1) == true)
             } })
     }
 
@@ -42,6 +43,12 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
         val item = items.getOrPut(position){
             val swipeRefreshLayout = SwipeRefreshLayout(container.context)
             val recyclerView = RecyclerView(container.context)
+            recyclerView.addOnScrollListener(object: RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    scrollTrigger((items[pager.currentItem]?.second?.tag as? RecyclerView)?.canScrollVertically(-1) == true)
+                }
+            })
+
             val adapter = CollectionListAdapter()
             adapter.emptyView = LayoutInflater.from(container.context).inflate(R.layout.view_empty, container, false)
             adapter.isUseEmpty(false)

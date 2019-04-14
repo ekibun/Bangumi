@@ -13,7 +13,7 @@
             app:layout_behavior="soko.ekibun.bangumi.util.FixAppBarLayoutBehavior"
             android:layout_width="match_parent"
             android:fitsSystemWindows="true"
-            android:elevation="0dp">
+            app:elevation="0dp">
         <android.support.design.widget.CollapsingToolbarLayout
                 android:id="@+id/toolbar_layout"
                 android:layout_width="match_parent"

@@ -16,7 +16,9 @@ class RakuenFragment: HomeTabFragment(R.layout.fragment_rakuen){
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val adapter = RakuenPagerAdapter(view.context, this, item_pager)
+        val adapter = RakuenPagerAdapter(view.context, this, item_pager) {
+            item_tabs.isPressed = it
+        }
         item_pager?.adapter = adapter
         item_tabs?.setupWithViewPager(item_pager)
         item_new?.setOnClickListener {

@@ -16,7 +16,9 @@ class CollectionFragment: HomeTabFragment(R.layout.fragment_collection){
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        item_pager?.adapter = CollectionPagerAdapter(view.context, this, item_pager)
+        item_pager?.adapter = CollectionPagerAdapter(view.context, this, item_pager){
+            item_tab_container.isPressed = it
+        }
         item_tabs?.setupWithViewPager(item_pager)
 
         item_pager?.currentItem = this.savedInstanceState?.getInt("CollectionPage", 2) ?: 2

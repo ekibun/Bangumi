@@ -1,7 +1,6 @@
 package soko.ekibun.bangumi.ui.main.fragment.index
 
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import android.view.View
 import kotlinx.android.synthetic.main.content_index.*
 import soko.ekibun.bangumi.R
@@ -14,7 +13,10 @@ class IndexFragment: DrawerFragment(R.layout.content_index){
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        item_pager?.adapter = IndexPagerAdapter(this, item_pager)
+        item_pager?.adapter = IndexPagerAdapter(this, item_pager){
+            app_bar.isPressed = it
+            item_tab_container.isPressed = it
+        }
         item_tabs?.setUpWithViewPager(item_pager)
 
         item_pager?.currentItem = getNowIndex()

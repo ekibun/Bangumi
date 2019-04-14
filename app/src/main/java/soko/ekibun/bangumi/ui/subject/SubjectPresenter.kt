@@ -336,7 +336,7 @@ class SubjectPresenter(private val context: SubjectActivity){
 
     private var onAirInfo: OnAirInfo? = null
     private fun refreshLines(subject: Subject){
-        val dateList = subject.air_date?.split("-") ?: return
+        val dateList = subject.air_date?.replace("/", "-")?.replace("年", "-")?.replace("月", "-")?.replace("日", "")?.split("-") ?: return
         val year = dateList.getOrNull(0)?.toIntOrNull()?:0
         val month = dateList.getOrNull(1)?.toIntOrNull()?:1
         GithubRaw.createInstance().bangumiData(year, String.format("%02d", month)).enqueue(ApiHelper.buildCallback(context, {

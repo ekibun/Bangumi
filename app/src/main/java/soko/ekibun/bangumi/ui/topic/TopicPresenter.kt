@@ -145,8 +145,7 @@ class TopicPresenter(private val context: TopicActivity) {
                 ApiHelper.buildHttpCall(post, mapOf("User-Agent" to ua), body = data.build()){ response ->
                     val replies = ArrayList(topicView.adapter.data)
                     replies.removeAll { it.sub_floor > 0 }
-                    replies.toTypedArray().forEach { replies.addAll(it.subItems?:return@forEach) }
-                    replies.sortedBy { it.floor + it.sub_floor * 1.0f/replies.size }
+                    replies.sortedBy { it.floor }
                     val posts = JsonUtil.toJsonObject(response.body()?.string()?:"").getAsJsonObject("posts")
                     val main = JsonUtil.toEntity<Map<String, TopicPost>>(posts.get("main")?.toString()?:"", object: TypeToken<Map<String, TopicPost>>(){}.type)?: HashMap()
                     main.forEach {
@@ -157,8 +156,11 @@ class TopicPresenter(private val context: TopicActivity) {
                         replies.add(it.value)
                         //adapter.addData(it.value)
                     }
+                    replies.toTypedArray().forEach { replies.addAll(it.subItems?:return@forEach) }
+                    replies.sortedBy { it.floor + it.sub_floor * 1.0f/replies.size }
                     val sub = JsonUtil.toEntity<Map<String, TopicActivity.PostList>>(posts.get("sub")?.toString()?:"", object: TypeToken<Map<String, TopicActivity.PostList>>(){}.type)?:HashMap()
                     sub.forEach {
+                        replies.lastOrNull { old-> old.pst_id == it.key }?.isExpanded = true
                         var relate = replies.lastOrNull { old-> old.relate == it.key }?:return@forEach
                         it.value.forEach { topicPost ->
                             topicPost.isSub = true

@@ -17,7 +17,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.Rakuen
 import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.topic.TopicActivity
 
-class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private val pager: ViewPager) : PagerAdapter(){
+class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private val pager: ViewPager, private val scrollTrigger: (Boolean)->Unit) : PagerAdapter(){
     private val tabList = context.resources.getStringArray(R.array.topic_list)
 
     init{
@@ -26,6 +26,7 @@ class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
             override fun onPageSelected(position: Int) {
                 loadTopicList(position)
+                scrollTrigger((items[position]?.second?.tag as? RecyclerView)?.canScrollVertically(-1) == true)
             } })
     }
 
@@ -34,6 +35,12 @@ class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private
         val item = items.getOrPut(position){
             val swipeRefreshLayout = SwipeRefreshLayout(container.context)
             val recyclerView = RecyclerView(container.context)
+            recyclerView.addOnScrollListener(object: RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    scrollTrigger((items[pager.currentItem]?.second?.tag as? RecyclerView)?.canScrollVertically(-1) == true)
+                }
+            })
+
             val adapter = RakuenAdapter()
             adapter.emptyView = LayoutInflater.from(container.context).inflate(R.layout.view_empty, container, false)
             adapter.isUseEmpty(false)
