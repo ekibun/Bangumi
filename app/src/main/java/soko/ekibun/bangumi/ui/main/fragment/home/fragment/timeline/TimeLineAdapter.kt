@@ -4,7 +4,6 @@ import android.support.v7.app.AlertDialog
 import android.text.Html
 import android.text.method.LinkMovementMethod
 import android.view.View
-import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseSectionQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
@@ -15,6 +14,7 @@ import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.TimeLine
 import soko.ekibun.bangumi.ui.topic.PostAdapter
 import soko.ekibun.bangumi.ui.web.WebActivity
+import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.HttpUtil
 import java.net.URI
 
@@ -71,10 +71,10 @@ class TimeLineAdapter(val ua: String, data: MutableList<TimeLine>? = null) :
             WebActivity.launchUrl(helper.itemView.context, item.t.userUrl, "")
         }
         if(!userImage.isEmpty())
-            Glide.with(helper.itemView.item_avatar)
-                    .load(userImage)
-                    .apply(RequestOptions.circleCropTransform().error(R.drawable.err_404))
-                    .into(helper.itemView.item_avatar)
+            GlideUtil.with(helper.itemView.item_avatar)
+                    ?.load(userImage)
+                    ?.apply(RequestOptions.circleCropTransform().error(R.drawable.err_404))
+                    ?.into(helper.itemView.item_avatar)
     }
 
 }

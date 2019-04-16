@@ -1,6 +1,5 @@
 package soko.ekibun.bangumi.ui.main.fragment.home.fragment.collection
 
-import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
@@ -10,6 +9,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectCollection
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectProgress
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
+import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.ResourceUtil
 
 class CollectionListAdapter(data: MutableList<SubjectCollection>? = null) :
@@ -43,9 +43,9 @@ class CollectionListAdapter(data: MutableList<SubjectCollection>? = null) :
                     }
         }
         helper.setText(R.id.item_summary, if(item.ep_status == -1) item.subject?.summary else watchep)
-        Glide.with(helper.itemView.item_cover)
-                .load(item.subject?.images?.getImage(helper.itemView.context))
-                .apply(RequestOptions.errorOf(R.drawable.err_404))
-                .into(helper.itemView.item_cover)
+        GlideUtil.with(helper.itemView.item_cover)
+                ?.load(item.subject?.images?.getImage(helper.itemView.context))
+                ?.apply(RequestOptions.errorOf(R.drawable.err_404))
+                ?.into(helper.itemView.item_cover)
     }
 }

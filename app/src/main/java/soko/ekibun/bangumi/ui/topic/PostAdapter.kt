@@ -7,7 +7,6 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupWindow
-import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseViewHolder
 import kotlinx.android.synthetic.main.item_reply.view.*
@@ -26,6 +25,7 @@ import com.chad.library.adapter.base.BaseMultiItemQuickAdapter
 import org.jsoup.Jsoup
 import soko.ekibun.bangumi.ui.view.FastScrollRecyclerView
 import soko.ekibun.bangumi.ui.web.WebActivity
+import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.HttpUtil
 
 class PostAdapter(data: MutableList<TopicPost>? = null) :
@@ -97,11 +97,11 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
                 (view as TextView).text = view.text
             } }
         helper.itemView.item_message.movementMethod = LinkMovementMethod.getInstance()
-        Glide.with(helper.itemView.item_avatar)
-                .load(HttpUtil.getUrl(item.avatar, URI.create(Bangumi.SERVER)))
-                .apply(RequestOptions.errorOf(R.drawable.err_404))
-                .apply(RequestOptions.circleCropTransform())
-                .into(helper.itemView.item_avatar)
+        GlideUtil.with(helper.itemView.item_avatar)
+                ?.load(HttpUtil.getUrl(item.avatar, URI.create(Bangumi.SERVER)))
+                ?.apply(RequestOptions.errorOf(R.drawable.err_404))
+                ?.apply(RequestOptions.circleCropTransform())
+                ?.into(helper.itemView.item_avatar)
     }
 
     override fun onViewAttachedToWindow(holder: BaseViewHolder) {

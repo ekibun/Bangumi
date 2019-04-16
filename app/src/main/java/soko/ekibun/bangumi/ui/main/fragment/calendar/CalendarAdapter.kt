@@ -3,7 +3,6 @@ package soko.ekibun.bangumi.ui.main.fragment.calendar
 import android.annotation.SuppressLint
 import android.preference.PreferenceManager
 import android.view.View
-import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseSectionQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
@@ -11,6 +10,7 @@ import com.chad.library.adapter.base.entity.SectionEntity
 import kotlinx.android.synthetic.main.item_calendar.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.tinygrail.bean.OnAir
+import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.ResourceUtil
 import java.text.DecimalFormat
 import java.util.*
@@ -24,10 +24,10 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
         helper.setText(R.id.item_title, item.t.subject.getPrettyName())
         helper.setText(R.id.item_ep_name, item.t.episode?.parseSort(helper.itemView.context) + " " + (if(item.t.episode?.name_cn.isNullOrEmpty()) item.t.episode?.name?:"" else item.t.episode?.name_cn))
         helper.addOnClickListener(R.id.item_layout)
-        Glide.with(helper.itemView.item_cover)
-                .load(item.t.subject.images?.small)
-                .apply(RequestOptions.errorOf(R.drawable.err_404))
-                .into(helper.itemView.item_cover)
+        GlideUtil.with(helper.itemView.item_cover)
+                ?.load(item.t.subject.images?.small)
+                ?.apply(RequestOptions.errorOf(R.drawable.err_404))
+                ?.into(helper.itemView.item_cover)
         helper.itemView.item_time.text = ""
         helper.itemView.item_chase.visibility = if(item.t.subject.collect) View.VISIBLE else View.GONE
 
@@ -50,8 +50,6 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
                 helper.itemView.item_layout.bringToFront()
             }
             helper.itemView.item_now_time.visibility = View.VISIBLE
-
-
 
             val cal = Calendar.getInstance()
             val hour = cal.get(Calendar.HOUR_OF_DAY)

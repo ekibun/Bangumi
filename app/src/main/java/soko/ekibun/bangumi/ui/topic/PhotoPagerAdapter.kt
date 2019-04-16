@@ -4,17 +4,17 @@ import android.support.v4.view.PagerAdapter
 import android.support.v7.app.AlertDialog
 import android.view.View
 import android.view.ViewGroup
-import com.bumptech.glide.Glide
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.ui.view.DragPhotoView
 import soko.ekibun.bangumi.util.AppUtil
+import soko.ekibun.bangumi.util.GlideUtil
 
 class PhotoPagerAdapter(private val items: List<String>, private val onDismiss: ()->Unit): PagerAdapter(){
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
         val photoView = DragPhotoView(container.context)
         photoView.isEnabled = true
-        Glide.with(photoView).load(items[position]).into(photoView)
+        GlideUtil.with(photoView)?.load(items[position])?.into(photoView)
         //photoView.setImageDrawable(items[position])
         photoView.mExitListener = { onDismiss() }
         photoView.mTapListener = { onDismiss() }

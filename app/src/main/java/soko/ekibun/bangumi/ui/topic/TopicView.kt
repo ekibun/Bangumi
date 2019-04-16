@@ -7,7 +7,6 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
-import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_topic.*
@@ -16,6 +15,7 @@ import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
 import soko.ekibun.bangumi.ui.web.WebActivity
+import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.HttpUtil
 import java.net.URI
 
@@ -80,12 +80,12 @@ class TopicView(private val context: TopicActivity){
             context.title_slice_0.maxWidth = context.title_expand.width - if(context.title_slice_divider.visibility == View.VISIBLE) 2*context.title_slice_divider.width + context.title_slice_1.width else 0
         }
 
-        if(!topic.replies.isEmpty() && !context.isDestroyed)
-            Glide.with(context.item_cover_blur)
-                    .load(HttpUtil.getUrl(topic.replies.firstOrNull()?.avatar?:"", URI.create(Bangumi.SERVER)))
-                    .apply(RequestOptions.placeholderOf(context.item_cover_blur.drawable))
-                    .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)))
-                    .into(context.item_cover_blur)
+        if(!topic.replies.isEmpty())
+            GlideUtil.with(context.item_cover_blur)
+                    ?.load(HttpUtil.getUrl(topic.replies.firstOrNull()?.avatar?:"", URI.create(Bangumi.SERVER)))
+                    ?.apply(RequestOptions.placeholderOf(context.item_cover_blur.drawable))
+                    ?.apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)))
+                    ?.into(context.item_cover_blur)
         adapter.isUseEmpty(true)
         topic.replies.forEach { it.isExpanded = true }
         setNewData(topic.replies)

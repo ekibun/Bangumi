@@ -1,6 +1,7 @@
 package soko.ekibun.bangumi.ui.main.fragment.calendar
 
 import android.annotation.SuppressLint
+import android.content.SharedPreferences
 import android.preference.PreferenceManager
 import android.support.v4.view.PagerAdapter
 import android.support.v4.view.ViewPager
@@ -27,7 +28,7 @@ import java.util.*
 import kotlin.collections.HashMap
 
 class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: ViewPager, private val scrollTrigger: (Boolean)->Unit) : PagerAdapter(){
-    val sp by lazy { PreferenceManager.getDefaultSharedPreferences(pager.context) }
+    val sp:SharedPreferences by lazy { PreferenceManager.getDefaultSharedPreferences(pager.context) }
 
     init{
         pager.addOnPageChangeListener(object: ViewPager.OnPageChangeListener{
@@ -62,6 +63,7 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
         }
     }
 
+    @SuppressLint("UseSparseArrays")
     private val items = HashMap<Int, Pair<CalendarAdapter, SwipeRefreshLayout>>()
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
         val item = getItem(CalendarAdapter.getCalendarInt(getPostDate(position)))
@@ -78,11 +80,12 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
         val use30h = sp.getBoolean("calendar_use_30h", false)
 
         val now = CalendarAdapter.getNowInt(use30h)
+        @SuppressLint("UseSparseArrays")
         val onAir = HashMap<Int, HashMap<String, ArrayList<OnAir>>>()
         val calWeek = CalendarAdapter.getIntCalendar(now)
-        calWeek.add(java.util.Calendar.DAY_OF_MONTH, -7)
+        calWeek.add(Calendar.DAY_OF_MONTH, -7)
         val minDate = CalendarAdapter.getCalendarInt(calWeek)
-        calWeek.add(java.util.Calendar.DAY_OF_MONTH, +14)
+        calWeek.add(Calendar.DAY_OF_MONTH, +14)
         val maxDate = CalendarAdapter.getCalendarInt(calWeek)
         it.forEach {subject->
             val bangumi = Subject(subject.id?:return@forEach, "${Bangumi.SERVER}/subject/${subject.id}", SubjectType.ANIME, subject.name, subject.name_cn, images = Images(
@@ -112,15 +115,15 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
                 val mFormatter = Formatter(mStrBuilder, Locale.getDefault())
                 mStrBuilder.setLength(0)
                 val time = mFormatter.format("%02d:%02d", if(use30h) (hour - 6 + 24) % 24 + 6 else (hour+24)%24, minute%60).toString()
-                val cal = java.util.Calendar.getInstance()
+                val cal = Calendar.getInstance()
                 cal.time = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.airdate)
                 val week = (when{
-                    timeInt/100 < 5 -> -1
+                    timeInt/100 < 5 -> 1
                     else -> 0
-                }) + if(!useCN || subject.timeCN.isNullOrEmpty()) 0 else Math.min(if(subject.timeCN?.toIntOrNull()?:0 < subject.timeJP?.toIntOrNull()?:0) 1 else 0, ((subject.weekDayCN?:0) - (subject.weekDayJP?:0) + 7) % 7)
+                }) + if(!useCN || subject.timeCN.isNullOrEmpty()) 0 else Math.min(if(subject.timeCN.toIntOrNull() ?:0 < subject.timeJP?.toIntOrNull()?:0) 1 else 0, ((subject.weekDayCN?:0) - (subject.weekDayJP?:0) + 7) % 7)
                 //(((if(!useCN || subject.timeCN.isNullOrEmpty()) subject.weekDayJP else subject.weekDayCN)?:0) - CalendarAdapter.getWeek(cal) + 7) % 7
                 val dayDif = week + dayCarry
-                cal.add(java.util.Calendar.DAY_OF_MONTH, dayDif)
+                cal.add(Calendar.DAY_OF_MONTH, dayDif)
                 val date = CalendarAdapter.getCalendarInt(cal)
                 if(date in minDate..maxDate)
                     onAir.getOrPut(date){HashMap()}.getOrPut(time){ArrayList()}.add(item)
@@ -175,7 +178,7 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
     }
 
     override fun getItemPosition(`object`: Any): Int {
-        return PagerAdapter.POSITION_NONE
+        return POSITION_NONE
     }
 
     override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
@@ -187,10 +190,10 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
         return "${date/100%100}-${date%100}\n${CalendarAdapter.weekSmall[CalendarAdapter.getWeek(cal)]}(${CalendarAdapter.weekJp[CalendarAdapter.getWeek(cal)]})"
     }
 
-    private fun getPostDate(pos: Int): java.util.Calendar{
+    private fun getPostDate(pos: Int): Calendar{
         val cal = CalendarAdapter.getIntCalendar(CalendarAdapter.getNowInt(
                 sp.getBoolean("calendar_use_30h", false)))
-        cal.add(java.util.Calendar.DAY_OF_MONTH, pos-7)
+        cal.add(Calendar.DAY_OF_MONTH, pos-7)
         return cal
     }
 

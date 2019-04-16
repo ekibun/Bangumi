@@ -1,13 +1,13 @@
 package soko.ekibun.bangumi.ui.subject
 
 import android.annotation.SuppressLint
-import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
 import kotlinx.android.synthetic.main.item_blog.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
+import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.ResourceUtil
 
 class BlogAdapter(data: MutableList<Subject.BlogBean>? = null) :
@@ -20,10 +20,10 @@ class BlogAdapter(data: MutableList<Subject.BlogBean>? = null) :
         helper.itemView.item_title.text = item.title
         helper.itemView.item_summary.text= item.summary
         helper.itemView.item_comment.text = helper.itemView.context.getString(R.string.phrase_reply,item.replies)
-        Glide.with(helper.itemView.item_avatar)
-                .load(item.image)
-                .apply(RequestOptions.errorOf(R.drawable.err_404))
-                .apply(RequestOptions.circleCropTransform())
-                .into(helper.itemView.item_avatar)
+        GlideUtil.with(helper.itemView.item_avatar)
+                ?.load(item.image)
+                ?.apply(RequestOptions.errorOf(R.drawable.err_404))
+                ?.apply(RequestOptions.circleCropTransform())
+                ?.into(helper.itemView.item_avatar)
     }
 }

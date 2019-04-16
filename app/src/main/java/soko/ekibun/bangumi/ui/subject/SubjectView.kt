@@ -18,7 +18,6 @@ import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.LinearLayout
 import android.widget.PopupWindow
-import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.xiaofeng.flowlayoutmanager.FlowLayoutManager
 import jp.wasabeef.glide.transformations.BlurTransformation
@@ -40,10 +39,7 @@ import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarAdapter
 import soko.ekibun.bangumi.ui.topic.PostAdapter.Companion.setTextLinkOpenByWebView
 import soko.ekibun.bangumi.ui.view.DragPhotoView
 import soko.ekibun.bangumi.ui.web.WebActivity
-import soko.ekibun.bangumi.util.AppUtil
-import soko.ekibun.bangumi.util.HttpUtil
-import soko.ekibun.bangumi.util.JsonUtil
-import soko.ekibun.bangumi.util.PlayerBridge
+import soko.ekibun.bangumi.util.*
 import java.net.URI
 
 class SubjectView(private val context: SubjectActivity){
@@ -201,18 +197,18 @@ class SubjectView(private val context: SubjectActivity){
             context.item_score.text = it.score.toString()
             context.item_score_count.text = context.getString(R.string.rate_count, it.total)
         }
-        Glide.with(context.item_cover)
-                .load(subject.images?.getImage(context))
-                .apply(RequestOptions.placeholderOf(context.item_cover.drawable))
-                .apply(RequestOptions.errorOf(R.drawable.err_404))
-                .into(context.item_cover)
+        GlideUtil.with(context.item_cover)
+                ?.load(subject.images?.getImage(context))
+                ?.apply(RequestOptions.placeholderOf(context.item_cover.drawable))
+                ?.apply(RequestOptions.errorOf(R.drawable.err_404))
+                ?.into(context.item_cover)
         context.item_cover.setOnClickListener {
             val popWindow = PopupWindow(it, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, true)
             val photoView = DragPhotoView(it.context)
             popWindow.contentView = photoView
-            Glide.with(photoView).load(subject.images?.large)
-                    .apply(RequestOptions.placeholderOf(context.item_cover.drawable))
-                    .into(photoView)
+            GlideUtil.with(photoView)?.load(subject.images?.large)
+                    ?.apply(RequestOptions.placeholderOf(context.item_cover.drawable))
+                    ?.into(photoView)
             photoView.mTapListener={
                 popWindow.dismiss()
             }
@@ -238,11 +234,11 @@ class SubjectView(private val context: SubjectActivity){
                     or View.SYSTEM_UI_FLAG_FULLSCREEN)
         }
 
-        Glide.with(context.item_cover_blur)
-                .load(subject.images?.getImage(context))
-                .apply(RequestOptions.placeholderOf(context.item_cover_blur.drawable))
-                .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)))
-                .into(context.item_cover_blur)
+        GlideUtil.with(context.item_cover_blur)
+                ?.load(subject.images?.getImage(context))
+                ?.apply(RequestOptions.placeholderOf(context.item_cover_blur.drawable))
+                ?.apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)))
+                ?.into(context.item_cover_blur)
         ((subject.eps as? List<*>)?.map{ JsonUtil.toEntity(JsonUtil.toJson(it!!), Episode::class.java)!!})?.let{
             updateEpisode(it)
         }

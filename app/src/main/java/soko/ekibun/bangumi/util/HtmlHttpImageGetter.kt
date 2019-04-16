@@ -5,7 +5,6 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.text.Html
 import android.widget.TextView
-import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.transition.Transition
 import pl.droidsonroids.gif.GifDrawable
@@ -23,14 +22,14 @@ class HtmlHttpImageGetter(container: TextView, private val baseUri: URI?, privat
         if(urlDrawable.drawable == null){
             val view = container.get()
             view?.post {
-                Glide.with(view)
-                        .asDrawable().load(HttpUtil.getUrl(source, baseUri))
-                        .apply(RequestOptions().transform(SizeTransformation {width, _ ->
+                GlideUtil.with(view)
+                        ?.asDrawable()?.load(HttpUtil.getUrl(source, baseUri))
+                        ?.apply(RequestOptions().transform(SizeTransformation {width, _ ->
                             val maxWidth = container.get()?.width?.toFloat()?:return@SizeTransformation 1f
                             val minWidth = container.get()?.textSize?:return@SizeTransformation 1f
                             Math.min(maxWidth, Math.max(minWidth, width.toFloat())) / width
                         }))
-                        .into(object : SimpleTarget<Drawable>() {
+                        ?.into(object : SimpleTarget<Drawable>() {
                             override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
                                 val drawable = when (resource) {
                                     is com.bumptech.glide.load.resource.gif.GifDrawable -> GifDrawable(resource.buffer)
