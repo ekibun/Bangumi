@@ -2,24 +2,22 @@ package soko.ekibun.bangumi.ui.main
 
 import android.content.Context
 import android.content.Intent
-import android.os.Build
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.preference.PreferenceManager
+import android.support.v4.view.MenuItemCompat
+import android.support.v7.app.AlertDialog
+import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.PopupMenu
+import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
+import android.webkit.WebView
+import android.widget.Toast
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
-import soko.ekibun.bangumi.model.ThemeModel
-import soko.ekibun.bangumi.ui.search.SearchActivity
-import android.support.v4.view.MenuItemCompat
-import android.support.v7.app.AlertDialog
-import android.support.v7.widget.PopupMenu
-import android.view.KeyEvent
-import android.webkit.WebView
-import android.widget.Toast
 import soko.ekibun.bangumi.api.github.Github
+import soko.ekibun.bangumi.ui.search.SearchActivity
 import soko.ekibun.bangumi.ui.view.NotifyActionProvider
 import soko.ekibun.bangumi.ui.web.WebActivity
 
@@ -32,7 +30,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        ThemeModel.setTheme(this, ThemeModel(this).getTheme())
         if(savedInstanceState?.containsKey("user") != true)
             mainPresenter.refreshUser()
 

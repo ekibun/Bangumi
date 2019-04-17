@@ -41,7 +41,7 @@
         </activity>
         <activity
                 android:name=".ui.main.MainActivity"
-                android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|uiMode">
+                android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation">
         </activity>
         <activity android:name=".ui.web.WebActivity"
                   android:theme="@style/AppTheme.ActionBar">
@@ -50,7 +50,7 @@
         </activity>
         <activity
                 android:name=".ui.subject.SubjectActivity"
-                android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|uiMode">
+                android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
 

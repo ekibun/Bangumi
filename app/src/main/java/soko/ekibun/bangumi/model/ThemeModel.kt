@@ -22,10 +22,13 @@ class ThemeModel(context: Context){
     companion object {
         const val PREF_NIGHT="night"
 
-        fun setTheme(context: Activity, night: Boolean){
-            if((night && (AppCompatDelegate.getDefaultNightMode() != AppCompatDelegate.MODE_NIGHT_YES)) || (!night && (AppCompatDelegate.getDefaultNightMode() != AppCompatDelegate.MODE_NIGHT_NO))){
-                AppCompatDelegate.setDefaultNightMode(if(night) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO)
-                context.recreate()
+        fun setTheme(context: Context, night: Boolean){
+            val nightMode = if (night) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
+            if (AppCompatDelegate.getDefaultNightMode() != nightMode) {
+                AppCompatDelegate.setDefaultNightMode(nightMode)
+                if (context is Activity) {
+                    context.recreate()
+                }
             }
             //(context.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager).nightMode = if(night) UiModeManager.MODE_NIGHT_YES else UiModeManager.MODE_NIGHT_NO
         }
