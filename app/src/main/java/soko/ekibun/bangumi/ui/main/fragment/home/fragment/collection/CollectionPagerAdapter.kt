@@ -43,6 +43,7 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
         val item = items.getOrPut(position){
             val swipeRefreshLayout = SwipeRefreshLayout(container.context)
             val recyclerView = RecyclerView(container.context)
+            recyclerView.overScrollMode = View.OVER_SCROLL_NEVER
             recyclerView.addOnScrollListener(object: RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                     scrollTrigger((items[pager.currentItem]?.second?.tag as? RecyclerView)?.canScrollVertically(-1) == true)

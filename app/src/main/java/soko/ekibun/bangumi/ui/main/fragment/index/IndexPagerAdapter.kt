@@ -8,6 +8,7 @@ import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.util.SparseIntArray
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.content_index.*
 import retrofit2.Call
@@ -80,6 +81,7 @@ class IndexPagerAdapter(private val fragment: IndexFragment, private val pager: 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): IndexPagerViewHolder {
         val swipeRefreshLayout = SwipeRefreshLayout(parent.context)
         val recyclerView = RecyclerView(parent.context)
+        recyclerView.overScrollMode = View.OVER_SCROLL_NEVER
         val adapter = SubjectAdapter()
         val viewHolder = IndexPagerViewHolder(swipeRefreshLayout, adapter)
         recyclerView.addOnScrollListener(object: RecyclerView.OnScrollListener() {

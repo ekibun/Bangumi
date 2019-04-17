@@ -43,6 +43,7 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
         return items.getOrPut(position){
             val swipeRefreshLayout = SwipeRefreshLayout(pager.context)
             val recyclerView = RecyclerView(pager.context)
+            recyclerView.overScrollMode = View.OVER_SCROLL_NEVER
             recyclerView.addOnScrollListener(object: RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                     scrollTrigger((items[CalendarAdapter.getCalendarInt(getPostDate(pager.currentItem))]?.second?.tag as? RecyclerView)?.canScrollVertically(-1) == true)
