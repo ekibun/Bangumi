@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@+id/topic_filter_all"
+          android:title="@string/all_group"/>
+    <item android:id="@+id/topic_filter_join"
+          android:title="@string/joined_group"/>
+    <item android:id="@+id/topic_filter_post"
+          android:title="@string/self_post"/>
+    <item android:id="@+id/topic_filter_reply"
+          android:title="@string/self_reply"/>
+</menu>

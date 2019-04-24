@@ -13,6 +13,9 @@
             app:tabSelectedTextColor="?colorAccent"
             android:background="?android:colorBackground"
             android:stateListAnimator="@animator/elevation"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tabPaddingStart="0dp"
+            app:tabPaddingEnd="0dp"
             android:layout_height="48dp"/>
     <android.support.v4.view.ViewPager
             android:id="@+id/item_pager"

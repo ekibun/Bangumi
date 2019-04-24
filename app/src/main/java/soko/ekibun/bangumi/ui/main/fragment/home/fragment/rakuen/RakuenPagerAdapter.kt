@@ -1,5 +1,6 @@
 package soko.ekibun.bangumi.ui.main.fragment.home.fragment.rakuen
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.support.v4.view.PagerAdapter
 import android.support.v4.view.ViewPager
@@ -19,6 +20,7 @@ import soko.ekibun.bangumi.ui.topic.TopicActivity
 
 class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private val pager: ViewPager, private val scrollTrigger: (Boolean)->Unit) : PagerAdapter(){
     private val tabList = context.resources.getStringArray(R.array.topic_list)
+    var selectedFilter = R.id.topic_filter_all
 
     init{
         pager.addOnPageChangeListener(object: ViewPager.OnPageChangeListener{
@@ -63,12 +65,25 @@ class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private
         return item.second
     }
 
+    fun reset(position : Int){
+        val item = items[position]?:return
+        topicCall[position]?.cancel()
+        item.first.isUseEmpty(false)
+        item.first.setNewData(null)
+    }
+
+    @SuppressLint("UseSparseArrays")
     private var topicCall = HashMap<Int, Call<List<Rakuen>>>()
     fun loadTopicList(position: Int = pager.currentItem){
         val item = items[position]?:return
         item.first.isUseEmpty(false)
         topicCall[position]?.cancel()
-        topicCall[position] = Bangumi.getRakuen(listOf("", "group", "subject", "ep", "mono")[position], (fragment.activity as? MainActivity)?.ua?:"")
+        topicCall[position] = Bangumi.getRakuen(if(position == 1) when(selectedFilter){
+            R.id.topic_filter_join -> "my_group"
+            R.id.topic_filter_post -> "my_group&filter=topic"
+            R.id.topic_filter_reply -> "my_group&filter=reply"
+            else -> "group"
+        } else listOf("", "group", "subject", "ep", "mono")[position], (fragment.activity as? MainActivity)?.ua?:"")
         item.second.isRefreshing = true
         topicCall[position]?.enqueue(ApiHelper.buildCallback(item.second.context, {
             item.first.isUseEmpty(true)

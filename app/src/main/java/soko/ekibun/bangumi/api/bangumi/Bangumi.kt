@@ -362,7 +362,7 @@ interface Bangumi {
 
         //超展开
         fun getRakuen(type: String, ua: String): Call<List<Rakuen>>{
-            val url = "$SERVER/m" + if(type.isEmpty()) "" else "?type=$type"
+            val url = "$SERVER/rakuen/topiclist" + if(type.isEmpty()) "" else "?type=$type"
             return ApiHelper.buildHttpCall(url, mapOf("User-Agent" to ua)){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<Rakuen>()
@@ -441,7 +441,7 @@ interface Bangumi {
                     val user = it.selectFirst(".inner")?.selectFirst("a")
                     val userId = Regex("""/user/([^/]*)""").find(user?.attr("href")?:"")?.groupValues?.get(1)?:""
                     val userName = user?.text()?:""
-                    val userSign = it.selectFirst(".inner")?.selectFirst(".tip_j")?.text()?.let{it.substring(1, it.length-1)}?:""
+                    val userSign = it.selectFirst(".inner")?.selectFirst(".tip_j")?.text()?:""
                     val message = it.selectFirst(".topic_content")?.html()
                             ?:it.selectFirst(".message")?.html()
                             ?:it.selectFirst(".cmt_sub_content")?.html()?:""
@@ -476,6 +476,7 @@ interface Bangumi {
                 val errorLink = HttpUtil.getUrl(error?.selectFirst("a")?.attr("href")?:"", URI.create(SERVER))
                 val group = doc.selectFirst("#pageHeader")?.selectFirst("span")?.text()?:""
                 val title = doc.selectFirst("#pageHeader")?.selectFirst("h1")?.ownText()?:""
+                val image = getImageUrl(doc.selectFirst("#pageHeader")?.selectFirst("img"))
                 val form = doc.selectFirst("#ReplyForm")
                 val post = HttpUtil.getUrl("${form?.attr("action")}?ajax=1", URI.create(SERVER))
                 val formhash = form?.selectFirst("input[name=formhash]")?.attr("value")
@@ -483,7 +484,7 @@ interface Bangumi {
                 val links = LinkedHashMap<String, String>()
                 doc.selectFirst("#pageHeader")?.select("a")?.filter { !it.text().isNullOrEmpty() }?.forEach {
                     links[it.text()]= HttpUtil.getUrl(it.attr("href")?:"", URI.create(SERVER)) }
-                return@buildHttpCall Topic(user_id, group, title, replies, post, formhash, lastview, links, error?.text(), errorLink)
+                return@buildHttpCall Topic(user_id, group, title, image, replies, post, formhash, lastview, links, error?.text(), errorLink)
             }
         }
 

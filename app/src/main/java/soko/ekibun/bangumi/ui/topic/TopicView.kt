@@ -80,9 +80,9 @@ class TopicView(private val context: TopicActivity){
             context.title_slice_0.maxWidth = context.title_expand.width - if(context.title_slice_divider.visibility == View.VISIBLE) 2*context.title_slice_divider.width + context.title_slice_1.width else 0
         }
 
-        if(!topic.replies.isEmpty())
+        if(topic.replies.isNotEmpty())
             GlideUtil.with(context.item_cover_blur)
-                    ?.load(HttpUtil.getUrl(topic.replies.firstOrNull()?.avatar?:"", URI.create(Bangumi.SERVER)))
+                    ?.load(HttpUtil.getUrl(if(topic.image.isEmpty()) topic.replies.firstOrNull()?.avatar?:"" else topic.image, URI.create(Bangumi.SERVER)))
                     ?.apply(RequestOptions.placeholderOf(context.item_cover_blur.drawable))
                     ?.apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)))
                     ?.into(context.item_cover_blur)

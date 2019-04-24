@@ -277,4 +277,10 @@
     <string name="notify_inbox">收件箱</string>
     <string name="notify_notify">电波提醒</string>
 
+    <string name="rakuen_topic">话题</string>
+    <string name="all_group">全部小组</string>
+    <string name="joined_group">已加入小组</string>
+    <string name="self_post">我发表的</string>
+    <string name="self_reply">我回复的</string>
+
 </resources>

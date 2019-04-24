@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                             xmlns:app="http://schemas.android.com/apk/res-auto"
+                                             android:layout_width="match_parent"
+                                             android:layout_height="match_parent"
+                                             android:clickable="true"
+                                             android:background="?android:attr/selectableItemBackground"
+                                             android:focusable="true"
+                                             xmlns:tools="http://schemas.android.com/tools">
+<TextView
+        android:id="@+id/item_filter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="8sp"
+        android:textColor="@drawable/color_selectable"
+        tools:text="全部小组"
+        app:layout_constraintBottom_toTopOf="@android:id/title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:ignore="SmallSp"/>
+
+    <TextView
+            android:id="@android:id/title"
+            android:textAppearance="@android:style/TextAppearance.DeviceDefault.Widget.TabWidget"
+            android:textColor="@drawable/color_selectable"
+            android:text="@string/rakuen_topic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+</android.support.constraint.ConstraintLayout>

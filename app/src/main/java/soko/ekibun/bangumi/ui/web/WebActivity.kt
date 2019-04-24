@@ -183,33 +183,36 @@ class WebActivity : SwipeBackActivity() {
             return false
         }
 
-        private val bgmHosts = arrayOf("bgm.tv", "bangumi.tv", "chii.in")
-        fun jumpUrl(context: Context, page: String?, openUrl: String): Boolean{
-            val url = page?.split("#")?.get(0)
-            if(url == null || url.isNullOrEmpty() || url == openUrl) return false
-            if(!isBgmPage(url)) return false
-            val post = Regex("""#post_([0-9]+)$""").find(page)?.groupValues?.get(1)?.toIntOrNull()?:0
-            //Topic
-            var regex = Regex("""/m/topic/[^/]*/([0-9]*)$""")
-            var id = regex.find(url)?.groupValues?.get(1)?.toIntOrNull()
-            if(id != null){
-                TopicActivity.startActivity(context, url, post)
-                return true }
-            regex = Regex("""/rakuen/topic/([^/]*)/([0-9]*)$""")
+        private fun getRakuen(page: String?): String?{
+            val url = page?.split("#")?.get(0)?:return page
+            var regex = Regex("""/m/topic/([^/]*)/([0-9]*)$""")
             var model = regex.find(url)?.groupValues?.get(1)?:""
-            id = regex.find(url)?.groupValues?.get(2)?.toIntOrNull()
-            if(id != null){
-                TopicActivity.startActivity(context, "${Bangumi.SERVER}/m/topic/$model/$id", post)
-                return true }
+            var id = regex.find(url)?.groupValues?.get(2)?.toIntOrNull()
+            if(id != null) return "${Bangumi.SERVER}/rakuen/topic/$model/$id"
+
             regex = Regex("""/([^/]*)/topic/([0-9]*)$""")
             model = regex.find(url)?.groupValues?.get(1)?:""
             id = regex.find(url)?.groupValues?.get(2)?.toIntOrNull()
-            if(id != null){
-                TopicActivity.startActivity(context, "${Bangumi.SERVER}/m/topic/$model/$id", post)
-                return true }
+            if(id != null) return "${Bangumi.SERVER}/rakuen/topic/$model/$id"
+
+            return url
+        }
+
+        private val bgmHosts = arrayOf("bgm.tv", "bangumi.tv", "chii.in")
+        fun jumpUrl(context: Context, page: String?, openUrl: String): Boolean{
+            val url = page?.split("#")?.get(0)
+            val rakuen = getRakuen(url)
+            if(url == null || url.isNullOrEmpty() || rakuen == getRakuen(openUrl)) return false
+            if(!isBgmPage(url)) return false
+            val post = Regex("""#post_([0-9]+)$""").find(page)?.groupValues?.get(1)?.toIntOrNull()?:0
+            //Topic
+            if(rakuen?.contains("/rakuen/") == true){
+                TopicActivity.startActivity(context, rakuen, post)
+                return true
+            }
             //Subject
-            regex = Regex("""/subject/([0-9]*)$""")
-            id = regex.find(url)?.groupValues?.get(1)?.toIntOrNull()
+            val regex = Regex("""/subject/([0-9]*)$""")
+            val id = regex.find(url)?.groupValues?.get(1)?.toIntOrNull()
             if(id != null){
                 SubjectActivity.startActivity(context, Subject(id, url))
                 return true }
