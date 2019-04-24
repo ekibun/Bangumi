@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="?android:textColorSecondary" android:state_selected="false"/>
+    <!-- check -->
+    <item android:color="?android:colorBackground" android:state_selected="true" android:state_enabled="false"/>
+    <!-- today -->
+    <item android:color="?colorAccent" android:state_selected="true" android:state_enabled="true"/>
+</selector>

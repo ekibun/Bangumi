@@ -11,7 +11,7 @@
         android:paddingStart="12dp"
         android:paddingEnd="12dp"
         android:clickable="true"
-        android:foreground="?android:attr/selectableItemBackground"
+        android:background="?android:attr/selectableItemBackground"
         android:focusable="true"
         android:transitionName="container"
         tools:ignore="RtlHardcoded,HardcodedText">
@@ -24,7 +24,9 @@
             android:scaleType="centerCrop"
             tools:ignore="ContentDescription"
             app:layout_constraintTop_toTopOf="@+id/item_user"
-            app:layout_constraintBottom_toBottomOf="@+id/item_time"/>
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="@+id/item_time"
+            tools:src="@drawable/err_404"/>
     <TextView
             android:id="@+id/item_user"
             android:layout_width="0dp"
@@ -35,7 +37,8 @@
             app:layout_constraintLeft_toRightOf="@+id/item_avatar"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginLeft="8dp"/>
+            android:layout_marginLeft="8dp"
+            tools:text="UserName"/>
     <TextView
             android:id="@+id/item_time"
             android:layout_width="0dp"
@@ -45,7 +48,8 @@
             android:maxLines="1"
             app:layout_constraintLeft_toLeftOf="@+id/item_user"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/item_user"/>
+            app:layout_constraintTop_toBottomOf="@+id/item_user"
+            tools:text="2019-04-23"/>
     <TextView
             android:paddingTop="8dp"
             android:id="@+id/item_title"
@@ -59,7 +63,8 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/item_time"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="Blog Title"/>
     <TextView
             android:paddingTop="8dp"
             android:id="@+id/item_summary"
@@ -70,7 +75,8 @@
             android:maxLines="4"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/item_title"/>
+            app:layout_constraintTop_toBottomOf="@+id/item_title"
+            tools:text="Blog Content..."/>
     <TextView
             android:paddingTop="8dp"
             android:alpha="0.5"
@@ -84,6 +90,7 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/item_summary"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="0 回复"/>
 
 </android.support.constraint.ConstraintLayout>

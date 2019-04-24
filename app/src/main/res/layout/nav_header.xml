@@ -6,6 +6,7 @@
         android:layout_width="match_parent"
         android:layout_height="176dp"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        android:paddingBottom="16dp"
         android:background="?colorPrimaryBackground">
 
     <ImageView
@@ -31,6 +32,7 @@
             app:siBorderColor="@android:color/white"
             app:siBorderAlpha="0.5"
             android:id="@+id/user_figure"
+            tools:src="@drawable/akkarin"
             app:layout_constraintBottom_toTopOf="@+id/user_name"
             app:layout_constraintStart_toStartOf="@+id/user_name"/>
     <TextView
@@ -39,7 +41,8 @@
             android:layout_height="wrap_content"
             android:paddingTop="8dp"
             android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-            app:layout_constraintBottom_toBottomOf="parent" android:layout_marginBottom="16dp"
+            app:layout_constraintBottom_toTopOf="@+id/user_sign"
+            tools:text="UserName"
             app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="16dp"/>
     <TextView
             android:id="@+id/user_id"
@@ -47,6 +50,19 @@
             android:layout_height="wrap_content"
             app:layout_constraintStart_toEndOf="@+id/user_name"
             android:layout_marginStart="4dp"
-            app:layout_constraintBottom_toBottomOf="@+id/user_name"
+            tools:text="\@UserId"
+            app:layout_constraintBottom_toTopOf="@+id/user_sign"
             android:layout_marginBottom="2dp"/>
+    <TextView
+            android:id="@+id/user_sign"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            tools:text="User Sign"
+            android:ellipsize="end"
+            android:maxLines="1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"/>
 </android.support.constraint.ConstraintLayout>

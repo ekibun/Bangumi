@@ -8,7 +8,7 @@
         android:layout_height="wrap_content"
         android:padding="6dp"
         android:clickable="true"
-        android:foreground="?android:attr/selectableItemBackground"
+        android:background="?android:attr/selectableItemBackground"
         android:focusable="true"
         android:transitionName="container"
         tools:ignore="RtlHardcoded,HardcodedText">
@@ -19,8 +19,10 @@
             android:layout_width="72dp"
             android:layout_height="72dp"
             android:scaleType="centerCrop"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
+            tools:src="@drawable/err_404"
             tools:ignore="ContentDescription"/>
     <TextView
             android:id="@+id/item_role"
@@ -32,6 +34,7 @@
             android:textSize="9sp"
             android:paddingLeft="2dp"
             android:paddingRight="2dp"
+            tools:text="主角"
             android:background="@drawable/bg_round_rect_checked"
             app:layout_constraintLeft_toLeftOf="@+id/item_avatar"
             app:layout_constraintBottom_toBottomOf="@+id/item_avatar"
@@ -46,6 +49,7 @@
             android:textColor="?android:textColorPrimary"
             android:textSize="@dimen/textSizeMedium"
             android:maxWidth="80dp"
+            tools:text="Crt Name"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/item_avatar"/>
@@ -57,6 +61,7 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:maxWidth="80dp"
+            tools:text="CV Name"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/item_name"/>

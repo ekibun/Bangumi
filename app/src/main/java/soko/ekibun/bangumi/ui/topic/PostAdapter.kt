@@ -47,7 +47,8 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
         helper.addOnClickListener(R.id.item_reply)
         helper.addOnClickListener(R.id.item_edit)
         helper.addOnClickListener(R.id.item_avatar)
-        helper.itemView.item_user.text = "${item.nickname}@${item.username}"
+        helper.itemView.item_user.text = item.nickname
+        helper.itemView.item_user_sign.text = item.sign
         val subFloor = if (item.sub_floor > 0) "-${item.sub_floor}" else ""
         helper.itemView.item_time.text = "#${item.floor}$subFloor - ${item.dateline}"
         helper.itemView.offset.visibility = if (item.isSub) View.VISIBLE else View.GONE

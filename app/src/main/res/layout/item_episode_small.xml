@@ -2,6 +2,7 @@
 <android.support.constraint.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/item_layout"
         android:layout_width="120dp"
         android:layout_height="wrap_content"
@@ -9,8 +10,7 @@
         android:layout_marginEnd="4dp"
         android:layout_marginBottom="8dp"
         android:clickable="true"
-        android:foreground="?android:attr/selectableItemBackground"
-        android:background="?android:colorBackground"
+        android:background="?android:attr/selectableItemBackground"
         android:focusable="true">
     <LinearLayout
             android:id="@+id/item_ep_box"
@@ -19,6 +19,7 @@
             android:padding="8dp"
             android:backgroundTint="?colorAccent"
             android:backgroundTintMode="src_in"
+            app:layout_constraintTop_toTopOf="parent"
             android:background="@drawable/bg_episode_outline"
             android:orientation="vertical">
         <TextView
@@ -27,6 +28,7 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:maxLines="1"
+                tools:text="第 1 话"
                 android:textSize="@dimen/textSizeSmall"/>
 
         <TextView
@@ -36,6 +38,7 @@
                 android:textSize="@dimen/textSizeMedium"
                 android:ellipsize="end"
                 android:paddingTop="4dp"
+                tools:text="Episode Name"
                 android:maxLines="1"/>
     </LinearLayout>
     <TextView
@@ -54,5 +57,6 @@
             android:backgroundTint="?colorAccent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintRight_toRightOf="parent"
+            tools:text="看过"
             android:textSize="@dimen/textSizeSmall"/>
 </android.support.constraint.ConstraintLayout>

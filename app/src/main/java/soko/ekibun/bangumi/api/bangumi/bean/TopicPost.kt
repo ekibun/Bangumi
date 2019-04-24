@@ -10,6 +10,7 @@ data class TopicPost(
         var pst_content: String = "",
         var username: String = "",
         var nickname: String = "",
+        var sign: String = "",
         var avatar: String = "",
         var dateline: String = "",
         var is_self: Boolean = false,

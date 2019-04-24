@@ -187,9 +187,9 @@ class SubjectView(private val context: SubjectActivity){
         val artist = subject.infobox?.firstOrNull { it.first.substringBefore(" ") in arrayOf("动画制作", "作者", "开发", "游戏制作", "艺术家") }
                 ?:subject.infobox?.firstOrNull { it.first.substringBefore(" ") in arrayOf("导演", "发行") }
         context.item_air_time.text = if(saleDate!= null) "${saleDate.first}：${Jsoup.parse(saleDate.second).body().text()}"
-            else "放送日期：${subject.air_date?:""} ${if(artist != null)CalendarAdapter.weekSmall[subject.air_weekday] else ""}"
-        context.item_air_week.text = if(artist != null) "${artist.first}：${Jsoup.parse(artist.second).body().text()}" else "更新时间：${CalendarAdapter.weekSmall[subject.air_weekday]}"
-        detail.item_detail.text = subject.summary
+            else "放送日期：${subject.air_date?:""} ${if(artist != null)CalendarAdapter.weekList[subject.air_weekday] else ""}"
+        context.item_air_week.text = if(artist != null) "${artist.first}：${Jsoup.parse(artist.second).body().text()}" else "更新时间：${CalendarAdapter.weekList[subject.air_weekday]}"
+        detail.item_detail.text = if(subject.summary.isNullOrEmpty()) subject.name else subject.summary
 
         context.item_play.visibility = if(PlayerBridge.checkActivity(context) && subject.type in listOf(SubjectType.ANIME, SubjectType.REAL)) View.VISIBLE else View.GONE
 

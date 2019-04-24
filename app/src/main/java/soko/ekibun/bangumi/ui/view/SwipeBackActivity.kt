@@ -10,7 +10,7 @@ abstract class SwipeBackActivity: AppCompatActivity() {
             override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
                 val f2 = e2.x - e1.x
                 val f1 = f2 / (e2.y - e1.y)
-                if (shouldCancelActivity && Math.abs(f1) > 3.0f && f2 > 160f && velocityX > 300f) {
+                if ((e1.x < 100f || shouldCancelActivity) && Math.abs(f1) > 3.0f && f2 > 160f && velocityX > 300f) {
                     processBack()
                     return true
                 }

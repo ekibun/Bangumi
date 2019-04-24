@@ -27,7 +27,7 @@ class MainPresenter(private val context: MainActivity){
     })
 
     private val onLogout: ()->Unit = {
-        val formhash = user?.sign?:""
+        val formhash = user?.formhash?:""
         if(formhash.isNotEmpty()){
             ApiHelper.buildHttpCall("${Bangumi.SERVER}/logout/$formhash", mapOf("User-Agent" to context.ua)){
                 val cookieManager = CookieManager.getInstance()

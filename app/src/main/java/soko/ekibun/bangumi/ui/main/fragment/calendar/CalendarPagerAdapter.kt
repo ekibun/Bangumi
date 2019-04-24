@@ -118,10 +118,8 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
                 val time = mFormatter.format("%02d:%02d", if(use30h) (hour - 6 + 24) % 24 + 6 else (hour+24)%24, minute%60).toString()
                 val cal = Calendar.getInstance()
                 cal.time = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.airdate)
-                val week = (when{
-                    timeInt/100 < 5 -> 1
-                    else -> 0
-                }) + if(!useCN || subject.timeCN.isNullOrEmpty()) 0 else Math.min(if(subject.timeCN.toIntOrNull() ?:0 < subject.timeJP?.toIntOrNull()?:0) 1 else 0, ((subject.weekDayCN?:0) - (subject.weekDayJP?:0) + 7) % 7)
+                val week = (if((subject.timeJP?.toIntOrNull()?:0)/100 < 5) 1 else 0) + if(!useCN || subject.timeCN.isNullOrEmpty()) 0 else
+                    Math.min(if(subject.timeCN.toIntOrNull() ?:0 < subject.timeJP?.toIntOrNull()?:0) 1 else 0, ((subject.weekDayCN?:0) - (subject.weekDayJP?:0) + 7) % 7)
                 //(((if(!useCN || subject.timeCN.isNullOrEmpty()) subject.weekDayJP else subject.weekDayCN)?:0) - CalendarAdapter.getWeek(cal) + 7) % 7
                 val dayDif = week + dayCarry
                 cal.add(Calendar.DAY_OF_MONTH, dayDif)
@@ -188,10 +186,10 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
 
     private fun parseDate(date: Int): String{
         val cal = CalendarAdapter.getIntCalendar(date)
-        return "${date/100%100}-${date%100}\n${CalendarAdapter.weekSmall[CalendarAdapter.getWeek(cal)]}(${CalendarAdapter.weekJp[CalendarAdapter.getWeek(cal)]})"
+        return "${date/100%100}-${date%100}\n${CalendarAdapter.weekList[CalendarAdapter.getWeek(cal)]}(${CalendarAdapter.weekJp[CalendarAdapter.getWeek(cal)]})"
     }
 
-    private fun getPostDate(pos: Int): Calendar{
+    public fun getPostDate(pos: Int): Calendar{
         val cal = CalendarAdapter.getIntCalendar(CalendarAdapter.getNowInt(
                 sp.getBoolean("calendar_use_30h", false)))
         cal.add(Calendar.DAY_OF_MONTH, pos-7)

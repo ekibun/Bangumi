@@ -12,5 +12,6 @@
             android:scaleType="fitCenter"
             android:background="?android:attr/selectableItemBackground"
             android:layout_height="36dp"
+            tools:src="@drawable/err_404"
             tools:ignore="ContentDescription"/>
 </RelativeLayout>

@@ -11,7 +11,7 @@
         android:paddingStart="12dp"
         android:paddingEnd="12dp"
         android:clickable="true"
-        android:foreground="?android:attr/selectableItemBackground"
+        android:background="?android:attr/selectableItemBackground"
         android:focusable="true"
         android:transitionName="container"
         tools:ignore="RtlHardcoded,HardcodedText">
@@ -24,9 +24,9 @@
             android:layout_width="75dp"
             android:layout_height="100dp"
             android:scaleType="centerCrop"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentLeft="true"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:src="@drawable/err_404"
             android:contentDescription="@string/desc_cover"/>
     <TextView
             android:visibility="gone"
@@ -59,6 +59,7 @@
             android:maxLines="1"
             android:textColor="?android:textColorPrimary"
             android:textSize="@dimen/textSizeMedium"
+            tools:text="Subject Name"
             app:layout_constraintLeft_toRightOf="@+id/item_chase"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
@@ -71,6 +72,7 @@
             android:textSize="@dimen/textSizeSmall"
             android:ellipsize="end"
             android:maxLines="1"
+            tools:text="Subject Name Jp"
             app:layout_constraintLeft_toRightOf="@+id/item_cover"
             android:layout_marginLeft="8dp"
             app:layout_constraintRight_toRightOf="parent"
@@ -83,6 +85,7 @@
             android:textSize="@dimen/textSizeSmall"
             android:maxLines="2"
             android:ellipsize="end"
+            tools:text="Subject Summary"
             app:layout_constraintLeft_toLeftOf="@+id/item_name_jp"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/item_name_jp"

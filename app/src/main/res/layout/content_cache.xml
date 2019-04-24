@@ -3,8 +3,10 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        xmlns:tools="http://schemas.android.com/tools">
     <android.support.design.widget.AppBarLayout
+            app:layout_constraintTop_toTopOf="parent"
             android:id="@+id/app_bar"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
@@ -27,6 +29,7 @@
         <android.support.v7.widget.RecyclerView
                 android:id="@+id/item_list"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
+                android:layout_height="match_parent"
+                tools:listitem="@layout/item_subject" />
     </android.support.v4.widget.SwipeRefreshLayout>
 </android.support.constraint.ConstraintLayout>

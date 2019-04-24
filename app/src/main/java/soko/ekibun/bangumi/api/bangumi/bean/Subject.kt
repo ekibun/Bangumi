@@ -62,7 +62,7 @@ data class Subject(
          * replies : 7
          * timestamp : 1466485111
          * dateline : 2016-6-21 04:58
-         * user : {"id":205577,"url":"http://bgm.tv/user/drawing","username":"drawing","nickname":"千叶铁矢","avatar":{"large":"http://lain.bgm.tv/pic/user/l/000/20/55/205577.jpg?r=1410168526","medium":"http://lain.bgm.tv/pic/user/m/000/20/55/205577.jpg?r=1410168526","small":"http://lain.bgm.tv/pic/user/s/000/20/55/205577.jpg?r=1410168526"},"sign":null}
+         * user : {"id":205577,"url":"http://bgm.tv/user/drawing","username":"drawing","nickname":"千叶铁矢","avatar":{"large":"http://lain.bgm.tv/pic/user/l/000/20/55/205577.jpg?r=1410168526","medium":"http://lain.bgm.tv/pic/user/m/000/20/55/205577.jpg?r=1410168526","small":"http://lain.bgm.tv/pic/user/s/000/20/55/205577.jpg?r=1410168526"},"formhash":null}
          */
     }
 
@@ -84,7 +84,7 @@ data class Subject(
          * timestamp : 1216020847
          * lastpost : 1497657984
          * replies : 57
-         * user : {"id":2,"url":"http://bgm.tv/user/2","username":"2","nickname":"陈永仁","avatar":{"large":"http://lain.bgm.tv/pic/user/l/000/00/00/2.jpg?r=1322480632","medium":"http://lain.bgm.tv/pic/user/m/000/00/00/2.jpg?r=1322480632","small":"http://lain.bgm.tv/pic/user/s/000/00/00/2.jpg?r=1322480632"},"sign":null}
+         * user : {"id":2,"url":"http://bgm.tv/user/2","username":"2","nickname":"陈永仁","avatar":{"large":"http://lain.bgm.tv/pic/user/l/000/00/00/2.jpg?r=1322480632","medium":"http://lain.bgm.tv/pic/user/m/000/00/00/2.jpg?r=1322480632","small":"http://lain.bgm.tv/pic/user/s/000/00/00/2.jpg?r=1322480632"},"formhash":null}
          */
     }
 

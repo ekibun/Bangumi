@@ -18,6 +18,7 @@ class CalendarFragment: DrawerFragment(R.layout.content_calendar) {
         }
         item_pager?.adapter = adapter
         item_tabs?.setUpWithViewPager(item_pager)
+        item_tabs?.setUpWithAdapter(CalendarTabAdapter(item_pager))
         item_pager?.currentItem = 7
     }
 

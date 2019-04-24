@@ -441,6 +441,7 @@ interface Bangumi {
                     val user = it.selectFirst(".inner")?.selectFirst("a")
                     val userId = Regex("""/user/([^/]*)""").find(user?.attr("href")?:"")?.groupValues?.get(1)?:""
                     val userName = user?.text()?:""
+                    val userSign = it.selectFirst(".inner")?.selectFirst(".tip_j")?.text()?.let{it.substring(1, it.length-1)}?:""
                     val message = it.selectFirst(".topic_content")?.html()
                             ?:it.selectFirst(".message")?.html()
                             ?:it.selectFirst(".cmt_sub_content")?.html()?:""
@@ -460,6 +461,7 @@ interface Bangumi {
                             message, //pst_content
                             userId, //username
                             userName, //nickName
+                            userSign, //sign
                             img,  //avatar
                             info.substring(max(min(info.indexOf(" - ")+3, info.length-1), 0)), //dateline
                             isSelf,
@@ -513,7 +515,8 @@ interface Bangumi {
                 var needReload = false
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val user = doc.selectFirst(".idBadgerNeue a.avatar")?: throw Exception("login failed")
-                val userName = doc.selectFirst("input[name=nickname]")?.attr("value")//doc.selectFirst("#header a")?.text()
+                val userName = doc.selectFirst("input[name=nickname]")?.attr("value")
+                val userSign = doc.selectFirst("input[name=sign_input]")?.attr("value")
                 val img = HttpUtil.getUrl(Regex("""background-image:url\('([^']*)'\)""").find(user.html()?:"")?.groupValues?.get(1)?:"", URI.create(Bangumi.SERVER))
                 val id = Regex("""/user/([^/]*)""").find(user.attr("href")?:"")?.groupValues?.get(1)
                 it.headers("set-cookie").forEach {
@@ -526,7 +529,7 @@ interface Bangumi {
                         Images(img.replace("/s/", "/l/"),
                                 img.replace("/s/", "/l/"),
                                 img.replace("/s/", "/m/"), img,
-                                img.replace("/s/", "/m/")), sign = formhash, needReload = needReload, notify = Pair(inbox, notify))
+                                img.replace("/s/", "/m/")), sign = userSign, formhash = formhash, needReload = needReload, notify = Pair(inbox, notify))
             }
         }
 

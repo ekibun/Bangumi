@@ -11,7 +11,7 @@
         android:paddingStart="12dp"
         android:paddingEnd="12dp"
         android:clickable="true"
-        android:foreground="?android:attr/selectableItemBackground"
+        android:background="?android:attr/selectableItemBackground"
         android:focusable="true"
         android:transitionName="container"
         tools:ignore="RtlHardcoded,HardcodedText">
@@ -22,6 +22,9 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:scaleType="centerCrop"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:src="@drawable/err_404"
             tools:ignore="ContentDescription"/>
     <TextView
             android:id="@+id/item_title"
@@ -32,6 +35,7 @@
             app:layout_constraintLeft_toRightOf="@+id/item_avatar"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            tools:text="Topic Title"
             android:layout_marginLeft="8dp"/>
     <TextView
             android:id="@+id/item_time"
@@ -39,6 +43,7 @@
             android:layout_height="wrap_content"
             android:textSize="@dimen/textSizeSmall"
             android:maxLines="1"
+            tools:text="22s ago (+9)"
             app:layout_constraintLeft_toLeftOf="@+id/item_title"
             app:layout_constraintTop_toBottomOf="@+id/item_title"/>
     <TextView
@@ -50,6 +55,7 @@
             android:maxLines="1"
             android:ellipsize="end"
             android:layout_marginLeft="4dp"
+            tools:text="Group Name"
             app:layout_constraintLeft_toRightOf="@+id/item_time"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintBaseline_toBaselineOf="@+id/item_time"/>

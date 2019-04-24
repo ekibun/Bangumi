@@ -11,7 +11,7 @@
         android:paddingStart="12dp"
         android:paddingEnd="12dp"
         android:transitionName="container"
-        android:foreground="?android:attr/selectableItemBackground"
+        android:background="?android:attr/selectableItemBackground"
         tools:ignore="RtlHardcoded,HardcodedText">
 
     <com.github.siyamed.shapeimageview.CircularImageView
@@ -20,6 +20,9 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:scaleType="centerCrop"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:src="@drawable/err_404"
             tools:ignore="ContentDescription"/>
     <TextView
             android:id="@+id/item_action"
@@ -30,6 +33,7 @@
             app:layout_constraintLeft_toRightOf="@+id/item_avatar"
             app:layout_constraintRight_toLeftOf="@+id/item_del"
             app:layout_constraintTop_toTopOf="parent"
+            tools:text="Action Content"
             android:layout_marginLeft="8dp"/>
     <TextView
             android:id="@+id/item_content"
@@ -37,6 +41,7 @@
             android:layout_height="wrap_content"
             android:textSize="@dimen/textSizeMedium"
             android:textColor="?android:textColorSecondary"
+            tools:text="Action Content"
             app:layout_constraintTop_toBottomOf="@+id/item_action"
             app:layout_constraintLeft_toLeftOf="@+id/item_action"
             app:layout_constraintRight_toLeftOf="@+id/item_del"/>
@@ -46,6 +51,7 @@
             android:layout_height="wrap_content"
             android:textSize="@dimen/textSizeSmall"
             android:maxLines="1"
+            tools:text="1分钟前 · mobile"
             app:layout_constraintLeft_toLeftOf="@+id/item_action"
             app:layout_constraintTop_toBottomOf="@+id/item_content"/>
     <RatingBar
@@ -64,8 +70,9 @@
             android:layout_height="20dp"
             android:padding="4dp"
             android:clickable="true"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            android:foreground="?android:attr/selectableItemBackgroundBorderless"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
             android:focusable="true"
             android:src="@drawable/ic_clear"
             android:contentDescription="@string/delete"/>

@@ -17,9 +17,9 @@
             android:layout_width="75dp"
             android:layout_height="100dp"
             android:scaleType="centerCrop"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentStart="true"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:src="@drawable/err_404"
             android:contentDescription="@string/desc_cover"/>
     <TextView
             android:id="@+id/item_score"
@@ -30,11 +30,13 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             android:paddingTop="4dp"
+            tools:text="5.5"
             tools:ignore="RtlSymmetry"/>
     <TextView
             android:id="@+id/item_score_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            tools:text="88人"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/item_score"
             tools:ignore="RtlSymmetry"/>
@@ -46,6 +48,7 @@
             android:ellipsize="end"
             android:layout_height="wrap_content"
             android:paddingBottom="8dp"
+            tools:text="TV"
             app:layout_constraintEnd_toEndOf="@+id/item_info"
             app:layout_constraintStart_toStartOf="@+id/item_info"
             app:layout_constraintTop_toTopOf="parent"/>
@@ -56,6 +59,7 @@
             android:maxLines="1"
             android:ellipsize="end"
             android:layout_height="wrap_content"
+            tools:text="放送日期：2019年4月7日 周日"
             app:layout_constraintLeft_toRightOf="@+id/item_cover"
             app:layout_constraintRight_toLeftOf="@+id/item_score"
             android:paddingBottom="8dp"
@@ -69,6 +73,7 @@
             android:paddingBottom="8dp"
             android:maxLines="1"
             android:ellipsize="end"
+            tools:text="动画制作：P.A.WORKS"
             app:layout_constraintTop_toBottomOf="@+id/item_info"
             app:layout_constraintStart_toStartOf="@+id/item_info"
             app:layout_constraintEnd_toEndOf="@+id/item_info"/>

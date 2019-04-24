@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        xmlns:tools="http://schemas.android.com/tools">
     <TextView android:layout_width="wrap_content"
               android:layout_height="match_parent"
               android:padding="12dp"
@@ -10,7 +12,7 @@
               app:layout_constraintEnd_toEndOf="parent"
               android:text="@string/more"
               android:clickable="true"
-              android:foreground="?android:attr/selectableItemBackground"
+              android:background="?android:attr/selectableItemBackground"
               android:focusable="true"
               app:layout_constraintBottom_toTopOf="@+id/blog_list"
               app:layout_constraintTop_toTopOf="@+id/item_title"/>
@@ -20,11 +22,13 @@
               android:padding="12dp"
               android:text="@string/subject_blog"
               android:id="@+id/item_title"
+              app:layout_constraintTop_toTopOf="parent"
               app:layout_constraintEnd_toStartOf="@+id/blog_detail"
               app:layout_constraintStart_toStartOf="parent"/>
     <android.support.v7.widget.RecyclerView
             android:id="@+id/blog_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            tools:listitem="@layout/item_blog"
             app:layout_constraintTop_toBottomOf="@+id/item_title"/>
 </android.support.constraint.ConstraintLayout>

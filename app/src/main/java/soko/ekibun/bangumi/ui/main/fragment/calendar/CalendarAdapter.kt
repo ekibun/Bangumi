@@ -74,7 +74,8 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
     companion object {
         //TODO
         val weekJp = listOf("", "月", "火", "水", "木", "金", "土", "日")
-        val weekSmall = listOf("", "周一", "周二", "周三", "周四", "周五", "周六", "周日")
+        val weekList = listOf("", "周一", "周二", "周三", "周四", "周五", "周六", "周日")
+        val weekSmall = listOf("", "一", "二", "三", "四", "五", "六", "日")
 
         fun pastTime(date: Int, time: String, use_30h: Boolean): Boolean{
             val match = Regex("""([0-9]*):([0-9]*)""").find(time)
