@@ -69,7 +69,6 @@ class DragSelectTouchListener : RecyclerView.OnItemTouchListener {
     }
 
     var nestScrollDistance = {0}
-    var nestScroll: (Int)->Int = {0}
 
     private fun startAutoScroll() {
         recyclerView?.let{

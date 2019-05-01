@@ -43,7 +43,15 @@ class TopicView(private val context: TopicActivity){
 
             appBarOffset = verticalOffset
             canScroll = canScroll || appBarOffset != 0
+
+            context.item_list.invalidate()
         })
+        context.item_list.nestedScrollRange = {
+            context.app_bar.totalScrollRange
+        }
+        context.item_list.nestedScrollDistance = {
+            -appBarOffset
+        }
 
         context.item_list.addOnScrollListener(object: RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {

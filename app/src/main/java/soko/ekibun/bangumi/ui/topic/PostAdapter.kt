@@ -27,6 +27,9 @@ import soko.ekibun.bangumi.ui.view.FastScrollRecyclerView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.HttpUtil
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 class PostAdapter(data: MutableList<TopicPost>? = null) :
         BaseMultiItemQuickAdapter<TopicPost, BaseViewHolder>(data), FastScrollRecyclerView.SectionedAdapter {
@@ -41,6 +44,7 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
         return "#${item.floor}"
     }
     private val imaageSizes = HashMap<String, Size>()
+    private val largeContent = WeakHashMap<String, Spanned>()
     @SuppressLint("SetTextI18n")
     override fun convert(helper: BaseViewHolder, item: TopicPost) {
         helper.addOnClickListener(R.id.item_del)
@@ -65,32 +69,34 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
 
         val drawables = ArrayList<String>()
         helper.itemView.item_message.let { item_message ->
-            @Suppress("DEPRECATION")
-            val htmlText = setTextLinkOpenByWebView(
-                    Html.fromHtml(parseHtml(item.pst_content), HtmlHttpImageGetter(item_message, URI.create(Bangumi.SERVER), drawables, imaageSizes), HtmlTagHandler(item_message) {imageSpan ->
-                        helper.itemView.item_message?.let{itemView->
-                            val imageList = drawables.filter { (it.startsWith("http") || !it.contains("smile")) }.toList()
-                            val index = imageList.indexOfFirst { d -> d == imageSpan.source }
-                            if (index < 0) return@HtmlTagHandler
-                            val popWindow = PopupWindow(itemView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, true)
-                            val viewPager = FixMultiViewPager(itemView.context)
-                            popWindow.contentView = viewPager
-                            viewPager.adapter = PhotoPagerAdapter(imageList.map { HttpUtil.getUrl(it, URI.create(Bangumi.SERVER)) }) {
-                                popWindow.dismiss()
+            val makeSpan = {
+                @Suppress("DEPRECATION")
+                setTextLinkOpenByWebView(
+                        Html.fromHtml(parseHtml(item.pst_content), HtmlHttpImageGetter(item_message, URI.create(Bangumi.SERVER), drawables, imaageSizes), HtmlTagHandler(item_message) {imageSpan ->
+                            helper.itemView.item_message?.let{itemView->
+                                val imageList = drawables.filter { (it.startsWith("http") || !it.contains("smile")) }.toList()
+                                val index = imageList.indexOfFirst { d -> d == imageSpan.source }
+                                if (index < 0) return@HtmlTagHandler
+                                val popWindow = PopupWindow(itemView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, true)
+                                val viewPager = FixMultiViewPager(itemView.context)
+                                popWindow.contentView = viewPager
+                                viewPager.adapter = PhotoPagerAdapter(imageList.map { HttpUtil.getUrl(it, URI.create(Bangumi.SERVER)) }) {
+                                    popWindow.dismiss()
+                                }
+                                viewPager.currentItem = index
+                                popWindow.isClippingEnabled = false
+                                popWindow.animationStyle = R.style.AppTheme_FadeInOut
+                                popWindow.showAtLocation(itemView, Gravity.CENTER, 0, 0)
+                                popWindow.contentView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                        or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                        or View.SYSTEM_UI_FLAG_FULLSCREEN)
                             }
-                            viewPager.currentItem = index
-                            popWindow.isClippingEnabled = false
-                            popWindow.animationStyle = R.style.AppTheme_FadeInOut
-                            popWindow.showAtLocation(itemView, Gravity.CENTER, 0, 0)
-                            popWindow.contentView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                                    or View.SYSTEM_UI_FLAG_FULLSCREEN)
-                        }
-                    })) {
-                WebActivity.launchUrl(helper.itemView.context, HttpUtil.getUrl(it, URI.create(Bangumi.SERVER)), "")
+                        })) {
+                    WebActivity.launchUrl(helper.itemView.context, HttpUtil.getUrl(it, URI.create(Bangumi.SERVER)), "")
+                }
             }
-            item_message.text = htmlText
+            item_message.text = if(item.pst_content.length < 10000) makeSpan() else largeContent.getOrPut(item.pst_id, makeSpan)
         }
         helper.itemView.item_message.setOnFocusChangeListener { view, focus ->
             if(!focus){
