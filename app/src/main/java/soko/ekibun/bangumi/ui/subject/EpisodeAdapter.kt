@@ -17,7 +17,6 @@ import soko.ekibun.bangumi.ui.view.DragSelectTouchListener
 import com.oushangfeng.pinnedsectionitemdecoration.utils.FullSpanUtil
 import soko.ekibun.bangumi.ui.view.FastScrollRecyclerView
 
-
 class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null) :
         BaseSectionQuickAdapter<EpisodeAdapter.SelectableSectionEntity<Episode>, BaseViewHolder>
         (R.layout.item_episode, R.layout.header_episode, data), FastScrollRecyclerView.MeasurableAdapter, FastScrollRecyclerView.SectionedAdapter {
@@ -46,6 +45,7 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
         if(headerHeight == 0) {
             helper.itemView.measure(0, 0)
             headerHeight = helper.itemView.measuredHeight + ((helper.itemView.layoutParams as? ViewGroup.MarginLayoutParams)?.let { it.topMargin + it.bottomMargin }?:0)
+            (recyclerView as? FastScrollRecyclerView)?.scrollTopMargin = helper.itemView.measuredHeight
         }
     }
 

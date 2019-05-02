@@ -73,6 +73,8 @@ class SubjectView(private val context: SubjectActivity){
             context.title_expand.alpha = 1-ratio
             context.item_buttons.translationX = -2.2f * marginEnd * ratio
             context.app_bar.elevation = Math.max(0f, 12 * (ratio - 0.95f)/ 0.05f)
+
+            context.episode_detail_list.invalidate()
         })
 
         context.season_list.adapter = seasonAdapter

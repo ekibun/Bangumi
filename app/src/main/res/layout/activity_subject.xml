@@ -339,6 +339,7 @@
                 android:id="@+id/item_eps_button_box"
                 android:layout_width="wrap_content"
                 android:layout_height="0dp"
+                android:padding="8dp"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 android:background="?android:colorBackground"

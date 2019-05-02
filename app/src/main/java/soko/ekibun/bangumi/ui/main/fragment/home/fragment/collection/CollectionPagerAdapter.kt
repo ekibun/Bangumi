@@ -106,13 +106,12 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
             it.filter { !useApi || it.subject?.type == subjectTypeView.getType() }.let{
                 if(!useApi) it.forEach {
                     it.subject?.type = subjectTypeView.getType() }
-                item.first.addData(it.sortedByDescending { (it.subject?.eps as? List<*>)?.mapNotNull { it as? Episode }?.lastOrNull { it.status == "Air" }?.airdate }
-                        .sortedByDescending {
-                            val eps = (it.subject?.eps as? List<*>)?.mapNotNull { it as? Episode }
-                            val watchTo = eps?.lastOrNull { it.progress?.status?.id == SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH_ID }
-                            val airTo = eps?.lastOrNull { it.status == "Air" }
-                            watchTo != airTo
-                        }) }
+                item.first.addData(it.sortedByDescending {
+                    val eps = (it.subject?.eps as? List<*>)?.mapNotNull { it as? Episode }?.sortedBy { it.airdate }
+                    val watchTo = eps?.lastOrNull { it.progress?.status?.id == SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH_ID }
+                    val airTo = eps?.lastOrNull { it.status == "Air" }
+                    (if( watchTo != airTo) ":" else "") + (airTo?.airdate?:"") }
+                ) }
             if(useApi || it.size < 10)
                 item.first.loadMoreEnd()
             else

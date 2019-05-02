@@ -151,8 +151,8 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
         val nestedRange = nestedScrollRange()
         val totalHeight = nestedRange + itemHeightCache.sum()
 
-        val scrollRange = height - nestedRange
-        mScrollbar.mThumbHeight = Math.max(scrollRange * scrollRange / totalHeight, mScrollbar.minThumbHeight)
+        val scrollRange = height - nestedRange - scrollTopMargin
+        mScrollbar.mThumbHeight = Math.max(height * scrollRange / totalHeight, mScrollbar.minThumbHeight)
 
         val availableScrollHeight = totalHeight - height
         val availableScrollBarHeight = getAvailableScrollBarHeight()
@@ -164,9 +164,9 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
 
         val nestedDistance = nestedScrollDistance()
         val scrolledPastHeight = getScrolledPastHeight()
-        val lastScrollBarY = (scrolledPastHeight + nestedDistance).toFloat() / availableScrollHeight * (availableScrollBarHeight - nestedRange) + nestedDistance
+        val lastScrollBarY = (scrolledPastHeight + nestedDistance).toFloat() / availableScrollHeight * (availableScrollBarHeight - nestedRange - scrollTopMargin) + nestedDistance + scrollTopMargin
         val scrollBarY = touchFraction * availableScrollBarHeight
-        var dy = (scrollBarY - lastScrollBarY) * availableScrollHeight/ (availableScrollBarHeight - nestedRange)
+        var dy = (scrollBarY - lastScrollBarY) * availableScrollHeight/ (availableScrollBarHeight - nestedRange - scrollTopMargin)
         startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL)
         val consumed = IntArray(2)
         val offsetInWindow = IntArray(2)
@@ -209,21 +209,22 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
     /**
      * Updates the bounds for the scrollbar.
      */
+    var scrollTopMargin = 0
     private fun onUpdateScrollbar() {
         updateItemHeightCache()
 
         val nestedRange = nestedScrollRange()
         val totalHeight = nestedRange + itemHeightCache.sum()
 
-        val scrollRange = height - nestedRange
-        mScrollbar.mThumbHeight = Math.max(scrollRange * scrollRange / totalHeight, mScrollbar.minThumbHeight)
+        val scrollRange = height - nestedRange - scrollTopMargin
+        mScrollbar.mThumbHeight = Math.max(height * scrollRange / totalHeight, mScrollbar.minThumbHeight)
 
         val availableScrollHeight = totalHeight - height
 
         val scrolledPastHeight: Int = getScrolledPastHeight()
 
 
-        val availableScrollBarHeight = getAvailableScrollBarHeight()
+        val availableScrollBarHeight = getAvailableScrollBarHeight() - scrollTopMargin
 
         // Only show the scrollbar if there is height to be scrolled
         if (availableScrollHeight <= 0) {
@@ -235,7 +236,7 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
         // padding)
         val nestedY = nestedScrollDistance()
         val scrollY = scrolledPastHeight + nestedY
-        val scrollBarY = nestedY + (scrollY.toFloat() / availableScrollHeight * (availableScrollBarHeight - nestedRange)).toInt()
+        val scrollBarY = scrollTopMargin + nestedY + (scrollY.toFloat() / availableScrollHeight * (availableScrollBarHeight - nestedRange)).toInt()
 
         // Calculate the position and size of the scroll bar
         val scrollBarX: Int = if (Utils.isRtl(resources)) {
