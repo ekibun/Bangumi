@@ -1,6 +1,5 @@
 package soko.ekibun.bangumi.ui.main.fragment.home.fragment.collection
 
-import android.util.Log
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
@@ -12,7 +11,6 @@ import soko.ekibun.bangumi.api.bangumi.bean.SubjectProgress
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.ResourceUtil
-import java.time.LocalDate
 
 class CollectionListAdapter(data: MutableList<SubjectCollection>? = null) :
         BaseQuickAdapter<SubjectCollection, BaseViewHolder>(R.layout.item_subject, data) {
@@ -33,8 +31,6 @@ class CollectionListAdapter(data: MutableList<SubjectCollection>? = null) :
             val eps = (item.subject?.eps as? List<*>)?.mapNotNull { it as? Episode }?.sortedBy { it.airdate }
             val watchTo = eps?.lastOrNull { it.progress?.status?.id == SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH_ID }
             val airTo = eps?.lastOrNull { it.status == "Air" }
-
-            Log.v("date", "${airTo?.airdate}, ${watchTo?.airdate}")
             helper.itemView.item_summary.setTextColor(ResourceUtil.resolveColorAttr(helper.itemView.context,
                     if (watchTo != airTo)R.attr.colorPrimary
                     else android.R.attr.textColorSecondary

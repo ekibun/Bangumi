@@ -119,7 +119,11 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
                 val cal = Calendar.getInstance()
                 cal.time = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.airdate)
                 val week = (if((subject.timeJP?.toIntOrNull()?:0)/100 < 5) 1 else 0) + if(!useCN || subject.timeCN.isNullOrEmpty()) 0 else
-                    Math.min(if(subject.timeCN.toIntOrNull() ?:0 < subject.timeJP?.toIntOrNull()?:0) 1 else 0, ((subject.weekDayCN?:0) - (subject.weekDayJP?:0) + 7) % 7)
+                    Math.min(if(subject.timeCN.toIntOrNull() ?:0 < subject.timeJP?.toIntOrNull()?:0) 1 else 0, when(((subject.weekDayCN?:0) - (subject.weekDayJP?:0) + 7) % 7){
+                        6 -> if((subject.timeJP?.toIntOrNull()?:0)/100 < 5) -1 else 0
+                        0 -> 0
+                        else -> 1
+                    } )
                 //(((if(!useCN || subject.timeCN.isNullOrEmpty()) subject.weekDayJP else subject.weekDayCN)?:0) - CalendarAdapter.getWeek(cal) + 7) % 7
                 val dayDif = week + dayCarry
                 cal.add(Calendar.DAY_OF_MONTH, dayDif)
