@@ -58,9 +58,11 @@ class SubjectPresenter(private val context: SubjectActivity){
         }
 
         context.title_expand.setOnClickListener {
+            if(subjectView.scroll2Top()) return@setOnClickListener
             WebActivity.launchUrl(context, subject.url)
         }
         context.title_collapse.setOnClickListener {
+            if(subjectView.scroll2Top()) return@setOnClickListener
             WebActivity.launchUrl(context, subject.url)
         }
 

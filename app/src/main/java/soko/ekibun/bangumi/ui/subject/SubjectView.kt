@@ -2,8 +2,10 @@ package soko.ekibun.bangumi.ui.subject
 
 import android.animation.LayoutTransition
 import android.annotation.SuppressLint
+import android.graphics.Rect
 import android.support.constraint.ConstraintLayout
 import android.support.design.widget.AppBarLayout
+import android.support.design.widget.BottomSheetDialog
 import android.support.design.widget.CollapsingToolbarLayout
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
@@ -16,6 +18,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.PopupWindow
 import com.bumptech.glide.request.RequestOptions
@@ -58,11 +61,19 @@ class SubjectView(private val context: SubjectActivity){
 
     val detail: LinearLayout = context.subject_detail
 
+    var appBarOffset = 0
+    val scroll2Top = {
+        if(appBarOffset != 0 || if(context.episode_detail_list.visibility == View.VISIBLE) context.episode_detail_list.canScrollVertically(-1) else context.comment_list.canScrollVertically(-1)){
+            context.app_bar.setExpanded(true, true)
+            (context.comment_list.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(0, 0)
+            (context.episode_detail_list.layoutManager as StaggeredGridLayoutManager).scrollToPositionWithOffset(0, 0)
+            true
+        } else false
+    }
     init{
         val marginEnd = (context.item_buttons.layoutParams as CollapsingToolbarLayout.LayoutParams).marginEnd
         (context.title_expand.layoutParams as ConstraintLayout.LayoutParams).marginEnd = 3 * marginEnd
 
-        var appBarOffset = 0
         context.app_bar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener{ appBarLayout, verticalOffset ->
              val ratio = Math.abs(verticalOffset.toFloat() / appBarLayout.totalScrollRange)
             appBarOffset = verticalOffset
@@ -266,26 +277,39 @@ class SubjectView(private val context: SubjectActivity){
             WebActivity.launchUrl(context, "${Bangumi.SERVER}/${SubjectType.typeNameMap[subject.type]}/tag/${tagAdapter.data[position].first}")
         }
 
+        context.item_subject.setOnClickListener {
+            if(scroll2Top()) return@setOnClickListener
+            showInfoBox(subject)
+        }
         detail.item_detail.setOnClickListener {
-            if(subject.infobox?.isNotEmpty() == true) {
-                val view = LayoutInflater.from(context).inflate(R.layout.dialog_infobox, detail, false)
-                @Suppress("DEPRECATION")
-                view.item_infobox_text.text = setTextLinkOpenByWebView(Html.fromHtml(subject.infobox?.map { "${it.first}: ${it.second}" }?.reduce { acc, s -> "$acc<br>$s" })){
-                    WebActivity.launchUrl(context, HttpUtil.getUrl(it, URI.create(Bangumi.SERVER)), "")
-                }
-                view.item_infobox_text.movementMethod = LinkMovementMethod.getInstance()
-                AlertDialog.Builder(context)
-                        .setTitle(subject.name)
-                        .setView(view)
-                        .show()
-            }
-            else WebActivity.launchUrl(context, subject.url)
+            showInfoBox(subject)
         }
 
         detail.item_progress.visibility = if(subject.formhash?.isNotEmpty() == true && subject.interest?.status?.type == CollectionStatusType.DO && subject.type in listOf(SubjectType.ANIME, SubjectType.REAL, SubjectType.BOOK)) View.VISIBLE else View.GONE
         detail.item_progress_info.text = context.getString(R.string.phrase_progress,
                 (if(subject.has_vol) context.getString(R.string.parse_sort_vol, "${subject.vol_status}${ if(subject.vol_count == 0) "" else "/${subject.vol_count}" }") + " " else "") +
                         context.getString(R.string.parse_sort_ep, "${subject.ep_status}${ if(subject.eps_count == 0) "" else "/${subject.eps_count}"}"))
+    }
+
+    fun showInfoBox(subject: Subject){
+        if(subject.infobox?.isNotEmpty() == true) {
+            val view = LayoutInflater.from(context).inflate(R.layout.dialog_infobox, detail, false)
+            @Suppress("DEPRECATION")
+            view.item_infobox_text.text = setTextLinkOpenByWebView(Html.fromHtml(subject.infobox?.map { "${it.first}: ${it.second}" }?.reduce { acc, s -> "$acc<br>$s" })){
+                WebActivity.launchUrl(context, HttpUtil.getUrl(it, URI.create(Bangumi.SERVER)), "")
+            }
+            view.item_infobox_text.movementMethod = LinkMovementMethod.getInstance()
+            val dialog = BottomSheetDialog(context)
+            dialog.setContentView(view)
+            dialog.window?.decorView?.findViewById<FrameLayout>(R.id.design_bottom_sheet)?.let{
+                val layoutParams = it.layoutParams
+                layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
+                it.layoutParams = layoutParams
+
+                it.setBackgroundResource(0)
+            }
+            dialog.show()
+        }
     }
 
     fun updateEpisode(episodes: List<Episode>){

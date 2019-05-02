@@ -152,11 +152,9 @@
                     android:paddingLeft="12dp"
                     android:paddingRight="12dp"
                     android:id="@+id/item_detail"
+                    tools:text="Subject Summary"
                     android:maxLines="10"
-                    android:ellipsize="end"
-                    android:clickable="true"
-                    android:background="?android:attr/selectableItemBackground"
-                    android:focusable="true"/>
+                    android:ellipsize="end"/>
 
             <android.support.v7.widget.RecyclerView
                     android:id="@+id/tag_list"
@@ -349,7 +347,6 @@
                     android:layout_width="26dp"
                     android:layout_height="26dp"
                     android:padding="4dp"
-                    android:layout_margin="8dp"
                     android:id="@+id/item_close"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"

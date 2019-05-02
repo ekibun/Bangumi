@@ -22,6 +22,7 @@ import java.net.URI
 class TopicView(private val context: TopicActivity){
     val adapter by lazy { PostAdapter() }
 
+    private var appBarOffset = 0
     init{
         context.item_list.adapter = adapter
         context.item_list.layoutManager = object: LinearLayoutManager(context){
@@ -31,7 +32,6 @@ class TopicView(private val context: TopicActivity){
         adapter.emptyView = LayoutInflater.from(context).inflate(R.layout.view_empty, context.item_list, false)
         adapter.isUseEmpty(false)
 
-        var appBarOffset = 0
         var canScroll = false
         context.app_bar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener{ appBarLayout, verticalOffset ->
             val ratio = Math.abs(verticalOffset.toFloat() / appBarLayout.totalScrollRange)
@@ -64,21 +64,33 @@ class TopicView(private val context: TopicActivity){
     fun processTopic(topic: Topic, scrollPost: String, onItemClick: (View, Int)->Unit){
         context.title_collapse.text = topic.title
         context.title_expand.text = context.title_collapse.text
+
+        val scroll2Top = {
+            if(context.item_list.canScrollVertically(-1) || appBarOffset != 0){
+                context.app_bar.setExpanded(true, true)
+                (context.item_list.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(0, 0)
+                true
+            } else false
+        }
         context.title_collapse.setOnClickListener {
+            if(scroll2Top())return@setOnClickListener
             WebActivity.launchUrl(context, context.openUrl)
         }
         context.title_expand.setOnClickListener {
+            if(scroll2Top())return@setOnClickListener
             WebActivity.launchUrl(context, context.openUrl)
         }
         topic.links.toList().getOrNull(0)?.let{link ->
             context.title_slice_0.text = link.first
             context.title_slice_0.setOnClickListener {
+                if(scroll2Top())return@setOnClickListener
                 WebActivity.launchUrl(context, link.second, context.openUrl)
             }
         }
         topic.links.toList().getOrNull(1)?.let{link ->
             context.title_slice_1.text = link.first
             context.title_slice_1.setOnClickListener {
+                if(scroll2Top())return@setOnClickListener
                 WebActivity.launchUrl(context, link.second, context.openUrl)
             }
         }
