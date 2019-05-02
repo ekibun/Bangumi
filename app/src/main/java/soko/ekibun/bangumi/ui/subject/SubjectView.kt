@@ -62,10 +62,10 @@ class SubjectView(private val context: SubjectActivity){
         val marginEnd = (context.item_buttons.layoutParams as CollapsingToolbarLayout.LayoutParams).marginEnd
         (context.title_expand.layoutParams as ConstraintLayout.LayoutParams).marginEnd = 3 * marginEnd
 
-        var nestScrollDistance = context.app_bar.totalScrollRange
+        var appBarOffset = 0
         context.app_bar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener{ appBarLayout, verticalOffset ->
              val ratio = Math.abs(verticalOffset.toFloat() / appBarLayout.totalScrollRange)
-            nestScrollDistance = appBarLayout.totalScrollRange + verticalOffset
+            appBarOffset = verticalOffset
             context.item_scrim.alpha = ratio
             context.item_subject.alpha = 1 - ratio
             context.item_buttons.translationY = -(context.toolbar.height - context.item_buttons.height * 9 / 8) * ratio / 2 - context.item_buttons.height / 16
@@ -99,9 +99,15 @@ class SubjectView(private val context: SubjectActivity){
 
         val touchListener = episodeDetailAdapter.setUpWithRecyclerView(context.episode_detail_list)
         touchListener.nestScrollDistance = {
-            nestScrollDistance
+            context.app_bar.totalScrollRange + appBarOffset
         }
         context.episode_detail_list.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+        context.episode_detail_list.nestedScrollDistance = {
+            -appBarOffset
+        }
+        context.episode_detail_list.nestedScrollRange = {
+            context.app_bar.totalScrollRange
+        }
 
         context.item_close.setOnClickListener {
             closeEpisodeDetail()

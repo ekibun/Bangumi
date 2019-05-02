@@ -3,6 +3,7 @@ package soko.ekibun.bangumi.ui.subject
 import android.content.res.ColorStateList
 import android.support.v7.widget.RecyclerView
 import android.view.View
+import android.view.ViewGroup
 import com.chad.library.adapter.base.BaseSectionQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
 import com.chad.library.adapter.base.entity.SectionEntity
@@ -14,12 +15,26 @@ import soko.ekibun.bangumi.util.ResourceUtil
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectProgress
 import soko.ekibun.bangumi.ui.view.DragSelectTouchListener
 import com.oushangfeng.pinnedsectionitemdecoration.utils.FullSpanUtil
-
+import soko.ekibun.bangumi.ui.view.FastScrollRecyclerView
 
 
 class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null) :
         BaseSectionQuickAdapter<EpisodeAdapter.SelectableSectionEntity<Episode>, BaseViewHolder>
-        (R.layout.item_episode, R.layout.header_episode, data) {
+        (R.layout.item_episode, R.layout.header_episode, data), FastScrollRecyclerView.MeasurableAdapter, FastScrollRecyclerView.SectionedAdapter {
+    override fun getSectionName(position: Int): String {
+        return (data[position].t?:data[position + 1].t)?.parseSort((recyclerView?:return "").context)?:""
+    }
+
+    override fun isFullSpan(position: Int): Boolean {
+        return getItemViewType(position) == SECTION_HEADER_VIEW
+    }
+
+    private var headerHeight: Int = 0
+    private var itemHeight: Int = 0
+    override fun getItemHeight(position: Int): Int {
+        return if(getItemViewType(position) == SECTION_HEADER_VIEW) headerHeight else itemHeight
+    }
+
     class SelectableSectionEntity<T>: SectionEntity<T>{
         var isSelected = false
         constructor(isHeader: Boolean, header: String): super(isHeader, header)
@@ -28,6 +43,10 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
     override fun convertHead(helper: BaseViewHolder, item: SelectableSectionEntity<Episode>) {
         //helper.getView<TextView>(R.id.item_header).visibility = if(data.indexOf(item) == 0) View.GONE else View.VISIBLE
         helper.setText(R.id.item_header, item.header)
+        if(headerHeight == 0) {
+            helper.itemView.measure(0, 0)
+            headerHeight = helper.itemView.measuredHeight + ((helper.itemView.layoutParams as? ViewGroup.MarginLayoutParams)?.let { it.topMargin + it.bottomMargin }?:0)
+        }
     }
 
     override fun convert(helper: BaseViewHolder, item: SelectableSectionEntity<Episode>) {
@@ -53,6 +72,11 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
         helper.itemView.item_badge.text = item.t.progress?.status?.cn_name?:""
         helper.itemView.item_ep_box.backgroundTintList = ColorStateList.valueOf(color)
         helper.itemView.item_ep_box.alpha = if((item.t.status?:"") in listOf("Air"))1f else 0.6f
+
+        if(itemHeight == 0){
+            helper.itemView.measure(0, 0)
+            itemHeight=helper.itemView.measuredHeight + ((helper.itemView.layoutParams as? ViewGroup.MarginLayoutParams)?.let { it.topMargin + it.bottomMargin }?:0)
+        }
     }
 
     var longClickListener: (Int)-> Boolean = { false }
@@ -61,7 +85,7 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
     var updateSelection: ()->Unit = {}
 
     fun setUpWithRecyclerView(recyclerView: RecyclerView): DragSelectTouchListener{
-        recyclerView.adapter = this
+        bindToRecyclerView(recyclerView)
 
         recyclerView.addItemDecoration(PinnedHeaderItemDecoration.Builder(SECTION_HEADER_VIEW).create())
 

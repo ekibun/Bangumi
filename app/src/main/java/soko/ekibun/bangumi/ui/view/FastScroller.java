@@ -174,15 +174,8 @@ public class FastScroller {
             case MotionEvent.ACTION_DOWN:
                 if (isNearPoint(downX, downY)) {
                     mTouchOffset = downY - mThumbPosition.y;
-                }
-                break;
-            case MotionEvent.ACTION_MOVE:
-                // Check if we should start scrolling
-                if (!mIsDragging && isNearPoint(downX, downY) &&
-                        Math.abs(y - downY) > config.getScaledTouchSlop()) {
                     mRecyclerView.getParent().requestDisallowInterceptTouchEvent(true);
                     mIsDragging = true;
-                    mTouchOffset += (lastY - downY);
                     mPopup.animateVisibility(true);
                     if (stateChangeListener != null) {
                         stateChangeListener.onFastScrollStart();
@@ -191,6 +184,8 @@ public class FastScroller {
                         mThumb.setColor(mThumbActiveColor);
                     }
                 }
+                break;
+            case MotionEvent.ACTION_MOVE:
                 if (mIsDragging) {
                     // Update the fastscroller section name at this touch position
                     int top = 0;
