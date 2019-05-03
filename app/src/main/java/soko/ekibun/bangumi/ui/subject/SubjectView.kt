@@ -74,8 +74,6 @@ class SubjectView(private val context: SubjectActivity){
         val marginEnd = (context.item_buttons.layoutParams as CollapsingToolbarLayout.LayoutParams).marginEnd
         (context.title_expand.layoutParams as ConstraintLayout.LayoutParams).marginEnd = 3 * marginEnd
 
-        context.item_self_rating.measure(0,0)
-        val selfRatingWidth = context.item_self_rating.measuredWidth
         context.app_bar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener{ appBarLayout, verticalOffset ->
             if(appBarOffset == verticalOffset) return@OnOffsetChangedListener
              val ratio = Math.abs(verticalOffset.toFloat() / appBarLayout.totalScrollRange)
@@ -87,12 +85,6 @@ class SubjectView(private val context: SubjectActivity){
             context.title_expand.alpha = 1-ratio
             context.item_buttons.translationX = -2.2f * marginEnd * ratio
             context.app_bar.elevation = Math.max(0f, 12 * (ratio - 0.95f)/ 0.05f)
-
-            context.item_self_rating.layoutParams.let {
-                it.width = (selfRatingWidth * (1-ratio)).toInt()
-                context.item_self_rating.layoutParams = it
-            }
-            context.item_self_rating.alpha = 1-ratio
 
             context.episode_detail_list.invalidate()
         })
@@ -205,7 +197,7 @@ class SubjectView(private val context: SubjectActivity){
         context.title_expand.text = context.title_collapse.text
         context.title_expand.post {
             val layoutParams = (context.title_collapse.layoutParams as ConstraintLayout.LayoutParams)
-            layoutParams.marginEnd = 3 * (context.item_buttons.layoutParams as CollapsingToolbarLayout.LayoutParams).marginEnd + context.item_buttons.width - context.item_self_rating.width
+            layoutParams.marginEnd = 3 * (context.item_buttons.layoutParams as CollapsingToolbarLayout.LayoutParams).marginEnd + context.item_buttons.width
             context.title_collapse.layoutParams = layoutParams
             (context.item_subject.layoutParams as CollapsingToolbarLayout.LayoutParams).topMargin = context.toolbar_container.height
         }

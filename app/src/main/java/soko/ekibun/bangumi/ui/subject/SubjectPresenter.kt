@@ -125,7 +125,7 @@ class SubjectPresenter(private val context: SubjectActivity){
             context.item_ep_title.text = "${context.getText(R.string.episodes)}${if(eps.isEmpty()) "" else "(${eps.size})"}"
         }
 
-        subjectView.episodeDetailAdapter.setOnItemLongClickListener { _, _, position ->
+        subjectView.episodeDetailAdapter.setOnItemChildLongClickListener { _, _, position ->
             val eps = subjectView.episodeDetailAdapter.data.subList(0, position + 1).filter { !it.isHeader }.map { it.t }
             if(eps.last().type == Episode.TYPE_MUSIC)
                 subjectView.episodeDetailAdapter.data[position]?.t?.let{ openEpisode(it, subject, eps)
@@ -133,7 +133,7 @@ class SubjectPresenter(private val context: SubjectActivity){
             else subjectView.episodeDetailAdapter.longClickListener(position)
         }
 
-        subjectView.episodeDetailAdapter.setOnItemClickListener { _, _, position ->
+        subjectView.episodeDetailAdapter.setOnItemChildClickListener { _, _, position ->
             val eps = subjectView.episodeDetailAdapter.data.subList(0, position + 1).filter { !it.isHeader }.map { it.t }
             if(eps.last().type == Episode.TYPE_MUSIC || subjectView.episodeDetailAdapter.clickListener(position))
                 subjectView.episodeDetailAdapter.data[position]?.t?.let{ openEpisode(it, subject, eps) }
@@ -373,9 +373,6 @@ class SubjectPresenter(private val context: SubjectActivity){
         context.item_collect_image.setImageDrawable(context.resources.getDrawable(
                 if(status?.id in listOf(1, 2, 3, 4)) R.drawable.ic_heart else R.drawable.ic_heart_outline, context.theme))
         context.item_collect_info.text = status?.name?:context.getString(R.string.collect)
-
-        context.item_self_rating.visibility = if(body.rating == 0)View.GONE else View.VISIBLE
-        context.item_self_rating.rating = body.rating / 2f
 
         context.item_collect.setOnClickListener{
             if(context.formhash.isEmpty()) return@setOnClickListener

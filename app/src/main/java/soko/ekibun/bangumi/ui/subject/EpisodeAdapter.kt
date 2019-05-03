@@ -68,8 +68,10 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
                             else -> android.R.attr.textColorSecondary
                         }))
         helper.itemView.item_badge.text = item.t.progress?.status?.cn_name?:""
-        helper.itemView.backgroundTintList = ColorStateList.valueOf(color)
-        helper.itemView.alpha = if((item.t.status?:"") in listOf("Air"))1f else 0.6f
+        helper.itemView.ep_box.backgroundTintList = ColorStateList.valueOf(color)
+        helper.itemView.ep_box.alpha = if((item.t.status?:"") in listOf("Air"))1f else 0.6f
+        helper.addOnClickListener(R.id.ep_box)
+        helper.addOnLongClickListener(R.id.ep_box)
 
         if(itemHeight == 0){
             helper.itemView.measure(0, 0)
