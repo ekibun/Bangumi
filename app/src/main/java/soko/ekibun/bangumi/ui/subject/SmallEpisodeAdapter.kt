@@ -31,6 +31,6 @@ class SmallEpisodeAdapter(data: MutableList<Episode>? = null) :
                     else -> android.R.attr.textColorSecondary
                 }))
         helper.itemView.item_badge.text = item.progress?.status?.cn_name?:""
-        helper.itemView.item_ep_box.backgroundTintList = ColorStateList.valueOf(color)
+        helper.itemView.backgroundTintList = ColorStateList.valueOf(color)
     }
 }

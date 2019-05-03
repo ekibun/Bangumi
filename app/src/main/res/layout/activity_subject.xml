@@ -139,13 +139,15 @@
             tools:layout_behavior="@string/appbar_scrolling_view_behavior"
             android:orientation="vertical">
 
+        <include layout="@layout/subject_rank"/>
+
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingTop="8dp"
                 android:paddingBottom="12dp"
+                android:gravity="center"
                 android:orientation="vertical">
-
             <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -319,8 +321,8 @@
             android:layout_height="match_parent"
             android:fillViewport="true"
             android:background="?android:colorBackground"
-            android:paddingLeft="4dp"
-            android:paddingRight="4dp"
+            android:paddingStart="4dp"
+            android:paddingEnd="6dp"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
             android:visibility="invisible"/>
 

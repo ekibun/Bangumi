@@ -23,10 +23,12 @@
                 android:layout_marginBottom="12dp"
                 android:orientation="horizontal">
             <RadioButton
+                    tools:text="想看"
                     android:button="@null"
                     android:textAlignment="center"
                     android:textColor="@drawable/color_checkable"
-                    android:background="@drawable/bg_selectable"
+                    android:background="@drawable/bg_round_rect"
+                    android:backgroundTint="@drawable/color_bg_checkable"
                     android:layout_margin="8dp"
                     android:padding="5dp"
                     android:layout_width="wrap_content"
@@ -34,11 +36,13 @@
                     android:id="@+id/radio_wish"
                     android:layout_weight="1"/>
             <RadioButton
+                    tools:text="看过"
                     android:button="@null"
                     android:checked="true"
                     android:textAlignment="center"
                     android:textColor="@drawable/color_checkable"
-                    android:background="@drawable/bg_selectable"
+                    android:background="@drawable/bg_round_rect"
+                    android:backgroundTint="@drawable/color_bg_checkable"
                     android:layout_margin="8dp"
                     android:padding="5dp"
                     android:layout_width="wrap_content"
@@ -46,10 +50,12 @@
                     android:id="@+id/radio_collect"
                     android:layout_weight="1"/>
             <RadioButton
+                    tools:text="在看"
                     android:button="@null"
                     android:textAlignment="center"
                     android:textColor="@drawable/color_checkable"
-                    android:background="@drawable/bg_selectable"
+                    android:background="@drawable/bg_round_rect"
+                    android:backgroundTint="@drawable/color_bg_checkable"
                     android:layout_margin="8dp"
                     android:padding="5dp"
                     android:layout_width="wrap_content"
@@ -57,10 +63,12 @@
                     android:id="@+id/radio_do"
                     android:layout_weight="1"/>
             <RadioButton
+                    tools:text="搁置"
                     android:button="@null"
                     android:textAlignment="center"
                     android:textColor="@drawable/color_checkable"
-                    android:background="@drawable/bg_selectable"
+                    android:background="@drawable/bg_round_rect"
+                    android:backgroundTint="@drawable/color_bg_checkable"
                     android:layout_margin="8dp"
                     android:padding="5dp"
                     android:layout_width="wrap_content"
@@ -68,10 +76,12 @@
                     android:id="@+id/radio_hold"
                     android:layout_weight="1"/>
             <RadioButton
+                    tools:text="抛弃"
                     android:button="@null"
                     android:textAlignment="center"
                     android:textColor="@drawable/color_checkable"
-                    android:background="@drawable/bg_selectable"
+                    android:background="@drawable/bg_round_rect"
+                    android:backgroundTint="@drawable/color_bg_checkable"
                     android:layout_margin="8dp"
                     android:padding="5dp"
                     android:layout_width="wrap_content"
@@ -103,7 +113,10 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:paddingEnd="20dp"
-                    tools:ignore="RtlSymmetry"/>
+                    tools:ignore="RtlSymmetry"
+                    tools:orientation="horizontal"
+                    tools:layoutManager="android.support.v7.widget.LinearLayoutManager"
+                    tools:listitem="@layout/item_tag"/>
             <ImageView
                     android:id="@+id/item_tag_add"
                     android:layout_width="20dp"
@@ -113,7 +126,8 @@
                     android:translationX="-20dp"
                     android:src="@drawable/ic_add"
                     android:tint="?android:textColorPrimary"
-                    android:background="@drawable/bg_round_rect_unchecked"
+                    android:background="@drawable/bg_round_rect"
+                    android:backgroundTint="@color/colorTransGrey"
                     app:layout_constraintTop_toTopOf="@+id/item_tag_title"
                     app:layout_constraintBottom_toBottomOf="@+id/item_tag_title"
                     app:layout_constraintRight_toRightOf="@+id/item_tag_list"

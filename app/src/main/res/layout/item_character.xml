@@ -35,7 +35,8 @@
             android:paddingLeft="2dp"
             android:paddingRight="2dp"
             tools:text="主角"
-            android:background="@drawable/bg_round_rect_checked"
+            android:background="@drawable/bg_round_rect"
+            android:backgroundTint="?colorAccent"
             app:layout_constraintLeft_toLeftOf="@+id/item_avatar"
             app:layout_constraintBottom_toBottomOf="@+id/item_avatar"
             tools:ignore="SmallSp"/>

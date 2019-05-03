@@ -113,7 +113,8 @@ interface Bangumi {
                     doc.selectFirst("span[property=\"v:votes\"]")?.text()?.toIntOrNull()?:subject.rating?.total?:0,
                         Subject.RatingBean.CountBean(counts[10]?:0, counts[9]?:0, counts[8]?:0, counts[7]?:0,
                                 counts[6]?:0, counts[5]?:0, counts[4]?:0, counts[3]?:0, counts[2]?:0, counts[1]?:0),
-                        doc.selectFirst(".global_score .number")?.text()?.toDoubleOrNull()?:subject.rating?.score?:0.0
+                        doc.selectFirst(".global_score .number")?.text()?.toDoubleOrNull()?:subject.rating?.score?:0.0,
+                        doc.selectFirst(".frdScore .num")?.text()?.toDoubleOrNull()?:subject.rating?.friend_score?:0.0
                 )
                 val rank = doc.selectFirst(".global_score .alarm")?.text()?.trim('#')?.toIntOrNull()?:subject.rank
                 val img = getImageUrl(doc.selectFirst(".infobox img.cover"))
@@ -122,7 +123,18 @@ interface Bangumi {
                         img.replace("/c/", "/m/"),
                         img.replace("/c/", "/s/"),
                         img.replace("/c/", "/g/"))
-                //TODO Collection
+                //collection
+                val collection = Subject.CollectionBean()
+                doc.select("#subjectPanelCollect .tip_i a")?.forEach{
+                    val match = Regex("(\\d+)人(.+)").find(it.text())?.groupValues?:return@forEach
+                    when(match[2]){
+                        "想看" -> collection.wish = match[1].toIntOrNull()?:return@forEach
+                        "看过" -> collection.collect = match[1].toIntOrNull()?:return@forEach
+                        "在看" -> collection.doing = match[1].toIntOrNull()?:return@forEach
+                        "搁置" -> collection.on_hold = match[1].toIntOrNull()?:return@forEach
+                        "抛弃" -> collection.dropped = match[1].toIntOrNull()?:return@forEach
+                    }
+                }
                 //prg
                 val ep_status = doc.selectFirst("input[name=watchedeps]")?.attr("value")?.toIntOrNull()?:0
                 val vol_status = doc.selectFirst("input[name=watched_vols]")?.attr("value")?.toIntOrNull()?:0
@@ -263,7 +275,7 @@ interface Bangumi {
                 }
                 //formhash
                 val formhash = if(doc.selectFirst(".guest") != null) "" else doc.selectFirst("input[name=formhash]")?.attr("value")
-                Subject(subject.id, subject.url, type, name, name_cn, summary, eps_count, air_date, air_weekday, rating, rank, images, infobox = infobox,
+                Subject(subject.id, subject.url, type, name, name_cn, summary, eps_count, air_date, air_weekday, rating, rank, images, collection, infobox = infobox,
                         ep_status = ep_status, vol_count = vol_count, vol_status = vol_status, has_vol = has_vol,
                         crt=crt, topic = topic, blog = blog, linked = linked, commend = commend, tags = tags, typeString = typeString, formhash = formhash, interest = interest)
             }

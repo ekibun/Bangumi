@@ -3,4 +3,5 @@
     <dimen name="textSizeMedium">15sp</dimen>
     <dimen name="textSizeSmall">12sp</dimen>
 
+    <dimen name="ratingbarSize">50dp</dimen>
 </resources>

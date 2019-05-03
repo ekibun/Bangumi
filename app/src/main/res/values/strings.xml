@@ -266,8 +266,9 @@
     <string name="phrase_duration">时长：%1$s</string>
     <string name="phrase_comment">讨论（+%1$d）</string>
 
-    <string name="rate_count">%1$d人</string>
+    <string name="rate_count">%1$d人评分</string>
     <string name="phrase_reply">%1$d 回复</string>
+    <string name="phrase_collection_count">%1$d人想看/%2$d人看过/%3$d人在看/%4$d人搁置/%5$d人抛弃</string>
 
     <!-- 超展开 -->
     <string name="parse_hint_reply_topic">回复 %1$s</string>
@@ -282,5 +283,7 @@
     <string name="joined_group">已加入小组</string>
     <string name="self_post">我发表的</string>
     <string name="self_reply">我回复的</string>
+    <string name="netabare">netabare</string>
+    <string name="friend_score">好友评分</string>
 
 </resources>

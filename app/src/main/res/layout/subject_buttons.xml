@@ -9,8 +9,8 @@
             android:padding="8dp"
             android:backgroundTint="?colorPrimaryForeground"
             android:layout_marginEnd="12dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
             android:clickable="true"
             android:focusable="true">
         <ImageView android:id="@+id/item_play_image"
@@ -33,6 +33,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:clickable="true"
+            android:gravity="center"
             android:focusable="true">
         <ImageView android:id="@+id/item_collect_image"
                    android:layout_width="20dp"
@@ -46,5 +47,15 @@
                   android:textColor="@android:color/white"
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"/>
+        <RatingBar
+                android:id="@+id/item_self_rating"
+                android:visibility="gone"
+                android:layout_marginStart="2dp"
+                android:layout_width="wrap_content"
+                style="?android:attr/ratingBarStyleSmall"
+                android:progressTint="@android:color/white"
+                tools:rating="2.5"
+                tools:visibility="visible"
+                android:layout_height="wrap_content"/>
     </LinearLayout>
 </LinearLayout>

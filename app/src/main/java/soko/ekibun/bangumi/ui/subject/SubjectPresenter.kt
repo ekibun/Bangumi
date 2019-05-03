@@ -374,6 +374,9 @@ class SubjectPresenter(private val context: SubjectActivity){
                 if(status?.id in listOf(1, 2, 3, 4)) R.drawable.ic_heart else R.drawable.ic_heart_outline, context.theme))
         context.item_collect_info.text = status?.name?:context.getString(R.string.collect)
 
+        context.item_self_rating.visibility = if(body.rating == 0)View.GONE else View.VISIBLE
+        context.item_self_rating.rating = body.rating / 2f
+
         context.item_collect.setOnClickListener{
             if(context.formhash.isEmpty()) return@setOnClickListener
             val popupMenu = PopupMenu(context, context.item_collect)

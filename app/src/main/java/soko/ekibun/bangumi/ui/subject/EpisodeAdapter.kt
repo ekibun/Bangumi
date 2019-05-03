@@ -58,8 +58,6 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
                     else -> android.R.attr.textColorSecondary
                 })
         helper.itemView.item_select.visibility = if(item.isSelected) View.VISIBLE else View.INVISIBLE
-        helper.itemView.item_ep_box.setPadding(helper.itemView.item_ep_box.paddingLeft,helper.itemView.item_ep_box.paddingTop,
-                helper.itemView.item_ep_box.paddingLeft * if(item.isSelected) 4 else 1, helper.itemView.item_ep_box.paddingBottom)
         helper.itemView.item_title.setTextColor(color)
         helper.itemView.item_desc.setTextColor(color)
         helper.itemView.item_badge.visibility = if(item.t.progress != null) View.VISIBLE else View.INVISIBLE
@@ -70,8 +68,8 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
                             else -> android.R.attr.textColorSecondary
                         }))
         helper.itemView.item_badge.text = item.t.progress?.status?.cn_name?:""
-        helper.itemView.item_ep_box.backgroundTintList = ColorStateList.valueOf(color)
-        helper.itemView.item_ep_box.alpha = if((item.t.status?:"") in listOf("Air"))1f else 0.6f
+        helper.itemView.backgroundTintList = ColorStateList.valueOf(color)
+        helper.itemView.alpha = if((item.t.status?:"") in listOf("Air"))1f else 0.6f
 
         if(itemHeight == 0){
             helper.itemView.measure(0, 0)

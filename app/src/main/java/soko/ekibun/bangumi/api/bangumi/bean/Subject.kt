@@ -91,7 +91,8 @@ data class Subject(
     data class RatingBean (
             var total: Int = 0,
             var count: CountBean? = null,
-            var score: Double = 0.toDouble()
+            var score: Double = 0.toDouble(),
+            var friend_score: Double = 0.toDouble()
     ){
         /**
          * total : 3069
@@ -101,26 +102,29 @@ data class Subject(
 
         data class CountBean(
                 @SerializedName("10")
-                var `_$10`: Int = 0,
+                var c10: Int = 0,
                 @SerializedName("9")
-                var `_$9`: Int = 0,
+                var c9: Int = 0,
                 @SerializedName("8")
-                var `_$8`: Int = 0,
+                var c8: Int = 0,
                 @SerializedName("7")
-                var `_$7`: Int = 0,
+                var c7: Int = 0,
                 @SerializedName("6")
-                var `_$6`: Int = 0,
+                var c6: Int = 0,
                 @SerializedName("5")
-                var `_$5`: Int = 0,
+                var c5: Int = 0,
                 @SerializedName("4")
-                var `_$4`: Int = 0,
+                var c4: Int = 0,
                 @SerializedName("3")
-                var `_$3`: Int = 0,
+                var c3: Int = 0,
                 @SerializedName("2")
-                var `_$2`: Int = 0,
+                var c2: Int = 0,
                 @SerializedName("1")
-                var `_$1`: Int = 0
+                var c1: Int = 0
         ) {
+            fun toList(): IntArray{
+                return intArrayOf(c10, c9, c8, c7, c6, c5, c4, c3, c2, c1)
+            }
             /**
              * 10 : 331
              * 9 : 335

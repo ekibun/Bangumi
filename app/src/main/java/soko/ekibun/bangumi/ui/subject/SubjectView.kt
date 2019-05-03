@@ -2,7 +2,6 @@ package soko.ekibun.bangumi.ui.subject
 
 import android.animation.LayoutTransition
 import android.annotation.SuppressLint
-import android.graphics.Rect
 import android.support.constraint.ConstraintLayout
 import android.support.design.widget.AppBarLayout
 import android.support.design.widget.BottomSheetDialog
@@ -33,6 +32,7 @@ import kotlinx.android.synthetic.main.subject_character.*
 import kotlinx.android.synthetic.main.subject_detail.*
 import kotlinx.android.synthetic.main.subject_episode.*
 import kotlinx.android.synthetic.main.subject_episode.view.*
+import kotlinx.android.synthetic.main.subject_rank.view.*
 import kotlinx.android.synthetic.main.subject_topic.*
 import org.jsoup.Jsoup
 import soko.ekibun.bangumi.R
@@ -61,7 +61,7 @@ class SubjectView(private val context: SubjectActivity){
 
     val detail: LinearLayout = context.subject_detail
 
-    var appBarOffset = 0
+    var appBarOffset = -1
     val scroll2Top = {
         if(appBarOffset != 0 || if(context.episode_detail_list.visibility == View.VISIBLE) context.episode_detail_list.canScrollVertically(-1) else context.comment_list.canScrollVertically(-1)){
             context.app_bar.setExpanded(true, true)
@@ -74,7 +74,10 @@ class SubjectView(private val context: SubjectActivity){
         val marginEnd = (context.item_buttons.layoutParams as CollapsingToolbarLayout.LayoutParams).marginEnd
         (context.title_expand.layoutParams as ConstraintLayout.LayoutParams).marginEnd = 3 * marginEnd
 
+        context.item_self_rating.measure(0,0)
+        val selfRatingWidth = context.item_self_rating.measuredWidth
         context.app_bar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener{ appBarLayout, verticalOffset ->
+            if(appBarOffset == verticalOffset) return@OnOffsetChangedListener
              val ratio = Math.abs(verticalOffset.toFloat() / appBarLayout.totalScrollRange)
             appBarOffset = verticalOffset
             context.item_scrim.alpha = ratio
@@ -84,6 +87,12 @@ class SubjectView(private val context: SubjectActivity){
             context.title_expand.alpha = 1-ratio
             context.item_buttons.translationX = -2.2f * marginEnd * ratio
             context.app_bar.elevation = Math.max(0f, 12 * (ratio - 0.95f)/ 0.05f)
+
+            context.item_self_rating.layoutParams.let {
+                it.width = (selfRatingWidth * (1-ratio)).toInt()
+                context.item_self_rating.layoutParams = it
+            }
+            context.item_self_rating.alpha = 1-ratio
 
             context.episode_detail_list.invalidate()
         })
@@ -196,11 +205,11 @@ class SubjectView(private val context: SubjectActivity){
         context.title_expand.text = context.title_collapse.text
         context.title_expand.post {
             val layoutParams = (context.title_collapse.layoutParams as ConstraintLayout.LayoutParams)
-            layoutParams.marginEnd = 3 * (context.item_buttons.layoutParams as CollapsingToolbarLayout.LayoutParams).marginEnd + context.item_buttons.width
+            layoutParams.marginEnd = 3 * (context.item_buttons.layoutParams as CollapsingToolbarLayout.LayoutParams).marginEnd + context.item_buttons.width - context.item_self_rating.width
             context.title_collapse.layoutParams = layoutParams
             (context.item_subject.layoutParams as CollapsingToolbarLayout.LayoutParams).topMargin = context.toolbar_container.height
         }
-        context.item_info.text = if(subject.typeString.isNullOrEmpty()) context.getString(SubjectType.getDescription(subject.type)) else subject.typeString
+        context.item_info.text = (if(subject.typeString.isNullOrEmpty()) context.getString(SubjectType.getDescription(subject.type)) else subject.typeString) + " · " + subject.name
         context.item_subject_title.visibility = View.GONE
         val saleDate = subject.infobox?.firstOrNull { it.first in arrayOf("发售日期", "发售日", "发行日期") }
         val artist = subject.infobox?.firstOrNull { it.first.substringBefore(" ") in arrayOf("动画制作", "作者", "开发", "游戏制作", "艺术家") }
@@ -212,9 +221,25 @@ class SubjectView(private val context: SubjectActivity){
 
         context.item_play.visibility = if(PlayerBridge.checkActivity(context) && subject.type in listOf(SubjectType.ANIME, SubjectType.REAL)) View.VISIBLE else View.GONE
 
+        detail.item_rank_count.text = if(subject.rank == 0) "" else "#${subject.rank}"
+
         subject.rating?.let {
-            context.item_score.text = it.score.toString()
-            context.item_score_count.text = context.getString(R.string.rate_count, it.total)
+            detail.item_friend_score.text = if(it.friend_score == 0.0) "-" else it.friend_score.toString()
+            detail.item_score.text = if(it.score == 0.0) "-" else it.score.toString()
+            detail.item_rating.rating = it.score.toFloat() / 2
+            detail.item_score_count.text = context.getString(R.string.rate_count, it.total)
+            val count = it.count?:return@let
+            val max = count.toList().max()?:return@let
+            detail.rate_10.progress = if(max == 0) 0 else 100 * count.c10 / max
+            detail.rate_9.progress = if(max == 0) 0 else 100 * count.c9 / max
+            detail.rate_8.progress = if(max == 0) 0 else 100 * count.c8 / max
+            detail.rate_7.progress = if(max == 0) 0 else 100 * count.c7 / max
+            detail.rate_6.progress = if(max == 0) 0 else 100 * count.c6 / max
+            detail.rate_5.progress = if(max == 0) 0 else 100 * count.c5 / max
+            detail.rate_4.progress = if(max == 0) 0 else 100 * count.c4 / max
+            detail.rate_3.progress = if(max == 0) 0 else 100 * count.c3 / max
+            detail.rate_2.progress = if(max == 0) 0 else 100 * count.c2 / max
+            detail.rate_1.progress = if(max == 0) 0 else 100 * count.c1 / max
         }
         GlideUtil.with(context.item_cover)
                 ?.load(subject.images?.getImage(context))
@@ -284,6 +309,13 @@ class SubjectView(private val context: SubjectActivity){
         detail.item_detail.setOnClickListener {
             showInfoBox(subject)
         }
+        subject.collection?.let{
+            detail.item_collection_count.text = context.getString(R.string.phrase_collection_count, it.wish, it.collect, it.doing, it.on_hold, it.dropped)
+        }
+
+        detail.item_netabare.setOnClickListener {
+            WebActivity.launchUrl(context, "https://netaba.re/subject/${subject.id}")
+        }
 
         detail.item_progress.visibility = if(subject.formhash?.isNotEmpty() == true && subject.interest?.status?.type == CollectionStatusType.DO && subject.type in listOf(SubjectType.ANIME, SubjectType.REAL, SubjectType.BOOK)) View.VISIBLE else View.GONE
         detail.item_progress_info.text = context.getString(R.string.phrase_progress,
@@ -295,7 +327,7 @@ class SubjectView(private val context: SubjectActivity){
         if(subject.infobox?.isNotEmpty() == true) {
             val view = LayoutInflater.from(context).inflate(R.layout.dialog_infobox, detail, false)
             @Suppress("DEPRECATION")
-            view.item_infobox_text.text = setTextLinkOpenByWebView(Html.fromHtml(subject.infobox?.map { "${it.first}: ${it.second}" }?.reduce { acc, s -> "$acc<br>$s" })){
+            view.item_infobox_text.text = setTextLinkOpenByWebView(Html.fromHtml("<h1>${subject.name}</h1>" + subject.infobox?.map { "${it.first}: ${it.second}" }?.reduce { acc, s -> "$acc<br>$s" })){
                 WebActivity.launchUrl(context, HttpUtil.getUrl(it, URI.create(Bangumi.SERVER)), "")
             }
             view.item_infobox_text.movementMethod = LinkMovementMethod.getInstance()
