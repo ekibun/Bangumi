@@ -3,11 +3,11 @@ package soko.ekibun.bangumi.ui.main.fragment.calendar
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
 import android.preference.PreferenceManager
-import android.support.v4.view.PagerAdapter
-import android.support.v4.view.ViewPager
-import android.support.v4.widget.SwipeRefreshLayout
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.viewpager.widget.PagerAdapter
+import androidx.viewpager.widget.ViewPager
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
 import retrofit2.Call
@@ -27,26 +27,26 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.HashMap
 
-class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: ViewPager, private val scrollTrigger: (Boolean)->Unit) : PagerAdapter(){
+class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: androidx.viewpager.widget.ViewPager, private val scrollTrigger: (Boolean)->Unit) : androidx.viewpager.widget.PagerAdapter(){
     val sp:SharedPreferences by lazy { PreferenceManager.getDefaultSharedPreferences(pager.context) }
 
     init{
-        pager.addOnPageChangeListener(object: ViewPager.OnPageChangeListener{
+        pager.addOnPageChangeListener(object: androidx.viewpager.widget.ViewPager.OnPageChangeListener{
             override fun onPageScrollStateChanged(state: Int) {}
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
             override fun onPageSelected(position: Int) {
-                scrollTrigger((items[CalendarAdapter.getCalendarInt(getPostDate(pager.currentItem))]?.second?.tag as? RecyclerView)?.canScrollVertically(-1) == true)
+                scrollTrigger((items[CalendarAdapter.getCalendarInt(getPostDate(pager.currentItem))]?.second?.tag as? androidx.recyclerview.widget.RecyclerView)?.canScrollVertically(-1) == true)
             } })
     }
 
-    private fun getItem(position: Int): Pair<CalendarAdapter, SwipeRefreshLayout>{
+    private fun getItem(position: Int): Pair<CalendarAdapter, androidx.swiperefreshlayout.widget.SwipeRefreshLayout>{
         return items.getOrPut(position){
-            val swipeRefreshLayout = SwipeRefreshLayout(pager.context)
-            val recyclerView = RecyclerView(pager.context)
+            val swipeRefreshLayout = androidx.swiperefreshlayout.widget.SwipeRefreshLayout(pager.context)
+            val recyclerView = androidx.recyclerview.widget.RecyclerView(pager.context)
             recyclerView.overScrollMode = View.OVER_SCROLL_NEVER
-            recyclerView.addOnScrollListener(object: RecyclerView.OnScrollListener() {
-                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                    scrollTrigger((items[CalendarAdapter.getCalendarInt(getPostDate(pager.currentItem))]?.second?.tag as? RecyclerView)?.canScrollVertically(-1) == true)
+            recyclerView.addOnScrollListener(object: androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {
+                    scrollTrigger((items[CalendarAdapter.getCalendarInt(getPostDate(pager.currentItem))]?.second?.tag as? androidx.recyclerview.widget.RecyclerView)?.canScrollVertically(-1) == true)
                 }
             })
 
@@ -55,7 +55,7 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
                 SubjectActivity.startActivity(v.context, adapter.data[pos].t.subject)
             }
             recyclerView.adapter = adapter
-            recyclerView.layoutManager = LinearLayoutManager(pager.context)
+            recyclerView.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(pager.context)
             recyclerView.isNestedScrollingEnabled = false
             swipeRefreshLayout.addView(recyclerView)
             swipeRefreshLayout.tag = recyclerView
@@ -65,7 +65,7 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
     }
 
     @SuppressLint("UseSparseArrays")
-    private val items = HashMap<Int, Pair<CalendarAdapter, SwipeRefreshLayout>>()
+    private val items = HashMap<Int, Pair<CalendarAdapter, androidx.swiperefreshlayout.widget.SwipeRefreshLayout>>()
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
         val item = getItem(CalendarAdapter.getCalendarInt(getPostDate(position)))
         if(raw == null && position == pager.currentItem)
@@ -147,7 +147,7 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: Vi
                         isHeader = false
                     } } }
             if(firstLoad)
-                ((item.second.tag as? RecyclerView)?.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(index-1, 0)
+                ((item.second.tag as? androidx.recyclerview.widget.RecyclerView)?.layoutManager as? androidx.recyclerview.widget.LinearLayoutManager)?.scrollToPositionWithOffset(index-1, 0)
         }
         if(firstLoad)
             firstLoad = false

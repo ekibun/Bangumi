@@ -42,7 +42,7 @@
                 android:background="?colorAccent"
                 android:layout_gravity="center_vertical"/>
     </LinearLayout>
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
             xmlns:tools="http://schemas.android.com/tools"
@@ -62,7 +62,7 @@
                   app:layout_constraintStart_toStartOf="parent"
                   tools:text="18:30"
                   android:paddingTop="8dp"/>
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
                 xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:app="http://schemas.android.com/apk/res-auto"
                 xmlns:tools="http://schemas.android.com/tools"
@@ -137,6 +137,6 @@
                     android:layout_marginTop="4dp"
                     tools:text="第 1 话 Episode Name"
                     app:layout_constraintTop_toBottomOf="@+id/item_title"/>
-        </android.support.constraint.ConstraintLayout>
-    </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>

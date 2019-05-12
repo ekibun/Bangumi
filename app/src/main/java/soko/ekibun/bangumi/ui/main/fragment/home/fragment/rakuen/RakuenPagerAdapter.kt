@@ -2,11 +2,11 @@ package soko.ekibun.bangumi.ui.main.fragment.home.fragment.rakuen
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.support.v4.view.PagerAdapter
-import android.support.v4.view.ViewPager
-import android.support.v4.widget.SwipeRefreshLayout
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.viewpager.widget.PagerAdapter
+import androidx.viewpager.widget.ViewPager
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,29 +18,29 @@ import soko.ekibun.bangumi.api.bangumi.bean.Rakuen
 import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.topic.TopicActivity
 
-class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private val pager: ViewPager, private val scrollTrigger: (Boolean)->Unit) : PagerAdapter(){
+class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private val pager: androidx.viewpager.widget.ViewPager, private val scrollTrigger: (Boolean)->Unit) : androidx.viewpager.widget.PagerAdapter(){
     private val tabList = context.resources.getStringArray(R.array.topic_list)
     var selectedFilter = R.id.topic_filter_all
 
     init{
-        pager.addOnPageChangeListener(object: ViewPager.OnPageChangeListener{
+        pager.addOnPageChangeListener(object: androidx.viewpager.widget.ViewPager.OnPageChangeListener{
             override fun onPageScrollStateChanged(state: Int) {}
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
             override fun onPageSelected(position: Int) {
                 loadTopicList(position)
-                scrollTrigger((items[position]?.second?.tag as? RecyclerView)?.canScrollVertically(-1) == true)
+                scrollTrigger((items[position]?.second?.tag as? androidx.recyclerview.widget.RecyclerView)?.canScrollVertically(-1) == true)
             } })
     }
 
-    private val items = HashMap<Int, Pair<RakuenAdapter, SwipeRefreshLayout>>()
+    private val items = HashMap<Int, Pair<RakuenAdapter, androidx.swiperefreshlayout.widget.SwipeRefreshLayout>>()
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
         val item = items.getOrPut(position){
-            val swipeRefreshLayout = SwipeRefreshLayout(container.context)
-            val recyclerView = RecyclerView(container.context)
+            val swipeRefreshLayout = androidx.swiperefreshlayout.widget.SwipeRefreshLayout(container.context)
+            val recyclerView = androidx.recyclerview.widget.RecyclerView(container.context)
             recyclerView.overScrollMode = View.OVER_SCROLL_NEVER
-            recyclerView.addOnScrollListener(object: RecyclerView.OnScrollListener() {
-                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                    scrollTrigger((items[pager.currentItem]?.second?.tag as? RecyclerView)?.canScrollVertically(-1) == true)
+            recyclerView.addOnScrollListener(object: androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {
+                    scrollTrigger((items[pager.currentItem]?.second?.tag as? androidx.recyclerview.widget.RecyclerView)?.canScrollVertically(-1) == true)
                 }
             })
 
@@ -52,7 +52,7 @@ class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private
                 //WebActivity.launchUrl(v.context, adapter.data[position].url)
             }
             recyclerView.adapter = adapter
-            recyclerView.layoutManager = LinearLayoutManager(container.context)
+            recyclerView.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(container.context)
             recyclerView.isNestedScrollingEnabled = false
             swipeRefreshLayout.addView(recyclerView)
             swipeRefreshLayout.tag = recyclerView
@@ -60,7 +60,7 @@ class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private
             Pair(adapter,swipeRefreshLayout)
         }
         container.addView(item.second)
-        if((item.second.tag as? RecyclerView)?.tag == null)
+        if((item.second.tag as? androidx.recyclerview.widget.RecyclerView)?.tag == null)
             loadTopicList(position)
         return item.second
     }
@@ -88,7 +88,7 @@ class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private
         topicCall[position]?.enqueue(ApiHelper.buildCallback(item.second.context, {
             item.first.isUseEmpty(true)
             item.first.setNewData(it)
-            (item.second.tag as? RecyclerView)?.tag = true
+            (item.second.tag as? androidx.recyclerview.widget.RecyclerView)?.tag = true
         },{
             item.second.isRefreshing = false
         }))

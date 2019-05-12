@@ -1,6 +1,6 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
-import android.support.annotation.StringDef
+import androidx.annotation.StringDef
 
 object ResponseGroup{
     const val LARGE = "large"

@@ -2,14 +2,14 @@ package soko.ekibun.bangumi.ui.subject
 
 import android.animation.LayoutTransition
 import android.annotation.SuppressLint
-import android.support.constraint.ConstraintLayout
-import android.support.design.widget.AppBarLayout
-import android.support.design.widget.BottomSheetDialog
-import android.support.design.widget.CollapsingToolbarLayout
-import android.support.v7.app.AlertDialog
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.StaggeredGridLayoutManager
+import androidx.constraintlayout.widget.ConstraintLayout
+import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.appbar.CollapsingToolbarLayout
+import androidx.appcompat.app.AlertDialog
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import android.text.Html
 import android.text.method.LinkMovementMethod
 import android.view.Gravity
@@ -90,13 +90,13 @@ class SubjectView(private val context: SubjectActivity){
         })
 
         context.season_list.adapter = seasonAdapter
-        seasonLayoutManager.orientation = LinearLayoutManager.HORIZONTAL
+        seasonLayoutManager.orientation = RecyclerView.HORIZONTAL
         context.season_list.layoutManager = seasonLayoutManager
         context.season_list.isNestedScrollingEnabled = false
 
         context.episode_list.adapter = episodeAdapter
         val layoutManager = LinearLayoutManager(context)
-        layoutManager.orientation = LinearLayoutManager.HORIZONTAL
+        layoutManager.orientation = RecyclerView.HORIZONTAL
         context.episode_list.layoutManager = layoutManager
         context.episode_list.isNestedScrollingEnabled = false
         val swipeTouchListener = View.OnTouchListener{ v, _ ->
@@ -132,20 +132,20 @@ class SubjectView(private val context: SubjectActivity){
 
         context.linked_list.adapter = linkedSubjectsAdapter
         val subjectLayoutManager = LinearLayoutManager(context)
-        subjectLayoutManager.orientation = LinearLayoutManager.HORIZONTAL
+        subjectLayoutManager.orientation = RecyclerView.HORIZONTAL
         context.linked_list.layoutManager = subjectLayoutManager
         context.linked_list.isNestedScrollingEnabled = false
 
 
         context.commend_list.adapter = commendSubjectsAdapter
         val subjectLayoutManager2 = LinearLayoutManager(context)
-        subjectLayoutManager2.orientation = LinearLayoutManager.HORIZONTAL
+        subjectLayoutManager2.orientation = RecyclerView.HORIZONTAL
         context.commend_list.layoutManager = subjectLayoutManager2
         context.commend_list.isNestedScrollingEnabled = false
 
         context.character_list.adapter = characterAdapter
         val characterLayoutManager = LinearLayoutManager(context)
-        characterLayoutManager.orientation = LinearLayoutManager.HORIZONTAL
+        characterLayoutManager.orientation = RecyclerView.HORIZONTAL
         context.character_list.layoutManager = characterLayoutManager
         context.character_list.isNestedScrollingEnabled = false
 
@@ -165,7 +165,7 @@ class SubjectView(private val context: SubjectActivity){
 
         context.tag_list.adapter = tagAdapter
         val tagLayoutManager = LinearLayoutManager(context)
-        tagLayoutManager.orientation = LinearLayoutManager.HORIZONTAL
+        tagLayoutManager.orientation = RecyclerView.HORIZONTAL
         context.tag_list.layoutManager = tagLayoutManager
         context.tag_list.isNestedScrollingEnabled = false
 
@@ -211,7 +211,7 @@ class SubjectView(private val context: SubjectActivity){
         context.item_air_week.text = if(artist != null) "${artist.first}：${Jsoup.parse(artist.second).body().text()}" else "更新时间：${CalendarAdapter.weekList[subject.air_weekday]}"
         detail.item_detail.text = if(subject.summary.isNullOrEmpty()) subject.name else subject.summary
 
-        context.item_play.visibility = if(PlayerBridge.checkActivity(context) && subject.type in listOf(SubjectType.ANIME, SubjectType.REAL)) View.VISIBLE else View.GONE
+        context.item_play.visibility = if((PlayerBridge.checkActivity(context) || PlayerBridge.checkActivity(context,  context.ua)) && subject.type in listOf(SubjectType.ANIME, SubjectType.REAL)) View.VISIBLE else View.GONE
 
         detail.item_rank_count.text = if(subject.rank == 0) "" else "#${subject.rank}"
 

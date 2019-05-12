@@ -3,9 +3,9 @@ package soko.ekibun.bangumi.ui.subject
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.net.Uri
-import android.support.customtabs.CustomTabsIntent
-import android.support.v7.app.AlertDialog
-import android.support.v7.widget.LinearLayoutManager
+import androidx.browser.customtabs.CustomTabsIntent
+import androidx.appcompat.app.AlertDialog
+import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.*
 import android.widget.PopupMenu
 import android.widget.TextView
@@ -76,7 +76,13 @@ class SubjectPresenter(private val context: SubjectActivity){
 
         context.item_play.setOnClickListener {
             if(PlayerBridge.checkActivity(context))
-                PlayerBridge.startActivity(context, subject)
+                PlayerBridge.startActivity(context, this.subject)
+        }
+
+        context.item_play.setOnLongClickListener {
+            if(PlayerBridge.checkActivity(context, context.ua))
+                PlayerBridge.startActivity(context, this.subject, context.ua)
+            true
         }
 
         subjectView.episodeAdapter.setOnItemLongClickListener { _, _, position ->
@@ -94,7 +100,7 @@ class SubjectPresenter(private val context: SubjectActivity){
                     popupMenu.menu.add(Menu.NONE, Menu.FIRST + index, index, s) }
                 popupMenu.setOnMenuItemClickListener {menu->
                     val index = menu.itemId - Menu.FIRST
-                    updateProgress(subject,  if (index == 1)eps else listOf(eps.last()), if (index == 1) WATCH_TO else SubjectProgress.EpisodeProgress.EpisodeStatus.types[if (index > 1) index - 1 else index] )
+                    updateProgress(subject,  if (index == 1)eps else listOf(eps.last()), if (index == 1) EpisodeDialog.WATCH_TO else SubjectProgress.EpisodeProgress.EpisodeStatus.types[if (index > 1) index - 1 else index] )
                     false
                 }
                 popupMenu.show()
@@ -183,6 +189,10 @@ class SubjectPresenter(private val context: SubjectActivity){
 
     @SuppressLint("SetTextI18n")
     private fun openEpisode(episode: Episode, subject: Subject, eps: List<Episode>){
+        EpisodeDialog.showDialog(context, episode, eps, onAirInfo){mEps, status ->
+            updateProgress(subject, mEps, status)
+        }
+        /*
         val view = context.layoutInflater.inflate(R.layout.dialog_epsode, context.item_collect, false)
         //TODO
         view.item_episode_title.text = episode.parseSort(context) + " " + if(episode.name_cn.isNullOrEmpty()) episode.name else episode.name_cn
@@ -216,7 +226,7 @@ class SubjectPresenter(private val context: SubjectActivity){
         if(episode.type != Episode.TYPE_MUSIC) {
             view.item_episode_status.setOnCheckedChangeListener { _, checkedId ->
                 updateProgress(subject, if(checkedId == R.id.radio_watch_to)eps else listOf(episode), when(checkedId){
-                    R.id.radio_watch_to -> WATCH_TO
+                    R.id.radio_watch_to -> EpisodeDialog.WATCH_TO
                     R.id.radio_watch -> SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH
                     R.id.radio_queue -> SubjectProgress.EpisodeProgress.EpisodeStatus.QUEUE
                     R.id.radio_drop -> SubjectProgress.EpisodeProgress.EpisodeStatus.DROP
@@ -227,10 +237,17 @@ class SubjectPresenter(private val context: SubjectActivity){
             view.item_episode_status.visibility = View.GONE
         }
         showDialog(view)
+         */
     }
 
     private fun updateProgress(subject: Subject, eps: List<Episode>, newStatus: String){
-        if(newStatus == WATCH_TO){
+        EpisodeDialog.updateProgress(context, eps, newStatus, context.formhash, context.ua) {
+            subjectView.episodeAdapter.notifyDataSetChanged()
+            subjectView.episodeDetailAdapter.notifyDataSetChanged()
+            refreshProgress(subject)
+        }
+        /*
+        if(newStatus == EpisodeDialog.WATCH_TO){
             val epIds = eps.map{ it.id.toString()}.reduce { acc, s -> "$acc,$s" }
             Bangumi.updateProgress(eps.last().id, SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH, context.formhash, context.ua, epIds).enqueue(
                     ApiHelper.buildCallback(context, {
@@ -252,6 +269,7 @@ class SubjectPresenter(private val context: SubjectActivity){
                         refreshProgress(subject)
                     }, {}))
         }
+         */
     }
 
     private fun showDialog(view: View): Dialog{
@@ -401,8 +419,7 @@ class SubjectPresenter(private val context: SubjectActivity){
 
         context.item_collect.setOnLongClickListener {
             EditSubjectDialog.showDialog(context, subject, body, context.formhash, context.ua){
-                if(it) removeCollection(subject)
-                else refreshCollection()
+                refreshCollection()
             }
             true
         }
@@ -415,9 +432,5 @@ class SubjectPresenter(private val context: SubjectActivity){
         epCalls?.enqueue(ApiHelper.buildCallback(context, {
             subjectView.updateEpisode(it)
         }, {}))
-    }
-
-    companion object {
-        const val WATCH_TO = "watch_to"
     }
 }

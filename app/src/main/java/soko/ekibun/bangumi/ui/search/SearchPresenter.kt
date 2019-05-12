@@ -1,7 +1,7 @@
 package soko.ekibun.bangumi.ui.search
 
-import android.support.v7.app.AlertDialog
-import android.support.v7.widget.LinearLayoutManager
+import androidx.appcompat.app.AlertDialog
+import androidx.recyclerview.widget.LinearLayoutManager
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.Gravity
@@ -32,7 +32,7 @@ class SearchPresenter(private val context: SearchActivity) {
     val searchHistoryAdapter = SearchHistoryAdapter()
 
     init{
-        context.search_history.layoutManager = LinearLayoutManager(context)
+        context.search_history.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context)
         context.search_history.adapter = searchHistoryAdapter
         val emptyTextView = TextView(context)
         emptyTextView.text = context.getString(R.string.search_hint_no_history)
@@ -54,7 +54,7 @@ class SearchPresenter(private val context: SearchActivity) {
             }.show()
         }
 
-        context.search_list.layoutManager = LinearLayoutManager(context)
+        context.search_list.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context)
         subjectAdapter.setEnableLoadMore(true)
         subjectAdapter.setOnLoadMoreListener({
             search()

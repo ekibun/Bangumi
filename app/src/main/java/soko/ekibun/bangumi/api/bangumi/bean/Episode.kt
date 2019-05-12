@@ -2,7 +2,7 @@ package soko.ekibun.bangumi.api.bangumi.bean
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.support.annotation.IntDef
+import androidx.annotation.IntDef
 import soko.ekibun.bangumi.R
 import java.text.DecimalFormat
 

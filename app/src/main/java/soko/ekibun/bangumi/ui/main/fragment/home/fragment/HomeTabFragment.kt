@@ -1,11 +1,11 @@
 package soko.ekibun.bangumi.ui.main.fragment.home.fragment
 
 import android.os.Bundle
-import android.support.annotation.LayoutRes
-import android.support.v4.app.Fragment
+import androidx.annotation.LayoutRes
+import androidx.fragment.app.Fragment
 import android.view.*
 
-abstract class HomeTabFragment(@LayoutRes private val resId: Int): Fragment(){
+abstract class HomeTabFragment(@LayoutRes private val resId: Int): androidx.fragment.app.Fragment(){
     abstract val titleRes: Int
     abstract val iconRes: Int
 

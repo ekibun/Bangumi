@@ -2,7 +2,7 @@ package soko.ekibun.bangumi.ui.view
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.support.v4.view.ActionProvider
+import androidx.core.view.ActionProvider
 import android.view.View
 import android.widget.TextView
 import android.view.LayoutInflater
@@ -20,7 +20,7 @@ class NotifyActionProvider(context: Context): ActionProvider(context){
     @SuppressLint("InflateParams", "PrivateResource")
     override fun onCreateActionView(): View {
         val size = context.resources.getDimensionPixelSize(
-                android.support.design.R.dimen.abc_action_bar_default_height_material)
+                com.google.android.material.R.dimen.abc_action_bar_default_height_material)
 
         val layoutParams = ViewGroup.LayoutParams(size, size)
         val view = LayoutInflater.from(context)

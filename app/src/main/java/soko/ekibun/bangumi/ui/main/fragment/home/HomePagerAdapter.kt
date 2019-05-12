@@ -1,15 +1,15 @@
 package soko.ekibun.bangumi.ui.main.fragment.home
 
 import android.content.Context
-import android.support.v4.app.FragmentManager
-import android.support.v4.app.FragmentPagerAdapter
-import android.support.v4.view.ViewPager
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentPagerAdapter
+import androidx.viewpager.widget.ViewPager
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.HomeTabFragment
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.collection.CollectionFragment
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.rakuen.RakuenFragment
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.timeline.TimeLineFragment
 
-class HomePagerAdapter(private val context: Context, fragmentManager: FragmentManager, pager: ViewPager): FragmentPagerAdapter(fragmentManager) {
+class HomePagerAdapter(private val context: Context, fragmentManager: androidx.fragment.app.FragmentManager, pager: androidx.viewpager.widget.ViewPager): androidx.fragment.app.FragmentPagerAdapter(fragmentManager) {
     val fragments: List<HomeTabFragment> = listOf(
             TimeLineFragment(),
             CollectionFragment(),
@@ -18,7 +18,7 @@ class HomePagerAdapter(private val context: Context, fragmentManager: FragmentMa
 
     init{
         pager.offscreenPageLimit = 4
-        pager.addOnPageChangeListener(object: ViewPager.OnPageChangeListener{
+        pager.addOnPageChangeListener(object: androidx.viewpager.widget.ViewPager.OnPageChangeListener{
             override fun onPageScrollStateChanged(state: Int) {}
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
             override fun onPageSelected(position: Int) {

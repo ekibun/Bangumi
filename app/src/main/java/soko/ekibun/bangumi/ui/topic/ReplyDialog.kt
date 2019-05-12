@@ -6,9 +6,9 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
-import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.PopupMenu
+import androidx.fragment.app.DialogFragment
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.appcompat.widget.PopupMenu
 import android.util.DisplayMetrics
 import android.view.*
 import android.view.inputmethod.InputMethodManager
@@ -23,7 +23,7 @@ import okhttp3.RequestBody
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.catbox.CatBox
 
-class ReplyDialog: DialogFragment() {
+class ReplyDialog: androidx.fragment.app.DialogFragment() {
     private var contentView: View? = null
 
     private fun getKeyBoardHeight(): Int{
@@ -80,7 +80,7 @@ class ReplyDialog: DialogFragment() {
             popup.show()
         }
         contentView.item_emoji_list.adapter = emojiAdapter
-        contentView.item_emoji_list.layoutManager = GridLayoutManager(context, 7)
+        contentView.item_emoji_list.layoutManager = androidx.recyclerview.widget.GridLayoutManager(context, 7)
 
         val updateEmojiList= {
             val softKeyboardHeight = getKeyBoardHeight()
@@ -126,7 +126,7 @@ class ReplyDialog: DialogFragment() {
             }
         }
 
-        dialog.setOnKeyListener { _, keyCode, keyEvent -> if(keyEvent.action == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK && contentView.item_btn_emoji.isSelected){
+        dialog?.setOnKeyListener { _, keyCode, keyEvent -> if(keyEvent.action == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK && contentView.item_btn_emoji.isSelected){
             contentView.item_btn_emoji.isSelected = false
             updateEmojiList()
             true
@@ -137,24 +137,24 @@ class ReplyDialog: DialogFragment() {
         contentView.item_hint.text = hint
         contentView.item_input.setText(draft)
 
-        dialog.window?.attributes?.let{
+        dialog?.window?.attributes?.let{
             it.dimAmount = 0.6f
-            dialog.window?.attributes = it
+            dialog?.window?.attributes = it
         }
-        dialog.window?.setWindowAnimations(R.style.AnimDialog)
-        dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-        dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+        dialog?.window?.setWindowAnimations(R.style.AnimDialog)
+        dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+        dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         return contentView
     }
 
-    override fun onDismiss(dialog: DialogInterface?) {
+    override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
         callback(contentView?.item_input?.text.toString(), false)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setStyle(DialogFragment.STYLE_NORMAL, R.style.AppTheme_Dialog)
+        setStyle(androidx.fragment.app.DialogFragment.STYLE_NORMAL, R.style.AppTheme_Dialog)
     }
 
     @SuppressLint("Recycle")

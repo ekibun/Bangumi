@@ -2,10 +2,10 @@ package soko.ekibun.bangumi.ui.view
 
 import android.content.Context
 import android.graphics.Canvas
-import android.support.v4.view.ViewCompat
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.StaggeredGridLayoutManager
+import androidx.core.view.ViewCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
@@ -14,7 +14,7 @@ import com.simplecityapps.recyclerview_fastscroll.interfaces.OnFastScrollStateCh
 import com.simplecityapps.recyclerview_fastscroll.utils.Utils
 import kotlin.math.roundToInt
 
-class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : RecyclerView(context, attrs, defStyleAttr), RecyclerView.OnItemTouchListener {
+class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : androidx.recyclerview.widget.RecyclerView(context, attrs, defStyleAttr), androidx.recyclerview.widget.RecyclerView.OnItemTouchListener {
 
     private val mScrollbar: FastScroller
 
@@ -63,11 +63,11 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
      * We intercept the touch handling only to support fast scrolling when initiated from the
      * scroll bar.  Otherwise, we fall back to the default RecyclerView touch handling.
      */
-    override fun onInterceptTouchEvent(rv: RecyclerView, ev: MotionEvent): Boolean {
+    override fun onInterceptTouchEvent(rv: androidx.recyclerview.widget.RecyclerView, ev: MotionEvent): Boolean {
         return handleTouchEvent(ev)
     }
 
-    override fun onTouchEvent(rv: RecyclerView, ev: MotionEvent) {
+    override fun onTouchEvent(rv: androidx.recyclerview.widget.RecyclerView, ev: MotionEvent) {
         handleTouchEvent(ev)
     }
 
@@ -116,12 +116,12 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
         if(itemHeightCache.size != adapter.itemCount)
             itemHeightCache = IntArray(adapter.itemCount){200}
 
-        if(layoutManager is LinearLayoutManager){
+        if(layoutManager is androidx.recyclerview.widget.LinearLayoutManager){
             val firstIndex= layoutManager.findFirstVisibleItemPosition()
             val lastIndex = layoutManager.findLastVisibleItemPosition()
             for(i in firstIndex..lastIndex)
                 itemHeightCache[i] = layoutManager.findViewByPosition(i)?.height?:continue
-        }else if(adapter is MeasurableAdapter && layoutManager is StaggeredGridLayoutManager){
+        }else if(adapter is MeasurableAdapter && layoutManager is androidx.recyclerview.widget.StaggeredGridLayoutManager){
             var lastItemHeight = 0
             val spanHeight = IntArray(layoutManager.spanCount) { 0 }
             for(index in 0 until adapter.itemCount){
@@ -181,9 +181,9 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
         var totalOffset = 0
         itemHeightCache.forEachIndexed { index, height ->
             if(scrollY >= totalOffset && scrollY<=totalOffset + height){
-                if(layoutManager is LinearLayoutManager)
+                if(layoutManager is androidx.recyclerview.widget.LinearLayoutManager)
                     layoutManager.scrollToPositionWithOffset(index, totalOffset - scrollY.roundToInt())
-                else if(adapter is MeasurableAdapter && layoutManager is StaggeredGridLayoutManager)
+                else if(adapter is MeasurableAdapter && layoutManager is androidx.recyclerview.widget.StaggeredGridLayoutManager)
                     layoutManager.scrollToPositionWithOffset(index, totalOffset - scrollY.roundToInt())
                 val sectionedAdapter = (adapter as? SectionedAdapter)?:return ""
                 return sectionedAdapter.getSectionName(index)
@@ -196,11 +196,11 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
     private fun getScrolledPastHeight(): Int{
         val layoutManager = layoutManager
         val adapter = adapter
-        return if(layoutManager is LinearLayoutManager){
+        return if(layoutManager is androidx.recyclerview.widget.LinearLayoutManager){
             val firstIndex= layoutManager.findFirstVisibleItemPosition()
             val topOffset = layoutManager.getDecoratedTop(layoutManager.findViewByPosition(firstIndex)?:return 0)
             itemHeightCache.sliceArray(0 until firstIndex).sum() - topOffset
-        } else if(adapter is MeasurableAdapter && layoutManager is StaggeredGridLayoutManager){
+        } else if(adapter is MeasurableAdapter && layoutManager is androidx.recyclerview.widget.StaggeredGridLayoutManager){
             val firstIndex = layoutManager.findFirstVisibleItemPositions(null)[0]
             val topOffset = layoutManager.getDecoratedTop(layoutManager.findViewByPosition(firstIndex)?:return 0)
             itemHeightCache.sliceArray(0 until firstIndex).sum() - topOffset

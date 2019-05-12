@@ -1,7 +1,7 @@
 package soko.ekibun.bangumi.ui.topic
 
 import android.annotation.SuppressLint
-import android.support.v7.app.AlertDialog
+import androidx.appcompat.app.AlertDialog
 import android.webkit.WebView
 import com.google.gson.reflect.TypeToken
 import kotlinx.android.synthetic.main.activity_topic.*

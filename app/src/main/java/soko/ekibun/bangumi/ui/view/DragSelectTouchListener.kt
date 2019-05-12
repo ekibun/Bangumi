@@ -3,11 +3,11 @@ package soko.ekibun.bangumi.ui.view
 import android.content.res.Resources
 import android.os.Handler
 import android.os.Looper
-import android.support.v4.view.ViewCompat
-import android.support.v7.widget.RecyclerView
+import androidx.core.view.ViewCompat
+import androidx.recyclerview.widget.RecyclerView
 import android.view.MotionEvent
 
-class DragSelectTouchListener : RecyclerView.OnItemTouchListener {
+class DragSelectTouchListener : androidx.recyclerview.widget.RecyclerView.OnItemTouchListener {
 
     private var isActive: Boolean = false
     private var start: Int = 0
@@ -15,7 +15,7 @@ class DragSelectTouchListener : RecyclerView.OnItemTouchListener {
 
     var selectListener: ((start: Int, end: Int, isSelected: Boolean)->Unit)? = null
 
-    private var recyclerView: RecyclerView? = null
+    private var recyclerView: androidx.recyclerview.widget.RecyclerView? = null
 
     private val autoScrollDistance = (Resources.getSystem().displayMetrics.density * 56).toInt()
 
@@ -54,7 +54,7 @@ class DragSelectTouchListener : RecyclerView.OnItemTouchListener {
         reset()
     }
 
-    override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
+    override fun onInterceptTouchEvent(rv: androidx.recyclerview.widget.RecyclerView, e: MotionEvent): Boolean {
         if (!isActive || rv.adapter?.itemCount == 0) return false
         when (e.actionMasked) {
             MotionEvent.ACTION_POINTER_DOWN,
@@ -81,7 +81,7 @@ class DragSelectTouchListener : RecyclerView.OnItemTouchListener {
         recyclerView?.removeCallbacks(scrollRun)
     }
 
-    override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) {
+    override fun onTouchEvent(rv: androidx.recyclerview.widget.RecyclerView, e: MotionEvent) {
         if (!isActive) return
         when (e.actionMasked) {
             MotionEvent.ACTION_MOVE -> {
@@ -96,15 +96,15 @@ class DragSelectTouchListener : RecyclerView.OnItemTouchListener {
         }
     }
 
-    private fun updateSelectedRange(rv: RecyclerView, e: MotionEvent) {
+    private fun updateSelectedRange(rv: androidx.recyclerview.widget.RecyclerView, e: MotionEvent) {
         updateSelectedRange(rv, e.x, e.y)
     }
 
-    private fun updateSelectedRange(rv: RecyclerView, x: Float, y: Float) {
+    private fun updateSelectedRange(rv: androidx.recyclerview.widget.RecyclerView, x: Float, y: Float) {
         val child = rv.findChildViewUnder(x, y)
         if (child != null) {
             val position = rv.getChildAdapterPosition(child)
-            if (position != RecyclerView.NO_POSITION && end != position) {
+            if (position != androidx.recyclerview.widget.RecyclerView.NO_POSITION && end != position) {
                 end = position
                 notifySelectRangeChange()
             }
@@ -148,13 +148,13 @@ class DragSelectTouchListener : RecyclerView.OnItemTouchListener {
         if (selectListener == null) {
             return
         }
-        if (start == RecyclerView.NO_POSITION || end == RecyclerView.NO_POSITION) {
+        if (start == androidx.recyclerview.widget.RecyclerView.NO_POSITION || end == androidx.recyclerview.widget.RecyclerView.NO_POSITION) {
             return
         }
 
         val newStart: Int = Math.min(start, end)
         val newEnd: Int = Math.max(start, end)
-        if (lastStart == RecyclerView.NO_POSITION || lastEnd == RecyclerView.NO_POSITION) {
+        if (lastStart == androidx.recyclerview.widget.RecyclerView.NO_POSITION || lastEnd == androidx.recyclerview.widget.RecyclerView.NO_POSITION) {
             if (newEnd - newStart == 1) {
                 selectListener?.invoke(newStart, newStart, true)
             } else {
@@ -180,10 +180,10 @@ class DragSelectTouchListener : RecyclerView.OnItemTouchListener {
 
     private fun reset() {
         setIsActive(false)
-        start = RecyclerView.NO_POSITION
-        end = RecyclerView.NO_POSITION
-        lastStart = RecyclerView.NO_POSITION
-        lastEnd = RecyclerView.NO_POSITION
+        start = androidx.recyclerview.widget.RecyclerView.NO_POSITION
+        end = androidx.recyclerview.widget.RecyclerView.NO_POSITION
+        lastStart = androidx.recyclerview.widget.RecyclerView.NO_POSITION
+        lastEnd = androidx.recyclerview.widget.RecyclerView.NO_POSITION
         autoScrollHandler.removeCallbacks(scrollRunnable)
         inTopSpot = false
         inBottomSpot = false

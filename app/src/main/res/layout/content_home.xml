@@ -5,14 +5,14 @@
         xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-    <android.support.design.widget.AppBarLayout
+    <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/app_bar"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
             android:background="?colorPrimaryBackground"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             app:elevation="0dp">
-        <android.support.v7.widget.Toolbar
+        <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
@@ -28,14 +28,14 @@
                        android:tint="@android:color/white"
                        android:adjustViewBounds="false"
                        tools:ignore="ContentDescription" android:scaleType="fitStart"/>
-        </android.support.v7.widget.Toolbar>
-    </android.support.design.widget.AppBarLayout>
-    <android.support.v4.view.ViewPager
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+    <androidx.viewpager.widget.ViewPager
             android:id="@+id/frame_pager"
             android:layout_weight="1"
             android:layout_width="match_parent"
             android:layout_height="0dp"/>
-    <android.support.design.widget.TabLayout
+    <com.google.android.material.tabs.TabLayout
             android:id="@+id/frame_tabs"
             app:tabGravity="fill"
             app:tabMode="fixed"

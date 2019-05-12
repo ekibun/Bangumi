@@ -4,7 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.preference.PreferenceManager
-import android.support.v7.app.AppCompatDelegate
+import androidx.appcompat.app.AppCompatDelegate
 
 class ThemeModel(context: Context){
     val sp: SharedPreferences by lazy{ PreferenceManager.getDefaultSharedPreferences(context) }

@@ -1,7 +1,7 @@
 package soko.ekibun.bangumi.ui.topic
 
-import android.support.v4.view.PagerAdapter
-import android.support.v7.app.AlertDialog
+import androidx.viewpager.widget.PagerAdapter
+import androidx.appcompat.app.AlertDialog
 import android.view.View
 import android.view.ViewGroup
 import soko.ekibun.bangumi.R
@@ -9,7 +9,7 @@ import soko.ekibun.bangumi.ui.view.DragPhotoView
 import soko.ekibun.bangumi.util.AppUtil
 import soko.ekibun.bangumi.util.GlideUtil
 
-class PhotoPagerAdapter(private val items: List<String>, private val onDismiss: ()->Unit): PagerAdapter(){
+class PhotoPagerAdapter(private val items: List<String>, private val onDismiss: ()->Unit): androidx.viewpager.widget.PagerAdapter(){
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
         val photoView = DragPhotoView(container.context)

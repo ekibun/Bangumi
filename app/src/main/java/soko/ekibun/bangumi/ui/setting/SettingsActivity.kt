@@ -12,7 +12,7 @@ import android.preference.PreferenceActivity
 import android.preference.PreferenceFragment
 import android.preference.PreferenceManager
 import android.view.MenuItem
-import android.support.v4.app.NavUtils
+import androidx.core.app.NavUtils
 import soko.ekibun.bangumi.R
 
 /**

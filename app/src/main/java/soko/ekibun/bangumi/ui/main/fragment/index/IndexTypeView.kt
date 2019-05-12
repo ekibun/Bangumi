@@ -1,6 +1,6 @@
 package soko.ekibun.bangumi.ui.main.fragment.index
 
-import android.support.v7.widget.PopupMenu
+import androidx.appcompat.widget.PopupMenu
 import android.widget.TextView
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectType

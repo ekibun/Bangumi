@@ -107,7 +107,7 @@
                     android:padding="8dp"
                     android:textAppearance="@android:style/TextAppearance.Material.Subhead"
                     android:text="@string/subject_tag"/>
-            <android.support.v7.widget.RecyclerView
+            <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/item_tag_list"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -115,7 +115,7 @@
                     android:paddingEnd="20dp"
                     tools:ignore="RtlSymmetry"
                     tools:orientation="horizontal"
-                    tools:layoutManager="android.support.v7.widget.LinearLayoutManager"
+                    tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     tools:listitem="@layout/item_tag"/>
             <ImageView
                     android:id="@+id/item_tag_add"

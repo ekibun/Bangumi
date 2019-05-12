@@ -3,7 +3,7 @@ package soko.ekibun.bangumi.ui.view;
 import android.animation.ObjectAnimator;
 import android.content.res.Resources;
 import android.graphics.*;
-import android.support.annotation.Keep;
+import androidx.annotation.Keep;
 import android.text.TextUtils;
 import com.simplecityapps.recyclerview_fastscroll.utils.Utils;
 

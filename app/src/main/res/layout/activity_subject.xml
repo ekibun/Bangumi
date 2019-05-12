@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
@@ -8,7 +8,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    <android.support.design.widget.AppBarLayout
+    <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/app_bar"
             android:layout_height="wrap_content"
             android:background="?android:colorBackground"
@@ -17,7 +17,7 @@
             android:fitsSystemWindows="true"
             app:elevation="0dp">
 
-        <android.support.design.widget.CollapsingToolbarLayout
+        <com.google.android.material.appbar.CollapsingToolbarLayout
                 android:id="@+id/toolbar_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -66,7 +66,7 @@
                     android:layout_height="wrap_content"
                     android:layout_width="match_parent"/>
 
-            <android.support.v7.widget.Toolbar
+            <androidx.appcompat.widget.Toolbar
                     android:id="@+id/toolbar"
                     android:transitionName="title"
                     android:layout_height="?attr/actionBarSize"
@@ -76,7 +76,7 @@
                     app:contentInsetStartWithNavigation="0dp"
                     app:layout_collapseMode="pin"/>
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/toolbar_container"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -116,7 +116,7 @@
                         android:layout_marginEnd="35dp"
                         android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
                         />
-            </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <include
                     layout="@layout/subject_buttons"
@@ -125,8 +125,8 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="bottom|end"
                     android:layout_marginEnd="12dp"/>
-        </android.support.design.widget.CollapsingToolbarLayout>
-    </android.support.design.widget.AppBarLayout>
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+    </com.google.android.material.appbar.AppBarLayout>
 
 
     <LinearLayout
@@ -158,7 +158,7 @@
                     android:maxLines="10"
                     android:ellipsize="end"/>
 
-            <android.support.v7.widget.RecyclerView
+            <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/tag_list"
                     android:paddingLeft="8dp"
                     android:paddingRight="8dp"
@@ -166,17 +166,17 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     tools:orientation="horizontal"
-                    tools:layoutManager="android.support.v7.widget.LinearLayoutManager"
+                    tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     tools:listitem="@layout/item_tag"/>
 
-            <android.support.v7.widget.RecyclerView
+            <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/site_list"
                     android:paddingLeft="8dp"
                     android:paddingRight="8dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     tools:orientation="horizontal"
-                    tools:layoutManager="android.support.v7.widget.LinearLayoutManager"
+                    tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     tools:listitem="@layout/item_site"/>
         </LinearLayout>
 
@@ -234,7 +234,7 @@
                     android:padding="12dp"
                     android:text="@string/subject_linked"/>
 
-            <android.support.v7.widget.RecyclerView
+            <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/linked_list"
                     android:layout_width="match_parent"
                     android:padding="6dp"
@@ -242,7 +242,7 @@
                     android:nestedScrollingEnabled="false"
                     android:layout_height="wrap_content"
                     tools:orientation="horizontal"
-                    tools:layoutManager="android.support.v7.widget.LinearLayoutManager"
+                    tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     tools:listitem="@layout/item_subject_small"/>
         </LinearLayout>
 
@@ -261,7 +261,7 @@
                     android:padding="12dp"
                     android:text="@string/subject_commend"/>
 
-            <android.support.v7.widget.RecyclerView
+            <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/commend_list"
                     android:layout_width="match_parent"
                     android:padding="6dp"
@@ -269,7 +269,7 @@
                     android:nestedScrollingEnabled="false"
                     android:layout_height="wrap_content"
                     tools:orientation="horizontal"
-                    tools:layoutManager="android.support.v7.widget.LinearLayoutManager"
+                    tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     tools:listitem="@layout/item_subject_small"/>
         </LinearLayout>
 
@@ -301,7 +301,7 @@
         </LinearLayout>
     </LinearLayout>
 
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/comment_list"
             tools:visibility="gone"
             android:layout_width="match_parent"
@@ -326,7 +326,7 @@
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
             android:visibility="invisible"/>
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/episode_detail_list_header"
             android:layout_width="match_parent"
             android:layout_height="44dp"
@@ -335,7 +335,7 @@
             android:focusable="true"
             android:visibility="invisible">
 
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/item_eps_button_box"
                 android:layout_width="wrap_content"
                 android:layout_height="0dp"
@@ -375,7 +375,7 @@
                     android:background="?android:attr/selectableItemBackgroundBorderless"
                     android:focusable="true"
                     android:contentDescription="@string/episodes"/>
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <TextView
                 android:layout_width="0dp"
@@ -388,6 +388,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 android:visibility="invisible"
                 android:background="?android:colorBackground"/>
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-</android.support.design.widget.CoordinatorLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

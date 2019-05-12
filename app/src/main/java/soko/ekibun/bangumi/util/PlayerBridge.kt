@@ -9,26 +9,32 @@ import com.google.gson.reflect.TypeToken
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
+import soko.ekibun.videoplayer.bean.VideoSubject
+import soko.ekibun.videoplayer.service.DialogActivity
 import java.lang.Exception
 
 object PlayerBridge {
     private const val EXTRA_SUBJECT = "extraSubject"
     private const val EXTRA_COOKIE = "extraCookie"
 
-    fun checkActivity(context: Context): Boolean {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("bangumi://player/0"))
+    fun checkActivity(context: Context, ua: String? = null): Boolean {
+        val intent =  parseIntent(Subject(), ua)
         return context.packageManager.queryIntentActivities(intent, 0).size != 0
     }
 
-    fun startActivity(context: Context, subject: Subject) {
-        context.startActivity(parseIntent(subject))
+    fun startActivity(context: Context, subject: Subject, ua: String? = null) {
+        context.startActivity(parseIntent(subject, ua))
     }
 
-    private fun parseIntent(subject: Subject): Intent {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("bangumi://player/${subject.id}"))
+    private fun parseIntent(subject: Subject, ua: String? = null): Intent {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(if(ua != null) "ekibun://player/bangumi/${subject.id}" else "bangumi://player/${subject.id}"))
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK
-        intent.putExtra(EXTRA_SUBJECT, JsonUtil.toJson(subject))
-        intent.putExtra(EXTRA_COOKIE, CookieManager.getInstance().getCookie(Bangumi.SERVER))
+        if(ua != null){
+            intent.putExtra(DialogActivity.EXTRA_SUBJECT, VideoSubject(subject, ua))
+        }else {
+            intent.putExtra(EXTRA_SUBJECT, JsonUtil.toJson(subject))
+            intent.putExtra(EXTRA_COOKIE, CookieManager.getInstance().getCookie(Bangumi.SERVER))
+        }
         return intent
     }
 

@@ -1,7 +1,7 @@
 package soko.ekibun.bangumi.ui.subject
 
 import android.content.res.ColorStateList
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
 import com.chad.library.adapter.base.BaseSectionQuickAdapter
@@ -84,7 +84,7 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
 
     var updateSelection: ()->Unit = {}
 
-    fun setUpWithRecyclerView(recyclerView: RecyclerView): DragSelectTouchListener{
+    fun setUpWithRecyclerView(recyclerView: androidx.recyclerview.widget.RecyclerView): DragSelectTouchListener{
         bindToRecyclerView(recyclerView)
 
         recyclerView.addItemDecoration(PinnedHeaderItemDecoration.Builder(SECTION_HEADER_VIEW).create())
@@ -118,7 +118,7 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
         updateSelection()
     }
 
-    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+    override fun onAttachedToRecyclerView(recyclerView: androidx.recyclerview.widget.RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
         FullSpanUtil.onAttachedToRecyclerView(recyclerView, this, SECTION_HEADER_VIEW)
     }

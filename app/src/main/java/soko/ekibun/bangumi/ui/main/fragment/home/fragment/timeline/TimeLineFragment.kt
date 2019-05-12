@@ -1,8 +1,8 @@
 package soko.ekibun.bangumi.ui.main.fragment.home.fragment.timeline
 
 import android.os.Bundle
-import android.support.design.widget.Snackbar
-import android.support.v7.widget.PopupMenu
+import com.google.android.material.snackbar.Snackbar
+import androidx.appcompat.widget.PopupMenu
 import android.view.View
 import kotlinx.android.synthetic.main.fragment_timeline.*
 import okhttp3.FormBody

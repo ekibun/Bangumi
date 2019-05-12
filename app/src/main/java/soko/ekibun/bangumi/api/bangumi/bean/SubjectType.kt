@@ -1,8 +1,8 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
 import android.annotation.SuppressLint
-import android.support.annotation.IntDef
-import android.support.annotation.StringDef
+import androidx.annotation.IntDef
+import androidx.annotation.StringDef
 import soko.ekibun.bangumi.R
 
 object SubjectType{

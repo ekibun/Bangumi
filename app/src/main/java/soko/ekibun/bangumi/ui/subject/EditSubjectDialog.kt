@@ -1,15 +1,15 @@
 package soko.ekibun.bangumi.ui.subject
 
+import android.app.Dialog
 import android.content.Context
 import android.graphics.Rect
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
-import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
+import androidx.appcompat.app.AlertDialog
+import androidx.recyclerview.widget.LinearLayoutManager
 import android.util.DisplayMetrics
 import android.view.*
 import android.widget.EditText
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.dialog_edit_subject.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
@@ -18,24 +18,24 @@ import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.bangumi.bean.CollectionStatusType
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 
-class EditSubjectDialog: DialogFragment() {
+class EditSubjectDialog(context: Context): Dialog(context, R.style.AppTheme_Dialog) {
     companion object {
-        fun showDialog(context:AppCompatActivity, subject: Subject, status: Collection, formhash: String, ua: String, callback: (Boolean)->Unit){
-            val dialog = EditSubjectDialog()
+        fun showDialog(context: Context, subject: Subject, status: Collection, formhash: String, ua: String, callback: ()->Unit){
+            val dialog = EditSubjectDialog(context)
             dialog.subject = subject
             dialog.status = status
             dialog.formhash = formhash
-            dialog.callback = callback
             dialog.ua = ua
-            dialog.show(context.supportFragmentManager, "edit")
+            dialog.setOnDismissListener { callback() }
+            dialog.show()
         }
     }
 
     private fun getKeyBoardHeight(): Int{
         val rect = Rect()
-        activity?.window?.decorView?.getWindowVisibleDisplayFrame(rect)
+        window?.decorView?.getWindowVisibleDisplayFrame(rect)
         val metrics = DisplayMetrics()
-        (activity?.getSystemService(Context.WINDOW_SERVICE) as? WindowManager)?.defaultDisplay?.getMetrics(metrics)
+        (context.getSystemService(Context.WINDOW_SERVICE) as? WindowManager)?.defaultDisplay?.getMetrics(metrics)
         return metrics.heightPixels - rect.bottom
     }
 
@@ -43,11 +43,12 @@ class EditSubjectDialog: DialogFragment() {
     lateinit var status: Collection
     lateinit var formhash: String
     lateinit var ua: String
-    lateinit var callback: (Boolean)->Unit
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.dialog_edit_subject, container)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val view = LayoutInflater.from(context).inflate(R.layout.dialog_edit_subject, null)
+        setContentView(view)
 
-        val collectionStatusNames = inflater.context.resources.getStringArray(CollectionStatusType.getTypeNamesResId(subject.type))
+        val collectionStatusNames = context.resources.getStringArray(CollectionStatusType.getTypeNamesResId(subject.type))
         view.radio_wish.text = collectionStatusNames[0]
         view.radio_collect.text = collectionStatusNames[1]
         view.radio_do.text = collectionStatusNames[2]
@@ -62,7 +63,7 @@ class EditSubjectDialog: DialogFragment() {
                 CollectionStatusType.DROPPED to R.id.radio_dropped)
         val adapter = EditTagAdapter()
         val layoutManager = LinearLayoutManager(context)
-        layoutManager.orientation = LinearLayoutManager.HORIZONTAL
+        layoutManager.orientation = RecyclerView.HORIZONTAL
         view.item_tag_list.layoutManager = layoutManager
         view.item_tag_list.adapter = adapter
         if(status.status != null){
@@ -84,14 +85,19 @@ class EditSubjectDialog: DialogFragment() {
         }
 
         view.item_remove.setOnClickListener {
-            dialog.dismiss()
-            callback(true)
+            AlertDialog.Builder(context).setTitle(R.string.collection_dialog_remove)
+                    .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
+                        ApiHelper.buildHttpCall("${Bangumi.SERVER}/subject/${subject.id}/remove?gh=$formhash", mapOf("User-Agent" to ua)){ it.code() == 200 }
+                                .enqueue(ApiHelper.buildCallback(context, {
+                                    if(it) subject.interest = Collection()
+                                    dismiss()
+                                }, {}))
+                    }.show()
         }
         view.item_outside.setOnClickListener {
-            dialog.dismiss()
+            dismiss()
         }
         view.item_submit.setOnClickListener {
-            dialog.dismiss()
             val newStatus = selectMap.toList().first { it.second == view.item_subject_status.checkedRadioButtonId }.first
             val newRating = view.item_rating.rating.toInt()
             val newComment = view.item_comment.text.toString()
@@ -100,29 +106,23 @@ class EditSubjectDialog: DialogFragment() {
             Bangumi.updateCollectionStatus(subject, formhash,ua,
                     newStatus, newTags, newComment, newRating, newPrivacy).enqueue(ApiHelper.buildCallback(context,{
                 subject.interest = it
-                callback(false)
+                dismiss()
             },{}))
         }
 
-        activity?.window?.decorView?.viewTreeObserver?.addOnGlobalLayoutListener{
+        window?.decorView?.viewTreeObserver?.addOnGlobalLayoutListener{
             view.item_keyboard.layoutParams?.let{
                 it.height = getKeyBoardHeight()
                 view.item_keyboard.layoutParams = it
             }
         }
 
-        dialog.window?.attributes?.let{
+        window?.attributes?.let{
             it.dimAmount = 0.6f
-            dialog.window?.attributes = it
+            window?.attributes = it
         }
-        dialog.window?.setWindowAnimations(R.style.AnimDialog)
-        dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-        dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-        return view
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setStyle(DialogFragment.STYLE_NORMAL, R.style.AppTheme_Dialog)
+        window?.setWindowAnimations(R.style.AnimDialog)
+        window?.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+        window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
     }
 }

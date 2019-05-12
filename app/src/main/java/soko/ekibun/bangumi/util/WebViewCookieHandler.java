@@ -1,13 +1,12 @@
 package soko.ekibun.bangumi.util;
 
 import android.content.Context;
-import android.support.annotation.Keep;
+import androidx.annotation.Keep;
 import android.webkit.CookieManager;
 import android.webkit.WebView;
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
 import okhttp3.HttpUrl;
-import soko.ekibun.bangumi.ui.web.WebActivity;
 
 import java.util.ArrayList;
 import java.util.Collections;

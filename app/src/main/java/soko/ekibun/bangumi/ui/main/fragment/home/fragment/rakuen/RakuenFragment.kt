@@ -1,7 +1,7 @@
 package soko.ekibun.bangumi.ui.main.fragment.home.fragment.rakuen
 
 import android.os.Bundle
-import android.support.v7.widget.PopupMenu
+import androidx.appcompat.widget.PopupMenu
 import android.view.LayoutInflater
 import android.view.View
 import kotlinx.android.synthetic.main.fragment_rakuen.*

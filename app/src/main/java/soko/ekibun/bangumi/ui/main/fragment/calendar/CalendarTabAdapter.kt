@@ -1,8 +1,8 @@
 package soko.ekibun.bangumi.ui.main.fragment.calendar
 
 import android.annotation.SuppressLint
-import android.support.v4.view.ViewPager
-import android.support.v7.widget.RecyclerView
+import androidx.viewpager.widget.ViewPager
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,7 +10,7 @@ import soko.ekibun.bangumi.R
 import com.nshmura.recyclertablayout.RecyclerTabLayout
 import kotlinx.android.synthetic.main.item_calendar_tab.view.*
 
-class CalendarTabAdapter(val viewpager: ViewPager) : RecyclerTabLayout.Adapter<CalendarTabAdapter.ViewHolder>(viewpager) {
+class CalendarTabAdapter(val viewpager: androidx.viewpager.widget.ViewPager) : RecyclerTabLayout.Adapter<CalendarTabAdapter.ViewHolder>(viewpager) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_calendar_tab, parent, false)
         return ViewHolder(view)
@@ -33,11 +33,11 @@ class CalendarTabAdapter(val viewpager: ViewPager) : RecyclerTabLayout.Adapter<C
         holder.itemView.item_week.isEnabled = position != 7
     }
 
-    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class ViewHolder(itemView: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(itemView) {
         init {
             itemView.setOnClickListener {
                 val pos = adapterPosition
-                if (pos != RecyclerView.NO_POSITION) {
+                if (pos != androidx.recyclerview.widget.RecyclerView.NO_POSITION) {
                     viewpager.setCurrentItem(pos, true)
                 }
             }

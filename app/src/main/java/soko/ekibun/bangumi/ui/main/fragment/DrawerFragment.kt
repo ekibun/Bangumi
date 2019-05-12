@@ -1,16 +1,16 @@
 package soko.ekibun.bangumi.ui.main.fragment
 
 import android.os.Bundle
-import android.support.annotation.LayoutRes
-import android.support.v4.app.Fragment
+import androidx.annotation.LayoutRes
+import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.activity_main.*
-import android.support.v7.app.ActionBarDrawerToggle
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.Toolbar
+import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import android.view.*
 import soko.ekibun.bangumi.R
 
-abstract class DrawerFragment(@LayoutRes private val resId: Int): Fragment(){
+abstract class DrawerFragment(@LayoutRes private val resId: Int): androidx.fragment.app.Fragment(){
     abstract val titleRes: Int
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {

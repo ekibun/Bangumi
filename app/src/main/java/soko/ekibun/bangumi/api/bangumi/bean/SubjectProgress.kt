@@ -1,7 +1,7 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
-import android.support.annotation.IntDef
-import android.support.annotation.StringDef
+import androidx.annotation.IntDef
+import androidx.annotation.StringDef
 
 class SubjectProgress {
 
@@ -55,6 +55,15 @@ class SubjectProgress {
                         WATCH -> EpisodeStatus(WATCH_ID, status, "看过")
                         QUEUE -> EpisodeStatus(QUEUE_ID, status, "想看")
                         DROP -> EpisodeStatus(DROP_ID, status, "抛弃")
+                        else -> return null
+                    }
+                }
+
+                fun getByName(name: String): EpisodeStatus?{
+                    return when(name){
+                        "看过" -> EpisodeStatus(WATCH_ID, WATCH, name)
+                        "想看" -> EpisodeStatus(QUEUE_ID, QUEUE, name)
+                        "抛弃" -> EpisodeStatus(DROP_ID, DROP, name)
                         else -> return null
                     }
                 }

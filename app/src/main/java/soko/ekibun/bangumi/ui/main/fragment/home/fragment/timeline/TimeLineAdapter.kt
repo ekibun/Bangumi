@@ -1,6 +1,6 @@
 package soko.ekibun.bangumi.ui.main.fragment.home.fragment.timeline
 
-import android.support.v7.app.AlertDialog
+import androidx.appcompat.app.AlertDialog
 import android.text.Html
 import android.text.method.LinkMovementMethod
 import android.view.View

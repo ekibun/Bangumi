@@ -1,15 +1,13 @@
 package soko.ekibun.bangumi.ui.subject
 
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.Context
 import android.graphics.Rect
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
-import android.support.v7.app.AppCompatActivity
 import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.view.WindowManager
 import kotlinx.android.synthetic.main.dialog_edit_progress.view.*
 import okhttp3.FormBody
@@ -18,23 +16,24 @@ import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 
-class EditProgressDialog: DialogFragment() {
+class EditProgressDialog(context: Context): Dialog(context, R.style.AppTheme_Dialog) {
     companion object {
-        fun showDialog(context: AppCompatActivity, subject: Subject, formhash: String, ua: String, callback: ()->Unit){
-            val dialog = EditProgressDialog()
+        fun showDialog(context: Context, subject: Subject, formhash: String, ua: String, callback: ()->Unit){
+            val dialog = EditProgressDialog(context)
             dialog.subject = subject
             dialog.formhash = formhash
             dialog.callback = callback
             dialog.ua = ua
-            dialog.show(context.supportFragmentManager, "edit_progress")
+            dialog.show()
         }
     }
 
     private fun getKeyBoardHeight(): Int{
         val rect = Rect()
-        activity?.window?.decorView?.getWindowVisibleDisplayFrame(rect)
+
+        window?.decorView?.getWindowVisibleDisplayFrame(rect)
         val metrics = DisplayMetrics()
-        (activity?.getSystemService(Context.WINDOW_SERVICE) as? WindowManager)?.defaultDisplay?.getMetrics(metrics)
+        (context.getSystemService(Context.WINDOW_SERVICE) as? WindowManager)?.defaultDisplay?.getMetrics(metrics)
         return metrics.heightPixels - rect.bottom
     }
 
@@ -43,10 +42,11 @@ class EditProgressDialog: DialogFragment() {
     lateinit var ua: String
     lateinit var callback: ()->Unit
     @SuppressLint("SetTextI18n")
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.dialog_edit_progress, container)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val view = LayoutInflater.from(context).inflate(R.layout.dialog_edit_progress, null)
+        setContentView(view)
 
-        //TODO
         view.item_eps.setText(subject.ep_status.toString())
         view.item_eps_info.text = "${ if(subject.eps_count == 0) "" else "/${subject.eps_count}" } ${view.context.getString(R.string.ep_unit)}"
         view.item_vol.setText(subject.vol_status.toString())
@@ -54,10 +54,10 @@ class EditProgressDialog: DialogFragment() {
         view.item_vol_panel.visibility = if(subject.has_vol) View.VISIBLE else View.GONE
 
         view.item_outside.setOnClickListener {
-            dialog.dismiss()
+            dismiss()
         }
         view.item_submit.setOnClickListener {
-            dialog.dismiss()
+            dismiss()
             val body = FormBody.Builder()
                     .add("referer", "subject")
                     .add("submit", "更新")
@@ -74,25 +74,19 @@ class EditProgressDialog: DialogFragment() {
             },{}))
         }
 
-        activity?.window?.decorView?.viewTreeObserver?.addOnGlobalLayoutListener{
+        window?.decorView?.viewTreeObserver?.addOnGlobalLayoutListener{
             view.item_keyboard.layoutParams?.let{
                 it.height = getKeyBoardHeight()
                 view.item_keyboard.layoutParams = it
             }
         }
 
-        dialog.window?.attributes?.let{
+        window?.attributes?.let{
             it.dimAmount = 0.6f
-            dialog.window?.attributes = it
+            window?.attributes = it
         }
-        dialog.window?.setWindowAnimations(R.style.AnimDialog)
-        dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-        dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-        return view
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setStyle(DialogFragment.STYLE_NORMAL, R.style.AppTheme_Dialog)
+        window?.setWindowAnimations(R.style.AnimDialog)
+        window?.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+        window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
     }
 }

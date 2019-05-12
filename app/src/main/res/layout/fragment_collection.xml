@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<androidx.constraintlayout.widget.ConstraintLayout
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
@@ -20,7 +20,7 @@
                   android:layout_marginRight="8dp"
                   android:backgroundTint="@color/colorTransGrey"
                   android:background="@drawable/bg_round_rect"/>
-        <android.support.design.widget.TabLayout
+        <com.google.android.material.tabs.TabLayout
                 android:id="@+id/item_tabs"
                 app:tabGravity="fill"
                 app:tabMode="fixed"
@@ -30,7 +30,7 @@
                 app:tabSelectedTextColor="?colorAccent"
                 android:layout_height="48dp"/>
     </LinearLayout>
-    <android.support.v4.view.ViewPager
+    <androidx.viewpager.widget.ViewPager
             android:id="@+id/item_pager"
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -39,4 +39,4 @@
     <include android:id="@+id/item_login_info"
              android:visibility="invisible"
              layout="@layout/view_login"/>
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

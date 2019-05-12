@@ -2,9 +2,9 @@
 <manifest
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
+        package="soko.ekibun.bangumi"
         android:sharedUserId="soko.ekibun.bangumi.share"
-        android:sharedUserLabel="@string/app_name"
-        package="soko.ekibun.bangumi">
+        android:sharedUserLabel="@string/app_name">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -20,8 +20,30 @@
             android:supportsRtl="true"
             android:theme="@style/AppTheme"
             tools:ignore="AllowBackup,GoogleAppIndexingWarning,UnusedAttribute">
+        <activity android:name="soko.ekibun.videoplayer.service.DialogActivity"
+                android:theme="@style/AppTheme.Transparent">
+            <intent-filter>
+                <action android:name="soko.ekibun.videoplayer.updateCollection.bangumi"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="soko.ekibun.videoplayer.updateProgress.bangumi"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+
+        <service
+                android:name="soko.ekibun.videoplayer.service.VideoSubjectProvider"
+                android:enabled="true"
+                android:exported="true">
+            <intent-filter>
+                <action android:name="soko.ekibun.videoplayer.subjectprovider.bangumi"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </service>
+
         <provider
-                android:name="android.support.v4.content.FileProvider"
+                android:name="androidx.core.content.FileProvider"
                 android:authorities="soko.ekibun.bangumi.fileprovider"
                 android:exported="false"
                 android:grantUriPermissions="true">
@@ -43,8 +65,9 @@
                 android:name=".ui.main.MainActivity"
                 android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation">
         </activity>
-        <activity android:name=".ui.web.WebActivity"
-                  android:theme="@style/AppTheme.ActionBar">
+        <activity
+                android:name=".ui.web.WebActivity"
+                android:theme="@style/AppTheme.ActionBar">
         </activity>
         <activity android:name=".ui.search.SearchActivity">
         </activity>
@@ -86,8 +109,9 @@
         </activity>
         <activity android:name=".ui.topic.TopicActivity">
         </activity>
-        <activity android:name=".ui.crash.CrashActivity"
-                  android:theme="@style/AppTheme.ActionBar">
+        <activity
+                android:name=".ui.crash.CrashActivity"
+                android:theme="@style/AppTheme.ActionBar">
         </activity>
         <activity
                 android:name=".ui.setting.SettingsActivity"
@@ -96,7 +120,7 @@
                 android:theme="@style/AppTheme.ActionBar">
             <meta-data
                     android:name="android.support.PARENT_ACTIVITY"
-                    android:value=".ui.main.MainActivity" />
+                    android:value=".ui.main.MainActivity"/>
         </activity>
     </application>
 

@@ -1,6 +1,6 @@
 package soko.ekibun.bangumi.ui.view
 
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.view.GestureDetector
 import android.view.MotionEvent
 

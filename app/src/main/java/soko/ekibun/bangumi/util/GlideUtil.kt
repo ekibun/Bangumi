@@ -2,8 +2,8 @@ package soko.ekibun.bangumi.util
 
 import android.app.Activity
 import android.content.Context
-import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentActivity
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import android.view.View
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
@@ -64,7 +64,7 @@ object GlideUtil {
      * @param activity The activity to use.
      * @return A RequestManager for the given FragmentActivity that can be used to start a load.
      */
-    fun with(activity: FragmentActivity): RequestManager? {
+    fun with(activity: androidx.fragment.app.FragmentActivity): RequestManager? {
         return try{
             Glide.with(activity)
         }catch(e: IllegalArgumentException){
@@ -80,7 +80,7 @@ object GlideUtil {
      * @param fragment The fragment to use.
      * @return A RequestManager for the given Fragment that can be used to start a load.
      */
-    fun with(fragment: Fragment): RequestManager? {
+    fun with(fragment: androidx.fragment.app.Fragment): RequestManager? {
         return try{
             Glide.with(fragment)
         }catch(e: IllegalArgumentException){

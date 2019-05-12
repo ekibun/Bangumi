@@ -3,7 +3,7 @@ package soko.ekibun.bangumi.ui.main
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.support.v4.view.GravityCompat
+import androidx.core.view.GravityCompat
 import android.util.Log
 import android.view.View
 import android.webkit.CookieManager

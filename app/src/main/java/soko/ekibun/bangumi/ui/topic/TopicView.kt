@@ -1,10 +1,10 @@
 package soko.ekibun.bangumi.ui.topic
 
 import android.graphics.Rect
-import android.support.constraint.ConstraintLayout
-import android.support.design.widget.AppBarLayout
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.constraintlayout.widget.ConstraintLayout
+import com.google.android.material.appbar.AppBarLayout
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import com.bumptech.glide.request.RequestOptions
@@ -25,9 +25,9 @@ class TopicView(private val context: TopicActivity){
     private var appBarOffset = 0
     init{
         context.item_list.adapter = adapter
-        context.item_list.layoutManager = object: LinearLayoutManager(context){
-            override fun requestChildRectangleOnScreen(parent: RecyclerView, child: View, rect: Rect, immediate: Boolean): Boolean { return false }
-            override fun requestChildRectangleOnScreen(parent: RecyclerView, child: View, rect: Rect, immediate: Boolean, focusedChildVisible: Boolean): Boolean { return false }
+        context.item_list.layoutManager = object: androidx.recyclerview.widget.LinearLayoutManager(context){
+            override fun requestChildRectangleOnScreen(parent: androidx.recyclerview.widget.RecyclerView, child: View, rect: Rect, immediate: Boolean): Boolean { return false }
+            override fun requestChildRectangleOnScreen(parent: androidx.recyclerview.widget.RecyclerView, child: View, rect: Rect, immediate: Boolean, focusedChildVisible: Boolean): Boolean { return false }
         }
         adapter.emptyView = LayoutInflater.from(context).inflate(R.layout.view_empty, context.item_list, false)
         adapter.isUseEmpty(false)
@@ -53,8 +53,8 @@ class TopicView(private val context: TopicActivity){
             -appBarOffset
         }
 
-        context.item_list.addOnScrollListener(object: RecyclerView.OnScrollListener() {
-            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+        context.item_list.addOnScrollListener(object: androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: androidx.recyclerview.widget.RecyclerView, newState: Int) {
                 canScroll = context.item_list.canScrollVertically(-1) || appBarOffset != 0
                 context.item_swipe.setOnChildScrollUpCallback { _, _ -> canScroll }
             }
@@ -68,7 +68,7 @@ class TopicView(private val context: TopicActivity){
         val scroll2Top = {
             if(context.item_list.canScrollVertically(-1) || appBarOffset != 0){
                 context.app_bar.setExpanded(true, true)
-                (context.item_list.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(0, 0)
+                (context.item_list.layoutManager as androidx.recyclerview.widget.LinearLayoutManager).scrollToPositionWithOffset(0, 0)
                 true
             } else false
         }
@@ -109,7 +109,7 @@ class TopicView(private val context: TopicActivity){
         adapter.isUseEmpty(true)
         topic.replies.forEach { it.isExpanded = true }
         setNewData(topic.replies)
-        (context.item_list?.layoutManager as? LinearLayoutManager)?.let{ layoutManager ->
+        (context.item_list?.layoutManager as? androidx.recyclerview.widget.LinearLayoutManager)?.let{ layoutManager ->
             layoutManager.scrollToPositionWithOffset(adapter.data.indexOfFirst { it.pst_id == scrollPost }, 0) }
         adapter.setOnLoadMoreListener({adapter.loadMoreEnd()}, context.item_list)
         adapter.setEnableLoadMore(true)

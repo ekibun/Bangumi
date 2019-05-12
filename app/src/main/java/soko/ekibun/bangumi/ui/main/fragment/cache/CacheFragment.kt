@@ -1,7 +1,7 @@
 package soko.ekibun.bangumi.ui.main.fragment.cache
 
 import android.os.Bundle
-import android.support.v7.widget.LinearLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
@@ -17,7 +17,7 @@ class CacheFragment: DrawerFragment(R.layout.content_cache) {
         super.onViewCreated(view, savedInstanceState)
 
         val adapter = CacheAdapter(PlayerBridge.getVideoCacheList(view.context))
-        item_list?.layoutManager = LinearLayoutManager(view.context)
+        item_list?.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(view.context)
         item_list?.adapter = adapter
         item_list?.let{ adapter.emptyView = LayoutInflater.from(view.context).inflate(R.layout.view_empty, it, false) }
         adapter.setOnItemClickListener { _, _, position ->
