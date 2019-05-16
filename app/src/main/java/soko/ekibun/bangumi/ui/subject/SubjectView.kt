@@ -211,13 +211,13 @@ class SubjectView(private val context: SubjectActivity){
         context.item_air_week.text = if(artist != null) "${artist.first}：${Jsoup.parse(artist.second).body().text()}" else "更新时间：${CalendarAdapter.weekList[subject.air_weekday]}"
         detail.item_detail.text = if(subject.summary.isNullOrEmpty()) subject.name else subject.summary
 
-        context.item_play.visibility = if((PlayerBridge.checkActivity(context) || PlayerBridge.checkActivity(context,  context.ua)) && subject.type in listOf(SubjectType.ANIME, SubjectType.REAL)) View.VISIBLE else View.GONE
+        context.item_play.visibility = if((PlayerBridge.checkActivity(context) || PlayerBridge.checkActivity(context)) && subject.type in listOf(SubjectType.ANIME, SubjectType.REAL)) View.VISIBLE else View.GONE
 
         detail.item_rank_count.text = if(subject.rank == 0) "" else "#${subject.rank}"
 
         subject.rating?.let {
-            detail.item_friend_score.text = if(it.friend_score == 0.0) "-" else it.friend_score.toString()
-            detail.item_score.text = if(it.score == 0.0) "-" else it.score.toString()
+            detail.item_friend_score.text = if(it.friend_score == 0.0) "-" else String.format("%.1f", it.friend_score)
+            detail.item_score.text = if(it.score == 0.0) "-" else String.format("%.1f", it.score)
             detail.item_rating.rating = it.score.toFloat() / 2
             detail.item_score_count.text = context.getString(R.string.rate_count, it.total)
             val count = it.count?:return@let

@@ -106,6 +106,17 @@
                         android:host="subject"
                         android:scheme="bangumi"/>
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+
+                <data
+                        android:pathPrefix="/bangumi"
+                        android:host="playersubject"
+                        android:scheme="ekibun"/>
+            </intent-filter>
         </activity>
         <activity android:name=".ui.topic.TopicActivity">
         </activity>

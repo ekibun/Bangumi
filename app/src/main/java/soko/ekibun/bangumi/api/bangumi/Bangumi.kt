@@ -600,12 +600,12 @@ interface Bangumi {
                         val it = li.selectFirst("a")?:return@mapNotNull null
                         val epInfo = doc.selectFirst(it.attr("rel"))?.selectFirst(".tip")?.textNodes()?.map { it.text() }
                         val ep_name_cn = epInfo?.firstOrNull { it.startsWith("中文标题") }?.substringAfter(":")
-                        val air_date = try{ dateFormat.parse(epInfo?.firstOrNull { it.startsWith("首播") }?.substringAfter(":")) }catch (e: Exception){ null }
+                        val air_date = epInfo?.firstOrNull { it.startsWith("首播") }?.substringAfter(":")
                         val duration = epInfo?.firstOrNull { it.startsWith("时长") }?.substringAfter(":")
-                        val status  = if(it.hasClass("epBtnToday")) "Today" else if(it.hasClass("epBtnAir") || air_date?.time?:0L < now) "Air" else "NA"
+                        val status  = if(it.hasClass("epBtnToday")) "Today" else if(it.hasClass("epBtnAir") || (try{ dateFormat.parse(air_date) }catch (e: Exception){ null })?.time?:0L < now) "Air" else "NA"
                         val epId = it.id().substringAfter("_").toIntOrNull()?:return@mapNotNull null
                         val cmt = doc.selectFirst(it.attr("rel"))?.selectFirst(".cmt .na")?.text()?.trim('(', ')', '+')?.toIntOrNull()?:0
-                        Episode(epId, HttpUtil.getUrl(it.attr("href")?:"", URI.create(Bangumi.SERVER)), when(cat){
+                        Episode(epId, HttpUtil.getUrl(it.attr("href")?:"", URI.create(SERVER)), when(cat){
                             "MAIN" -> Episode.TYPE_MAIN
                             "SP" -> Episode.TYPE_SP
                             "OP" -> Episode.TYPE_OP
@@ -614,7 +614,7 @@ interface Bangumi {
                             "MAD" -> Episode.TYPE_MAD
                             else -> Episode.TYPE_OTHER
                         },
-                                it.text().toFloat(), it.attr("title")?.substringAfter(" "), ep_name_cn, duration, air_date?.let { dateFormat.format(it) }, cmt, status =  status, progress =  when{
+                                it.text().toFloat(), it.attr("title")?.substringAfter(" "), ep_name_cn, duration, air_date, cmt, status =  status, progress =  when{
                                     it.hasClass("epBtnWatched") -> SubjectProgress.EpisodeProgress(epId, SubjectProgress.EpisodeProgress.EpisodeStatus(SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH_ID, url_name = SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH, cn_name = "看过"))
                                     it.hasClass("epBtnQueue") -> SubjectProgress.EpisodeProgress(epId, SubjectProgress.EpisodeProgress.EpisodeStatus(SubjectProgress.EpisodeProgress.EpisodeStatus.QUEUE_ID, url_name = SubjectProgress.EpisodeProgress.EpisodeStatus.QUEUE, cn_name = "想看"))
                                     it.hasClass("epBtnDrop") -> SubjectProgress.EpisodeProgress(epId, SubjectProgress.EpisodeProgress.EpisodeStatus(SubjectProgress.EpisodeProgress.EpisodeStatus.DROP_ID, url_name = SubjectProgress.EpisodeProgress.EpisodeStatus.DROP, cn_name = "抛弃"))

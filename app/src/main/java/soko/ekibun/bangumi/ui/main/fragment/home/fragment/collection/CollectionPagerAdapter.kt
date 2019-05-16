@@ -1,7 +1,6 @@
 package soko.ekibun.bangumi.ui.main.fragment.home.fragment.collection
 
 import android.content.Context
-import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -21,32 +20,32 @@ import soko.ekibun.bangumi.api.bangumi.bean.SubjectProgress
 import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 
-class CollectionPagerAdapter(private val context: Context, val fragment: CollectionFragment, private val pager: androidx.viewpager.widget.ViewPager, private val scrollTrigger: (Boolean)->Unit) : androidx.viewpager.widget.PagerAdapter(){
+class CollectionPagerAdapter(private val context: Context, val fragment: CollectionFragment, private val pager: ViewPager, private val scrollTrigger: (Boolean)->Unit) : androidx.viewpager.widget.PagerAdapter(){
     private var tabList = context.resources.getStringArray(R.array.collection_status_anime)
     private val subjectTypeView = SubjectTypeView(fragment.item_type) { reset() }
 
     init{
-        pager.addOnPageChangeListener(object: androidx.viewpager.widget.ViewPager.OnPageChangeListener{
+        pager.addOnPageChangeListener(object: ViewPager.OnPageChangeListener{
             override fun onPageScrollStateChanged(state: Int) {}
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
             override fun onPageSelected(position: Int) {
-                if((items[position]?.second?.tag as? androidx.recyclerview.widget.RecyclerView)?.tag == null) {
+                if((items[position]?.second?.tag as? RecyclerView)?.tag == null) {
                     pageIndex[position] = 0
                     loadCollectionList(position)
                 }
-                scrollTrigger((items[position]?.second?.tag as? androidx.recyclerview.widget.RecyclerView)?.canScrollVertically(-1) == true)
+                scrollTrigger((items[position]?.second?.tag as? RecyclerView)?.canScrollVertically(-1) == true)
             } })
     }
 
-    private val items = HashMap<Int, Pair<CollectionListAdapter, androidx.swiperefreshlayout.widget.SwipeRefreshLayout>>()
+    private val items = HashMap<Int, Pair<CollectionListAdapter, SwipeRefreshLayout>>()
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
         val item = items.getOrPut(position){
-            val swipeRefreshLayout = androidx.swiperefreshlayout.widget.SwipeRefreshLayout(container.context)
-            val recyclerView = androidx.recyclerview.widget.RecyclerView(container.context)
+            val swipeRefreshLayout = SwipeRefreshLayout(container.context)
+            val recyclerView = RecyclerView(container.context)
             recyclerView.overScrollMode = View.OVER_SCROLL_NEVER
-            recyclerView.addOnScrollListener(object: androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
-                override fun onScrolled(recyclerView: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {
-                    scrollTrigger((items[pager.currentItem]?.second?.tag as? androidx.recyclerview.widget.RecyclerView)?.canScrollVertically(-1) == true)
+            recyclerView.addOnScrollListener(object: RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    scrollTrigger((items[pager.currentItem]?.second?.tag as? RecyclerView)?.canScrollVertically(-1) == true)
                 }
             })
 
@@ -61,7 +60,7 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
                 SubjectActivity.startActivity(v.context, adapter.data[position].subject!!)
             }
             recyclerView.adapter = adapter
-            recyclerView.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(container.context)
+            recyclerView.layoutManager = LinearLayoutManager(container.context)
             recyclerView.isNestedScrollingEnabled = false
             swipeRefreshLayout.addView(recyclerView)
             swipeRefreshLayout.tag = recyclerView
@@ -78,7 +77,7 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
         tabList = context.resources.getStringArray(CollectionStatusType.getTypeNamesResId(subjectTypeView.getType()))
         notifyDataSetChanged()
 
-        items.forEach {  (it.value.second.tag as? androidx.recyclerview.widget.RecyclerView)?.tag = null }
+        items.forEach {  (it.value.second.tag as? RecyclerView)?.tag = null }
         pageIndex.clear()
         loadCollectionList()
     }
@@ -107,7 +106,7 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
                 if(!useApi) it.forEach {
                     it.subject?.type = subjectTypeView.getType() }
                 item.first.addData(it.sortedByDescending {
-                    val eps = (it.subject?.eps as? List<*>)?.mapNotNull { it as? Episode }?.sortedBy { it.airdate }
+                    val eps = (it.subject?.eps as? List<*>)?.mapNotNull { it as? Episode }?.filter { it.type == Episode.TYPE_MAIN }
                     val watchTo = eps?.lastOrNull { it.progress?.status?.id == SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH_ID }
                     val airTo = eps?.lastOrNull { it.status == "Air" }
                     (if( watchTo != airTo) ":" else "") + (airTo?.airdate?:"") }
@@ -116,7 +115,7 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
                 item.first.loadMoreEnd()
             else
                 item.first.loadMoreComplete()
-            (item.second.tag as? androidx.recyclerview.widget.RecyclerView)?.tag = true
+            (item.second.tag as? RecyclerView)?.tag = true
             pageIndex[position] = (pageIndex[position]?:0) + 1
         },{
             item.second.isRefreshing = false

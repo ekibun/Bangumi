@@ -13,22 +13,29 @@ import android.view.Menu
 import android.view.MenuItem
 import android.webkit.WebView
 import android.widget.Toast
+import kotlinx.android.synthetic.main.activity_main.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.github.Github
+import soko.ekibun.bangumi.model.DownloadCacheProvider
 import soko.ekibun.bangumi.ui.search.SearchActivity
 import soko.ekibun.bangumi.ui.view.NotifyActionProvider
 import soko.ekibun.bangumi.ui.web.WebActivity
 
 class MainActivity : AppCompatActivity() {
-
+    val downloadCacheProvider by lazy{ DownloadCacheProvider(this){
+        nav_view.menu.findItem(R.id.nav_download).isVisible = it
+    } }
     private val mainPresenter by lazy{ MainPresenter(this) }
     val user get() = mainPresenter.user
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        nav_view.menu.findItem(R.id.nav_download).isVisible = false
+        downloadCacheProvider.bindService()
 
         if(savedInstanceState?.containsKey("user") != true)
             mainPresenter.refreshUser()
@@ -50,6 +57,11 @@ class MainActivity : AppCompatActivity() {
             }) {})
         }
 
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unbindService(downloadCacheProvider)
     }
 
     val ua by lazy { WebView(this).settings.userAgentString }

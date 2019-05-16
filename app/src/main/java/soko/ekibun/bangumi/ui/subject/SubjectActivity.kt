@@ -15,6 +15,8 @@ import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.ui.view.SwipeBackActivity
 import soko.ekibun.bangumi.util.AppUtil
 import soko.ekibun.bangumi.util.JsonUtil
+import soko.ekibun.bangumi.util.PlayerBridge
+import soko.ekibun.videoplayer.bean.VideoSubject
 
 class SubjectActivity : SwipeBackActivity() {
     private val subjectPresenter: SubjectPresenter by lazy{ SubjectPresenter(this) }
@@ -27,10 +29,13 @@ class SubjectActivity : SwipeBackActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         title=""
 
-        subjectPresenter.init(JsonUtil.toEntity(intent.getStringExtra(SubjectActivity.EXTRA_SUBJECT)?:"", Subject::class.java)?: {
-            val id = Regex("""/subject/([0-9]+)""").find(intent.data?.toString()?:"")?.groupValues?.get(1)?.toIntOrNull()?:0
-            Subject(id, "${Bangumi.SERVER}/subject/$id")
-        }())
+        subjectPresenter.init(
+                if(intent.data?.toString()?.startsWith("ekibun://playersubject/bangumi") == true){
+                    intent.getParcelableExtra<VideoSubject>(PlayerBridge.EXTRA_SUBJECT).toSubject()
+                }else JsonUtil.toEntity(intent.getStringExtra(EXTRA_SUBJECT)?:"", Subject::class.java)?: {
+                    val id = Regex("""/subject/([0-9]+)""").find(intent.data?.toString()?:"")?.groupValues?.get(1)?.toIntOrNull()?:0
+                    Subject(id, "${Bangumi.SERVER}/subject/$id")
+                }())
     }
 
     val ua by lazy { WebView(this).settings.userAgentString }

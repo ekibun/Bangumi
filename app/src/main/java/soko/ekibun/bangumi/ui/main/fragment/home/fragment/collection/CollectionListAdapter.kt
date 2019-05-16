@@ -28,7 +28,7 @@ class CollectionListAdapter(data: MutableList<SubjectCollection>? = null) :
                     (if(item.subject?.has_vol == true) context.getString(R.string.parse_sort_vol, "${item.subject?.vol_status}${ if(item.subject?.vol_count == 0) "" else "/${item.subject?.vol_count}" }") + " " else "") +
                             context.getString(R.string.parse_sort_ep, "${item.subject?.ep_status}${ if(item.subject?.eps_count == 0) "" else "/${item.subject?.eps_count}"}"))
         }else{
-            val eps = (item.subject?.eps as? List<*>)?.mapNotNull { it as? Episode }?.sortedBy { it.airdate }
+            val eps = (item.subject?.eps as? List<*>)?.mapNotNull { it as? Episode }?.filter { it.type == Episode.TYPE_MAIN }
             val watchTo = eps?.lastOrNull { it.progress?.status?.id == SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH_ID }
             val airTo = eps?.lastOrNull { it.status == "Air" }
             helper.itemView.item_summary.setTextColor(ResourceUtil.resolveColorAttr(helper.itemView.context,

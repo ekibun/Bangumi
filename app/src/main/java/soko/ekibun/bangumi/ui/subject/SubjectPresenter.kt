@@ -30,6 +30,7 @@ import soko.ekibun.bangumi.api.trim21.BgmIpViewer
 import soko.ekibun.bangumi.api.trim21.bean.IpView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.PlayerBridge
+import soko.ekibun.videoplayer.bean.VideoSubject
 import java.util.*
 
 class SubjectPresenter(private val context: SubjectActivity){
@@ -76,13 +77,7 @@ class SubjectPresenter(private val context: SubjectActivity){
 
         context.item_play.setOnClickListener {
             if(PlayerBridge.checkActivity(context))
-                PlayerBridge.startActivity(context, this.subject)
-        }
-
-        context.item_play.setOnLongClickListener {
-            if(PlayerBridge.checkActivity(context, context.ua))
-                PlayerBridge.startActivity(context, this.subject, context.ua)
-            true
+                PlayerBridge.startActivity(context, VideoSubject(this.subject, context.ua))
         }
 
         subjectView.episodeAdapter.setOnItemLongClickListener { _, _, position ->

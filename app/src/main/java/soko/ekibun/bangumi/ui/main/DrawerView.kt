@@ -30,8 +30,6 @@ class DrawerView(private val context: MainActivity, onNightModeChange: (Boolean)
             onNightModeChange(isChecked)
         }
 
-        context.nav_view.menu.findItem(R.id.nav_download).isVisible = PlayerBridge.checkActivity(context)
-
         context.nav_view.setNavigationItemSelectedListener {
             if(it.itemId != R.id.nav_night)
                 context.drawer_layout.closeDrawers()

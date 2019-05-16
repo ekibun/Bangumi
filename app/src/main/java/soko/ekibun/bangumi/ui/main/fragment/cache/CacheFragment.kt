@@ -1,12 +1,16 @@
 package soko.ekibun.bangumi.ui.main.fragment.cache
 
 import android.os.Bundle
+import android.util.Log
 import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.content_cache.*
 import soko.ekibun.bangumi.R
+import soko.ekibun.bangumi.model.DownloadCacheProvider
+import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
 import soko.ekibun.bangumi.util.PlayerBridge
 
@@ -16,16 +20,30 @@ class CacheFragment: DrawerFragment(R.layout.content_cache) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val adapter = CacheAdapter(PlayerBridge.getVideoCacheList(view.context))
-        item_list?.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(view.context)
+        val activity = (activity as? MainActivity)?:return
+
+        val adapter = CacheAdapter()
+        activity.downloadCacheProvider.getCacheList({
+            adapter.setNewData(it)
+        }, {
+            Snackbar.make(view, it, Snackbar.LENGTH_LONG).show()
+            adapter.setNewData(null) })
+
+
+        item_list?.layoutManager = LinearLayoutManager(view.context)
         item_list?.adapter = adapter
         item_list?.let{ adapter.emptyView = LayoutInflater.from(view.context).inflate(R.layout.view_empty, it, false) }
         adapter.setOnItemClickListener { _, _, position ->
-            PlayerBridge.startActivity(view.context, adapter.data[position].bangumi)
+            PlayerBridge.startActivity(view.context, adapter.data[position].subject)
         }
         item_swipe?.setOnRefreshListener {
-            adapter.setNewData(PlayerBridge.getVideoCacheList(view.context))
-            item_swipe?.isRefreshing = false
+            activity.downloadCacheProvider.getCacheList({
+                adapter.setNewData(it)
+                item_swipe?.isRefreshing = false
+            }, {
+                Snackbar.make(view, it, Snackbar.LENGTH_LONG).show()
+                item_swipe?.isRefreshing = false
+                adapter.setNewData(null) })
         }
     }
 
