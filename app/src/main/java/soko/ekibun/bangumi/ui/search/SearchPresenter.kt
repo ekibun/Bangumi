@@ -32,7 +32,7 @@ class SearchPresenter(private val context: SearchActivity) {
     val searchHistoryAdapter = SearchHistoryAdapter()
 
     init{
-        context.search_history.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context)
+        context.search_history.layoutManager = LinearLayoutManager(context)
         context.search_history.adapter = searchHistoryAdapter
         val emptyTextView = TextView(context)
         emptyTextView.text = context.getString(R.string.search_hint_no_history)
@@ -54,7 +54,7 @@ class SearchPresenter(private val context: SearchActivity) {
             }.show()
         }
 
-        context.search_list.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context)
+        context.search_list.layoutManager = LinearLayoutManager(context)
         subjectAdapter.setEnableLoadMore(true)
         subjectAdapter.setOnLoadMoreListener({
             search()
@@ -120,7 +120,7 @@ class SearchPresenter(private val context: SearchActivity) {
             subjectCall?.cancel()
             monoCall?.cancel()
             val page = loadCount
-            context.search_list.adapter = if(typeView.subjectTypeList.containsKey(typeView.selectedType)){
+            if(typeView.subjectTypeList.containsKey(typeView.selectedType)){
                 subjectCall = Bangumi.searchSubject(key, typeView.subjectTypeList[typeView.selectedType]?:0, page+1, ua)//api.search(key, SubjectType.ALL, loadCount)
                 subjectCall?.enqueue(ApiHelper.buildCallback(context, {list->
                     //val list =it.list
@@ -135,7 +135,7 @@ class SearchPresenter(private val context: SearchActivity) {
                     subjectAdapter.loadMoreFail()
                     context.search_swipe?.isRefreshing = false
                 }))
-                subjectAdapter
+                if(context.search_list.adapter != subjectAdapter) context.search_list.adapter = subjectAdapter
             }else{
                 monoCall = Bangumi.searchMono(key, typeView.monoTypeList[typeView.selectedType]?:"all", page+1, ua)//api.search(key, SubjectType.ALL, loadCount)
                 monoCall?.enqueue(ApiHelper.buildCallback(context, {list->
@@ -151,7 +151,7 @@ class SearchPresenter(private val context: SearchActivity) {
                     monoAdapter.loadMoreFail()
                     context.search_swipe?.isRefreshing = false
                 }))
-                monoAdapter
+                if(context.search_list.adapter != monoAdapter) context.search_list.adapter = monoAdapter
             }
         }
     }
