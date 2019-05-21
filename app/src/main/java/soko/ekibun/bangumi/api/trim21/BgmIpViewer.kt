@@ -11,12 +11,12 @@ import soko.ekibun.bangumi.BuildConfig
 import soko.ekibun.bangumi.api.trim21.bean.IpView
 
 interface BgmIpViewer {
-    @GET("/subject/{id}.json")
+    @GET("/api.v1/view_ip/subject/{id}")
     fun subject(@Path("id") id: Int,
                 @Header("user-agent") ua: String = "Bangumi-ekibun/${BuildConfig.VERSION_NAME} (${Build.MODEL}; Android:${Build.VERSION.RELEASE})"): Call<IpView>
 
     companion object {
-        private const val SERVER_API = "http://bgm-ip-viewer.trim21.cn"
+        private const val SERVER_API = "https://www.trim21.cn/"
         fun createInstance(): BgmIpViewer {
             return Retrofit.Builder().baseUrl(SERVER_API)
                     .addConverterFactory(GsonConverterFactory.create())

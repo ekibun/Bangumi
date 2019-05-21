@@ -8,7 +8,6 @@ data class IpView(
     data class Edge(
             val id: String? = null,
             val relation: String? = null,
-            val removed: Boolean = false,
             val source: Int = 0,
             val target: Int = 0
     ) {

@@ -6,8 +6,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
-import androidx.fragment.app.DialogFragment
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.appcompat.widget.PopupMenu
 import android.util.DisplayMetrics
 import android.view.*
@@ -17,6 +15,7 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import android.view.WindowManager
 import android.widget.LinearLayout
+import androidx.recyclerview.widget.GridLayoutManager
 import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -80,7 +79,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
             popup.show()
         }
         contentView.item_emoji_list.adapter = emojiAdapter
-        contentView.item_emoji_list.layoutManager = androidx.recyclerview.widget.GridLayoutManager(context, 7)
+        contentView.item_emoji_list.layoutManager = GridLayoutManager(context, 7)
 
         val updateEmojiList= {
             val softKeyboardHeight = getKeyBoardHeight()
@@ -154,7 +153,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setStyle(androidx.fragment.app.DialogFragment.STYLE_NORMAL, R.style.AppTheme_Dialog)
+        setStyle(STYLE_NORMAL, R.style.AppTheme_Dialog)
     }
 
     @SuppressLint("Recycle")
