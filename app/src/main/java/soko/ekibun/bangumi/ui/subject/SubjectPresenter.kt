@@ -370,6 +370,7 @@ class SubjectPresenter(private val context: SubjectActivity){
     }
 
     private fun removeCollection(subject: Subject){
+        if(context.isFinishing) return
         AlertDialog.Builder(context).setTitle(R.string.collection_dialog_remove)
                 .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
                     ApiHelper.buildHttpCall("${Bangumi.SERVER}/subject/${subject.id}/remove?gh=${context.formhash}", mapOf("User-Agent" to context.ua)){ it.code() == 200 }

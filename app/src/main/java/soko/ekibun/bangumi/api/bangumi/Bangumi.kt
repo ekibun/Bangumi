@@ -74,7 +74,7 @@ interface Bangumi {
 
         @SuppressLint("UseSparseArrays")
         fun getSubject(subject: Subject, ua: String): Call<Subject>{
-            return ApiHelper.buildHttpCall(subject.url?:"", mapOf("User-Agent" to ua)){ response ->
+            return ApiHelper.buildHttpCall("$SERVER/subject/${subject.id}", mapOf("User-Agent" to ua)){ response ->
                 val doc = Jsoup.parse(response.body()?.string()?:"")
                 val type = when(doc.selectFirst("#navMenuNeue .focus").text()){
                     "动画" -> SubjectType.ANIME
@@ -324,7 +324,7 @@ interface Bangumi {
         }
 
         fun getComments(subject: Subject, page: Int, ua: String): Call<List<Comment>>{
-            return ApiHelper.buildHttpCall("${subject.url?:""}/comments?page=$page", mapOf("User-Agent" to ua)){
+            return ApiHelper.buildHttpCall("$SERVER/subject/${subject.id}/comments?page=$page", mapOf("User-Agent" to ua)){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val ret = ArrayList<Comment>()
                 doc.selectFirst("#comment_box")?.let{
@@ -445,7 +445,7 @@ interface Bangumi {
 
         //讨论
         fun getTopic(url: String, ua: String): Call<Topic>{
-            return ApiHelper.buildHttpCall(url, mapOf("User-Agent" to ua)){
+            return ApiHelper.buildHttpCall(url.replace(Regex("""^https?://(bgm\.tv|bangumi\.tv|chii\.in)"""), SERVER), mapOf("User-Agent" to ua)){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
                 val replies = ArrayList<TopicPost>()
                 doc.select(".re_info")?.map{ it.parent() }?.forEach{

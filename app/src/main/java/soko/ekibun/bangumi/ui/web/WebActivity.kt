@@ -25,7 +25,7 @@ import java.net.URI
 
 class WebActivity : SwipeBackActivity() {
     private val isAuth by lazy{ intent.getBooleanExtra(IS_AUTH, false)}
-    private val openUrl by lazy{ intent.getStringExtra(OPEN_URL)}
+    private val openUrl by lazy{ intent.getStringExtra(OPEN_URL).replace(Regex("""^https?://(bgm\.tv|bangumi\.tv|chii\.in)"""), Bangumi.SERVER) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,6 +72,12 @@ class WebActivity : SwipeBackActivity() {
                             e.printStackTrace()
                             return false }
                         return true
+                    }else {
+                        val bgmUrl = url.replace(Regex("""^https?://(bgm\.tv|bangumi\.tv|chii\.in)"""), Bangumi.SERVER)
+                        if(bgmUrl != url){
+                            webview.loadUrl(bgmUrl)
+                            return true
+                        }
                     }
                     return false
                 }

@@ -9,7 +9,7 @@ import soko.ekibun.bangumi.ui.main.fragment.home.fragment.collection.CollectionF
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.rakuen.RakuenFragment
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.timeline.TimeLineFragment
 
-class HomePagerAdapter(private val context: Context, fragmentManager: androidx.fragment.app.FragmentManager, pager: androidx.viewpager.widget.ViewPager): androidx.fragment.app.FragmentPagerAdapter(fragmentManager) {
+class HomePagerAdapter(private val context: Context, fragmentManager: FragmentManager, pager: ViewPager): androidx.fragment.app.FragmentPagerAdapter(fragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
     val fragments: List<HomeTabFragment> = listOf(
             TimeLineFragment(),
             CollectionFragment(),
@@ -18,7 +18,7 @@ class HomePagerAdapter(private val context: Context, fragmentManager: androidx.f
 
     init{
         pager.offscreenPageLimit = 4
-        pager.addOnPageChangeListener(object: androidx.viewpager.widget.ViewPager.OnPageChangeListener{
+        pager.addOnPageChangeListener(object: ViewPager.OnPageChangeListener{
             override fun onPageScrollStateChanged(state: Int) {}
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
             override fun onPageSelected(position: Int) {

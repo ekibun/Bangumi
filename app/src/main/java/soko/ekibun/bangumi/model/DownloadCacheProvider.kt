@@ -28,6 +28,10 @@ class DownloadCacheProvider(val context: AppCompatActivity, val onServiceConnect
         context.bindService(aidlIntent, this, Context.BIND_AUTO_CREATE)
     }
 
+    fun unbindService(){
+        if(aidl != null) context.unbindService(this)
+    }
+
     fun getCacheList(onFinish: (List<SubjectCache>)->Unit, onReject: (String)->Unit){
         aidl?.getCacheList("bangumi", object: IListSubjectCacheCallback.Stub() {
             override fun onFinish(result: MutableList<SubjectCache>) {

@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
             Github.createInstance().releases().enqueue(ApiHelper.buildCallback(this, {
                 val release = it.firstOrNull()?:return@buildCallback
                 val current = packageManager?.getPackageInfo(packageName, 0)?.versionName?:""
-                if(release.tag_name?.compareTo(current)?:0 > 0 && sp.getString("ignore_tag", "") != release.tag_name)
+                if(!isFinishing && release.tag_name?.compareTo(current)?:0 > 0 && sp.getString("ignore_tag", "") != release.tag_name)
                     AlertDialog.Builder(this)
                             .setTitle( getString(R.string.parse_new_version, release.tag_name))
                             .setMessage( it.filter { it.tag_name?.compareTo(current)?:0 > 0 }.map { "${it.tag_name}\n${it.body}" }.reduce { acc, s -> "$acc\n$s" } )
@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        unbindService(downloadCacheProvider)
+        downloadCacheProvider.unbindService()
     }
 
     val ua by lazy { WebView(this).settings.userAgentString }

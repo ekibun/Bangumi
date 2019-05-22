@@ -80,25 +80,7 @@ object GlideUtil {
      * @param fragment The fragment to use.
      * @return A RequestManager for the given Fragment that can be used to start a load.
      */
-    fun with(fragment: androidx.fragment.app.Fragment): RequestManager? {
-        return try{
-            Glide.with(fragment)
-        }catch(e: IllegalArgumentException){
-            null
-        }
-    }
-
-    /**
-     * Begin a load with Glide that will be tied to the given [android.app.Fragment]'s lifecycle
-     * and that uses the given [android.app.Fragment]'s default options.
-     *
-     * @param fragment The fragment to use.
-     * @return A RequestManager for the given Fragment that can be used to start a load.
-     */
-    @Deprecated("Prefer support Fragments and {@link #with(Fragment)} instead,\n" +
-            "    {@link android.app.Fragment} will be deprecated. See\n" +
-            "    https://github.com/android/android-ktx/pull/161#issuecomment-363270555.")
-    fun with(fragment: android.app.Fragment): RequestManager? {
+    fun with(fragment: Fragment): RequestManager? {
         return try{
             Glide.with(fragment)
         }catch(e: IllegalArgumentException){
