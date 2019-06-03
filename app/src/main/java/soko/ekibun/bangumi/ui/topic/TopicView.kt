@@ -3,8 +3,6 @@ package soko.ekibun.bangumi.ui.topic
 import android.graphics.Rect
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.material.appbar.AppBarLayout
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import com.bumptech.glide.request.RequestOptions

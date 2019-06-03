@@ -3,7 +3,6 @@ package soko.ekibun.videoplayer.service
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
-import android.webkit.WebView
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.videoplayer.IVideoSubjectProvider

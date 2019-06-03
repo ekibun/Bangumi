@@ -5,13 +5,10 @@ import android.app.Dialog
 import android.net.Uri
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.appcompat.app.AlertDialog
-import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.*
 import android.widget.PopupMenu
-import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_subject.*
 import kotlinx.android.synthetic.main.activity_subject.view.*
-import kotlinx.android.synthetic.main.dialog_epsode.view.*
 import kotlinx.android.synthetic.main.subject_blog.view.*
 import kotlinx.android.synthetic.main.subject_buttons.*
 import kotlinx.android.synthetic.main.subject_character.view.*

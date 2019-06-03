@@ -3,15 +3,7 @@ package soko.ekibun.bangumi.util
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.preference.PreferenceManager
-import android.webkit.CookieManager
-import com.google.gson.reflect.TypeToken
-import soko.ekibun.bangumi.api.bangumi.Bangumi
-import soko.ekibun.bangumi.api.bangumi.bean.Episode
-import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.videoplayer.bean.VideoSubject
-import soko.ekibun.videoplayer.service.DialogActivity
-import java.lang.Exception
 
 object PlayerBridge {
     const val EXTRA_SUBJECT = "extraSubject"

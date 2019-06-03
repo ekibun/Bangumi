@@ -1,7 +1,6 @@
 package soko.ekibun.bangumi.ui.subject
 
 import android.content.res.ColorStateList
-import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
 import com.chad.library.adapter.base.BaseSectionQuickAdapter

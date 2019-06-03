@@ -1,10 +1,6 @@
 package soko.ekibun.bangumi.ui.main.fragment.index
 
 import am.util.viewpager.adapter.RecyclePagerAdapter
-import androidx.viewpager.widget.ViewPager
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.util.Log
 import android.util.SparseIntArray
 import android.view.LayoutInflater

@@ -6,8 +6,10 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
+import android.provider.OpenableColumns
 import androidx.appcompat.widget.PopupMenu
 import android.util.DisplayMetrics
+import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import kotlinx.android.synthetic.main.dialog_reply.view.*
@@ -21,6 +23,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.catbox.CatBox
+import soko.ekibun.bangumi.api.uploadcc.UploadCC
 
 class ReplyDialog: androidx.fragment.app.DialogFragment() {
     private var contentView: View? = null
@@ -167,12 +170,19 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
             }, 200)
         }
         val inputStream = activity?.contentResolver?.openInputStream(data?.data?:return)?:return
-        val bytes = inputStream.readBytes()
-        val requestBody = RequestBody.create(MediaType.parse("image/*"),bytes)
-        val body = MultipartBody.Part.createFormData("fileToUpload", "image", requestBody)
-        val call = CatBox.createInstance().upload(body)
+        val mimeType = activity?.contentResolver?.getType(data?.data?:return)?:"image/jpeg"
+        val fileName = data?.data?.let { returnUri ->
+            activity?.contentResolver?.query(returnUri, null, null, null, null)
+        }?.use { cursor ->
+            val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            cursor.moveToFirst()
+            cursor.getString(nameIndex)
+        }?:"image.jpg"
+        val requestBody = RequestBody.create(MediaType.parse(mimeType),inputStream.readBytes())
+        val body = MultipartBody.Part.createFormData("uploaded_file[]", fileName, requestBody)
+        val call = UploadCC.createInstance().upload(body)
         call.enqueue(ApiHelper.buildCallback(activity, {
-            insertText("[img]$it[/img]")
+            insertText("[img]https://upload.cc/${it.success_image?.firstOrNull()?.url}[/img]")
         }, {}))
     }
 }

@@ -3,11 +3,6 @@ package soko.ekibun.bangumi.ui.main.fragment.calendar
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
 import android.preference.PreferenceManager
-import androidx.viewpager.widget.PagerAdapter
-import androidx.viewpager.widget.ViewPager
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
 import retrofit2.Call
