@@ -23,7 +23,7 @@ class SeasonAdapter(data: MutableList<IpView.Node>? = null) :
                 }
         )
         val color = ResourceUtil.resolveColorAttr(helper.itemView.context,
-                if (currentId == item.id) R.attr.colorPrimary
+                if (currentId == item.subject_id) R.attr.colorPrimary
                     else android.R.attr.textColorSecondary)
         helper.itemView.item_desc.setTextColor(color)
         helper.itemView.item_desc.backgroundTintList = ColorStateList.valueOf(color)

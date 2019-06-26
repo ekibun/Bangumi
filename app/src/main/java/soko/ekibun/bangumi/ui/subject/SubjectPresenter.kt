@@ -184,52 +184,6 @@ class SubjectPresenter(private val context: SubjectActivity){
         EpisodeDialog.showDialog(context, episode, eps, onAirInfo){mEps, status ->
             updateProgress(subject, mEps, status)
         }
-        /*
-        val view = context.layoutInflater.inflate(R.layout.dialog_epsode, context.item_collect, false)
-        //TODO
-        view.item_episode_title.text = episode.parseSort(context) + " " + if(episode.name_cn.isNullOrEmpty()) episode.name else episode.name_cn
-        view.item_episode_desc.text = (if(episode.name_cn.isNullOrEmpty()) "" else episode.name + "\n") +
-                (if(episode.airdate.isNullOrEmpty()) "" else  context.getString(R.string.phrase_air_date, episode.airdate) + "\n") +
-                (if(episode.duration.isNullOrEmpty()) "" else context.getString(R.string.phrase_duration, episode.duration) + "\n") +
-                context.getString(R.string.phrase_comment, episode.comment)
-        view.item_episode_title.setOnClickListener {
-            WebActivity.launchUrl(context, "${Bangumi.SERVER}/m/topic/ep/${episode.id}", "")
-        }
-        val adapter = SitesAdapter(onAirInfo?.Value?.filter { it.EpisodeId == episode.id }?.map{BangumiItem.SitesBean(it.Site, it.Name, it.Link)}?.toMutableList())
-        val emptyTextView = TextView(context)
-        val dp4 = (context.resources.displayMetrics.density * 4 + 0.5f).toInt()
-        emptyTextView.setPadding(dp4,dp4,dp4,dp4)
-        emptyTextView.setText(R.string.hint_no_play_source)
-        adapter.emptyView = emptyTextView
-        adapter.setOnItemClickListener { _, _, position ->
-            WebActivity.launchUrl(context, adapter.data[position].url, "")
-        }
-        view.item_site_list.adapter = adapter
-        val linearLayoutManager = LinearLayoutManager(context)
-        linearLayoutManager.orientation = LinearLayoutManager.HORIZONTAL
-        view.item_site_list.layoutManager = linearLayoutManager
-        when(episode.progress?.status?.id?:0){
-            1 -> view.radio_queue.isChecked = true
-            2 -> view.radio_watch.isChecked = true
-            3 -> view.radio_drop.isChecked = true
-            else -> view.radio_remove.isChecked = true
-        }
-        //view.item_episode_status.setSelection(intArrayOf(4,2,0,3)[episode.progress?.status?.id?:0])
-        if(episode.type != Episode.TYPE_MUSIC) {
-            view.item_episode_status.setOnCheckedChangeListener { _, checkedId ->
-                updateProgress(subject, if(checkedId == R.id.radio_watch_to)eps else listOf(episode), when(checkedId){
-                    R.id.radio_watch_to -> EpisodeDialog.WATCH_TO
-                    R.id.radio_watch -> SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH
-                    R.id.radio_queue -> SubjectProgress.EpisodeProgress.EpisodeStatus.QUEUE
-                    R.id.radio_drop -> SubjectProgress.EpisodeProgress.EpisodeStatus.DROP
-                    else -> SubjectProgress.EpisodeProgress.EpisodeStatus.REMOVE
-                })
-            }
-        }else {
-            view.item_episode_status.visibility = View.GONE
-        }
-        showDialog(view)
-         */
     }
 
     private fun updateProgress(subject: Subject, eps: List<Episode>, newStatus: String){
@@ -238,45 +192,6 @@ class SubjectPresenter(private val context: SubjectActivity){
             subjectView.episodeDetailAdapter.notifyDataSetChanged()
             refreshProgress(subject)
         }
-        /*
-        if(newStatus == EpisodeDialog.WATCH_TO){
-            val epIds = eps.map{ it.id.toString()}.reduce { acc, s -> "$acc,$s" }
-            Bangumi.updateProgress(eps.last().id, SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH, context.formhash, context.ua, epIds).enqueue(
-                    ApiHelper.buildCallback(context, {
-                        val epStatus = SubjectProgress.EpisodeProgress.EpisodeStatus.getStatus(SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH)
-                        eps.forEach { it.progress = if(epStatus != null) SubjectProgress.EpisodeProgress(it.id, epStatus) else null }
-                        subjectView.episodeAdapter.notifyDataSetChanged()
-                        subjectView.episodeDetailAdapter.notifyDataSetChanged()
-                        refreshProgress(subject)
-                    }, {}))
-            return
-        }
-        eps.forEach {episode->
-            Bangumi.updateProgress(episode.id, newStatus, context.formhash, context.ua).enqueue(
-                    ApiHelper.buildCallback(context, {
-                        val epStatus = SubjectProgress.EpisodeProgress.EpisodeStatus.getStatus(newStatus)
-                        episode.progress = if(epStatus != null) SubjectProgress.EpisodeProgress(episode.id, epStatus) else null
-                        subjectView.episodeAdapter.notifyDataSetChanged()
-                        subjectView.episodeDetailAdapter.notifyDataSetChanged()
-                        refreshProgress(subject)
-                    }, {}))
-        }
-         */
-    }
-
-    private fun showDialog(view: View): Dialog{
-        val dialog = Dialog(context, R.style.AppTheme_Dialog_Floating)
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        dialog.setContentView(view)
-        dialog.window?.setGravity(Gravity.BOTTOM)
-        dialog.window?.attributes?.let{
-            it.width = ViewGroup.LayoutParams.MATCH_PARENT
-            dialog.window?.attributes = it
-        }
-        dialog.window?.setWindowAnimations(R.style.AnimDialog)
-        dialog.setCanceledOnTouchOutside(true)
-        dialog.show()
-        return dialog
     }
 
     private var subjectCall : Call<Subject>? = null
@@ -291,33 +206,11 @@ class SubjectPresenter(private val context: SubjectActivity){
         }, {}))
 
         BgmIpViewer.createInstance().subject(subject.id).enqueue(ApiHelper.buildCallback(context, {
-            val bgmIp = it.nodes?.firstOrNull { it.subject_id == subject.id }?:return@buildCallback
-            val id = it.edges?.firstOrNull{edge-> edge.source == bgmIp.id && edge.relation == "主线故事"}?.target?:bgmIp.id
-            val ret = ArrayList<IpView.Node>()
-            it.edges?.filter { edge-> edge.target == id && edge.relation == "主线故事" }?.reversed()?.forEach { edge->
-                ret.add(0, it.nodes.firstOrNull{it.id == edge.source}?:return@forEach)
-            }
-            ret.add(0,it.nodes.firstOrNull { it.id == id }?:return@buildCallback)
-            var prevId = id
-            while(true){
-                prevId = it.edges?.firstOrNull { it.source == prevId && it.relation == "前传"}?.target?:break
-                it.edges.filter { edge-> edge.target == prevId && edge.relation == "主线故事" }.reversed().forEach {edge->
-                    ret.add(0, it.nodes.firstOrNull{it.id == edge.source}?:return@forEach)
-                }
-                ret.add(0, it.nodes.firstOrNull{it.id == prevId}?:break)
-            }
-            var nextId = id
-            while(true){
-                nextId = it.edges?.firstOrNull { it.source == nextId && it.relation == "续集"}?.target?:break
-                ret.add(it.nodes.firstOrNull{it.id == nextId}?:break)
-                it.edges.filter { edge-> edge.target == nextId && edge.relation == "主线故事" }.forEach {edge->
-                    ret.add(it.nodes.firstOrNull{it.id == edge.source}?:return@forEach)
-                }
-            }
+            val ret = BgmIpViewer.getSeason(it, subject)
             if(ret.size > 1){
                 subjectView.seasonAdapter.setNewData(ret.distinct())
-                subjectView.seasonAdapter.currentId = bgmIp.id
-                subjectView.seasonLayoutManager.scrollToPositionWithOffset(subjectView.seasonAdapter.data.indexOfFirst { it.id == bgmIp.id }, 0)
+                subjectView.seasonAdapter.currentId = subject.id
+                subjectView.seasonLayoutManager.scrollToPositionWithOffset(subjectView.seasonAdapter.data.indexOfFirst { it.subject_id == subject.id }, 0)
             }
         }, {}))
 
@@ -423,6 +316,7 @@ class SubjectPresenter(private val context: SubjectActivity){
         epCalls?.cancel()
         epCalls = Bangumi.getSubjectEps(subject.id, context.ua)
         epCalls?.enqueue(ApiHelper.buildCallback(context, {
+            subject.eps = it
             subjectView.updateEpisode(it)
         }, {}))
     }

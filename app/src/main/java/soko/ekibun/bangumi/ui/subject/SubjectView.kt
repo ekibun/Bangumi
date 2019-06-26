@@ -348,6 +348,7 @@ class SubjectView(private val context: SubjectActivity){
             val key = it.cat?: context.getString(Episode.getTypeName(it.type))
             maps[key] = (maps[key]?:ArrayList()).plus(it)
         }
+        val lastEpisodeSize = episodeDetailAdapter.data.size
         episodeAdapter.setNewData(null)
         episodeDetailAdapter.setNewData(null)
         maps.forEach {
@@ -358,7 +359,7 @@ class SubjectView(private val context: SubjectActivity){
                 episodeDetailAdapter.addData(EpisodeAdapter.SelectableSectionEntity(ep))
             }
         }
-        if(!scrolled && episodeAdapter.data.size>0){
+        if(!scrolled || episodeDetailAdapter.data.size != lastEpisodeSize){
             scrolled = true
 
             var lastView = 0
