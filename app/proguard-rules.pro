@@ -19,3 +19,15 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Retrofit
+-dontwarn retrofit2.Platform$Java8
+# okhttp
+-dontwarn okio.**
+-dontwarn org.conscrypt.**
+-dontwarn javax.annotation.**
+
+-dontwarn org.xmlpull.v1.**
+
+# Gson
+-keep class soko.ekibun.bangumi.api.**.bean.**{*;} # 自定义数据模型的bean目录

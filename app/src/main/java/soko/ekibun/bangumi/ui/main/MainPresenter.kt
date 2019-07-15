@@ -33,7 +33,7 @@ class MainPresenter(private val context: MainActivity){
                 val cookieManager = CookieManager.getInstance()
                 it.headers("set-cookie").forEach { cookieManager.setCookie(Bangumi.SERVER, it) }
                 it.code()
-            }.enqueue(ApiHelper.buildCallback(context, {
+            }.enqueue(ApiHelper.buildCallback({
                 refreshUser()
             }, {}))
         }
@@ -68,7 +68,7 @@ class MainPresenter(private val context: MainActivity){
     }
 
     fun refreshUser(){
-        Bangumi.getUserInfo(context.ua).enqueue(ApiHelper.buildCallback(null, {
+        Bangumi.getUserInfo(context.ua).enqueue(ApiHelper.buildCallback({
             updateUser(it)
             context.notifyMenu?.badge = it.notify?.let{ it.first + it.second}?:0
             if(it.needReload) reload()

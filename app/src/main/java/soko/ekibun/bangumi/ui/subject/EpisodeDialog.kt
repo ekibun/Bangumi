@@ -14,7 +14,7 @@ import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectProgress
 import soko.ekibun.bangumi.api.github.bean.BangumiItem
-import soko.ekibun.bangumi.api.tinygrail.bean.OnAirInfo
+import soko.ekibun.bangumi.api.github.bean.OnAirInfo
 import soko.ekibun.bangumi.ui.web.WebActivity
 
 class EpisodeDialog(context: Context): Dialog(context, R.style.AppTheme_Dialog_Floating) {
@@ -34,7 +34,7 @@ class EpisodeDialog(context: Context): Dialog(context, R.style.AppTheme_Dialog_F
             if(newStatus == WATCH_TO){
                 val epIds = eps.map{ it.id.toString()}.reduce { acc, s -> "$acc,$s" }
                 Bangumi.updateProgress(eps.last().id, SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH, formhash, ua, epIds).enqueue(
-                        ApiHelper.buildCallback(context, {
+                        ApiHelper.buildCallback({
                             val epStatus = SubjectProgress.EpisodeProgress.EpisodeStatus.getStatus(SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH)
                             eps.forEach { it.progress = if(epStatus != null) SubjectProgress.EpisodeProgress(it.id, epStatus) else null }
                             callback(true)
@@ -43,7 +43,7 @@ class EpisodeDialog(context: Context): Dialog(context, R.style.AppTheme_Dialog_F
             }
             eps.forEach {episode->
                 Bangumi.updateProgress(episode.id, newStatus, formhash, ua).enqueue(
-                        ApiHelper.buildCallback(context, {
+                        ApiHelper.buildCallback({
                             val epStatus = SubjectProgress.EpisodeProgress.EpisodeStatus.getStatus(newStatus)
                             episode.progress = if(epStatus != null) SubjectProgress.EpisodeProgress(episode.id, epStatus) else null
                             callback(true)
@@ -70,7 +70,7 @@ class EpisodeDialog(context: Context): Dialog(context, R.style.AppTheme_Dialog_F
         view.item_episode_title.setOnClickListener {
             WebActivity.launchUrl(context, "${Bangumi.SERVER}/m/topic/ep/${episode.id}", "")
         }
-        val adapter = SitesAdapter(onAirInfo?.Value?.filter { it.EpisodeId == episode.id }?.map{ BangumiItem.SitesBean(it.Site, it.Name, it.Link)}?.toMutableList())
+        val adapter = SitesAdapter(onAirInfo?.eps?.firstOrNull { it.id == episode.id }?.sites?.map{ BangumiItem.SitesBean(it.site, it.title, it.url)}?.toMutableList())
         val emptyTextView = TextView(context)
         val dp4 = (context.resources.displayMetrics.density * 4 + 0.5f).toInt()
         emptyTextView.setPadding(dp4,dp4,dp4,dp4)

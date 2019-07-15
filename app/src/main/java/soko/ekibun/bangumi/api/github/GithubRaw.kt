@@ -7,6 +7,7 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
 import soko.ekibun.bangumi.api.github.bean.BangumiItem
+import soko.ekibun.bangumi.api.github.bean.OnAirInfo
 
 interface GithubRaw{
 
@@ -17,6 +18,10 @@ interface GithubRaw{
 
     @GET("/ekibun/bangumi_calendar/master/calendar.json")
     fun bangumiCalendar(): Call<List<BangumiCalendarItem>>
+
+    @GET("/ekibun/bangumi_onair/master/onair/{prefix}/{id}.json")
+    fun onAirInfo(@Path("prefix") prefix: Int,
+                  @Path("id") id: Int): Call<OnAirInfo>
 
     companion object {
         private const val SERVER_API = "https://raw.githubusercontent.com"

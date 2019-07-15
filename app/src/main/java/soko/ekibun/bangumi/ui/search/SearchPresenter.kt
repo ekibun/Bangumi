@@ -122,7 +122,7 @@ class SearchPresenter(private val context: SearchActivity) {
             val page = loadCount
             if(typeView.subjectTypeList.containsKey(typeView.selectedType)){
                 subjectCall = Bangumi.searchSubject(key, typeView.subjectTypeList[typeView.selectedType]?:0, page+1, ua)//api.search(key, SubjectType.ALL, loadCount)
-                subjectCall?.enqueue(ApiHelper.buildCallback(context, {list->
+                subjectCall?.enqueue(ApiHelper.buildCallback({list->
                     //val list =it.list
                     if(list == null || list.isEmpty())
                         subjectAdapter.loadMoreEnd()
@@ -138,7 +138,7 @@ class SearchPresenter(private val context: SearchActivity) {
                 if(context.search_list.adapter != subjectAdapter) context.search_list.adapter = subjectAdapter
             }else{
                 monoCall = Bangumi.searchMono(key, typeView.monoTypeList[typeView.selectedType]?:"all", page+1, ua)//api.search(key, SubjectType.ALL, loadCount)
-                monoCall?.enqueue(ApiHelper.buildCallback(context, {list->
+                monoCall?.enqueue(ApiHelper.buildCallback({list->
                     //val list =it.list
                     if(list == null || list.isEmpty())
                         monoAdapter.loadMoreEnd()

@@ -1,7 +1,6 @@
 package soko.ekibun.bangumi.ui.subject
 
 import android.annotation.SuppressLint
-import android.app.Dialog
 import android.net.Uri
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.appcompat.app.AlertDialog
@@ -21,10 +20,8 @@ import soko.ekibun.bangumi.api.bangumi.bean.*
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.github.GithubRaw
 import soko.ekibun.bangumi.api.github.bean.BangumiItem
-import soko.ekibun.bangumi.api.tinygrail.Tinygrail
-import soko.ekibun.bangumi.api.tinygrail.bean.OnAirInfo
+import soko.ekibun.bangumi.api.github.bean.OnAirInfo
 import soko.ekibun.bangumi.api.trim21.BgmIpViewer
-import soko.ekibun.bangumi.api.trim21.bean.IpView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.PlayerBridge
 import soko.ekibun.videoplayer.bean.VideoSubject
@@ -198,14 +195,14 @@ class SubjectPresenter(private val context: SubjectActivity){
     private fun refreshSubject(){
         subjectCall?.cancel()
         subjectCall = Bangumi.getSubject(subject, context.ua)
-        subjectCall?.enqueue(ApiHelper.buildCallback(context, {
+        subjectCall?.enqueue(ApiHelper.buildCallback({
             subject = it
             refreshLines(it)
             refreshCollection()
             subjectView.updateSubject(it)
         }, {}))
 
-        BgmIpViewer.createInstance().subject(subject.id).enqueue(ApiHelper.buildCallback(context, {
+        BgmIpViewer.createInstance().subject(subject.id).enqueue(ApiHelper.buildCallback({
             val ret = BgmIpViewer.getSeason(it, subject)
             if(ret.size > 1){
                 subjectView.seasonAdapter.setNewData(ret.distinct())
@@ -225,7 +222,7 @@ class SubjectPresenter(private val context: SubjectActivity){
     }
 
     private fun loadComment(subject: Subject, page: Int){
-        Bangumi.getComments(subject, page, context.ua).enqueue(ApiHelper.buildCallback(context, {
+        Bangumi.getComments(subject, page, context.ua).enqueue(ApiHelper.buildCallback({
             if(page == 1)
                 subjectView.commentAdapter.setNewData(null)
             if(it?.isEmpty() == true)
@@ -244,7 +241,7 @@ class SubjectPresenter(private val context: SubjectActivity){
         val dateList = subject.air_date?.replace("/", "-")?.replace("年", "-")?.replace("月", "-")?.replace("日", "")?.split("-") ?: return
         val year = dateList.getOrNull(0)?.toIntOrNull()?:0
         val month = dateList.getOrNull(1)?.toIntOrNull()?:1
-        GithubRaw.createInstance().bangumiData(year, String.format("%02d", month)).enqueue(ApiHelper.buildCallback(context, {
+        GithubRaw.createInstance().bangumiData(year, String.format("%02d", month)).enqueue(ApiHelper.buildCallback({
             subjectView.sitesAdapter.setNewData(null)
             it.filter { it.sites?.filter { it.site == "bangumi" }?.getOrNull(0)?.id?.toIntOrNull() == subject.id }.forEach {
                 if(subjectView.sitesAdapter.data.size == 0 && !it.officialSite.isNullOrEmpty())
@@ -254,7 +251,7 @@ class SubjectPresenter(private val context: SubjectActivity){
             subjectView.detail.site_list.visibility = if(subjectView.sitesAdapter.data.isEmpty()) View.GONE else View.VISIBLE
         }, {}))
 
-        Tinygrail.createInstance().onAirInfo(subject.id).enqueue(ApiHelper.buildCallback(context, {
+        GithubRaw.createInstance().onAirInfo(subject.id/1000, subject.id).enqueue(ApiHelper.buildCallback({
             onAirInfo = it
         }, {}))
     }
@@ -264,7 +261,7 @@ class SubjectPresenter(private val context: SubjectActivity){
         AlertDialog.Builder(context).setTitle(R.string.collection_dialog_remove)
                 .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
                     ApiHelper.buildHttpCall("${Bangumi.SERVER}/subject/${subject.id}/remove?gh=${context.formhash}", mapOf("User-Agent" to context.ua)){ it.code() == 200 }
-                            .enqueue(ApiHelper.buildCallback(context, {
+                            .enqueue(ApiHelper.buildCallback({
                                 if(it) subject.interest = Collection()
                                 refreshCollection()
                             }, {}))
@@ -294,7 +291,7 @@ class SubjectPresenter(private val context: SubjectActivity){
                 val newStatus = CollectionStatusType.status[menu.itemId - Menu.FIRST]
                 val newTags = if(body.tag?.isNotEmpty() == true) body.tag.reduce { acc, s -> "$acc $s" } else ""
                 Bangumi.updateCollectionStatus(subject, context.formhash, context.ua,
-                        newStatus, newTags, body.comment?:"", body.rating, body.private).enqueue(ApiHelper.buildCallback(context,{
+                        newStatus, newTags, body.comment?:"", body.rating, body.private).enqueue(ApiHelper.buildCallback({
                     subject.interest = it
                     refreshCollection()
                 },{}))
@@ -315,7 +312,7 @@ class SubjectPresenter(private val context: SubjectActivity){
     private fun refreshProgress(subject: Subject){
         epCalls?.cancel()
         epCalls = Bangumi.getSubjectEps(subject.id, context.ua)
-        epCalls?.enqueue(ApiHelper.buildCallback(context, {
+        epCalls?.enqueue(ApiHelper.buildCallback({
             subject.eps = it
             subjectView.updateEpisode(it)
         }, {}))

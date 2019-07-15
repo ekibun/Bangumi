@@ -44,7 +44,7 @@ class TimeLineAdapter(val ua: String, data: MutableList<TimeLine>? = null) :
                     .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
                         ApiHelper.buildHttpCall("${item.t.delUrl}&ajax=1", mapOf("User-Agent" to ua)) {
                             it.body()?.string()?.contains("\"status\":\"ok\"") == true
-                        }.enqueue(ApiHelper.buildCallback<Boolean>(helper.itemView.context, {
+                        }.enqueue(ApiHelper.buildCallback<Boolean>({
                             if(!it) return@buildCallback
                             val index = data.indexOfFirst { it === item }
                             val removeHeader = data.getOrNull(index-1)?.isHeader == true && data.getOrNull(index+1)?.isHeader == true

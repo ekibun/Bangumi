@@ -60,7 +60,7 @@ class TimeLineFragment: HomeTabFragment(R.layout.fragment_timeline){
                                 .add("formhash", formhash)
                                 .add("submit", "submit").build()){
                             it.body()?.string()?.contains("\"status\":\"ok\"") == true
-                        }.enqueue(ApiHelper.buildCallback(context, {
+                        }.enqueue(ApiHelper.buildCallback({
                             if(it){
                                 draft = ""
                                 if(item_pager?.currentItem?:2 !in 0..1) item_pager?.currentItem = 1

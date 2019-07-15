@@ -14,7 +14,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.SubjectCollection
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
 import soko.ekibun.bangumi.api.github.GithubRaw
 import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
-import soko.ekibun.bangumi.api.tinygrail.bean.OnAir
+import soko.ekibun.bangumi.api.github.bean.OnAir
 import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import java.lang.StringBuilder
@@ -158,7 +158,7 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: an
 
         calendarCall?.cancel()
         calendarCall = GithubRaw.createInstance().bangumiCalendar()
-        calendarCall?.enqueue(ApiHelper.buildCallback(pager.context, {
+        calendarCall?.enqueue(ApiHelper.buildCallback({
             raw = it
             setOnAirList(raw?:return@buildCallback)
         }, {items.forEach {
@@ -169,7 +169,7 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: an
         val user = (fragment.activity as? MainActivity)?.user?:return
         val userName = user.username?:user.id.toString()
         chaseCall = Bangumi.createInstance().collection(userName)
-        chaseCall?.enqueue(ApiHelper.buildCallback(pager.context, {
+        chaseCall?.enqueue(ApiHelper.buildCallback({
             chaseList = it
             setOnAirList(raw?:return@buildCallback)
         }, {}))

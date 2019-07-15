@@ -9,7 +9,7 @@ import com.chad.library.adapter.base.BaseViewHolder
 import com.chad.library.adapter.base.entity.SectionEntity
 import kotlinx.android.synthetic.main.item_calendar.view.*
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.tinygrail.bean.OnAir
+import soko.ekibun.bangumi.api.github.bean.OnAir
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.ResourceUtil
 import java.text.DecimalFormat

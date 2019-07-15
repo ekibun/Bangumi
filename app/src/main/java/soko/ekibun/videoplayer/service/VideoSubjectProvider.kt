@@ -6,7 +6,6 @@ import android.os.IBinder
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
-import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
 import soko.ekibun.bangumi.api.trim21.BgmIpViewer
 import soko.ekibun.videoplayer.IVideoSubjectProvider
 import soko.ekibun.videoplayer.bean.VideoEpisode
@@ -21,7 +20,7 @@ class VideoSubjectProvider : Service() {
         override fun getSubjectSeason(subject: VideoSubject, callback: IListSubjectCallback) {
             val ua = subject.getUserAgent()
             val bgmSubject = subject.toSubject()
-            BgmIpViewer.createInstance().subject(bgmSubject.id).enqueue(ApiHelper.buildCallback(null, {
+            BgmIpViewer.createInstance().subject(bgmSubject.id).enqueue(ApiHelper.buildCallback({
                 callback.onFinish(BgmIpViewer.getSeason(it, bgmSubject).map {
                     VideoSubject(Subject(it.subject_id, "${Bangumi.SERVER}/subject/${it.subject_id}", bgmSubject.type, it.name, it.name_cn), ua)
                 })
@@ -30,13 +29,13 @@ class VideoSubjectProvider : Service() {
 
         override fun refreshSubject(subject: VideoSubject, callback: ISubjectCallback) {
             val ua = subject.getUserAgent()
-            Bangumi.getSubject(subject.toSubject(), ua?:"").enqueue(ApiHelper.buildCallback(null, {
+            Bangumi.getSubject(subject.toSubject(), ua?:"").enqueue(ApiHelper.buildCallback({
                 callback.onFinish(VideoSubject(it, ua))
             }, { it?.let{ callback.onReject(it.toString()) } }))
         }
 
         override fun refreshEpisode(subject: VideoSubject, callback: IListEpisodeCallback) {
-            Bangumi.getSubjectEps(subject.id!!.toInt(),  subject.getUserAgent()?:"").enqueue(ApiHelper.buildCallback(null, { list ->
+            Bangumi.getSubjectEps(subject.id!!.toInt(),  subject.getUserAgent()?:"").enqueue(ApiHelper.buildCallback({ list ->
                 callback.onFinish(list.map { VideoEpisode(it) })
             }, { it?.let{ callback.onReject(it.toString()) } }))
         }

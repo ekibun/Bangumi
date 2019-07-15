@@ -100,7 +100,7 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
         val ua = (fragment.activity as? MainActivity)?.ua?:""
         collectionCalls[position] = if(useApi) Bangumi.getCollection(ua)//api.collection(userName)
         else Bangumi.getCollectionList(subjectTypeView.getTypeName(), userName, ua, CollectionStatusType.status[position], page+1)
-        collectionCalls[position]?.enqueue(ApiHelper.buildCallback(item.second.context, {
+        collectionCalls[position]?.enqueue(ApiHelper.buildCallback({
             item.first.isUseEmpty(true)
             it.filter { !useApi || it.subject?.type == subjectTypeView.getType() }.let{
                 if(!useApi) it.forEach {

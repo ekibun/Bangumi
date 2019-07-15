@@ -80,7 +80,7 @@ class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private
             else -> "group"
         } else listOf("", "group", "subject", "ep", "mono")[position], (fragment.activity as? MainActivity)?.ua?:"")
         item.second.isRefreshing = true
-        topicCall[position]?.enqueue(ApiHelper.buildCallback(item.second.context, {
+        topicCall[position]?.enqueue(ApiHelper.buildCallback({
             item.first.isUseEmpty(true)
             item.first.setNewData(it)
             (item.second.tag as? androidx.recyclerview.widget.RecyclerView)?.tag = true

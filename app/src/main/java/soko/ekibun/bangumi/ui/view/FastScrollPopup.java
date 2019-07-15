@@ -37,7 +37,7 @@ public class FastScrollPopup {
     private ObjectAnimator mAlphaAnimator;
     private boolean mVisible;
 
-    @com.simplecityapps.recyclerview_fastscroll.views.FastScroller.FastScrollerPopupPosition private int mPosition;
+    @FastScroller.FastScrollerPopupPosition private int mPosition;
 
     FastScrollPopup(Resources resources, FastScrollRecyclerView recyclerView) {
 
@@ -108,17 +108,17 @@ public class FastScrollPopup {
         return mAlpha;
     }
 
-    public void setPopupPosition(@com.simplecityapps.recyclerview_fastscroll.views.FastScroller.FastScrollerPopupPosition int position) {
+    public void setPopupPosition(@FastScroller.FastScrollerPopupPosition int position) {
         mPosition = position;
     }
 
-    @com.simplecityapps.recyclerview_fastscroll.views.FastScroller.FastScrollerPopupPosition
+    @FastScroller.FastScrollerPopupPosition
     public int getPopupPosition() {
         return mPosition;
     }
 
     private float[] createRadii() {
-        if (mPosition == com.simplecityapps.recyclerview_fastscroll.views.FastScroller.FastScrollerPopupPosition.CENTER) {
+        if (mPosition == FastScroller.FastScrollerPopupPosition.CENTER) {
             return new float[]{mCornerRadius, mCornerRadius, mCornerRadius, mCornerRadius, mCornerRadius, mCornerRadius, mCornerRadius, mCornerRadius};
         }
 

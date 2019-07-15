@@ -22,7 +22,6 @@ import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import soko.ekibun.bangumi.api.ApiHelper
-import soko.ekibun.bangumi.api.catbox.CatBox
 import soko.ekibun.bangumi.api.uploadcc.UploadCC
 
 class ReplyDialog: androidx.fragment.app.DialogFragment() {
@@ -181,7 +180,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
         val requestBody = RequestBody.create(MediaType.parse(mimeType),inputStream.readBytes())
         val body = MultipartBody.Part.createFormData("uploaded_file[]", fileName, requestBody)
         val call = UploadCC.createInstance().upload(body)
-        call.enqueue(ApiHelper.buildCallback(activity, {
+        call.enqueue(ApiHelper.buildCallback({
             insertText("[img]https://upload.cc/${it.success_image?.firstOrNull()?.url}[/img]")
         }, {}))
     }

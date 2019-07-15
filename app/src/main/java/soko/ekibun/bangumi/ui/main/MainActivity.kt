@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity() {
 
         val sp = PreferenceManager.getDefaultSharedPreferences(this)
         if(sp.getBoolean("check_update", true)){
-            Github.createInstance().releases().enqueue(ApiHelper.buildCallback(this, {
+            Github.createInstance().releases().enqueue(ApiHelper.buildCallback({
                 val release = it.firstOrNull()?:return@buildCallback
                 val current = packageManager?.getPackageInfo(packageName, 0)?.versionName?:""
                 if(!isFinishing && release.tag_name?.compareTo(current)?:0 > 0 && sp.getString("ignore_tag", "") != release.tag_name)

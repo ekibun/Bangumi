@@ -66,7 +66,7 @@ class EditProgressDialog(context: Context): Dialog(context, R.style.AppTheme_Dia
 
             ApiHelper.buildHttpCall("${Bangumi.SERVER}/subject/set/watched/${subject.id}", mapOf("User-Agent" to ua), body.build()){
                 it.code() == 200
-            }.enqueue(ApiHelper.buildCallback(context,{
+            }.enqueue(ApiHelper.buildCallback({
                 if(!it) return@buildCallback
                 subject.ep_status = view.item_eps.text.toString().toIntOrNull()?:0
                 subject.vol_status = view.item_vol.text.toString().toIntOrNull()?:0

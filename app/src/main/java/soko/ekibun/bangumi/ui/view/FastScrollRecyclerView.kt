@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
-import com.simplecityapps.recyclerview_fastscroll.R
+import soko.ekibun.bangumi.R
 import com.simplecityapps.recyclerview_fastscroll.interfaces.OnFastScrollStateChangeListener
 import com.simplecityapps.recyclerview_fastscroll.utils.Utils
 import kotlin.math.roundToInt

@@ -28,7 +28,7 @@ class TopicPresenter(private val context: TopicActivity) {
     private val ua by lazy { WebView(context).settings.userAgentString }
     fun getTopic(scrollPost: String = ""){
         context.item_swipe.isRefreshing = true
-        Bangumi.getTopic(context.openUrl, ua).enqueue(ApiHelper.buildCallback(context, {topic->
+        Bangumi.getTopic(context.openUrl, ua).enqueue(ApiHelper.buildCallback({topic->
             processTopic(topic, scrollPost)
         }){context.item_swipe.isRefreshing = false})
     }
@@ -68,7 +68,7 @@ class TopicPresenter(private val context: TopicActivity) {
                                     val url = topic.post.replace(Bangumi.SERVER, "${Bangumi.SERVER}/erase").replace("/new_reply", "?gh=${topic.formhash}&ajax=1")
                                     ApiHelper.buildHttpCall(url, mapOf("User-Agent" to ua)) {
                                         true
-                                    }.enqueue(ApiHelper.buildCallback<Boolean>(context, {
+                                    }.enqueue(ApiHelper.buildCallback<Boolean>({
                                         if (it) context.finish()
                                     }) {})
                                 } else {
@@ -82,7 +82,7 @@ class TopicPresenter(private val context: TopicActivity) {
                                     } + "${post.pst_id}?gh=${topic.formhash}&ajax=1"
                                     ApiHelper.buildHttpCall(url, mapOf("User-Agent" to ua)) {
                                         it.body()?.string()?.contains("\"status\":\"ok\"") == true
-                                    }.enqueue(ApiHelper.buildCallback<Boolean>(context, {
+                                    }.enqueue(ApiHelper.buildCallback<Boolean>({
                                         val data = ArrayList(topicView.adapter.data)
                                         data.removeAll { topicPost -> topicPost.pst_id == post.pst_id }
                                         topicView.setNewData(data)
@@ -105,7 +105,7 @@ class TopicPresenter(private val context: TopicActivity) {
                     ApiHelper.buildHttpCall(url, mapOf("User-Agent" to ua)){
                         val doc = Jsoup.parse(it.body()?.string()?:return@buildHttpCall null)
                         doc.selectFirst("#content")?.text()
-                    }.enqueue(ApiHelper.buildCallback(context, {
+                    }.enqueue(ApiHelper.buildCallback({
                         if(it == null){
                             WebActivity.launchUrl(context, url)
                             return@buildCallback
@@ -116,7 +116,7 @@ class TopicPresenter(private val context: TopicActivity) {
                                             .add("formhash", topic.formhash!!)
                                             .add("title", topic.title)
                                             .add("submit", "改好了")
-                                            .add("content", inputString).build()){true}.enqueue(ApiHelper.buildCallback(context, {
+                                            .add("content", inputString).build()){true}.enqueue(ApiHelper.buildCallback({
                                         getTopic(post.pst_id)
                                     })) }
                             }
@@ -174,7 +174,7 @@ class TopicPresenter(private val context: TopicActivity) {
                         }
                     }
                     replies.sortedBy { it.floor + it.sub_floor * 1.0f/replies.size }
-                }.enqueue(ApiHelper.buildCallback<List<TopicPost>>(context, {
+                }.enqueue(ApiHelper.buildCallback<List<TopicPost>>({
                     topicView.setNewData(it)
                 }) {})
             }

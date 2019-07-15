@@ -52,7 +52,7 @@ class IndexPagerAdapter(private val fragment: IndexFragment, private val pager: 
         }
         indexCalls[position] = Bangumi.browserAirTime(indexType.first, year, month, page + 1, (fragment.activity as? MainActivity)?.ua?:"", indexType.second)
         item.adapter.isUseEmpty(false)
-        indexCalls[position]?.enqueue(ApiHelper.buildCallback(item.view.context, {
+        indexCalls[position]?.enqueue(ApiHelper.buildCallback({
             item.adapter.isUseEmpty(true)
             if(it.isEmpty()){
                 item.adapter.loadMoreEnd()

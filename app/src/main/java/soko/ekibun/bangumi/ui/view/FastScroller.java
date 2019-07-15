@@ -21,7 +21,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 
-import com.simplecityapps.recyclerview_fastscroll.R;
+import soko.ekibun.bangumi.R;
 import com.simplecityapps.recyclerview_fastscroll.interfaces.OnFastScrollStateChangeListener;
 import com.simplecityapps.recyclerview_fastscroll.utils.Utils;
 
@@ -69,7 +69,7 @@ public class FastScroller {
     private boolean mThumbInactiveState;
 
     @Retention(SOURCE)
-    @IntDef({com.simplecityapps.recyclerview_fastscroll.views.FastScroller.FastScrollerPopupPosition.ADJACENT, com.simplecityapps.recyclerview_fastscroll.views.FastScroller.FastScrollerPopupPosition.CENTER})
+    @IntDef({FastScroller.FastScrollerPopupPosition.ADJACENT, FastScroller.FastScrollerPopupPosition.CENTER})
     public @interface FastScrollerPopupPosition {
         int ADJACENT = 0;
         int CENTER = 1;
@@ -104,7 +104,7 @@ public class FastScroller {
             int popupTextColor = typedArray.getColor(R.styleable.FastScrollRecyclerView_fastScrollPopupTextColor, 0xffffffff);
             int popupTextSize = typedArray.getDimensionPixelSize(R.styleable.FastScrollRecyclerView_fastScrollPopupTextSize, Utils.toScreenPixels(resources, 44));
             int popupBackgroundSize = typedArray.getDimensionPixelSize(R.styleable.FastScrollRecyclerView_fastScrollPopupBackgroundSize, Utils.toPixels(resources, 88));
-            @com.simplecityapps.recyclerview_fastscroll.views.FastScroller.FastScrollerPopupPosition int popupPosition = typedArray.getInteger(R.styleable.FastScrollRecyclerView_fastScrollPopupPosition, com.simplecityapps.recyclerview_fastscroll.views.FastScroller.FastScrollerPopupPosition.ADJACENT);
+            @FastScroller.FastScrollerPopupPosition int popupPosition = typedArray.getInteger(R.styleable.FastScrollRecyclerView_fastScrollPopupPosition, FastScroller.FastScrollerPopupPosition.ADJACENT);
 
             mTrack.setColor(trackColor);
             mThumb.setColor(mThumbInactiveState ? mThumbInactiveColor : mThumbActiveColor);
@@ -362,7 +362,7 @@ public class FastScroller {
         }
     }
 
-    public void setPopupPosition(@com.simplecityapps.recyclerview_fastscroll.views.FastScroller.FastScrollerPopupPosition int popupPosition) {
+    public void setPopupPosition(@FastScroller.FastScrollerPopupPosition int popupPosition) {
         mPopup.setPopupPosition(popupPosition);
     }
 

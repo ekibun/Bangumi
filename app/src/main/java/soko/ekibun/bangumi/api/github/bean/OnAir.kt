@@ -1,4 +1,4 @@
-package soko.ekibun.bangumi.api.tinygrail.bean
+package soko.ekibun.bangumi.api.github.bean
 
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject

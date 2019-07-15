@@ -88,7 +88,7 @@ class EditSubjectDialog(context: Context): Dialog(context, R.style.AppTheme_Dial
             AlertDialog.Builder(context).setTitle(R.string.collection_dialog_remove)
                     .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
                         ApiHelper.buildHttpCall("${Bangumi.SERVER}/subject/${subject.id}/remove?gh=$formhash", mapOf("User-Agent" to ua)){ it.code() == 200 }
-                                .enqueue(ApiHelper.buildCallback(context, {
+                                .enqueue(ApiHelper.buildCallback({
                                     if(it) subject.interest = Collection()
                                     dismiss()
                                 }, {}))
@@ -104,7 +104,7 @@ class EditSubjectDialog(context: Context): Dialog(context, R.style.AppTheme_Dial
             val newPrivacy = if(view.item_private.isChecked) 1 else 0
             val newTags = if(adapter.data.isNotEmpty()) adapter.data.reduce { acc, s -> "$acc $s" } else ""
             Bangumi.updateCollectionStatus(subject, formhash,ua,
-                    newStatus, newTags, newComment, newRating, newPrivacy).enqueue(ApiHelper.buildCallback(context,{
+                    newStatus, newTags, newComment, newRating, newPrivacy).enqueue(ApiHelper.buildCallback({
                 subject.interest = it
                 dismiss()
             },{}))
