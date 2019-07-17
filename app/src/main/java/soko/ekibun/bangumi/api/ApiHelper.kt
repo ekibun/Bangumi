@@ -16,6 +16,7 @@ object ApiHelper {
         return object:Callback<T>{
             override fun onFailure(call: Call<T>, t: Throwable) {
                 Log.e("errUrl", call.request().url().toString())
+                if(!t.toString().contains("Canceled")) finish(t)
                 t.printStackTrace()
             }
 
