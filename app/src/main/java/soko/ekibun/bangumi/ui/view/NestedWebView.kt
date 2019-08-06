@@ -6,6 +6,7 @@ import android.net.http.SslError
 import android.os.Message
 import android.util.AttributeSet
 import android.util.Log
+import android.view.MotionEvent
 import android.view.ViewGroup
 import android.webkit.*
 import java.text.SimpleDateFormat
@@ -46,6 +47,13 @@ class NestedWebView @JvmOverloads constructor(context: Context, attrs: Attribute
 
         webChromeClient = mWebChromeClient
         webViewClient = mWebViewClient
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        if(event.action == MotionEvent.ACTION_DOWN && scrollY <= 0)
+            scrollTo(scrollX, 1)
+
+        return super.onTouchEvent(event)
     }
 
     fun close(){
