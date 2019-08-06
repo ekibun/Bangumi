@@ -14,10 +14,18 @@
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-        <soko.ekibun.bangumi.ui.view.NestedWebView
-                android:id="@+id/webview"
+        <RelativeLayout
+                android:id="@+id/nonVideoLayout"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
+                android:layout_height="match_parent"
+                android:windowSoftInputMode="adjustResize">
+            <soko.ekibun.bangumi.ui.view.NestedWebView
+                    android:id="@+id/webview"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:windowSoftInputMode="adjustResize"
+                    app:layout_constraintDimensionRatio="1"/>
+        </RelativeLayout>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <ProgressBar

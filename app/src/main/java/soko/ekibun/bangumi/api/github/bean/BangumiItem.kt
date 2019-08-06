@@ -129,8 +129,8 @@ data class BangumiItem(
                 "bangumi" -> "http://bangumi.tv/subject/$id"
                 "saraba1st" -> "https://bbs.saraba1st.com/2b/thread-$id-1-1.html"
 
-                "acfun" -> "http://www.acfun.cn/v/ab$id"
-                "bilibili" -> "https://bangumi.bilibili.com/anime/$id"
+                "acfun" -> "https://www.acfun.cn/bangumi/aa$id"
+                "bilibili" -> "https://www.bilibili.com/bangumi/media/md$id"
                 "tucao" -> "http://www.tucao.tv/index.php?m=search&c=index&a=init2&q=$id"
                 "sohu" -> "https://tv.sohu.com/$id"
                 "youku" -> "https://list.youku.com/show/id_z$id.html"

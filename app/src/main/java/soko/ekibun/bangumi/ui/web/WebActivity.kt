@@ -1,31 +1,45 @@
 package soko.ekibun.bangumi.ui.web
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.view.KeyEvent
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
+import android.view.*
 import android.webkit.*
+import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_web.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.ui.topic.TopicActivity
-import soko.ekibun.bangumi.ui.view.SwipeBackActivity
 import soko.ekibun.bangumi.util.AppUtil
 import java.net.URI
+import android.view.ViewTreeObserver
 
-class WebActivity : SwipeBackActivity() {
+
+class WebActivity : AppCompatActivity() {
     private val isAuth by lazy{ intent.getBooleanExtra(IS_AUTH, false)}
     private val openUrl by lazy{ intent.getStringExtra(OPEN_URL).replace(Regex("""^https?://(bgm\.tv|bangumi\.tv|chii\.in)"""), Bangumi.SERVER) }
+
+    private val mOnScrollChangedListener = ViewTreeObserver.OnScrollChangedListener{
+        var view = webview
+        while(view.childWebView != null)
+            view = view.childWebView!!
+        item_swipe.isEnabled = view.scrollY == 0
+    }
+
+    override fun onStop() {
+        super.onStop()
+        item_swipe.viewTreeObserver.removeOnScrollChangedListener(mOnScrollChangedListener)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        item_swipe.viewTreeObserver.addOnScrollChangedListener(mOnScrollChangedListener)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,74 +47,60 @@ class WebActivity : SwipeBackActivity() {
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        val setProgress = { newProgress: Int ->
+        item_swipe.setOnRefreshListener {
+            var view = webview
+            while(view.childWebView != null)
+                view = view.childWebView!!
+            view.reload()
+        }
+
+        webview_progress.max = 100
+        webview.onProgressChanged = { _: WebView, newProgress: Int ->
             webview_progress.visibility = if (newProgress == 100) View.GONE else View.VISIBLE
             item_swipe.isRefreshing = newProgress != 100
             webview_progress.progress = newProgress
         }
 
-        item_swipe.setOnRefreshListener {
-            webview.reload()
-        }
-
-        webview_progress.max = 100
-        @SuppressLint("SetJavaScriptEnabled")
-        webview.settings.javaScriptEnabled = true
-        webview.settings.domStorageEnabled = true
-        webview.settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         if(!isAuth) {
             title = ""
             webview.loadUrl(openUrl)
-            webview.webChromeClient = object:WebChromeClient(){
-                override fun onReceivedTitle(view: WebView?, title: String?) {
-                    super.onReceivedTitle(view, title)
-                    if (title != null) this@WebActivity.title = title
-                }
-                override fun onProgressChanged(view: WebView, newProgress: Int) {
-                    setProgress(newProgress)
-                }
+            webview.onReceivedTitle = { _: WebView?, title: String? ->
+                if (title != null) this@WebActivity.title = title
             }
-            webview.webViewClient = object : WebViewClient() {
-                override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-                    val url = request.url.toString()
-                    if(jumpUrl(this@WebActivity, url, openUrl)){
-                        return true
-                    }else if(!url.startsWith("http") || !isBgmPage(url)){
-                        try{
-                            startActivity(Intent.createChooser(Intent(Intent.ACTION_VIEW, request.url), url))
-                        }catch(e: Exception){
-                            e.printStackTrace()
-                            return false }
-                        return true
-                    }else {
-                        val bgmUrl = url.replace(Regex("""^https?://(bgm\.tv|bangumi\.tv|chii\.in)"""), Bangumi.SERVER)
-                        if(bgmUrl != url){
-                            webview.loadUrl(bgmUrl)
-                            return true
-                        }
-                    }
-                    return false
+            webview.shouldOverrideUrlLoading = { _: WebView, request: WebResourceRequest ->
+                val url = request.url.toString()
+                if(jumpUrl(this@WebActivity, url, openUrl)){
+                    true
+                }else if(!url.startsWith("http") || !isBgmPage(url)){
+                    try{
+                        startActivity(Intent.createChooser(Intent(Intent.ACTION_VIEW, request.url), url))
+                        true
+                    }catch(e: Exception){
+                        e.printStackTrace()
+                        false }
+                }else {
+                    val bgmUrl = url.replace(Regex("""^https?://(bgm\.tv|bangumi\.tv|chii\.in)"""), Bangumi.SERVER)
+                    if(bgmUrl != url){
+                        webview.loadUrl(bgmUrl)
+                        true
+                    }else false
                 }
             }
         }else{
             title = getString(R.string.login)
             val authUrl = "${Bangumi.SERVER}/login"
-            webview.webChromeClient = object: WebChromeClient() {
-                override fun onProgressChanged(view: WebView, newProgress: Int) {
-                    setProgress(newProgress)
-                }
-            }
-            webview.webViewClient = object : WebViewClient() {
-                override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
-                    if(url.trim('/') == Bangumi.SERVER){
-                        webview.loadUrl("about:blank")
-                        setResult(Activity.RESULT_OK, Intent())
-                        finish()
-                    }else if(url != authUrl && !url.contains("${Bangumi.SERVER}/FollowTheRabbit")) {
-                        Log.v("redirect", url)
-                        webview.loadUrl(authUrl)
-                    }
-                }
+            webview.shouldOverrideUrlLoading = { _: WebView, request: WebResourceRequest ->
+                val url = request.url.toString()
+                if(url.trim('/') == Bangumi.SERVER){
+                    webview.loadUrl("about:blank")
+                    setResult(Activity.RESULT_OK, Intent())
+                    finish()
+                    false
+                }else if(url != authUrl && !url.contains("${Bangumi.SERVER}/FollowTheRabbit")) {
+                    Log.v("redirect", url)
+                    webview.loadUrl(authUrl)
+                    true
+                }else false
             }
             webview.loadUrl(authUrl)
         }
@@ -112,20 +112,15 @@ class WebActivity : SwipeBackActivity() {
         return true
     }
 
-    //back
-    override fun processBack(){
-        when {
-            webview.canGoBack() -> webview.goBack()
-            else -> {
-                if(isAuth) setResult(Activity.RESULT_CANCELED, null)
-                super.processBack()
-            }
-        }
-    }
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        var view = webview
+        while(view.childWebView != null)
+            view = view.childWebView!!
+
         if (keyCode == KeyEvent.KEYCODE_BACK){
             when {
-                webview.canGoBack() -> webview.goBack()
+                view.canGoBack() -> view.goBack()
+                view.parentWebView != null -> view.close()
                 else -> {
                     if(isAuth) setResult(Activity.RESULT_CANCELED, null)
                     finish()
@@ -137,13 +132,16 @@ class WebActivity : SwipeBackActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        var view = webview
+        while(view.childWebView != null)
+            view = view.childWebView!!
         when (item.itemId) {
             android.R.id.home -> {
                 if(isAuth) setResult(Activity.RESULT_CANCELED, null)
                 finish()
             }
-            R.id.action_open -> AppUtil.openBrowser(this, webview.url)
-            R.id.action_share -> AppUtil.shareString(this, webview.url)
+            R.id.action_open -> AppUtil.openBrowser(this, view.url)
+            R.id.action_share -> AppUtil.shareString(this, view.url)
         }
         return super.onOptionsItemSelected(item)
     }
@@ -204,7 +202,7 @@ class WebActivity : SwipeBackActivity() {
             return url
         }
 
-        private val bgmHosts = arrayOf("bgm.tv", "bangumi.tv", "chii.in")
+        private val bgmHosts = arrayOf("bgm.tv", "bangumi.tv", "chii.in", "tinygrail.com")
         fun jumpUrl(context: Context, page: String?, openUrl: String): Boolean{
             val url = page?.split("#")?.get(0)
             val rakuen = getRakuen(url)
