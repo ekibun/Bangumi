@@ -33,7 +33,6 @@ import kotlinx.android.synthetic.main.subject_character.*
 import kotlinx.android.synthetic.main.subject_detail.*
 import kotlinx.android.synthetic.main.subject_episode.*
 import kotlinx.android.synthetic.main.subject_episode.view.*
-import kotlinx.android.synthetic.main.subject_rank.view.*
 import kotlinx.android.synthetic.main.subject_topic.*
 import org.jsoup.Jsoup
 import soko.ekibun.bangumi.R
@@ -214,25 +213,11 @@ class SubjectView(private val context: SubjectActivity){
 
         context.item_play.visibility = if((PlayerBridge.checkActivity(context) || PlayerBridge.checkActivity(context)) && subject.type in listOf(SubjectType.ANIME, SubjectType.REAL)) View.VISIBLE else View.GONE
 
-        detail.item_rank_count.text = if(subject.rank == 0) "" else "#${subject.rank}"
-
         subject.rating?.let {
-            detail.item_friend_score.text = if(it.friend_score == 0.0) "-" else String.format("%.1f", it.friend_score)
-            detail.item_score.text = if(it.score == 0.0) "-" else String.format("%.1f", it.score)
-            detail.item_rating.rating = it.score.toFloat() / 2
-            detail.item_score_count.text = context.getString(R.string.rate_count, it.total)
-            val count = it.count?:return@let
-            val max = count.toList().max()?:return@let
-            detail.rate_10.progress = if(max == 0) 0 else 100 * count.c10 / max
-            detail.rate_9.progress = if(max == 0) 0 else 100 * count.c9 / max
-            detail.rate_8.progress = if(max == 0) 0 else 100 * count.c8 / max
-            detail.rate_7.progress = if(max == 0) 0 else 100 * count.c7 / max
-            detail.rate_6.progress = if(max == 0) 0 else 100 * count.c6 / max
-            detail.rate_5.progress = if(max == 0) 0 else 100 * count.c5 / max
-            detail.rate_4.progress = if(max == 0) 0 else 100 * count.c4 / max
-            detail.rate_3.progress = if(max == 0) 0 else 100 * count.c3 / max
-            detail.rate_2.progress = if(max == 0) 0 else 100 * count.c2 / max
-            detail.rate_1.progress = if(max == 0) 0 else 100 * count.c1 / max
+            context.detail_score.text = if(it.score == 0.0) "-" else String.format("%.1f", it.score)
+            context.detail_friend_score.text = if(it.friend_score == 0.0)  "-" else String.format("%.1f", it.friend_score)
+            context.detail_score_count.text = "×${ if(it.total > 1000) "${it.total / 1000}k" else it.total }"
+            context.item_friend_score_label.text = context.getString(R.string.friend_score)
         }
         GlideUtil.with(context.item_cover)
                 ?.load(subject.images?.getImage(context))
@@ -301,13 +286,6 @@ class SubjectView(private val context: SubjectActivity){
         }
         detail.item_detail.setOnClickListener {
             showInfoBox(subject)
-        }
-        subject.collection?.let{
-            detail.item_collection_count.text = context.getString(R.string.phrase_collection_count, it.wish, it.collect, it.doing, it.on_hold, it.dropped)
-        }
-
-        detail.item_netabare.setOnClickListener {
-            WebActivity.launchUrl(context, "https://netaba.re/subject/${subject.id}")
         }
 
         detail.item_progress.visibility = if(subject.formhash?.isNotEmpty() == true && subject.interest?.status?.type == CollectionStatusType.DO && subject.type in listOf(SubjectType.ANIME, SubjectType.REAL, SubjectType.BOOK)) View.VISIBLE else View.GONE

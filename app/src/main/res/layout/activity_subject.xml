@@ -46,7 +46,7 @@
                         android:id="@+id/item_mask"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:background="#55000000"/>
+                        android:background="#77000000"/>
 
                 <View
                         android:id="@+id/item_scrim"
@@ -138,8 +138,6 @@
             android:showDividers="middle"
             tools:layout_behavior="@string/appbar_scrolling_view_behavior"
             android:orientation="vertical">
-
-        <include layout="@layout/subject_rank"/>
 
         <LinearLayout
                 android:layout_width="match_parent"
@@ -306,6 +304,7 @@
             tools:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:overScrollMode="never"
             android:fillViewport="true"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
