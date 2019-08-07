@@ -8,13 +8,13 @@ import android.animation.ValueAnimator
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.util.Log
 import android.view.ViewConfiguration
-import com.github.chrisbanes.photoview.PhotoView
 import java.util.*
+import kotlin.math.abs
+import kotlin.math.max
 
 
-class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeSet? = null, defStyle: Int = 0) : PhotoView(context, attr, defStyle) {
+class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeSet? = null, defStyle: Int = 0) : BigImageView(context, attr, defStyle) {
     private val mPaint: Paint = Paint()
 
     private var mDownX: Float = 0.toFloat()
@@ -25,9 +25,8 @@ class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeS
     private var mScale = 1f
     private var mWidth: Int = 0
     private var mHeight: Int = 0
-    private var minScale = 0.5f
+    private var minDragDownScale = 0.5f
     private var mAlpha = 255
-    private var canFinish = 0
     private var isAnimate = false
 
     //is event on PhotoView
@@ -87,6 +86,7 @@ class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeS
         mPaint.color = Color.BLACK
     }
 
+    //override fun dispatchDraw(canvas: Canvas) {
     override fun onDraw(canvas: Canvas) {
         mPaint.alpha = mAlpha
         canvas.drawRect(0f, 0f, mWidth.toFloat(), mHeight.toFloat(), mPaint)
@@ -106,14 +106,13 @@ class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeS
     private var timeoutTask: TimerTask? = null
     private var longClick = false
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+
         val moveY = event.y
         val moveX = event.x
         val translateX = moveX - mDownX
         val translateY = moveY - mDownY
 
-        //only scale == 1 can drag
-        if (scale == 1f) {
-
+        if (isMinScale) {
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     onActionDown(event)
@@ -121,7 +120,7 @@ class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeS
                     timeoutTask?.cancel()
                     timeoutTask = object: TimerTask(){
                         override fun run() {
-                            if (scale != 1f) return
+                            if (!isMinScale) return
                             this@DragPhotoView.post {mLongClickListener?.invoke()}
                             longClick = true
                         }
@@ -134,7 +133,7 @@ class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeS
                     }
                     //in viewpager
                     //如果不消费事件，则不作操作
-                    if (!isTouchEvent && Math.abs(translateY) < Math.abs(translateX)) {
+                    if (!isTouchEvent && abs(translateY) < abs(translateX)) {
                         mScale = 1f
                         performAnimation()
                         return super.dispatchTouchEvent(event)
@@ -146,7 +145,7 @@ class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeS
                         if(isTouchEvent)
                             onActionMove(event)
 
-                        if (Math.abs(translateY) > Math.abs(translateX)) {
+                        if (abs(translateY) > abs(translateX)) {
                             isTouchEvent = true
                         }
                         return true
@@ -165,7 +164,7 @@ class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeS
                         if (translateX == 0f && translateY == 0f &&!longClick){
                             timeoutTask = object: TimerTask(){
                                 override fun run() {
-                                    if (scale != 1f) return
+                                    if (!isMinScale) return
                                     this@DragPhotoView.post { mTapListener?.invoke() }
                                 }
                             }
@@ -191,9 +190,9 @@ class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeS
         mTranslateX = moveX - mDownX
         mTranslateY = moveY - mDownY
 
-        val percent = Math.max(0f, mTranslateY) / MAX_TRANSLATE_Y
+        val percent = max(0f, mTranslateY) / MAX_TRANSLATE_Y
 
-        if (mScale in minScale..1f) {
+        if (mScale in minDragDownScale..1f) {
             mScale = (1 - percent)* 0.5f + 0.5f
 
             mAlpha = (155 * (1 - percent)).toInt() + 100
@@ -203,8 +202,8 @@ class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeS
                 mAlpha = 100
             }
         }
-        if (mScale < minScale) {
-            mScale = minScale
+        if (mScale < minDragDownScale) {
+            mScale = minDragDownScale
         } else if (mScale > 1f) {
             mScale = 1f
         }

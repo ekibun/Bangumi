@@ -2,6 +2,7 @@ package soko.ekibun.bangumi.ui.subject
 
 import android.animation.LayoutTransition
 import android.annotation.SuppressLint
+import android.net.Uri
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -244,7 +245,7 @@ class SubjectView(private val context: SubjectActivity){
             popWindow.contentView = photoView
             GlideUtil.with(photoView)?.load(subject.images?.large)
                     ?.apply(RequestOptions.placeholderOf(context.item_cover.drawable))
-                    ?.into(photoView)
+                    ?.into(photoView.glideTarget)
             photoView.mTapListener={
                 popWindow.dismiss()
             }
@@ -256,7 +257,7 @@ class SubjectView(private val context: SubjectActivity){
                 AlertDialog.Builder(context)
                         .setItems(arrayOf(context.getString(R.string.share)))
                         { _, _ ->
-                            AppUtil.shareDrawable(context, photoView.drawable)
+                            //AppUtil.shareDrawable(context, photoView.drawable)
                         }.setOnDismissListener {
                             popWindow.contentView.systemUiVisibility = systemUiVisibility
                         }.show()

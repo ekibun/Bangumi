@@ -25,7 +25,7 @@ object AppUtil {
         try {
             val cachePath = File(context.cacheDir, "images")
             cachePath.mkdirs() // don't forget to make the directory
-            val stream = FileOutputStream(cachePath.toString() + "/image", false) // overwrites this image every time
+            val stream = FileOutputStream("$cachePath/image", false) // overwrites this image every time
             if(drawable is GifDrawable){
                 val newGifDrawable = (drawable.constantState!!.newDrawable().mutate()) as GifDrawable
                 val byteBuffer = newGifDrawable.buffer

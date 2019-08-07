@@ -1,12 +1,10 @@
 package soko.ekibun.bangumi.ui.topic
 
-import androidx.viewpager.widget.PagerAdapter
 import androidx.appcompat.app.AlertDialog
 import android.view.View
 import android.view.ViewGroup
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.ui.view.DragPhotoView
-import soko.ekibun.bangumi.util.AppUtil
 import soko.ekibun.bangumi.util.GlideUtil
 
 class PhotoPagerAdapter(private val items: List<String>, private val onDismiss: ()->Unit): androidx.viewpager.widget.PagerAdapter(){
@@ -14,8 +12,7 @@ class PhotoPagerAdapter(private val items: List<String>, private val onDismiss: 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
         val photoView = DragPhotoView(container.context)
         photoView.isEnabled = true
-        GlideUtil.with(photoView)?.load(items[position])?.into(photoView)
-        //photoView.setImageDrawable(items[position])
+        GlideUtil.with(photoView)?.load(items[position])?.into(photoView.glideTarget)
         photoView.mExitListener = { onDismiss() }
         photoView.mTapListener = { onDismiss() }
         photoView.mLongClickListener = {
@@ -23,7 +20,7 @@ class PhotoPagerAdapter(private val items: List<String>, private val onDismiss: 
             AlertDialog.Builder(container.context)
                     .setItems(arrayOf(container.context.getString(R.string.share)))
                     { _, _ ->
-                        AppUtil.shareDrawable(container.context, photoView.drawable)
+                        //AppUtil.shareDrawable(container.context, photoView.drawable)
                     }.setOnDismissListener {
                         container.systemUiVisibility = systemUiVisibility
                     }.show()

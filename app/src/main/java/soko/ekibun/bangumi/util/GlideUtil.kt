@@ -2,6 +2,10 @@ package soko.ekibun.bangumi.util
 
 import android.app.Activity
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.PixelFormat
+import android.graphics.drawable.Drawable
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import android.view.View

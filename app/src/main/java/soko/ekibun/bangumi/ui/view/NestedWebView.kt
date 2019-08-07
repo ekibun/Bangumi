@@ -5,15 +5,9 @@ import android.content.Context
 import android.net.http.SslError
 import android.os.Message
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.ViewGroup
 import android.webkit.*
-import java.text.SimpleDateFormat
-import java.util.*
-import android.webkit.WebResourceResponse
-
-
 
 class NestedWebView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = android.R.attr.webViewStyle) : WebView(context, attrs, defStyleAttr) {
 

@@ -59,4 +59,5 @@ dependencies {
     implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.15'
     implementation 'am.util:viewpager:25.3.0'
     implementation 'com.squareup.retrofit2:converter-scalars:2.1.0'
+    //implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.10.0'
 }
