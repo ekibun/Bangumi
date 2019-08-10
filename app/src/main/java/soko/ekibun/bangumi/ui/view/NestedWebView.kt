@@ -74,10 +74,10 @@ class NestedWebView @JvmOverloads constructor(context: Context, attrs: Attribute
                 newView.onReceivedTitle = webview.onReceivedTitle
                 newView.parentWebView = webview
                 webview.childWebView = newView
-                newView.shouldOverrideUrlLoading = { _: WebView, request: WebResourceRequest ->
+                newView.shouldOverrideUrlLoading = { v: WebView, request: WebResourceRequest ->
                     newView.loadUrl(request.url.toString())
                     newView.shouldOverrideUrlLoading = webview.shouldOverrideUrlLoading
-                    true
+                    newView.shouldOverrideUrlLoading(v, request)
                 }
                 val layoutParams = webview.layoutParams
                 parent.removeView(webview)

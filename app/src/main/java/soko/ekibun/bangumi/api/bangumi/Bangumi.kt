@@ -337,7 +337,7 @@ interface Bangumi {
                                 img.replace("/s/", "/m/"), img,
                                 img.replace("/s/", "/m/")))
                         val time = it.selectFirst(".grey")?.text()?.replace("@", "")?.trim()
-                        val rate = Regex("""sstars([0-9]*)""").find(it.selectFirst(".text")?.selectFirst("span").toString())?.groupValues?.get(1)?.toIntOrNull()?:0
+                        val rate = Regex("""stars([0-9]*)""").find(it.selectFirst(".text")?.selectFirst(".starlight")?.outerHtml()?:"")?.groupValues?.get(1)?.toIntOrNull()?:0
                         val comment = it.selectFirst("p")?.text()
                         ret += Comment(userInfo, time, comment, rate)
                     }
@@ -425,7 +425,7 @@ interface Bangumi {
                         val content = item.selectFirst(".collectInfo")?.text()?:
                                 item.selectFirst(".info_sub")?.text()
                         val contentUrl = item.selectFirst(".info_sub a")?.attr("href")
-                        val collectStar = Regex("""sstars([0-9]*)""").find(item.selectFirst(".starsinfo")?.outerHtml()?:"")?.groupValues?.get(1)?.toIntOrNull()?:0
+                        val collectStar = Regex("""stars([0-9]*)""").find(item.selectFirst(".starlight")?.outerHtml()?:"")?.groupValues?.get(1)?.toIntOrNull()?:0
                         //thumb
                         val thumbs = ArrayList<TimeLine.TimeLineItem.ThumbItem>()
                         item.select("$cssInfo img")?.forEach {

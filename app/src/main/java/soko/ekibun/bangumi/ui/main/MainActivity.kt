@@ -86,7 +86,7 @@ class MainActivity : AppCompatActivity() {
             popup.setOnMenuItemClickListener{
                 when(it.itemId){
                     R.id.notify_type_inbox -> WebActivity.launchUrl(this, "${Bangumi.SERVER}/pm")
-                    R.id.notify_type_notify -> WebActivity.launchUrl(this, "${Bangumi.SERVER}/notify")
+                    R.id.notify_type_notify -> WebActivity.launchUrl(this, "${Bangumi.SERVER}/notify" + if(notify == 0) "/all" else "")
                 }
                 true
             }
