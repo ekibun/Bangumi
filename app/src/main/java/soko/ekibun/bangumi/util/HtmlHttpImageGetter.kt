@@ -4,76 +4,117 @@ import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.text.Html
+import android.util.Log
 import android.widget.TextView
 import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.transition.Transition
 import pl.droidsonroids.gif.GifDrawable
 import java.net.URI
 import android.util.Size
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.request.RequestOptions
 import java.lang.ref.WeakReference
+import soko.ekibun.bangumi.R
 
 @Suppress("DEPRECATION")
 class HtmlHttpImageGetter(container: TextView, private val baseUri: URI?, private val drawables: ArrayList<String>, private val sizeInfos: HashMap<String, Size>) : Html.ImageGetter {
     private val container = WeakReference(container)
     override fun getDrawable(source: String): Drawable {
-        val urlDrawable = UrlDrawable()
+        val urlDrawable = UrlDrawable(source, baseUri, container,sizeInfos)
         drawables.add(source)
-        if(urlDrawable.drawable == null){
+        urlDrawable.loadImage()
+        sizeInfos[source]?.let{
+            urlDrawable.setBounds(0, 0, it.width, it.height)
+        }
+        return urlDrawable
+    }
+
+    class UrlDrawable(val url: String, val baseUri: URI?, val container: WeakReference<TextView>, val sizeInfos: HashMap<String, Size>) : BitmapDrawable() {
+        var drawable: Drawable? = null
+        var error: Boolean? = null
+
+        fun loadImage(){
             val view = container.get()
             view?.post {
+                val update = {resource: Drawable, defSize: Int ->
+                    val drawable = when (resource) {
+                        is com.bumptech.glide.load.resource.gif.GifDrawable -> GifDrawable(resource.buffer)
+                        else -> resource
+                    }
+                    val size = if(defSize > 0) Size(defSize, defSize) else Size(resource.intrinsicWidth, resource.intrinsicHeight)
+                    sizeInfos[url] = size
+                    setBounds(0, 0, size.width, size.height)
+
+                    drawable.setBounds(0, 0, size.width, size.height)
+                    this.drawable?.callback = null
+                    this.drawable = drawable
+                    //}
+                    container.get()?.text = container.get()?.text
+                    container.get()?.invalidate()
+                }
+                val textSize = view.textSize
+                val circularProgressDrawable = CircularProgressDrawable(view.context)
+                circularProgressDrawable.strokeWidth = 5f
+                circularProgressDrawable.centerRadius = textSize / 2 - circularProgressDrawable.strokeWidth - 1f
+                circularProgressDrawable.progressRotation = 0.75f
+                circularProgressDrawable.start()
+                val url = HttpUtil.getUrl(url, baseUri)
+                ProgressAppGlideModule.expect(url, object : ProgressAppGlideModule.UIonProgressListener {
+                    override fun onProgress(bytesRead: Long, expectedLength: Long) {
+                        if(circularProgressDrawable.isRunning) circularProgressDrawable.stop()
+                        circularProgressDrawable.setStartEndTrim(0f, bytesRead * 1f / expectedLength)
+                        circularProgressDrawable.progressRotation = 0.75f
+                        circularProgressDrawable.invalidateSelf()
+                    }
+                    override fun getGranualityPercentage(): Float {
+                        return 1.0f
+                    }
+                })
                 GlideUtil.with(view)
-                        ?.asDrawable()?.load(HttpUtil.getUrl(source, baseUri))
+                        ?.asDrawable()?.load(url)
                         ?.apply(RequestOptions().transform(SizeTransformation {width, _ ->
                             val maxWidth = container.get()?.width?.toFloat()?:return@SizeTransformation 1f
                             val minWidth = container.get()?.textSize?:return@SizeTransformation 1f
                             Math.min(maxWidth, Math.max(minWidth, width.toFloat())) / width
-                        }))
+                        }).placeholder(circularProgressDrawable).error(R.drawable.ic_broken_image))
                         ?.into(object : SimpleTarget<Drawable>() {
+                            override fun onLoadStarted(placeholder: Drawable?) {
+                                error = null
+                                placeholder?.let{ update(it, textSize.toInt()) }
+                            }
+                            override fun onLoadFailed(errorDrawable: Drawable?) {
+                                error = true
+                                if(circularProgressDrawable.isRunning) circularProgressDrawable.stop()
+                                errorDrawable?.let{ update(it, textSize.toInt()) }
+                            }
+                            override fun onLoadCleared(placeholder: Drawable?) {
+                                error = null
+                                placeholder?.let{ update(it, textSize.toInt()) }
+                            }
                             override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
-                                val drawable = when (resource) {
-                                    is com.bumptech.glide.load.resource.gif.GifDrawable -> GifDrawable(resource.buffer)
-                                    else -> resource
-                                }
-                                val size = Size(resource.intrinsicWidth, resource.intrinsicHeight)
-                                sizeInfos[source] = size
-                                urlDrawable.setBounds(0, 0, size.width, size.height)
-
-                                drawable.setBounds(0, 0, size.width, size.height)
-                                urlDrawable.drawable?.callback = null
-                                urlDrawable.drawable = drawable
-                                //}
-                                container.get()?.text = container.get()?.text
-                                container.get()?.invalidate()
+                                if(circularProgressDrawable.isRunning) circularProgressDrawable.stop()
+                                error = false
+                                update(resource, 0)
                             }
                             override fun onStart() {}
                             override fun onDestroy() {}
                         })
             }
         }
-        sizeInfos[source]?.let{
-            urlDrawable.setBounds(0, 0, it.width, it.height)
-        }
-        urlDrawable.container = container
-        return urlDrawable
-    }
-
-    class UrlDrawable : BitmapDrawable() {
-        var drawable: Drawable? = null
-        var container: WeakReference<TextView>? = null
 
         override fun draw(canvas: Canvas) {
-            (drawable as? GifDrawable)?.let{
-                it.callback = object: Drawable.Callback{
-                    override fun invalidateDrawable(who: Drawable) {
-                        container?.get()?.invalidate()
-                    }
-                    override fun scheduleDrawable(who: Drawable, what: Runnable, `when`: Long) {
-                        container?.get()?.postDelayed(what, `when`)
-                    }
-                    override fun unscheduleDrawable(who: Drawable, what: Runnable) {
-                        container?.get()?.removeCallbacks(what)
-                    }
+            drawable?.callback = object: Callback {
+                override fun invalidateDrawable(who: Drawable) {
+                    if (who is CircularProgressDrawable) container.get()?.let { it.text = it.text }
+                    container.get()?.invalidate()
+                }
+
+                override fun scheduleDrawable(who: Drawable, what: Runnable, `when`: Long) {
+                    container.get()?.postDelayed(what, `when`)
+                }
+
+                override fun unscheduleDrawable(who: Drawable, what: Runnable) {
+                    container.get()?.removeCallbacks(what)
                 }
             }
             drawable?.draw(canvas)

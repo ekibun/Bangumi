@@ -81,7 +81,6 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
         val y = ev.y.toInt()
         when (action) {
             MotionEvent.ACTION_DOWN -> {
-                Log.v("down", ev.toString())
                 // Keep track of the down positions
                 mDownX = x
                 mLastY = y

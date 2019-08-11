@@ -19,6 +19,7 @@ import soko.ekibun.bangumi.util.HtmlTagHandler
 import java.net.URI
 import android.text.style.ClickableSpan
 import android.text.style.URLSpan
+import android.util.Log
 import android.util.Size
 import android.widget.TextView
 import com.chad.library.adapter.base.BaseMultiItemQuickAdapter
@@ -72,7 +73,7 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
             val makeSpan = {
                 @Suppress("DEPRECATION")
                 setTextLinkOpenByWebView(
-                        Html.fromHtml(parseHtml(item.pst_content), HtmlHttpImageGetter(item_message, URI.create(Bangumi.SERVER), drawables, imaageSizes), HtmlTagHandler(item_message) {imageSpan ->
+                        Html.fromHtml(parseHtml(item.pst_content.replace("\n", "")), HtmlHttpImageGetter(item_message, URI.create(Bangumi.SERVER), drawables, imaageSizes), HtmlTagHandler(item_message) {imageSpan ->
                             helper.itemView.item_message?.let{itemView->
                                 val imageList = drawables.filter { (it.startsWith("http") || !it.contains("smile")) }.toList()
                                 val index = imageList.indexOfFirst { d -> d == imageSpan.source }
@@ -123,6 +124,7 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
     companion object {
         fun parseHtml(html: String): String{
             val doc= Jsoup.parse(html, Bangumi.SERVER)
+            doc.outputSettings().indentAmount(0).prettyPrint(false)
             doc.select("script").remove()
             doc.select("img").forEach {
                 if(!it.hasAttr("src")) it.remove()

@@ -79,7 +79,11 @@ class HtmlTagHandler(view: TextView, private var baseSize: Float = 13f, private 
 
     class ClickableImage(private val image: ImageSpan, private val onClick:(ImageSpan)->Unit): ClickableSpan(){
         override fun onClick(widget: View) {
-            onClick(image)
+            val drawable = image.drawable
+            if(drawable is HtmlHttpImageGetter.UrlDrawable) {
+                if (drawable.error == true) drawable.loadImage()
+                else if (drawable.error == false) onClick(image)
+            }else onClick(image)
         }
     }
 
