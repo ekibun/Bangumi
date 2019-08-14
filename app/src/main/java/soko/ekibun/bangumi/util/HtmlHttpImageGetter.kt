@@ -4,7 +4,6 @@ import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.text.Html
-import android.util.Log
 import android.widget.TextView
 import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.transition.Transition
@@ -12,6 +11,8 @@ import pl.droidsonroids.gif.GifDrawable
 import java.net.URI
 import android.util.Size
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
+import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.load.model.Headers
 import com.bumptech.glide.request.RequestOptions
 import java.lang.ref.WeakReference
 import soko.ekibun.bangumi.R
@@ -54,6 +55,7 @@ class HtmlHttpImageGetter(container: TextView, private val baseUri: URI?, privat
                 }
                 val textSize = view.textSize
                 val circularProgressDrawable = CircularProgressDrawable(view.context)
+                circularProgressDrawable.setColorSchemeColors(ResourceUtil.resolveColorAttr(view.context, android.R.attr.textColorSecondary))
                 circularProgressDrawable.strokeWidth = 5f
                 circularProgressDrawable.centerRadius = textSize / 2 - circularProgressDrawable.strokeWidth - 1f
                 circularProgressDrawable.progressRotation = 0.75f
@@ -71,7 +73,9 @@ class HtmlHttpImageGetter(container: TextView, private val baseUri: URI?, privat
                     }
                 })
                 GlideUtil.with(view)
-                        ?.asDrawable()?.load(url)
+                        ?.asDrawable()?.load(GlideUrl(url, Headers {
+                            mapOf("referer" to baseUri.toString())
+                        }))
                         ?.apply(RequestOptions().transform(SizeTransformation {width, _ ->
                             val maxWidth = container.get()?.width?.toFloat()?:return@SizeTransformation 1f
                             val minWidth = container.get()?.textSize?:return@SizeTransformation 1f
@@ -97,7 +101,9 @@ class HtmlHttpImageGetter(container: TextView, private val baseUri: URI?, privat
                                 update(resource, 0)
                             }
                             override fun onStart() {}
-                            override fun onDestroy() {}
+                            override fun onDestroy() {
+                                ProgressAppGlideModule.forget(url)
+                            }
                         })
             }
         }

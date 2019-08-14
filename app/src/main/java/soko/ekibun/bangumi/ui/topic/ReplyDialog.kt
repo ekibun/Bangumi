@@ -58,7 +58,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
             emojiList.add(String.format("(bgm%02d)", i) to String.format("${Bangumi.SERVER}/img/smiles/bgm/%02d${if(i == 11 || i == 23)".gif" else ".png"}", i) )
         for(i in 1..100)
             emojiList.add(String.format("(bgm%02d)", i + 23) to String.format("${Bangumi.SERVER}/img/smiles/tv/%02d.gif", i) )
-        "(=A=) (=w=) (-w=) (S_S) (=v=) (@_@) (=W=) (TAT) (T_T) (='=) (=3=) (= =') (=///=) (=.,=) (:P) (LOL)".split(" ").forEachIndexed {i, s->
+        "(=A=)|(=w=)|(-w=)|(S_S)|(=v=)|(@_@)|(=W=)|(TAT)|(T_T)|(='=)|(=3=)|(= =')|(=///=)|(=.,=)|(:P)|(LOL)".split("|").forEachIndexed {i, s->
             emojiList.add(s to "${Bangumi.SERVER}/img/smiles/${i+1}.gif") }
         val emojiAdapter = EmojiAdapter(emojiList)
         emojiAdapter.setOnItemChildClickListener { _, _, position ->
