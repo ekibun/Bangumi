@@ -1,10 +1,9 @@
 package soko.ekibun.bangumi.ui.view
 
-import androidx.appcompat.app.AppCompatActivity
 import android.view.GestureDetector
 import android.view.MotionEvent
 
-abstract class SwipeBackActivity: AppCompatActivity() {
+abstract class SwipeBackActivity: BaseActivity() {
     private val detector by lazy{
         GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
             override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {

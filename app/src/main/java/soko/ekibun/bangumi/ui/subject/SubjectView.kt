@@ -2,23 +2,17 @@ package soko.ekibun.bangumi.ui.subject
 
 import android.animation.LayoutTransition
 import android.annotation.SuppressLint
-import android.net.Uri
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.material.appbar.AppBarLayout
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import android.text.Html
-import android.text.method.LinkMovementMethod
 import android.view.Gravity
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
-import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.PopupWindow
 import com.bumptech.glide.request.RequestOptions
@@ -26,7 +20,6 @@ import com.xiaofeng.flowlayoutmanager.FlowLayoutManager
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_subject.*
 import kotlinx.android.synthetic.main.activity_subject.view.*
-import kotlinx.android.synthetic.main.dialog_infobox.view.*
 import kotlinx.android.synthetic.main.subject_blog.*
 import kotlinx.android.synthetic.main.subject_buttons.*
 import kotlinx.android.synthetic.main.subject_character.*
@@ -39,11 +32,9 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.*
 import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarAdapter
-import soko.ekibun.bangumi.ui.topic.PostAdapter.Companion.setTextLinkOpenByWebView
 import soko.ekibun.bangumi.ui.view.DragPhotoView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.*
-import java.net.URI
 
 class SubjectView(private val context: SubjectActivity){
     val episodeAdapter = SmallEpisodeAdapter()
@@ -282,37 +273,16 @@ class SubjectView(private val context: SubjectActivity){
 
         context.item_subject.setOnClickListener {
             if(scroll2Top()) return@setOnClickListener
-            showInfoBox(subject)
+            InfoboxDialog.showDialog(context, subject)
         }
         detail.item_detail.setOnClickListener {
-            showInfoBox(subject)
+            InfoboxDialog.showDialog(context, subject)
         }
 
         detail.item_progress.visibility = if(subject.formhash?.isNotEmpty() == true && subject.interest?.status?.type == CollectionStatusType.DO && subject.type in listOf(SubjectType.ANIME, SubjectType.REAL, SubjectType.BOOK)) View.VISIBLE else View.GONE
         detail.item_progress_info.text = context.getString(R.string.phrase_progress,
                 (if(subject.has_vol) context.getString(R.string.parse_sort_vol, "${subject.vol_status}${ if(subject.vol_count == 0) "" else "/${subject.vol_count}" }") + " " else "") +
                         context.getString(R.string.parse_sort_ep, "${subject.ep_status}${ if(subject.eps_count == 0) "" else "/${subject.eps_count}"}"))
-    }
-
-    fun showInfoBox(subject: Subject){
-        if(subject.infobox?.isNotEmpty() == true) {
-            val view = LayoutInflater.from(context).inflate(R.layout.dialog_infobox, detail, false)
-            @Suppress("DEPRECATION")
-            view.item_infobox_text.text = setTextLinkOpenByWebView(Html.fromHtml("<h1>${subject.name}</h1>" + subject.infobox?.map { "${it.first}: ${it.second}" }?.reduce { acc, s -> "$acc<br>$s" })){
-                WebActivity.launchUrl(context, HttpUtil.getUrl(it, URI.create(Bangumi.SERVER)), "")
-            }
-            view.item_infobox_text.movementMethod = LinkMovementMethod.getInstance()
-            val dialog = BottomSheetDialog(context)
-            dialog.setContentView(view)
-            dialog.window?.decorView?.findViewById<FrameLayout>(R.id.design_bottom_sheet)?.let{
-                val layoutParams = it.layoutParams
-                layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
-                it.layoutParams = layoutParams
-
-                it.setBackgroundResource(0)
-            }
-            dialog.show()
-        }
     }
 
     fun updateEpisode(episodes: List<Episode>){

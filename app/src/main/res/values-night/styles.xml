@@ -9,5 +9,6 @@
 
         <item name="android:windowTranslucentStatus">true</item>
     </style>
+
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Dark"/>
 </resources>

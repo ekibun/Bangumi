@@ -11,6 +11,7 @@
           android:layout_width="match_parent"
             android:id="@+id/item_outside"/>
     <LinearLayout
+            android:id="@+id/item_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="12dp"

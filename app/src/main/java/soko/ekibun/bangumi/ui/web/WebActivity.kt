@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.util.Log
 import android.view.*
 import android.webkit.*
@@ -18,9 +19,11 @@ import soko.ekibun.bangumi.ui.topic.TopicActivity
 import soko.ekibun.bangumi.util.AppUtil
 import java.net.URI
 import android.view.ViewTreeObserver
+import kotlinx.android.synthetic.main.appbar_layout.*
+import soko.ekibun.bangumi.ui.view.BaseActivity
 
 
-class WebActivity : AppCompatActivity() {
+class WebActivity : BaseActivity() {
     private val isAuth by lazy{ intent.getBooleanExtra(IS_AUTH, false)}
     private val openUrl by lazy{ intent.getStringExtra(OPEN_URL).replace(Regex("""^https?://(bgm\.tv|bangumi\.tv|chii\.in)"""), Bangumi.SERVER) }
 
@@ -45,6 +48,7 @@ class WebActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_web)
 
+        setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         item_swipe.setOnRefreshListener {

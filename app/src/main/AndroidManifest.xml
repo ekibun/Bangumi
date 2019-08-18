@@ -67,7 +67,7 @@
         </activity>
         <activity
                 android:name=".ui.web.WebActivity"
-                android:theme="@style/AppTheme.ActionBar">
+                android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation">
         </activity>
         <activity android:name=".ui.search.SearchActivity">
         </activity>
@@ -121,14 +121,12 @@
         <activity android:name=".ui.topic.TopicActivity">
         </activity>
         <activity
-                android:name=".ui.crash.CrashActivity"
-                android:theme="@style/AppTheme.ActionBar">
+                android:name=".ui.crash.CrashActivity">
         </activity>
         <activity
                 android:name=".ui.setting.SettingsActivity"
                 android:label="@string/settings"
-                android:parentActivityName=".ui.main.MainActivity"
-                android:theme="@style/AppTheme.ActionBar">
+                android:parentActivityName=".ui.main.MainActivity">
             <meta-data
                     android:name="android.support.PARENT_ACTIVITY"
                     android:value=".ui.main.MainActivity"/>

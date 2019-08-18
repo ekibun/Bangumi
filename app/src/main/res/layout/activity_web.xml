@@ -9,6 +9,8 @@
         android:fitsSystemWindows="true"
         tools:context=".ui.web.WebActivity">
 
+    <include layout="@layout/appbar_layout"/>
+
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/item_swipe"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"

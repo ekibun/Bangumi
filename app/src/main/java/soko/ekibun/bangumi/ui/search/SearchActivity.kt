@@ -3,11 +3,12 @@ package soko.ekibun.bangumi.ui.search
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.view.MenuItem
+import android.view.WindowManager
 import kotlinx.android.synthetic.main.activity_search.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.ui.view.SwipeBackActivity
-import soko.ekibun.bangumi.util.KeyboardUtil
 
 class SearchActivity : SwipeBackActivity() {
 
@@ -21,7 +22,13 @@ class SearchActivity : SwipeBackActivity() {
             it.setDisplayShowTitleEnabled(false)
         }
 
-        KeyboardUtil(this, root_layout)
+        val historyPaddingBottom = search_history.paddingBottom
+        val listPaddingBottom = search_list.paddingBottom
+        root_layout.setOnApplyWindowInsetsListener { _, insets ->
+            search_history.setPadding(search_history.paddingLeft, search_history.paddingTop, search_history.paddingRight, historyPaddingBottom + insets.systemWindowInsetBottom)
+            search_list.setPadding(search_list.paddingLeft, search_list.paddingTop, search_list.paddingRight, listPaddingBottom + insets.systemWindowInsetBottom)
+            insets
+        }
 
         SearchPresenter(this)
     }

@@ -302,6 +302,7 @@
     <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/comment_list"
             tools:visibility="gone"
+            android:clipToPadding="false"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:overScrollMode="never"
@@ -315,6 +316,7 @@
             app:fastScrollPopupBackgroundSize="48sp"
             app:fastScrollPopupTextColor="@android:color/white"
             app:fastScrollPopupBgColor="?colorAccent"
+            android:clipToPadding="false"
             android:id="@+id/episode_detail_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

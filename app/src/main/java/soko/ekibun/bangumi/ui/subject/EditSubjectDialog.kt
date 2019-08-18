@@ -17,6 +17,7 @@ import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.bangumi.bean.CollectionStatusType
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
+import soko.ekibun.bangumi.model.ThemeModel
 
 class EditSubjectDialog(context: Context): Dialog(context, R.style.AppTheme_Dialog) {
     companion object {
@@ -29,14 +30,6 @@ class EditSubjectDialog(context: Context): Dialog(context, R.style.AppTheme_Dial
             dialog.setOnDismissListener { callback() }
             dialog.show()
         }
-    }
-
-    private fun getKeyBoardHeight(): Int{
-        val rect = Rect()
-        window?.decorView?.getWindowVisibleDisplayFrame(rect)
-        val metrics = DisplayMetrics()
-        (context.getSystemService(Context.WINDOW_SERVICE) as? WindowManager)?.defaultDisplay?.getMetrics(metrics)
-        return metrics.heightPixels - rect.bottom
     }
 
     lateinit var subject: Subject
@@ -110,12 +103,13 @@ class EditSubjectDialog(context: Context): Dialog(context, R.style.AppTheme_Dial
             },{}))
         }
 
-        window?.decorView?.viewTreeObserver?.addOnGlobalLayoutListener{
-            view.item_keyboard.layoutParams?.let{
-                it.height = getKeyBoardHeight()
-                view.item_keyboard.layoutParams = it
-            }
+        val paddingBottom = view.item_container.paddingBottom
+        view.setOnApplyWindowInsetsListener { _, insets ->
+            view.item_container.setPadding(view.item_container.paddingLeft, view.item_container.paddingTop, view.item_container.paddingRight, paddingBottom + insets.systemWindowInsetBottom)
+            insets.consumeSystemWindowInsets()
         }
+
+        window?.let { ThemeModel.updateNavigationTheme(it, view.context) }
 
         window?.attributes?.let{
             it.dimAmount = 0.6f

@@ -15,9 +15,10 @@ import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.SubjectProgress
 import soko.ekibun.bangumi.api.github.bean.BangumiItem
 import soko.ekibun.bangumi.api.github.bean.OnAirInfo
+import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.web.WebActivity
 
-class EpisodeDialog(context: Context): Dialog(context, R.style.AppTheme_Dialog_Floating) {
+class EpisodeDialog(context: Context): Dialog(context, R.style.AppTheme_Dialog) {
     companion object {
         const val WATCH_TO = "watch_to"
         fun showDialog(context: Context, episode: Episode, eps: List<Episode>, onAirInfo: OnAirInfo?, callback: (eps: List<Episode>, status: String)->Unit): EpisodeDialog{
@@ -104,12 +105,23 @@ class EpisodeDialog(context: Context): Dialog(context, R.style.AppTheme_Dialog_F
             view.item_episode_status.visibility = View.GONE
         }
 
-        window?.setGravity(Gravity.BOTTOM)
+        view.item_outside.setOnClickListener {
+            dismiss()
+        }
+        val paddingBottom = view.item_site_list.paddingBottom
+        view.setOnApplyWindowInsetsListener { _, insets ->
+            view.item_site_list.setPadding(view.item_site_list.paddingLeft, view.item_site_list.paddingTop, view.item_site_list.paddingRight, paddingBottom + insets.systemWindowInsetBottom)
+            insets.consumeSystemWindowInsets()
+        }
+
+        window?.let { ThemeModel.updateNavigationTheme(it, view.context) }
+
         window?.attributes?.let{
-            it.width = ViewGroup.LayoutParams.MATCH_PARENT
+            it.dimAmount = 0.6f
             window?.attributes = it
         }
         window?.setWindowAnimations(R.style.AnimDialog)
-        setCanceledOnTouchOutside(true)
+        window?.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+        window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
     }
 }

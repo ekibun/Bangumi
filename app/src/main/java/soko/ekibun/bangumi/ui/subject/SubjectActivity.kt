@@ -3,10 +3,7 @@ package soko.ekibun.bangumi.ui.subject
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.view.KeyEvent
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
+import android.view.*
 import android.webkit.WebView
 import kotlinx.android.synthetic.main.activity_subject.*
 import soko.ekibun.bangumi.R
@@ -36,6 +33,14 @@ class SubjectActivity : SwipeBackActivity() {
                     val id = Regex("""/subject/([0-9]+)""").find(intent.data?.toString()?:"")?.groupValues?.get(1)?.toIntOrNull()?:0
                     Subject(id, "${Bangumi.SERVER}/subject/$id")
                 }())
+
+        val episodePaddingBottom = episode_detail_list.paddingBottom
+        val listPaddingBottom = comment_list.paddingBottom
+        root_layout.setOnApplyWindowInsetsListener { _, insets ->
+            episode_detail_list.setPadding(episode_detail_list.paddingLeft, episode_detail_list.paddingTop, episode_detail_list.paddingRight, episodePaddingBottom + insets.systemWindowInsetBottom)
+            comment_list.setPadding(comment_list.paddingLeft, comment_list.paddingTop, comment_list.paddingRight, listPaddingBottom + insets.systemWindowInsetBottom)
+            insets
+        }
     }
 
     val ua by lazy { WebView(this).settings.userAgentString }

@@ -42,7 +42,7 @@ class HtmlHttpImageGetter(container: TextView, private val baseUri: URI?, privat
                         is com.bumptech.glide.load.resource.gif.GifDrawable -> GifDrawable(resource.buffer)
                         else -> resource
                     }
-                    val size = if(defSize > 0) Size(defSize, defSize) else Size(resource.intrinsicWidth, resource.intrinsicHeight)
+                    val size =  if(defSize > 0) sizeInfos[url]?: Size(defSize, defSize) else Size(resource.intrinsicWidth, resource.intrinsicHeight)
                     sizeInfos[url] = size
                     setBounds(0, 0, size.width, size.height)
 

@@ -11,6 +11,7 @@ import androidx.appcompat.widget.PopupMenu
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
+import android.view.WindowManager
 import android.webkit.WebView
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
@@ -20,10 +21,11 @@ import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.github.Github
 import soko.ekibun.bangumi.model.DownloadCacheProvider
 import soko.ekibun.bangumi.ui.search.SearchActivity
+import soko.ekibun.bangumi.ui.view.BaseActivity
 import soko.ekibun.bangumi.ui.view.NotifyActionProvider
 import soko.ekibun.bangumi.ui.web.WebActivity
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity() {
     val downloadCacheProvider by lazy{ DownloadCacheProvider(this){
         nav_view.menu.findItem(R.id.nav_download).isVisible = it
     } }

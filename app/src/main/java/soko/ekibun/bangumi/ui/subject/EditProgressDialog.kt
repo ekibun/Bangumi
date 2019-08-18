@@ -15,6 +15,7 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
+import soko.ekibun.bangumi.model.ThemeModel
 
 class EditProgressDialog(context: Context): Dialog(context, R.style.AppTheme_Dialog) {
     companion object {
@@ -26,15 +27,6 @@ class EditProgressDialog(context: Context): Dialog(context, R.style.AppTheme_Dia
             dialog.ua = ua
             dialog.show()
         }
-    }
-
-    private fun getKeyBoardHeight(): Int{
-        val rect = Rect()
-
-        window?.decorView?.getWindowVisibleDisplayFrame(rect)
-        val metrics = DisplayMetrics()
-        (context.getSystemService(Context.WINDOW_SERVICE) as? WindowManager)?.defaultDisplay?.getMetrics(metrics)
-        return metrics.heightPixels - rect.bottom
     }
 
     lateinit var subject: Subject
@@ -74,12 +66,13 @@ class EditProgressDialog(context: Context): Dialog(context, R.style.AppTheme_Dia
             },{}))
         }
 
-        window?.decorView?.viewTreeObserver?.addOnGlobalLayoutListener{
-            view.item_keyboard.layoutParams?.let{
-                it.height = getKeyBoardHeight()
-                view.item_keyboard.layoutParams = it
-            }
+        val paddingBottom = view.item_container.paddingBottom
+        view.setOnApplyWindowInsetsListener { _, insets ->
+            view.item_container.setPadding(view.item_container.paddingLeft, view.item_container.paddingTop, view.item_container.paddingRight, paddingBottom + insets.systemWindowInsetBottom)
+            insets.consumeSystemWindowInsets()
         }
+
+        window?.let { ThemeModel.updateNavigationTheme(it, view.context) }
 
         window?.attributes?.let{
             it.dimAmount = 0.6f

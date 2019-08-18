@@ -7,6 +7,9 @@ import com.google.gson.reflect.TypeToken
 import kotlinx.android.synthetic.main.activity_topic.*
 import okhttp3.FormBody
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
+import org.jsoup.safety.Whitelist
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
@@ -50,10 +53,14 @@ class TopicPresenter(private val context: TopicActivity) {
                 R.id.item_avatar ->
                     WebActivity.launchUrl(v.context, "${Bangumi.SERVER}/user/${post.username}")
                 R.id.item_reply -> {
-                    val body = Jsoup.parse(post.pst_content).body()
-                    body.select("div.quote").remove()
+                    val doc = Jsoup.parse(post.pst_content)
+                    doc.select("div.quote").remove()
+                    doc.select("br").after("$\$b\$r$")
+                    val quote = doc.body().text().replace("$\$b\$r$", "\n").let {
+                        if( it.length > 100) it.substring(0, 100) + "..." else it
+                    }
                     val comment = if (post?.isSub == true)
-                        "[quote][b]${post.nickname}[/b] 说: ${body.text()}[/quote]\n" else ""
+                        "[quote][b]${post.nickname}[/b] 说: $quote[/quote]\n" else ""
                     showReplyPopupWindow(topic.post, FormBody.Builder()
                             .add("lastview", topic.lastview!!)
                             .add("formhash", topic.formhash!!)

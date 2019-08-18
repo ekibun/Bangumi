@@ -188,10 +188,7 @@ public class FastScroller {
             case MotionEvent.ACTION_MOVE:
                 if (mIsDragging) {
                     // Update the fastscroller section name at this touch position
-                    int top = 0;
-                    int bottom = mRecyclerView.getHeight() - mThumbHeight;
-                    float boundedY = (float) Math.max(top, Math.min(bottom, y - mTouchOffset));
-                    String sectionName = mRecyclerView.scrollToPositionAtProgress((boundedY - top) / (bottom - top));
+                    String sectionName = mRecyclerView.scrollToPositionAtProgress(y - mTouchOffset);
                     mPopup.setSectionName(sectionName);
                     mPopup.animateVisibility(!sectionName.isEmpty());
                     mRecyclerView.invalidate(mPopup.updateFastScrollerBounds(mRecyclerView, mThumbPosition.y));

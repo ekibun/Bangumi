@@ -23,6 +23,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.uploadcc.UploadCC
+import soko.ekibun.bangumi.model.ThemeModel
 
 class ReplyDialog: androidx.fragment.app.DialogFragment() {
     private var contentView: View? = null
@@ -83,14 +84,18 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
         contentView.item_emoji_list.adapter = emojiAdapter
         contentView.item_emoji_list.layoutManager = GridLayoutManager(context, 7)
 
+        var insetsBottom = 0
+        val paddingBottom = contentView.item_emoji_list.paddingBottom
         val updateEmojiList= {
-            val softKeyboardHeight = getKeyBoardHeight()
-            if(softKeyboardHeight > 200) {
-                contentView.item_emoji_list.layoutParams.height = softKeyboardHeight
+            if(insetsBottom > 200) {
+                contentView.item_emoji_list.layoutParams.height = insetsBottom
                 contentView.item_emoji_list.layoutParams = contentView.item_emoji_list.layoutParams
+            }else{
+                contentView.item_emoji_list.setPadding(contentView.item_emoji_list.paddingLeft, contentView.item_emoji_list.paddingTop, contentView.item_emoji_list.paddingRight, paddingBottom + insetsBottom)
+                contentView.item_nav_padding.layoutParams.height = insetsBottom
+                contentView.item_nav_padding.layoutParams = contentView.item_nav_padding.layoutParams
             }
-            contentView.item_emoji_list.visibility = if(softKeyboardHeight > 200 || contentView.item_btn_emoji.isSelected)
-                View.VISIBLE else View.GONE
+            contentView.item_emoji_list.visibility = if(insetsBottom > 200) View.INVISIBLE else if(contentView.item_btn_emoji.isSelected) View.VISIBLE else View.GONE
             (contentView.item_lock.layoutParams as LinearLayout.LayoutParams).weight = 1f
         }
 
@@ -105,22 +110,22 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
             dismiss()
         }
 
-        activity?.window?.decorView?.viewTreeObserver?.addOnGlobalLayoutListener {
+        contentView.setOnApplyWindowInsetsListener { v, insets ->
+            insetsBottom = insets.systemWindowInsetBottom
             updateEmojiList()
-            val softKeyboardHeight = getKeyBoardHeight()
-            if(softKeyboardHeight > 200) {
+            if(insetsBottom > 200){
                 contentView.item_btn_emoji.isSelected = false
             }
+            insets
         }
         val inputMethodManager = inflater.context.applicationContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         contentView.item_btn_emoji.setOnClickListener {
             contentView.item_btn_emoji.isSelected = !contentView.item_btn_emoji.isSelected
-            val softKeyboardHeight = getKeyBoardHeight()
-            if(softKeyboardHeight > 200 == contentView.item_btn_emoji.isSelected) {
+            if(insetsBottom > 200 == contentView.item_btn_emoji.isSelected) {
                 inputMethodManager.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS)
             }
             updateEmojiList()
-            if(contentView.item_emoji_list.visibility == View.GONE && softKeyboardHeight < 200){
+            if(contentView.item_emoji_list.visibility == View.GONE && insetsBottom < 200){
                 val layoutParams = contentView.item_lock.layoutParams as LinearLayout.LayoutParams
                 layoutParams.height = contentView.item_lock.height
                 layoutParams.weight = 0f
@@ -137,6 +142,8 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
         contentView.item_lock.setOnClickListener { dismiss() }
         contentView.item_hint.text = hint
         contentView.item_input.setText(draft)
+
+        dialog?.window?.let { ThemeModel.updateNavigationTheme(it, contentView.context) }
 
         dialog?.window?.attributes?.let{
             it.dimAmount = 0.6f

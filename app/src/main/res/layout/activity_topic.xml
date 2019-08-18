@@ -127,12 +127,13 @@
             android:id="@+id/item_swipe"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            android:paddingBottom="45dp">
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
         <soko.ekibun.bangumi.ui.view.FastScrollRecyclerView
                 android:id="@+id/item_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:paddingBottom="45dp"
+                android:clipToPadding="false"
                 app:fastScrollThumbInactiveColor="?colorPrimaryForeground"
                 app:fastScrollThumbColor="?colorAccent"
                 app:fastScrollPopupTextSize="32sp"
@@ -141,14 +142,19 @@
                 app:fastScrollPopupBgColor="?colorAccent"/>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <TextView android:id="@+id/item_reply"
-              android:padding="8dp"
-              android:gravity="center_vertical"
-          android:layout_width="match_parent"
-          android:layout_height="45dp"
-          android:elevation="20dp"
-          android:background="?android:colorBackground"
-          app:layout_anchor="@id/item_swipe"
-          app:layout_anchorGravity="bottom"/>
+    <FrameLayout
+            android:id="@+id/item_reply_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:elevation="20dp"
+            android:background="?android:colorBackground"
+            app:layout_anchor="@id/item_swipe"
+            app:layout_anchorGravity="bottom">
+        <TextView android:id="@+id/item_reply"
+                  android:padding="8dp"
+                  android:gravity="center_vertical"
+                  android:layout_width="match_parent"
+                  android:layout_height="45dp"/>
+    </FrameLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

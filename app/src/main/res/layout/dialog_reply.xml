@@ -11,6 +11,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:elevation="20dp"
+            android:id="@+id/item_container"
             android:background="@drawable/bg_round_dialog">
         <TextView
                 android:id="@+id/item_hint"
@@ -81,11 +82,20 @@
                     app:srcCompat="@drawable/ic_send"
                     android:contentDescription="@string/desc_send"/>
         </LinearLayout>
-        <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/item_emoji_list"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
+        <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="0dp"/>
+                android:layout_height="wrap_content">
+            <View
+                    android:id="@+id/item_nav_padding"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"/>
+            <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/item_emoji_list"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:clipToPadding="false"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"/>
+        </FrameLayout>
     </LinearLayout>
 </LinearLayout>

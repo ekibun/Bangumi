@@ -3,13 +3,13 @@ package soko.ekibun.bangumi.ui.topic
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.preference.PreferenceManager
 import kotlinx.android.synthetic.main.activity_topic.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
 import android.view.*
 import soko.ekibun.bangumi.ui.view.SwipeBackActivity
 import soko.ekibun.bangumi.util.AppUtil
-
 
 class TopicActivity : SwipeBackActivity() {
     private val topicPresenter by lazy{ TopicPresenter(this) }
@@ -22,7 +22,15 @@ class TopicActivity : SwipeBackActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         title = ""
 
-        topicPresenter.getTopic(intent.getIntExtra(TopicActivity.EXTRA_POST, 0).toString())
+        topicPresenter.getTopic(intent.getIntExtra(EXTRA_POST, 0).toString())
+
+        val listPaddingBottom = item_list.paddingBottom
+        val replyPaddingBottom = item_reply_container.paddingBottom
+        root_layout.setOnApplyWindowInsetsListener { _, insets ->
+            item_list.setPadding(item_list.paddingLeft, item_list.paddingTop, item_list.paddingRight, listPaddingBottom + insets.systemWindowInsetBottom)
+            item_reply_container.setPadding(item_reply_container.paddingLeft, item_reply_container.paddingTop, item_reply_container.paddingRight, replyPaddingBottom + insets.systemWindowInsetBottom)
+            insets
+        }
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {

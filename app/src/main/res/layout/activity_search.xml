@@ -86,6 +86,7 @@
         </LinearLayout>
         <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/search_history"
+                android:clipToPadding="false"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>
     </LinearLayout>
@@ -98,6 +99,7 @@
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
         <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/search_list"
+                android:clipToPadding="false"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
