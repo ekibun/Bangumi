@@ -8,6 +8,7 @@ import kotlinx.android.synthetic.main.activity_topic.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
 import android.view.*
+import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.view.SwipeBackActivity
 import soko.ekibun.bangumi.util.AppUtil
 
@@ -35,7 +36,7 @@ class TopicActivity : SwipeBackActivity() {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if(hasFocus) window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+        if(hasFocus) ThemeModel.updateNavigationTheme(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

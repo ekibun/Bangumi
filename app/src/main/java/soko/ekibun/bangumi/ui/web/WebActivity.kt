@@ -51,6 +51,12 @@ class WebActivity : BaseActivity() {
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
+        val paddingBottom = item_swipe.paddingBottom
+        root_layout.setOnApplyWindowInsetsListener { _, insets ->
+            item_swipe.setPadding(item_swipe.paddingLeft, item_swipe.paddingTop, item_swipe.paddingRight, paddingBottom + insets.systemWindowInsetBottom)
+            insets
+        }
+
         item_swipe.setOnRefreshListener {
             var view = webview
             while(view.childWebView != null)

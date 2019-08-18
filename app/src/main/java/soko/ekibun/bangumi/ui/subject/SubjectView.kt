@@ -230,13 +230,17 @@ class SubjectView(private val context: SubjectActivity){
             }
             photoView.mLongClickListener = {
                 val systemUiVisibility = popWindow.contentView.systemUiVisibility
-                AlertDialog.Builder(context)
+                val dialog = AlertDialog.Builder(context)
                         .setItems(arrayOf(context.getString(R.string.share)))
                         { _, _ ->
-                            //AppUtil.shareDrawable(context, photoView.drawable)
+                            AppUtil.shareDrawable(context, photoView.drawable)
                         }.setOnDismissListener {
                             popWindow.contentView.systemUiVisibility = systemUiVisibility
-                        }.show()
+                        }.create()
+                dialog.window?.decorView?.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION)
+                dialog.show()
             }
             popWindow.isClippingEnabled = false
             popWindow.animationStyle = R.style.AppTheme_FadeInOut
@@ -244,6 +248,8 @@ class SubjectView(private val context: SubjectActivity){
             popWindow.contentView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                     or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                     or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                     or View.SYSTEM_UI_FLAG_FULLSCREEN)
         }
 

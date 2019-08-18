@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.ui.view.DragPhotoView
+import soko.ekibun.bangumi.util.AppUtil
 import soko.ekibun.bangumi.util.GlideUtil
 
 class PhotoPagerAdapter(private val items: List<String>, private val onDismiss: ()->Unit): androidx.viewpager.widget.PagerAdapter(){
@@ -17,13 +18,17 @@ class PhotoPagerAdapter(private val items: List<String>, private val onDismiss: 
         photoView.mTapListener = { onDismiss() }
         photoView.mLongClickListener = {
             val systemUiVisibility = container.systemUiVisibility
-            AlertDialog.Builder(container.context)
+            val dialog = AlertDialog.Builder(container.context)
                     .setItems(arrayOf(container.context.getString(R.string.share)))
                     { _, _ ->
-                        //AppUtil.shareDrawable(container.context, photoView.drawable)
+                        AppUtil.shareDrawable(container.context, photoView.drawable)
                     }.setOnDismissListener {
                         container.systemUiVisibility = systemUiVisibility
-                    }.show()
+                    }.create()
+            dialog.window?.decorView?.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION)
+            dialog.show()
         }
         container.addView(photoView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         return photoView
