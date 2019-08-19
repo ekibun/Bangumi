@@ -12,11 +12,4 @@
             android:title="检查更新"
             android:summary="启动应用时检查更新"
             android:defaultValue="true"/>
-
-    <SwitchPreference
-            android:key="translucent_navigation"
-            android:title="半透明导航栏"
-            android:summary="[实验性]半透明下方导航栏"
-            android:defaultValue="false"/>
-
 </PreferenceScreen>
