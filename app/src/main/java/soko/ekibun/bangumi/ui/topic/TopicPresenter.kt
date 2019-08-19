@@ -10,6 +10,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.safety.Whitelist
+import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
@@ -28,7 +29,7 @@ class TopicPresenter(private val context: TopicActivity) {
         }
     }
 
-    private val ua by lazy { WebView(context).settings.userAgentString }
+    private val ua by lazy { App.getUserAgent(context) }
     fun getTopic(scrollPost: String = ""){
         context.item_swipe.isRefreshing = true
         Bangumi.getTopic(context.openUrl, ua).enqueue(ApiHelper.buildCallback({topic->

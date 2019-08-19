@@ -14,6 +14,7 @@ import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.Headers
 import com.bumptech.glide.request.RequestOptions
+import soko.ekibun.bangumi.App
 import java.lang.ref.WeakReference
 import soko.ekibun.bangumi.R
 
@@ -74,7 +75,9 @@ class HtmlHttpImageGetter(container: TextView, private val baseUri: URI?, privat
                 })
                 GlideUtil.with(view)
                         ?.asDrawable()?.load(GlideUrl(url, Headers {
-                            mapOf("referer" to baseUri.toString())
+                            mapOf("referer" to baseUri.toString(),
+                                    "user-agent" to App.getUserAgent(view.context),
+                                    "host" to try { URI.create(url).host } catch(e: Exception) { url })
                         }))
                         ?.apply(RequestOptions().transform(SizeTransformation {width, _ ->
                             val maxWidth = container.get()?.width?.toFloat()?:return@SizeTransformation 1f

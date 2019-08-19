@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.*
 import android.webkit.WebView
 import kotlinx.android.synthetic.main.activity_subject.*
+import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
@@ -44,7 +45,7 @@ class SubjectActivity : SwipeBackActivity() {
         }
     }
 
-    val ua by lazy { WebView(this).settings.userAgentString }
+    val ua by lazy { App.getUserAgent(this) }
     val formhash get() = subjectPresenter.subject.formhash?:""
     override fun onStart() {
         super.onStart()

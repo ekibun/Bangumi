@@ -15,6 +15,7 @@ import android.view.WindowManager
 import android.webkit.WebView
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
+import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
@@ -66,7 +67,7 @@ class MainActivity : BaseActivity() {
         downloadCacheProvider.unbindService()
     }
 
-    val ua by lazy { WebView(this).settings.userAgentString }
+    val ua by lazy { App.getUserAgent(this) }
     override fun onStart() {
         super.onStart()
         mainPresenter.refreshUser()

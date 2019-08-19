@@ -11,6 +11,7 @@ import android.webkit.WebView
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_search.*
 import retrofit2.Call
+import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
@@ -98,7 +99,7 @@ class SearchPresenter(private val context: SearchActivity) {
     private var monoCall : Call<List<MonoInfo>>? = null
     private var lastKey = ""
     private var loadCount = 0
-    private val ua by lazy { WebView(context).settings.userAgentString }
+    private val ua by lazy { App.getUserAgent(context) }
     fun search(key: String = lastKey, refresh: Boolean = false){
         if(refresh || lastKey != key){
             lastKey = key
