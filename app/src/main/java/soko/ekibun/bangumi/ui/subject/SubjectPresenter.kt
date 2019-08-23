@@ -2,10 +2,12 @@ package soko.ekibun.bangumi.ui.subject
 
 import android.annotation.SuppressLint
 import android.net.Uri
-import androidx.browser.customtabs.CustomTabsIntent
-import androidx.appcompat.app.AlertDialog
-import android.view.*
+import android.view.Menu
+import android.view.View
 import android.widget.PopupMenu
+import androidx.appcompat.app.AlertDialog
+import androidx.browser.customtabs.CustomTabsIntent
+import com.chad.library.adapter.base.BaseQuickAdapter
 import kotlinx.android.synthetic.main.activity_subject.*
 import kotlinx.android.synthetic.main.activity_subject.view.*
 import kotlinx.android.synthetic.main.subject_blog.view.*
@@ -74,7 +76,7 @@ class SubjectPresenter(private val context: SubjectActivity){
                 PlayerBridge.startActivity(context, VideoSubject(this.subject, context.ua))
         }
 
-        subjectView.episodeAdapter.setOnItemLongClickListener { _, _, position ->
+        subjectView.episodeAdapter.onItemLongClickListener = BaseQuickAdapter.OnItemLongClickListener { _, _, position ->
             val eps = subjectView.episodeAdapter.data.subList(0, position + 1)
             subjectView.episodeAdapter.data[position]?.let{ openEpisode(it, subject, eps) }
             true

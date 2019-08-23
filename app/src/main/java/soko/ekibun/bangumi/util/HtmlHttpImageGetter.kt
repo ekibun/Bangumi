@@ -1,24 +1,25 @@
+@file:Suppress("DEPRECATION")
+
 package soko.ekibun.bangumi.util
 
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.text.Html
-import android.widget.TextView
-import com.bumptech.glide.request.target.SimpleTarget
-import com.bumptech.glide.request.transition.Transition
-import pl.droidsonroids.gif.GifDrawable
-import java.net.URI
 import android.util.Size
+import android.widget.TextView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.Headers
 import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.request.target.SimpleTarget
+import com.bumptech.glide.request.transition.Transition
+import pl.droidsonroids.gif.GifDrawable
 import soko.ekibun.bangumi.App
-import java.lang.ref.WeakReference
 import soko.ekibun.bangumi.R
+import java.lang.ref.WeakReference
+import java.net.URI
 
-@Suppress("DEPRECATION")
 class HtmlHttpImageGetter(container: TextView, private val baseUri: URI?, private val drawables: ArrayList<String>, private val sizeInfos: HashMap<String, Size>) : Html.ImageGetter {
     private val container = WeakReference(container)
     override fun getDrawable(source: String): Drawable {
@@ -69,17 +70,18 @@ class HtmlHttpImageGetter(container: TextView, private val baseUri: URI?, privat
                         circularProgressDrawable.progressRotation = 0.75f
                         circularProgressDrawable.invalidateSelf()
                     }
+
                     override fun getGranualityPercentage(): Float {
                         return 1.0f
                     }
                 })
                 GlideUtil.with(view)
                         ?.asDrawable()?.load(GlideUrl(url, Headers {
-                            mapOf("referer" to baseUri.toString(),
-                                    "user-agent" to App.getUserAgent(view.context),
-                                    "host" to try { URI.create(url).host } catch(e: Exception) { url })
+                            mapOf("referer" to url,
+                                    "user-agent" to App.getUserAgent(view.context)
+                            )
                         }))
-                        ?.apply(RequestOptions().transform(SizeTransformation {width, _ ->
+                        ?.apply(RequestOptions().transform(SizeTransformation { width, _ ->
                             val maxWidth = container.get()?.width?.toFloat()?:return@SizeTransformation 1f
                             val minWidth = container.get()?.textSize?:return@SizeTransformation 1f
                             Math.min(maxWidth, Math.max(minWidth, width.toFloat())) / width
@@ -89,20 +91,24 @@ class HtmlHttpImageGetter(container: TextView, private val baseUri: URI?, privat
                                 error = null
                                 placeholder?.let{ update(it, textSize.toInt()) }
                             }
+
                             override fun onLoadFailed(errorDrawable: Drawable?) {
                                 error = true
                                 if(circularProgressDrawable.isRunning) circularProgressDrawable.stop()
                                 errorDrawable?.let{ update(it, textSize.toInt()) }
                             }
+
                             override fun onLoadCleared(placeholder: Drawable?) {
                                 error = null
                                 placeholder?.let{ update(it, textSize.toInt()) }
                             }
+
                             override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
                                 if(circularProgressDrawable.isRunning) circularProgressDrawable.stop()
                                 error = false
                                 update(resource, 0)
                             }
+
                             override fun onStart() {}
                             override fun onDestroy() {
                                 ProgressAppGlideModule.forget(url)

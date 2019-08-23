@@ -17,7 +17,6 @@ import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
 import soko.ekibun.bangumi.api.github.bean.OnAir
 import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
-import java.lang.StringBuilder
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.HashMap
@@ -188,7 +187,7 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: an
         return "${date/100%100}-${date%100}\n${CalendarAdapter.weekList[CalendarAdapter.getWeek(cal)]}(${CalendarAdapter.weekJp[CalendarAdapter.getWeek(cal)]})"
     }
 
-    public fun getPostDate(pos: Int): Calendar{
+    fun getPostDate(pos: Int): Calendar {
         val cal = CalendarAdapter.getIntCalendar(CalendarAdapter.getNowInt(
                 sp.getBoolean("calendar_use_30h", false)))
         cal.add(Calendar.DAY_OF_MONTH, pos-7)

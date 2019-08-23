@@ -1,33 +1,35 @@
 package soko.ekibun.bangumi.ui.topic
 
 import android.annotation.SuppressLint
-import android.text.*
+import android.text.Html
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.TextPaint
 import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
+import android.text.style.URLSpan
+import android.util.Size
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupWindow
+import android.widget.TextView
 import com.bumptech.glide.request.RequestOptions
+import com.chad.library.adapter.base.BaseMultiItemQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
 import kotlinx.android.synthetic.main.item_reply.view.*
+import org.jsoup.Jsoup
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
-import soko.ekibun.bangumi.ui.view.FixMultiViewPager
-import soko.ekibun.bangumi.util.HtmlHttpImageGetter
-import soko.ekibun.bangumi.util.HtmlTagHandler
-import java.net.URI
-import android.text.style.ClickableSpan
-import android.text.style.URLSpan
-import android.util.Log
-import android.util.Size
-import android.widget.TextView
-import com.chad.library.adapter.base.BaseMultiItemQuickAdapter
-import org.jsoup.Jsoup
 import soko.ekibun.bangumi.ui.view.FastScrollRecyclerView
+import soko.ekibun.bangumi.ui.view.FixMultiViewPager
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
+import soko.ekibun.bangumi.util.HtmlHttpImageGetter
+import soko.ekibun.bangumi.util.HtmlTagHandler
 import soko.ekibun.bangumi.util.HttpUtil
+import java.net.URI
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -101,7 +103,7 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
             }
             item_message.text = if(item.pst_content.length < 10000) makeSpan() else largeContent.getOrPut(item.pst_id, makeSpan)
         }
-        helper.itemView.item_message.setOnFocusChangeListener { view, focus ->
+        helper.itemView.item_message.onFocusChangeListener = View.OnFocusChangeListener { view, focus ->
             if(!focus){
                 view.tag = null
                 (view as TextView).text = view.text
