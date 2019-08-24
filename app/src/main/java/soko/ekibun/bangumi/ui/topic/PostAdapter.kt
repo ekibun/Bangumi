@@ -165,7 +165,7 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
             return doc.body().html()
         }
 
-        fun setTextLinkOpenByWebView(htmlString: Spanned, onCLick:(String)->Unit): Spanned {
+        fun setTextLinkOpenByWebView(htmlString: Spanned, onClick: (String) -> Unit): Spanned {
             if (htmlString is SpannableStringBuilder) {
                 val objs = htmlString.getSpans(0, htmlString.length, URLSpan::class.java)
                 if (null != objs && objs.isNotEmpty()) {
@@ -175,20 +175,23 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
                         if (obj is URLSpan) {
                             val url = obj.url
                             htmlString.removeSpan(obj)
-                            htmlString.setSpan(object : ClickableSpan() {
-                                override fun onClick(widget: View) {
-                                    onCLick(url)
-                                }
-                                override fun updateDrawState(ds: TextPaint){
-                                    ds.color = ds.linkColor
-                                    ds.isUnderlineText = false
-                                }
-                            }, start, end, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
+                            htmlString.setSpan(CustomURLSpan(url, onClick), start, end, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
                         }
                     }
                 }
             }
             return htmlString
+        }
+
+        class CustomURLSpan(val url: String, val onClick: (String) -> Unit) : ClickableSpan() {
+            override fun onClick(widget: View) {
+                onClick(url)
+            }
+
+            override fun updateDrawState(ds: TextPaint) {
+                ds.color = ds.linkColor
+                ds.isUnderlineText = false
+            }
         }
     }
 }

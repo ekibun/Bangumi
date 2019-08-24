@@ -2,14 +2,10 @@ package soko.ekibun.bangumi.ui.topic
 
 import android.annotation.SuppressLint
 import androidx.appcompat.app.AlertDialog
-import android.webkit.WebView
 import com.google.gson.reflect.TypeToken
 import kotlinx.android.synthetic.main.activity_topic.*
 import okhttp3.FormBody
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
-import org.jsoup.safety.Whitelist
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
@@ -110,26 +106,17 @@ class TopicPresenter(private val context: TopicActivity) {
                         else -> ""
                     }
                     //WebActivity.launchUrl(this@TopicActivity, url)
-                    ApiHelper.buildHttpCall(url, mapOf("User-Agent" to ua)){
-                        val doc = Jsoup.parse(it.body()?.string()?:return@buildHttpCall null)
-                        doc.selectFirst("#content")?.text()
-                    }.enqueue(ApiHelper.buildCallback({
-                        if(it == null){
-                            WebActivity.launchUrl(context, url)
-                            return@buildCallback
-                        }else{
-                            buildPopupWindow(context.getString(if(post.floor == 1) R.string.parse_hint_modify_topic else R.string.parse_hint_modify_post, topic.title), it){inputString, send->
-                                if(send){
-                                    ApiHelper.buildHttpCall(url, mapOf("User-Agent" to ua), body = FormBody.Builder()
-                                            .add("formhash", topic.formhash!!)
-                                            .add("title", topic.title)
-                                            .add("submit", "改好了")
-                                            .add("content", inputString).build()){true}.enqueue(ApiHelper.buildCallback({
-                                        getTopic(post.pst_id)
-                                    })) }
-                            }
+                    buildPopupWindow(context.getString(if (post.floor == 1) R.string.parse_hint_modify_topic else R.string.parse_hint_modify_post, topic.title), post.pst_content) { inputString, send ->
+                        if (send) {
+                            ApiHelper.buildHttpCall(url, mapOf("User-Agent" to ua), body = FormBody.Builder()
+                                    .add("formhash", topic.formhash!!)
+                                    .add("title", topic.title)
+                                    .add("submit", "改好了")
+                                    .add("content", inputString).build()) { true }.enqueue(ApiHelper.buildCallback({
+                                getTopic(post.pst_id)
+                            }))
                         }
-                    }) {})
+                    }
                 }
             }
         }

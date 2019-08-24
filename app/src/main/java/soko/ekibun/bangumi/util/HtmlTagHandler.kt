@@ -2,14 +2,16 @@ package soko.ekibun.bangumi.util
 
 import android.graphics.Color
 import android.text.*
-import org.xml.sax.XMLReader
-import android.text.style.ImageSpan
 import android.text.style.ClickableSpan
-import android.view.View
-import java.util.*
+import android.text.style.ImageSpan
 import android.text.style.RelativeSizeSpan
+import android.view.View
 import android.widget.TextView
+import com.awarmisland.android.richedittext.view.RichEditText
+import org.xml.sax.XMLReader
+import soko.ekibun.bangumi.ui.topic.ReplyDialog
 import java.lang.ref.WeakReference
+import java.util.*
 
 class HtmlTagHandler(view: TextView, private var baseSize: Float = 13f, private val onClick:(ImageSpan)->Unit): Html.TagHandler{
     private val bgColor = view.textColors.defaultColor
@@ -57,30 +59,31 @@ class HtmlTagHandler(view: TextView, private var baseSize: Float = 13f, private 
     }
     private fun endMask(tag: String, output: Editable, xmlReader: XMLReader) {
         endMaskIndex = output.length
-        output.setSpan(MaskSpan(bgColor, colorInv, widget) {}, startMaskIndex, endMaskIndex,
+        output.setSpan(MaskSpan(bgColor, colorInv, widget), startMaskIndex, endMaskIndex,
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
     }
 
-    class MaskSpan(private var bgColor: Int, private var colorInv: Int, private val textView: WeakReference<TextView>, private val onClick:()->Unit): ClickableSpan(){
-        var select = false
+    class MaskSpan(private var bgColor: Int, private var colorInv: Int, private val textView: WeakReference<TextView>) : ClickableSpan() {
+        private val edit = textView.get() is RichEditText
         override fun onClick(widget: View) {
-            onClick()
+            if (edit) return
             val view = textView.get()?:return
             view.tag = if(view.tag == this) null else this
             view.text = view.text
         }
         override fun updateDrawState(ds: TextPaint) {
-            val view = textView.get()?:return
             ds.bgColor = bgColor
-            ds.color = if(view.tag == this) colorInv else Color.TRANSPARENT
-            ds.isUnderlineText = false
+            ds.color = if (edit || textView.get()?.tag == this) colorInv else Color.TRANSPARENT
         }
     }
 
-    class ClickableImage(private val image: ImageSpan, private val onClick:(ImageSpan)->Unit): ClickableSpan(){
+    class ClickableImage(val image: ImageSpan, private val onClick: (ImageSpan) -> Unit) : ClickableSpan() {
         override fun onClick(widget: View) {
             val drawable = image.drawable
             if(drawable is HtmlHttpImageGetter.UrlDrawable) {
+                if (drawable.error == true) drawable.loadImage()
+                else if (drawable.error == false) onClick(image)
+            } else if (drawable is ReplyDialog.UrlDrawable) {
                 if (drawable.error == true) drawable.loadImage()
                 else if (drawable.error == false) onClick(image)
             }else onClick(image)
