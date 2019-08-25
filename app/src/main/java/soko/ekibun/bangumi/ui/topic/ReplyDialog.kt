@@ -6,11 +6,13 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.graphics.Canvas
+import android.graphics.*
 import android.graphics.drawable.AnimationDrawable
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
+import android.text.Editable
 import android.text.Html
 import android.text.style.ImageSpan
 import android.util.Size
@@ -21,7 +23,6 @@ import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
-import com.awarmisland.android.richedittext.handle.CustomHtml
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.Headers
 import com.bumptech.glide.request.RequestOptions
@@ -32,7 +33,6 @@ import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import org.jsoup.Jsoup
-import pl.droidsonroids.gif.GifDrawable
 import retrofit2.Call
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
@@ -49,8 +49,9 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
     private var contentView: View? = null
 
     var hint: String = ""
-    var callback: (String, Boolean) -> Unit = { _, _ -> }
-    var draft: String = ""
+    var callback: (Editable?, Boolean) -> Unit = { _, _ -> }
+    var html: String = ""
+    var draft: Editable? = null
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val contentView = contentView ?: inflater.inflate(R.layout.dialog_reply, container)
         this.contentView = contentView
@@ -136,7 +137,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
             startActivityForResult(intent, 1)
         }
         contentView.item_btn_send.setOnClickListener {
-            callback(CustomHtml.toHtml(contentView.item_input.editableText), true)
+            callback(contentView.item_input.editableText, true)
             callback = { _, _ -> }
             dismiss()
         }
@@ -175,11 +176,13 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
         contentView.item_lock.setOnClickListener { dismiss() }
         contentView.item_hint.text = hint
 
-        contentView.item_input.setText(setTextLinkOpenByWebView(Html.fromHtml(parseHtml(draft), HtmlHttpImageGetter(contentView.item_input, URI.create(Bangumi.SERVER)), HtmlTagHandler(contentView.item_input) {
-            //Toast.makeText(contentView.context, "click Image: ${(it.drawable as? UrlDrawable)?.url}", Toast.LENGTH_LONG).show()
-        })) {
-            //Toast.makeText(contentView.context, "click URL: $it", Toast.LENGTH_LONG).show()
-        })
+        if (draft != null) {
+            contentView.item_input.text = draft
+        } else {
+            contentView.item_input.setText(setTextLinkOpenByWebView(Html.fromHtml(parseHtml(html),
+                    HtmlHttpImageGetter(contentView.item_input, URI.create(Bangumi.SERVER)),
+                    HtmlTagHandler(contentView.item_input, onClick = onClickImage)), onClickUrl))
+        }
 
         dialog?.window?.let { ThemeModel.updateNavigationTheme(it, contentView.context) }
 
@@ -193,9 +196,17 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
         return contentView
     }
 
+    val onClickImage = click@{ it: ImageSpan ->
+        //Toast.makeText(context?:return@click, (it.drawable as? UrlDrawable)?.url?:"", Toast.LENGTH_LONG).show()
+    }
+
+    val onClickUrl = click@{ url: String ->
+        //Toast.makeText(context?:return@click, url, Toast.LENGTH_LONG).show()
+    }
+
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        callback(contentView?.item_input?.text.toString(), false)
+        callback(contentView?.item_input?.editableText, false)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -225,11 +236,9 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
             cursor.getString(nameIndex)
         } ?: "image.jpg"
         val requestBody = RequestBody.create(MediaType.parse(mimeType), inputStream.readBytes())
-        val drawable = UploadDrawable(requestBody, fileName, WeakReference(item_input))
+        val drawable = UploadDrawable(requestBody, fileName, WeakReference(item_input), data?.data ?: return)
         drawable.loadImage()
-        item_input.setImage(HtmlTagHandler.ClickableImage(ImageSpan(drawable)) {
-            //TODO
-        })
+        item_input.setImage(HtmlTagHandler.ClickableImage(ImageSpan(drawable), onClickImage))
     }
 
     class HtmlHttpImageGetter(container: TextView, private val baseUri: URI?) : Html.ImageGetter {
@@ -246,6 +255,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
         var drawable: Drawable? = null
         var error: Boolean? = null
         var url: String? = null
+        var uri: Uri? = null
 
         init {
             container.get()?.let {
@@ -253,15 +263,15 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
             }
         }
 
-        fun update(resource: Drawable, defSize: Int) {
-            val drawable = when (resource) {
-                is com.bumptech.glide.load.resource.gif.GifDrawable -> GifDrawable(resource.buffer)
-                else -> resource
+        fun update(drawable: Drawable, defSize: Int) {
+            if (drawable is com.bumptech.glide.load.resource.gif.GifDrawable) {
+                drawable.start()
             }
-            val size = if (defSize > 0) Size(defSize, defSize) else Size(resource.intrinsicWidth, resource.intrinsicHeight)
-            setBounds(0, 0, size.width, size.height)
+            val size = if (defSize > 0) Size(defSize, defSize) else Size(drawable.intrinsicWidth, drawable.intrinsicHeight)
+            setBounds(0, 0, size.width, Math.min(size.height, 250))
 
             drawable.setBounds(0, 0, size.width, size.height)
+            (this.drawable as? com.bumptech.glide.load.resource.gif.GifDrawable)?.stop()
             this.drawable?.callback = null
             this.drawable = drawable
             //}
@@ -303,14 +313,19 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
                     }
                 })
                 GlideUtil.with(view)
-                        ?.asDrawable()?.load(GlideUrl(url, Headers {
-                            mapOf("referer" to url,
-                                    "user-agent" to App.getUserAgent(view.context)
-                            )
-                        }))
-                        ?.apply(RequestOptions().transform(SizeTransformation { width, _ ->
+                        ?.asDrawable()?.let {
+                            if (uri != null) {
+                                it.load(uri)
+                            } else {
+                                it.load(GlideUrl(url, Headers {
+                                    mapOf("referer" to url,
+                                            "user-agent" to App.getUserAgent(view.context)
+                                    )
+                                }))
+                            }
+                        }?.apply(RequestOptions().transform(SizeTransformation { width, _ ->
                             val maxWidth = view.width - view.paddingLeft - view.paddingRight - 10f
-                            val minWidth = view.textSize
+                            val minWidth = textSize
                             Math.min(maxWidth, Math.max(minWidth, width.toFloat())) / width
                         }).placeholder(circularProgressDrawable).error(R.drawable.ic_broken_image))
                         ?.into(object : SimpleTarget<Drawable>() {
@@ -344,6 +359,15 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
             }
         }
 
+        val gardientPaint by lazy {
+            val paint = Paint()
+            paint.isAntiAlias = true
+            paint.color = 0xFF000000.toInt()
+            paint.shader = LinearGradient(0f, 200f, 0f, 250f, Color.BLACK, Color.TRANSPARENT, Shader.TileMode.CLAMP)
+            paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
+            paint
+        }
+
         override fun draw(canvas: Canvas) {
             drawable?.callback = object : Callback {
                 override fun invalidateDrawable(who: Drawable) {
@@ -359,11 +383,23 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
                     container.get()?.removeCallbacks(what)
                 }
             }
+            canvas.save()
+            canvas.clipRect(bounds)
             drawable?.draw(canvas)
+            if (bounds.height() != drawable?.bounds?.height()) {
+                canvas.drawRect(bounds, gardientPaint)
+            }
+            canvas.restore()
         }
     }
 
-    class UploadDrawable(val requestBody: RequestBody, val fileName: String, container: WeakReference<TextView>) : UrlDrawable(container) {
+    class UploadDrawable(val requestBody: RequestBody, val fileName: String, container: WeakReference<TextView>, uri: Uri) : UrlDrawable(container) {
+
+        init {
+            this.uri = uri
+        }
+
+        var uploadCall: Call<Response>? = null
         override fun loadImage() {
             if (url != null) {
                 super.loadImage()
@@ -378,10 +414,11 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
                 circularProgressDrawable.centerRadius = textSize / 2 - circularProgressDrawable.strokeWidth - 1f
                 circularProgressDrawable.progressRotation = 0.75f
                 update(circularProgressDrawable, textSize.toInt())
-
+                circularProgressDrawable.start()
                 val errorDrawable = view.context.getDrawable(R.drawable.ic_broken_image)
                 val callback = object : RetrofitCallback<Response>() {
                     override fun onSuccess(call: Call<Response>?, response: retrofit2.Response<Response>) {
+                        if (circularProgressDrawable.isRunning) circularProgressDrawable.stop()
                         val imgUrl = response.body()?.success_image?.firstOrNull()?.url
                         if (imgUrl != null) {
                             url = "https://upload.cc/$imgUrl"
@@ -393,6 +430,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
                     }
 
                     override fun onFailure(call: Call<Response>, t: Throwable) {
+                        if (circularProgressDrawable.isRunning) circularProgressDrawable.stop()
                         error = true
                         errorDrawable?.let { update(it, textSize.toInt()) }
                     }
@@ -400,6 +438,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
                     override fun onLoading(total: Long, progress: Long) {
                         super.onLoading(total, progress)
                         view.post {
+                            if (circularProgressDrawable.isRunning) circularProgressDrawable.stop()
                             circularProgressDrawable.setStartEndTrim(0f, progress * 1f / total)
                             circularProgressDrawable.progressRotation = 0.75f
                             circularProgressDrawable.invalidateSelf()
@@ -408,8 +447,9 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
                 }
                 val fileRequestBody = FileRequestBody(requestBody, callback)
                 val body = MultipartBody.Part.createFormData("uploaded_file[]", fileName, fileRequestBody)
-                val call = UploadCC.createInstance().upload(body)
-                call.enqueue(callback)
+                uploadCall?.cancel()
+                uploadCall = UploadCC.createInstance().upload(body)
+                uploadCall?.enqueue(callback)
             }
         }
     }
@@ -440,7 +480,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
                 } //it.html("<u>${parseHtml(it.html())}</u>")
                 if (style.contains("font-size:")) {
                     Regex("""font-size:([0-9]*)px""").find(style)?.groupValues?.get(1)?.let { size ->
-                        appendBefore = "$appendBefore[size='$size]'>"
+                        appendBefore = "$appendBefore[size=$size]"
                         appendEnd = "[/size]$appendEnd"
                     }
                 }//it.html("<size size='${size}px'>${parseHtml(it.html())}</size>")
@@ -452,6 +492,9 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
             }
             doc.select("div.quote").forEach {
                 it.html("[quote]${it.html()}[/quote]")
+            }
+            doc.select("div.codeHighlight").forEach {
+                it.html("[code]${it.html()}[/code]")
             }
             return doc.body().html()
         }

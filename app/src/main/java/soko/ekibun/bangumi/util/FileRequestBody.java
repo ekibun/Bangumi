@@ -76,7 +76,7 @@ public final class FileRequestBody<T> extends RequestBody {
                     contentLength = contentLength();
                 }
                 while (size > 0) {
-                    long sizeToWrite = Math.min(10240L, size);
+                    long sizeToWrite = Math.min(40960L, size);
                     super.write(source, sizeToWrite);
                     //增加当前写入的字节数
                     bytesWritten += sizeToWrite;

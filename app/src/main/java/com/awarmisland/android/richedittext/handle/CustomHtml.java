@@ -177,7 +177,7 @@ public class CustomHtml {
                 }
                 if (style[j] instanceof RelativeSizeSpan) {
                     float sizeEm = ((RelativeSizeSpan) style[j]).getSizeChange();
-                    out.append("[size=" + sizeEm + "]");
+                    out.append("[size=" + Math.round(sizeEm * 12) + "]");
                 }
                 if (style[j] instanceof ForegroundColorSpan) {
                     int color = ((ForegroundColorSpan) style[j]).getForegroundColor();

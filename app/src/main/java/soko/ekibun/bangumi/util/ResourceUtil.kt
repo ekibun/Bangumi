@@ -1,14 +1,12 @@
 package soko.ekibun.bangumi.util
 
 import android.content.Context
-import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.StateListDrawable
+import android.util.TypedValue
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
-import android.util.TypedValue
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -29,6 +27,11 @@ object ResourceUtil{
         val resolvedAttr = resolveThemeAttr(context, colorAttr)
         val colorRes = if (resolvedAttr.resourceId != 0) resolvedAttr.resourceId else resolvedAttr.data
         return ContextCompat.getColor(context, colorRes)
+    }
+
+    fun resolveFloatAttr(context: Context, @AttrRes colorAttr: Int): Float {
+        val resolvedAttr = resolveThemeAttr(context, colorAttr)
+        return resolvedAttr.float
     }
 
     private fun resolveThemeAttr(context: Context, @AttrRes attrRes: Int): TypedValue {

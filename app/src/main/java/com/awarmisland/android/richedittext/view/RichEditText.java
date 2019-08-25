@@ -2,7 +2,6 @@ package com.awarmisland.android.richedittext.view;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.text.Layout;
 import android.text.Spannable;
@@ -48,61 +47,47 @@ public class RichEditText extends AppCompatEditText implements View.OnClickListe
         initView();
     }
 
+    private int upX = 0;
+    private int upY = 0;
+
     private void initView() {
         setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-        //setOnClickListener(this);
+        setOnClickListener(this);
     }
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        Spannable text = getText();
-        if (text != null) {
-            int action = event.getAction();
-
-            if (action == MotionEvent.ACTION_UP) {
-                int x = (int) event.getX();
-                int y = (int) event.getY();
-
-                x -= getTotalPaddingLeft();
-                y -= getTotalPaddingTop();
-
-                x += getScrollX();
-                y += getScrollY();
-
-                Layout layout = getLayout();
-                int line = layout.getLineForVertical(y);
-                int off = layout.getOffsetForHorizontal(line, x);
-
-                ClickableSpan[] link = text.getSpans(off, off,
-                        ClickableSpan.class);
-
-                if (link.length != 0) {
-                    link[0].onClick(this);
-                }
-            }
+        if (event.getAction() == MotionEvent.ACTION_UP) {
+            upX = (int) event.getX();
+            upY = (int) event.getY();
         }
         return super.onTouchEvent(event);
     }
 
     @Override
     public void onClick(View view) {
+        Spannable text = getText();
+        int x = upX;
+        int y = upY;
+        if (text != null) {
+            x -= getTotalPaddingLeft();
+            y -= getTotalPaddingTop();
 
-        int start = getSelectionStart() - 1;
-        if (start == -1) {
-            start = 0;
+            x += getScrollX();
+            y += getScrollY();
+
+            Layout layout = getLayout();
+            int line = layout.getLineForVertical(y);
+            int off = layout.getOffsetForHorizontal(line, x);
+
+            ClickableSpan[] link = text.getSpans(off, off,
+                    ClickableSpan.class);
+
+            if (link.length != 0) {
+                link[0].onClick(this);
+            }
         }
-        if (start < -1) {
-            return;
-        }
-        FontStyle fontStyle = getFontStyle(start, start);
-        setBold(fontStyle.isBold);
-        setItalic(fontStyle.isItalic);
-        setUnderline(fontStyle.isUnderline);
-        setStrike(fontStyle.isStrike);
-        setMask(fontStyle.isMask);
-        //setFontSize(fontStyle.fontSize);
-        //setFontColor(fontStyle.color);
     }
 
     /**
@@ -130,14 +115,6 @@ public class RichEditText extends AppCompatEditText implements View.OnClickListe
 
     public void setMask(boolean isMask) {
         setMaskSpan(isMask);
-    }
-
-    public void setFontSize(int size) {
-        setFontSizeSpan(size);
-    }
-
-    public void setFontColor(int color) {
-        setForegroundColor(color);
     }
 
     public void setImage(HtmlTagHandler.ClickableImage clickSpan) {
@@ -190,34 +167,6 @@ public class RichEditText extends AppCompatEditText implements View.OnClickListe
         FontStyle fontStyle = new FontStyle();
         fontStyle.isMask = true;
         setSpan(fontStyle, isSet, HtmlTagHandler.MaskSpan.class);
-    }
-
-    /**
-     * 设置 字体大小
-     *
-     * @param size
-     */
-    private void setFontSizeSpan(int size) {
-        if (size == 0) {
-            size = FontStyle.NORMAL;
-        }
-        FontStyle fontStyle = new FontStyle();
-        fontStyle.fontSize = size;
-        setSpan(fontStyle, true, AbsoluteSizeSpan.class);
-    }
-
-    /**
-     * 设置字体颜色
-     *
-     * @param color
-     */
-    private void setForegroundColor(int color) {
-        if (color == 0) {
-            color = Color.parseColor(FontStyle.BLACK);
-        }
-        FontStyle fontStyle = new FontStyle();
-        fontStyle.color = color;
-        setSpan(fontStyle, true, ForegroundColorSpan.class);
     }
 
     /**
@@ -279,11 +228,6 @@ public class RichEditText extends AppCompatEditText implements View.OnClickListe
                 SpanPart spanStyle = new SpanPart(fontStyle);
                 spanStyle.start = getEditableText().getSpanStart(span);
                 spanStyle.end = getEditableText().getSpanEnd(span);
-                if (span instanceof AbsoluteSizeSpan) {
-                    spanStyle.fontSize = ((AbsoluteSizeSpan) span).getSize();
-                } else if (span instanceof ForegroundColorSpan) {
-                    spanStyle.color = ((ForegroundColorSpan) span).getForegroundColor();
-                }
                 spanStyles.add(spanStyle);
                 getEditableText().removeSpan(span);
             }
@@ -306,10 +250,6 @@ public class RichEditText extends AppCompatEditText implements View.OnClickListe
             return new UnderlineSpan();
         } else if (fontStyle.isStrike) {
             return new StrikethroughSpan();
-        } else if (fontStyle.fontSize > 0) {
-            return new AbsoluteSizeSpan(fontStyle.fontSize, true);
-        } else if (fontStyle.color != 0) {
-            return new ForegroundColorSpan(fontStyle.color);
         } else if (fontStyle.isMask) {
             int bgColor = ResourceUtil.INSTANCE.resolveColorAttr(getContext(), android.R.attr.textColorPrimary);
             int colorInv = ResourceUtil.INSTANCE.resolveColorAttr(getContext(), android.R.attr.textColorPrimaryInverse);
@@ -340,10 +280,6 @@ public class RichEditText extends AppCompatEditText implements View.OnClickListe
                 fontStyle.isUnderline = true;
             } else if (style instanceof StrikethroughSpan) {
                 fontStyle.isStrike = true;
-            } else if (style instanceof AbsoluteSizeSpan) {
-                fontStyle.fontSize = ((AbsoluteSizeSpan) style).getSize();
-            } else if (style instanceof ForegroundColorSpan) {
-                fontStyle.color = ((ForegroundColorSpan) style).getForegroundColor();
             } else if (style instanceof HtmlTagHandler.MaskSpan) {
                 fontStyle.isMask = true;
             }

@@ -1,7 +1,9 @@
 package soko.ekibun.bangumi.ui.topic
 
 import android.annotation.SuppressLint
+import android.text.Editable
 import androidx.appcompat.app.AlertDialog
+import com.awarmisland.android.richedittext.handle.CustomHtml
 import com.google.gson.reflect.TypeToken
 import kotlinx.android.synthetic.main.activity_topic.*
 import okhttp3.FormBody
@@ -106,7 +108,8 @@ class TopicPresenter(private val context: TopicActivity) {
                         else -> ""
                     }
                     //WebActivity.launchUrl(this@TopicActivity, url)
-                    buildPopupWindow(context.getString(if (post.floor == 1) R.string.parse_hint_modify_topic else R.string.parse_hint_modify_post, topic.title), post.pst_content) { inputString, send ->
+                    buildPopupWindow(context.getString(if (post.floor == 1) R.string.parse_hint_modify_topic else R.string.parse_hint_modify_post, topic.title), html = post.pst_content) { text, send ->
+                        val inputString = CustomHtml.toHtml(text)
                         if (send) {
                             ApiHelper.buildHttpCall(url, mapOf("User-Agent" to ua), body = FormBody.Builder()
                                     .add("formhash", topic.formhash!!)
@@ -122,18 +125,19 @@ class TopicPresenter(private val context: TopicActivity) {
         }
     }
 
-    private fun buildPopupWindow(hint: String = "", draft: String = "", callback: (String, Boolean)->Unit) {
+    private fun buildPopupWindow(hint: String = "", draft: Editable? = null, html: String = "", callback: (Editable?, Boolean) -> Unit) {
         val dialog = ReplyDialog()
         dialog.hint = hint
         dialog.draft = draft
+        dialog.html = html
         dialog.callback = callback
         dialog.show(context.supportFragmentManager, "reply")
     }
 
-    private val drafts = HashMap<String, String>()
+    private val drafts = HashMap<String, Editable>()
     @SuppressLint("InflateParams")
     private fun showReplyPopupWindow(post: String, data: FormBody.Builder, comment: String = "", hint: String = "", draftId: String = "topic") {
-        buildPopupWindow(hint, drafts[draftId]?:"") { inputString, send->
+        buildPopupWindow(hint, drafts[draftId]) { inputString, send ->
             if(send){
                 data.add("submit", "submit")
                 data.add("content", comment + inputString)
@@ -174,7 +178,7 @@ class TopicPresenter(private val context: TopicActivity) {
                 }) {})
             }
             else{
-                drafts[draftId] = inputString
+                inputString?.let { drafts[draftId] = it }
             }
         }
     }

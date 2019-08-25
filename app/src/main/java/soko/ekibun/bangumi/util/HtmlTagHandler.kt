@@ -13,7 +13,7 @@ import soko.ekibun.bangumi.ui.topic.ReplyDialog
 import java.lang.ref.WeakReference
 import java.util.*
 
-class HtmlTagHandler(view: TextView, private var baseSize: Float = 13f, private val onClick:(ImageSpan)->Unit): Html.TagHandler{
+class HtmlTagHandler(view: TextView, private var baseSize: Float = 12f, private val onClick: (ImageSpan) -> Unit) : Html.TagHandler {
     private val bgColor = view.textColors.defaultColor
     private val colorInv = ResourceUtil.resolveColorAttr(view.context, android.R.attr.textColorPrimaryInverse)
     private val widget = WeakReference(view)

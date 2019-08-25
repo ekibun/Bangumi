@@ -9,7 +9,9 @@ import org.jsoup.nodes.TextNode
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.*
+import retrofit2.http.GET
+import retrofit2.http.Path
+import retrofit2.http.Query
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.*
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
@@ -447,6 +449,7 @@ interface Bangumi {
         fun getTopic(url: String, ua: String): Call<Topic>{
             return ApiHelper.buildHttpCall(url.replace(Regex("""^https?://(bgm\.tv|bangumi\.tv|chii\.in)"""), SERVER), mapOf("User-Agent" to ua)){
                 val doc = Jsoup.parse(it.body()?.string()?:"")
+                doc.outputSettings().prettyPrint(false)
                 val replies = ArrayList<TopicPost>()
                 doc.select(".re_info")?.map{ it.parent() }?.forEach{
                     val img = Regex("""background-image:url\('([^']*)'\)""").find(it.selectFirst(".avatar")?.html()?:"")?.groupValues?.get(1)?:""

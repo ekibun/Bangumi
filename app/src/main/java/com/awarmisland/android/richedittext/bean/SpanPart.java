@@ -18,7 +18,5 @@ public class SpanPart extends FontStyle {
         this.isStrike = fontStyle.isStrike;
         this.isMask = fontStyle.isMask;
         this.isUnderline = fontStyle.isUnderline;
-        this.fontSize = fontStyle.fontSize;
-        this.color = fontStyle.color;
     }
 }

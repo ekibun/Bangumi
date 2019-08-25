@@ -1,9 +1,11 @@
 package soko.ekibun.bangumi.ui.main.fragment.home.fragment.timeline
 
 import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
-import androidx.appcompat.widget.PopupMenu
+import android.text.Editable
 import android.view.View
+import androidx.appcompat.widget.PopupMenu
+import com.awarmisland.android.richedittext.handle.CustomHtml
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_timeline.*
 import okhttp3.FormBody
 import soko.ekibun.bangumi.R
@@ -48,7 +50,7 @@ class TimeLineFragment: HomeTabFragment(R.layout.fragment_timeline){
             item_new?.hide()
         }else {
             item_new?.show()
-            var draft = ""
+            var draft: Editable? = null
             item_new?.setOnClickListener {
                 val dialog = ReplyDialog()
                 dialog.hint = context?.getString(R.string.timeline_dialog_add)?:""
@@ -56,13 +58,13 @@ class TimeLineFragment: HomeTabFragment(R.layout.fragment_timeline){
                 dialog.callback = {string, send ->
                     if(send){
                         ApiHelper.buildHttpCall("${Bangumi.SERVER}/update/user/say?ajax=1", mapOf("User-Agent" to ((activity as? MainActivity)?.ua?:"")), body = FormBody.Builder()
-                                .add("say_input", string)
+                                .add("say_input", CustomHtml.toHtml(string))
                                 .add("formhash", formhash)
                                 .add("submit", "submit").build()){
                             it.body()?.string()?.contains("\"status\":\"ok\"") == true
                         }.enqueue(ApiHelper.buildCallback({
                             if(it){
-                                draft = ""
+                                draft = null
                                 if(item_pager?.currentItem?:2 !in 0..1) item_pager?.currentItem = 1
                                 adapter.pageIndex[item_pager?.currentItem?:0] = 0
                                 adapter.loadTopicList()
