@@ -2,7 +2,6 @@ package soko.ekibun.bangumi.ui.view
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.net.http.SslError
 import android.os.Message
 import android.util.AttributeSet
 import android.view.MotionEvent
@@ -43,6 +42,7 @@ class NestedWebView @JvmOverloads constructor(context: Context, attrs: Attribute
         webViewClient = mWebViewClient
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if(event.action == MotionEvent.ACTION_DOWN && scrollY <= 0)
             scrollTo(scrollX, 1)
@@ -110,9 +110,6 @@ class NestedWebView @JvmOverloads constructor(context: Context, attrs: Attribute
         }
 
         val mWebViewClient = object : WebViewClient() {
-            override fun onReceivedSslError(view: WebView?, handler: SslErrorHandler, error: SslError?) {
-                handler.proceed()
-            }
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 return (view as? NestedWebView)?.shouldOverrideUrlLoading?.invoke(view, request) ?: super.shouldOverrideUrlLoading(view, request)
             }

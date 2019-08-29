@@ -150,11 +150,13 @@
             android:background="?android:colorBackground"
             app:layout_anchor="@id/item_swipe"
             app:layout_anchorGravity="bottom">
-        <TextView android:id="@+id/item_reply"
-                  android:padding="8dp"
-                  android:gravity="center_vertical"
-                  android:layout_width="match_parent"
-                  android:layout_height="45dp"/>
+
+        <TextView
+                android:id="@+id/btn_reply"
+                android:padding="8dp"
+                android:gravity="center_vertical"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"/>
     </FrameLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

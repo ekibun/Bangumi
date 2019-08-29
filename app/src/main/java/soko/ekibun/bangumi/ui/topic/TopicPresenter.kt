@@ -36,12 +36,12 @@ class TopicPresenter(private val context: TopicActivity) {
     }
 
     private fun processTopic(topic: Topic, scrollPost: String){
-        context.item_reply.setCompoundDrawablesWithIntrinsicBounds(
+        context.btn_reply.setCompoundDrawablesWithIntrinsicBounds(
                 if(!topic.formhash.isNullOrEmpty()) ResourceUtil.getDrawable(context, R.drawable.ic_edit) else null,//left
                 null,
                 if(!topic.formhash.isNullOrEmpty()) ResourceUtil.getDrawable(context, R.drawable.ic_send) else null,//right
                 null)
-        context.item_reply.setOnClickListener {
+        context.btn_reply.setOnClickListener {
             topic.formhash?.let{ formhash -> showReplyPopupWindow(topic.post, FormBody.Builder().add("lastview", topic.lastview!!).add("formhash", formhash),"", context.getString(R.string.parse_hint_reply_topic, topic.title)) }?:{
                 if(!topic.errorLink.isNullOrEmpty()) WebActivity.launchUrl(context, topic.errorLink, "")
             }()
@@ -140,7 +140,7 @@ class TopicPresenter(private val context: TopicActivity) {
         buildPopupWindow(hint, drafts[draftId]) { inputString, send ->
             if(send){
                 data.add("submit", "submit")
-                data.add("content", comment + inputString)
+                data.add("content", comment + CustomHtml.toHtml(inputString))
                 ApiHelper.buildHttpCall(post, mapOf("User-Agent" to ua), body = data.build()){ response ->
                     val replies = ArrayList(topicView.adapter.data)
                     replies.removeAll { it.sub_floor > 0 }

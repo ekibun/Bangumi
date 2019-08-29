@@ -1,11 +1,11 @@
 package soko.ekibun.bangumi.ui.topic
 
 import android.graphics.Rect
-import androidx.constraintlayout.widget.ConstraintLayout
-import com.google.android.material.appbar.AppBarLayout
 import android.view.LayoutInflater
 import android.view.View
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.bumptech.glide.request.RequestOptions
+import com.google.android.material.appbar.AppBarLayout
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_topic.*
 import soko.ekibun.bangumi.R
@@ -111,7 +111,7 @@ class TopicView(private val context: TopicActivity){
             layoutManager.scrollToPositionWithOffset(adapter.data.indexOfFirst { it.pst_id == scrollPost }, 0) }
         adapter.setOnLoadMoreListener({adapter.loadMoreEnd()}, context.item_list)
         adapter.setEnableLoadMore(true)
-        context.item_reply.text = when {
+        context.btn_reply.text = when {
             !topic.formhash.isNullOrEmpty() -> context.getString(R.string.hint_reply)
             !topic.error.isNullOrEmpty() -> topic.error
             topic.replies.isEmpty() -> context.getString(R.string.hint_empty_topic)
