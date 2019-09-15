@@ -1,34 +1,33 @@
 package soko.ekibun.bangumi.util
 
 import okhttp3.*
-import soko.ekibun.bangumi.api.bangumi.Bangumi
-import java.net.URI
+import org.jsoup.Jsoup
 
 object HttpUtil {
+    var ua = ""
+    var formhash = ""
 
-    fun get(url: String, header: Map<String, String> = HashMap(), callback: Callback) {
-        OkHttpClient().newCall(Request.Builder()
-                .url(url)
-                .headers(Headers.of(header))
-                .build())
-                .enqueue(callback)
-    }
-
+    /**
+     * 封装OkHttp请求，携带Cookie和User-Agent
+     */
     fun getCall(url: String, header: Map<String, String> = HashMap(), body: RequestBody? = null, useCookie: Boolean = true): Call {
+        val mutableHeader = header.toMutableMap()
+        mutableHeader["User-Agent"] = header["User-Agent"] ?: ua
         val request = Request.Builder()
                 .url(url)
-                .headers(Headers.of(header))
+                .headers(Headers.of(mutableHeader))
         if (body != null) request.post(body)
         val httpClient = OkHttpClient.Builder()
-        if(useCookie) httpClient.cookieJar(WebViewCookieHandler())
+        if (useCookie) httpClient.cookieJar(WebViewCookieHandler())
         return httpClient.build().newCall(request.build())
     }
 
-    fun getUrl(url: String, baseUri: URI?): String{
-        if(url in arrayOf("/img/info_only.png", "/img/info_only_m.png", "/img/no_icon_subject.png")
-                && baseUri?.toASCIIString()?.startsWith(Bangumi.SERVER) == true) return ""
-        return try{
-            baseUri?.resolve(url)?.toASCIIString() ?: URI.create(url).toASCIIString()
-        }catch (e: Exception){ url }
+    /**
+     * 将html转换为字符串
+     */
+    fun html2text(string: String): String {
+        val doc = Jsoup.parse(string)
+        doc.select("br").after("$\$b\$r$")
+        return doc.body().text().replace("$\$b\$r$", "\n")
     }
 }

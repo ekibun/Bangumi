@@ -8,10 +8,10 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.util.ResourceUtil
 
-class TopicAdapter(data: MutableList<Subject.TopicBean>? = null) :
-        BaseQuickAdapter<Subject.TopicBean, BaseViewHolder>(R.layout.item_subject_topic, data) {
+class TopicAdapter(data: MutableList<Subject.Topic>? = null) :
+        BaseQuickAdapter<Subject.Topic, BaseViewHolder>(R.layout.item_subject_topic, data) {
 
-    override fun convert(helper: BaseViewHolder, item: Subject.TopicBean) {
+    override fun convert(helper: BaseViewHolder, item: Subject.Topic) {
         @SuppressLint("SetTextI18n")
         helper.itemView.item_user.text = item.user?.nickname
         helper.itemView.item_time.text = ResourceUtil.getTimeInterval(item.timestamp)

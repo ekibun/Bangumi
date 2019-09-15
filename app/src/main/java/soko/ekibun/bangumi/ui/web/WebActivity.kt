@@ -5,22 +5,20 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.preference.PreferenceManager
 import android.util.Log
 import android.view.*
-import android.webkit.*
-import androidx.appcompat.app.AppCompatActivity
+import android.webkit.WebResourceRequest
+import android.webkit.WebView
 import kotlinx.android.synthetic.main.activity_web.*
+import kotlinx.android.synthetic.main.appbar_layout.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.ui.topic.TopicActivity
+import soko.ekibun.bangumi.ui.view.BaseActivity
 import soko.ekibun.bangumi.util.AppUtil
 import java.net.URI
-import android.view.ViewTreeObserver
-import kotlinx.android.synthetic.main.appbar_layout.*
-import soko.ekibun.bangumi.ui.view.BaseActivity
 
 
 class WebActivity : BaseActivity() {
@@ -228,7 +226,7 @@ class WebActivity : BaseActivity() {
             val regex = Regex("""/subject/([0-9]*)$""")
             val id = regex.find(url)?.groupValues?.get(1)?.toIntOrNull()
             if(id != null){
-                SubjectActivity.startActivity(context, Subject(id, url))
+                SubjectActivity.startActivity(context, Subject(id))
                 return true }
             return false
         }

@@ -34,7 +34,6 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import org.jsoup.Jsoup
 import retrofit2.Call
-import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.uploadcc.UploadCC
@@ -43,7 +42,6 @@ import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.topic.PostAdapter.Companion.setTextLinkOpenByWebView
 import soko.ekibun.bangumi.util.*
 import java.lang.ref.WeakReference
-import java.net.URI
 
 class ReplyDialog: androidx.fragment.app.DialogFragment() {
     private var contentView: View? = null
@@ -180,7 +178,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
             contentView.item_input.text = draft
         } else {
             contentView.item_input.setText(setTextLinkOpenByWebView(Html.fromHtml(parseHtml(html),
-                    HtmlHttpImageGetter(contentView.item_input, URI.create(Bangumi.SERVER)),
+                    HtmlHttpImageGetter(contentView.item_input),
                     HtmlTagHandler(contentView.item_input, onClick = onClickImage)), onClickUrl))
         }
 
@@ -241,11 +239,11 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
         item_input.setImage(HtmlTagHandler.ClickableImage(ImageSpan(drawable), onClickImage))
     }
 
-    class HtmlHttpImageGetter(container: TextView, private val baseUri: URI?) : Html.ImageGetter {
+    class HtmlHttpImageGetter(container: TextView) : Html.ImageGetter {
         private val container = WeakReference(container)
         override fun getDrawable(source: String): Drawable {
             val urlDrawable = UrlDrawable(container)
-            urlDrawable.url = HttpUtil.getUrl(source, baseUri)
+            urlDrawable.url = Bangumi.parseUrl(source)
             urlDrawable.loadImage()
             return urlDrawable
         }
@@ -319,7 +317,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
                             } else {
                                 it.load(GlideUrl(url, Headers {
                                     mapOf("referer" to url,
-                                            "user-agent" to App.getUserAgent(view.context)
+                                            "user-agent" to HttpUtil.ua
                                     )
                                 }))
                             }

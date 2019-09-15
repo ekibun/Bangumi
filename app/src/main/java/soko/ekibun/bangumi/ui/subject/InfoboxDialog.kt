@@ -6,20 +6,20 @@ import android.content.Context
 import android.os.Bundle
 import android.text.Html
 import android.text.method.LinkMovementMethod
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.WindowManager
 import android.widget.TableRow
 import android.widget.TextView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.android.synthetic.main.dialog_infobox.view.*
-import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
+import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.topic.PostAdapter
 import soko.ekibun.bangumi.ui.web.WebActivity
-import soko.ekibun.bangumi.util.HttpUtil
-import java.net.URI
 
 class InfoboxDialog(context: Context): Dialog(context, R.style.AppTheme_Dialog) {
     companion object {
@@ -50,7 +50,7 @@ class InfoboxDialog(context: Context): Dialog(context, R.style.AppTheme_Dialog) 
             val txtInfo = TextView(context)
             @Suppress("DEPRECATION")
             txtInfo.text = PostAdapter.setTextLinkOpenByWebView(Html.fromHtml(subject.infobox?.filter { it.first == cat }?.map{ it.second }?.reduce { acc, s -> "$acc<br>$s" })){
-                WebActivity.launchUrl(context, HttpUtil.getUrl(it, URI.create(Bangumi.SERVER)), "")
+                WebActivity.launchUrl(context, Bangumi.parseUrl(it), "")
             }
             txtInfo.movementMethod = LinkMovementMethod.getInstance()
             val dp = context.resources.displayMetrics.density

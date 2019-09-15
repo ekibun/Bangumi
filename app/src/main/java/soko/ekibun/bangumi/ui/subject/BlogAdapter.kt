@@ -10,10 +10,10 @@ import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.ResourceUtil
 
-class BlogAdapter(data: MutableList<Subject.BlogBean>? = null) :
-        BaseQuickAdapter<Subject.BlogBean, BaseViewHolder>(R.layout.item_blog, data) {
+class BlogAdapter(data: MutableList<Subject.Blog>? = null) :
+        BaseQuickAdapter<Subject.Blog, BaseViewHolder>(R.layout.item_blog, data) {
 
-    override fun convert(helper: BaseViewHolder, item: Subject.BlogBean) {
+    override fun convert(helper: BaseViewHolder, item: Subject.Blog) {
         @SuppressLint("SetTextI18n")
         helper.itemView.item_user.text = item.user?.nickname
         helper.itemView.item_time.text = ResourceUtil.getTimeInterval(item.timestamp)

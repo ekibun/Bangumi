@@ -12,7 +12,6 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
-import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import java.util.*
 
@@ -50,7 +49,7 @@ class IndexPagerAdapter(private val fragment: IndexFragment, private val pager: 
             item.adapter.setNewData(null)
             item.view.isRefreshing = true
         }
-        indexCalls[position] = Bangumi.browserAirTime(indexType.first, year, month, page + 1, (fragment.activity as? MainActivity)?.ua?:"", indexType.second)
+        indexCalls[position] = Bangumi.browserAirTime(indexType.first, year, month, page + 1, indexType.second)
         item.adapter.isUseEmpty(false)
         indexCalls[position]?.enqueue(ApiHelper.buildCallback({
             item.adapter.isUseEmpty(true)

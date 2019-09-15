@@ -49,7 +49,7 @@ class TimeLinePagerAdapter(context: Context, val fragment: TimeLineFragment, pri
                 }
             })
 
-            val adapter = TimeLineAdapter((fragment.activity as? MainActivity)?.ua?:"")
+            val adapter = TimeLineAdapter()
             adapter.emptyView = LayoutInflater.from(container.context).inflate(R.layout.view_empty, container, false)
             adapter.isUseEmpty(false)
             adapter.setEnableLoadMore(true)
@@ -82,7 +82,7 @@ class TimeLinePagerAdapter(context: Context, val fragment: TimeLineFragment, pri
         }
         topicCall[position]?.cancel()
         topicCall[position] = Bangumi.getTimeLine(listOf("all", "say", "subject", "progress", "blog", "mono", "relation", "group", "wiki", "index", "doujin")[position], page + 1,
-                if(selectedType != R.id.timeline_type_all) item.first.ua else "",  if(selectedType == R.id.timeline_type_self) (fragment.activity as? MainActivity)?.user else null)
+                if (selectedType == R.id.timeline_type_self) (fragment.activity as? MainActivity)?.user else null, selectedType == R.id.timeline_type_all)
         topicCall[position]?.enqueue(ApiHelper.buildCallback({
             item.first.isUseEmpty(true)
             if(it.isEmpty()) item.first.loadMoreEnd()

@@ -13,10 +13,10 @@ class SubjectAdapter(data: MutableList<Subject>? = null) :
         BaseQuickAdapter<Subject, BaseViewHolder>(R.layout.item_subject, data) {
 
     override fun convert(helper: BaseViewHolder, item: Subject) {
-        helper.setText(R.id.item_title, item.getPrettyName())
+        helper.setText(R.id.item_title, item.displayName)
         helper.setText(R.id.item_name_jp, item.name)
         helper.setText(R.id.item_summary, item.summary)
-        helper.itemView.item_chase.visibility = if(item.collect) View.VISIBLE else View.GONE
+        helper.itemView.item_chase.visibility = if (item.collect != null) View.VISIBLE else View.GONE
         GlideUtil.with(helper.itemView.item_cover)
                 ?.load(item.images?.getImage(helper.itemView.context))
                 ?.apply(RequestOptions.errorOf(R.drawable.err_404))

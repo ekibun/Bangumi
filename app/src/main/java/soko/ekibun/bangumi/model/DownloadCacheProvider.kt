@@ -44,7 +44,7 @@ class DownloadCacheProvider(val context: AppCompatActivity, val onServiceConnect
     }
 
     fun getSubjectCache(subject: Subject, onFinish: (SubjectCache)->Unit, onReject: (String)->Unit){
-        aidl?.getSubjectCache(VideoSubject(subject, ""), object: ISubjectCacheCallback.Stub() {
+        aidl?.getSubjectCache(VideoSubject(subject), object : ISubjectCacheCallback.Stub() {
             override fun onFinish(result: SubjectCache) {
                 onFinish(result)
             }
@@ -55,7 +55,7 @@ class DownloadCacheProvider(val context: AppCompatActivity, val onServiceConnect
     }
 
     fun getEpisodeCache(subject: Subject, episode: Episode, onFinish: (VideoCache)->Unit, onReject: (String)->Unit){
-        aidl?.getEpisodeCache(VideoSubject(subject, ""), VideoEpisode(episode), object: IVideoCacheCallback.Stub() {
+        aidl?.getEpisodeCache(VideoSubject(subject), VideoEpisode(episode), object : IVideoCacheCallback.Stub() {
             override fun onFinish(result: VideoCache) {
                 onFinish(result)
             }

@@ -28,8 +28,6 @@ import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.HtmlHttpImageGetter
 import soko.ekibun.bangumi.util.HtmlTagHandler
-import soko.ekibun.bangumi.util.HttpUtil
-import java.net.URI
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -37,15 +35,16 @@ import kotlin.collections.HashMap
 class PostAdapter(data: MutableList<TopicPost>? = null) :
         BaseMultiItemQuickAdapter<TopicPost, BaseViewHolder>(data), FastScrollRecyclerView.SectionedAdapter {
 
-    init{
+    init {
         addItemType(0, R.layout.item_reply)
         addItemType(1, R.layout.item_reply)
     }
 
     override fun getSectionName(position: Int): String {
-        val item = data.getOrNull(position)?:data.last()
+        val item = data.getOrNull(position) ?: data.last()
         return "#${item.floor}"
     }
+
     private val imaageSizes = HashMap<String, Size>()
     private val largeContent = WeakHashMap<String, Spanned>()
     @SuppressLint("SetTextI18n")
@@ -55,7 +54,7 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
         helper.addOnClickListener(R.id.item_edit)
         helper.addOnClickListener(R.id.item_avatar)
         helper.itemView.item_user.text = item.nickname
-        helper.itemView.item_user_sign.text = if(item.sign.length < 2) "" else item.sign.substring(1, item.sign.length-1)
+        helper.itemView.item_user_sign.text = if (item.sign.length < 2) "" else item.sign.substring(1, item.sign.length - 1)
         val subFloor = if (item.sub_floor > 0) "-${item.sub_floor}" else ""
         helper.itemView.item_time.text = "#${item.floor}$subFloor - ${item.dateline}"
         helper.itemView.offset.visibility = if (item.isSub) View.VISIBLE else View.GONE
@@ -64,10 +63,10 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
         helper.itemView.item_edit.visibility = helper.itemView.item_del.visibility
 
         helper.itemView.item_expand.visibility = if (item.hasSubItem()) View.VISIBLE else View.GONE
-        helper.itemView.item_expand.setText(if(item.isExpanded) R.string.collapse else R.string.expand)
+        helper.itemView.item_expand.setText(if (item.isExpanded) R.string.collapse else R.string.expand)
         helper.itemView.item_expand.setOnClickListener {
             val index = data.indexOfFirst { post -> post === item }
-            if(item.isExpanded) collapse(index) else expand(index)
+            if (item.isExpanded) collapse(index) else expand(index)
         }
 
         val drawables = ArrayList<String>()
@@ -75,15 +74,15 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
             val makeSpan = {
                 @Suppress("DEPRECATION")
                 setTextLinkOpenByWebView(
-                        Html.fromHtml(parseHtml(item.pst_content), HtmlHttpImageGetter(item_message, URI.create(Bangumi.SERVER), drawables, imaageSizes), HtmlTagHandler(item_message) { imageSpan ->
-                            helper.itemView.item_message?.let{itemView->
+                        Html.fromHtml(parseHtml(item.pst_content), HtmlHttpImageGetter(item_message, drawables, imaageSizes), HtmlTagHandler(item_message) { imageSpan ->
+                            helper.itemView.item_message?.let { itemView ->
                                 val imageList = drawables.filter { (it.startsWith("http") || !it.contains("smile")) }.toList()
                                 val index = imageList.indexOfFirst { d -> d == imageSpan.source }
                                 if (index < 0) return@HtmlTagHandler
                                 val popWindow = PopupWindow(itemView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, true)
                                 val viewPager = FixMultiViewPager(itemView.context)
                                 popWindow.contentView = viewPager
-                                viewPager.adapter = PhotoPagerAdapter(imageList.map { HttpUtil.getUrl(it, URI.create(Bangumi.SERVER)) }) {
+                                viewPager.adapter = PhotoPagerAdapter(imageList.map { Bangumi.parseUrl(it) }) {
                                     popWindow.dismiss()
                                 }
                                 viewPager.currentItem = index
@@ -98,19 +97,20 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
                                         or View.SYSTEM_UI_FLAG_FULLSCREEN)
                             }
                         })) {
-                    WebActivity.launchUrl(helper.itemView.context, HttpUtil.getUrl(it, URI.create(Bangumi.SERVER)), "")
+                    WebActivity.launchUrl(helper.itemView.context, Bangumi.parseUrl(it), "")
                 }
             }
-            item_message.text = if(item.pst_content.length < 10000) makeSpan() else largeContent.getOrPut(item.pst_id, makeSpan)
+            item_message.text = if (item.pst_content.length < 10000) makeSpan() else largeContent.getOrPut(item.pst_id, makeSpan)
         }
         helper.itemView.item_message.onFocusChangeListener = View.OnFocusChangeListener { view, focus ->
-            if(!focus){
+            if (!focus) {
                 view.tag = null
                 (view as TextView).text = view.text
-            } }
+            }
+        }
         helper.itemView.item_message.movementMethod = LinkMovementMethod.getInstance()
         GlideUtil.with(helper.itemView.item_avatar)
-                ?.load(HttpUtil.getUrl(item.avatar, URI.create(Bangumi.SERVER)))
+                ?.load(Bangumi.parseUrl(item.avatar))
                 ?.apply(RequestOptions.errorOf(R.drawable.err_404))
                 ?.apply(RequestOptions.circleCropTransform())
                 ?.into(helper.itemView.item_avatar)
@@ -126,8 +126,8 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
     }
 
     companion object {
-        fun parseHtml(html: String): String{
-            val doc= Jsoup.parse(html, Bangumi.SERVER)
+        fun parseHtml(html: String): String {
+            val doc = Jsoup.parse(html.replace(Regex("</?noscript>"), ""), Bangumi.SERVER)
             doc.outputSettings().indentAmount(0).prettyPrint(false)
             doc.select("script").remove()
             doc.select("img").forEach {
@@ -137,23 +137,25 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
                 var appendBefore = ""
                 var appendEnd = ""
                 val style = it.attr("style")
-                if(style.contains("font-weight:bold")) {
+                if (style.contains("font-weight:bold")) {
                     appendBefore = "$appendBefore<b>"
                     appendEnd = "</b>$appendEnd"
                 } //it.html("<b>${parseHtml(it.html())}</b>")
-                if(style.contains("font-style:italic")) {
+                if (style.contains("font-style:italic")) {
                     appendBefore = "$appendBefore<i>"
                     appendEnd = "</i>$appendEnd"
                 } //it.html("<i>${parseHtml(it.html())}</i>")
-                if(style.contains("text-decoration: underline")) {
+                if (style.contains("text-decoration: underline")) {
                     appendBefore = "$appendBefore<u>"
                     appendEnd = "</u>$appendEnd"
                 } //it.html("<u>${parseHtml(it.html())}</u>")
-                if(style.contains("font-size:")) { Regex("""font-size:([0-9]*)px""").find(style)?.groupValues?.get(1)?.let{size->
-                    appendBefore = "$appendBefore<size size='${size}px'>"
-                    appendEnd = "</size>$appendEnd"
-                } }//it.html("<size size='${size}px'>${parseHtml(it.html())}</size>")
-                if(style.contains("background-color:")) {
+                if (style.contains("font-size:")) {
+                    Regex("""font-size:([0-9]*)px""").find(style)?.groupValues?.get(1)?.let { size ->
+                        appendBefore = "$appendBefore<size size='${size}px'>"
+                        appendEnd = "</size>$appendEnd"
+                    }
+                }//it.html("<size size='${size}px'>${parseHtml(it.html())}</size>")
+                if (style.contains("background-color:")) {
                     appendBefore = "$appendBefore<mask>"
                     appendEnd = "</mask>$appendEnd"
                 } //it.html("<mask>${parseHtml(it.html())}</mask>")

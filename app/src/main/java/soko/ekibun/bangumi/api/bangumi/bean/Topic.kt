@@ -7,7 +7,6 @@ data class Topic(
         val image: String,
         val replies: List<TopicPost>,
         val post: String,
-        val formhash: String?,
         val lastview: String?,
         val links: Map<String, String>,
         val error: String?,

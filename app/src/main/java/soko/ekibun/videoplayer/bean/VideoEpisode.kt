@@ -3,7 +3,6 @@ package soko.ekibun.videoplayer.bean
 import android.os.Parcel
 import android.os.Parcelable
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
-import soko.ekibun.bangumi.api.bangumi.bean.SubjectProgress
 
 data class VideoEpisode(
         val site: String? = null,
@@ -23,8 +22,7 @@ data class VideoEpisode(
     fun toEpisode(): Episode {
         return Episode(
                 id =id?.toIntOrNull()?:0,
-                url = url,
-                cat = cat,
+                category = cat,
                 sort = sort,
                 name = name,
                 duration = duration,
@@ -32,10 +30,11 @@ data class VideoEpisode(
                 comment = comment,
                 desc = desc,
                 status = status,
-                progress = SubjectProgress.EpisodeProgress(
-                        id?.toIntOrNull()?:0,
-                        SubjectProgress.EpisodeProgress.EpisodeStatus.getByName(progress?:"")
-                )
+                progress = mapOf(
+                        "想看" to Episode.PROGRESS_QUEUE,
+                        "在看" to Episode.PROGRESS_WATCH,
+                        "抛弃" to Episode.PROGRESS_DROP
+                )[progress]
         )
     }
 
@@ -43,7 +42,15 @@ data class VideoEpisode(
             VideoSubject.BANGUMI_SITE,
             episode.id.toString(),
             episode.url,
-            episode.cat,
+            episode.category ?: when (episode.type) {
+                Episode.TYPE_MAIN -> "本篇"
+                Episode.TYPE_SP -> "特别篇"
+                Episode.TYPE_OP -> "OP"
+                Episode.TYPE_ED -> "ED"
+                Episode.TYPE_PV -> "PV"
+                Episode.TYPE_MAD -> "MAD"
+                else -> "其他"
+            },
             episode.sort,
             if(episode.name_cn.isNullOrEmpty()) episode.name else episode.name_cn,
             episode.duration,
@@ -51,7 +58,11 @@ data class VideoEpisode(
             episode.comment,
             episode.desc,
             episode.status,
-            episode.progress?.status?.cn_name
+            mapOf(
+                    Episode.PROGRESS_QUEUE to "想看",
+                    Episode.PROGRESS_WATCH to "在看",
+                    Episode.PROGRESS_DROP to "抛弃"
+            )[episode.progress]
     )
 
     constructor(source: Parcel) : this(

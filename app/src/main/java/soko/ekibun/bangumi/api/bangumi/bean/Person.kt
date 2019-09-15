@@ -1,17 +1,14 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
+import soko.ekibun.bangumi.api.bangumi.Bangumi
+
 class Person(
         var id: Int = 0,
-        var url: String? = null,
         var name: String? = null,
         var name_cn: String? = null,
-        //var role_name: String? = null,
-        var images: Images? = null,
-        //var comment: Int = 0,
-        //var collects: Int = 0,
-        var info: MonoInfo? = null//,
-        //var jobs: List<String>? = null
+        var images: Images? = null
 ) {
+    val url = "${Bangumi.SERVER}/person/$id"
     /**
      * id : 681
      * url : http://bgm.tv/person/681

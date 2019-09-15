@@ -7,15 +7,12 @@ import android.view.View
 import android.view.ViewGroup
 import retrofit2.Call
 import soko.ekibun.bangumi.api.ApiHelper
-import soko.ekibun.bangumi.api.bangumi.Bangumi
+import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
-import soko.ekibun.bangumi.api.bangumi.bean.SubjectCollection
-import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
 import soko.ekibun.bangumi.api.github.GithubRaw
 import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
 import soko.ekibun.bangumi.api.github.bean.OnAir
-import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import java.text.SimpleDateFormat
 import java.util.*
@@ -83,12 +80,12 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: an
         calWeek.add(Calendar.DAY_OF_MONTH, +14)
         val maxDate = CalendarAdapter.getCalendarInt(calWeek)
         it.forEach {subject->
-            val bangumi = Subject(subject.id?:return@forEach, "${Bangumi.SERVER}/subject/${subject.id}", SubjectType.ANIME, subject.name, subject.name_cn, images = Images(
-                    subject.image?.replace("/g/", "/l/"),
-                    subject.image?.replace("/g/", "/c/"),
-                    subject.image?.replace("/g/", "/m/"),
-                    subject.image?.replace("/g/", "/s/"),
-                    subject.image))
+            val bangumi = Subject(
+                    id = subject.id ?: return@forEach,
+                    type = Subject.TYPE_ANIME,
+                    name = subject.name,
+                    name_cn = subject.name_cn,
+                    images = Images(subject.image ?: ""))
             subject.eps?.forEach {
                 val item=OnAir(it, bangumi, null)
                 val timeInt = (if(!useCN || subject.timeCN.isNullOrEmpty()) subject.timeJP else subject.timeCN)?.toIntOrNull()?:0
@@ -133,7 +130,7 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: an
             date.second.toList().sortedBy { it.first }.forEach { time->
                 var isHeader = true
                 time.second.forEach {
-                    it.subject.collect = chaseList?.find {c-> c.subject_id == it.subject.id } != null
+                    it.subject.collect = if (chaseList?.find { c -> c.id == it.subject.id } != null) Collection() else null
                     if(it.subject.images != null){
                         if(index == -1 && !CalendarAdapter.pastTime(date.first, time.first, use30h))
                             index = item.first.data.size
@@ -148,9 +145,9 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: an
     }
 
     private var raw: List<BangumiCalendarItem>? = null
-    private var chaseList: List<SubjectCollection>? = null
+    private var chaseList: List<Subject>? = null
     private var calendarCall : Call<List<BangumiCalendarItem>>? = null
-    private var chaseCall: Call<List<SubjectCollection>>? = null
+    private var chaseCall: Call<List<Subject>>? = null
     @SuppressLint("UseSparseArrays")
     private fun loadCalendarList(){
         items.forEach { it.value.second.isRefreshing = true }
@@ -164,6 +161,7 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: an
             it.value.second.isRefreshing = false
         }}))
 
+        /* TODO
         chaseCall?.cancel()
         val user = (fragment.activity as? MainActivity)?.user?:return
         val userName = user.username?:user.id.toString()
@@ -172,6 +170,7 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: an
             chaseList = it
             setOnAirList(raw?:return@buildCallback)
         }, {}))
+         */
     }
 
     override fun getItemPosition(`object`: Any): Int {

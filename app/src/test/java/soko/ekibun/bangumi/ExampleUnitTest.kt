@@ -1,11 +1,8 @@
 package soko.ekibun.bangumi
 
-import com.google.gson.reflect.TypeToken
 import org.junit.Test
-
-import org.junit.Assert.*
-import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
-import soko.ekibun.bangumi.util.JsonUtil
+import java.text.SimpleDateFormat
+import java.util.*
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -13,16 +10,41 @@ import soko.ekibun.bangumi.util.JsonUtil
  * See [testing documentation](http://d.android.com/tools/testing).
  */
 class ExampleUnitTest {
-    class PostList: ArrayList<TopicPost>()
     @Test
-    fun addition_isCorrect() {
-        val gson = "{\"1372754\":[{\"pst_id\":\"1374499\",\"pst_mid\":\"346386\",\"pst_uid\":\"419012\",\"pst_content\":\"<div class=\\\"quote\\\"><q><span style=\\\"font-weight:bold;\\\">ekibun</span> 说: test</q></div>test\",\"username\":\"419012\",\"nickname\":\"ekibun\",\"formhash\":\"\",\"avatar\":\"//lain.bgm.tv/pic/user/s/000/41/90/419012.jpg?r=1530032761\",\"dateline\":\"2018-8-14 16:29\",\"model\":\"group\",\"is_self\":true}]}"
-        val obj = (JsonUtil.toEntity<Map<String, PostList>>(gson, object: TypeToken<Map<String, PostList>>(){}.type)?:HashMap())
-        obj.forEach {
-            it.value.forEach {
-                print(it.toString())
+    fun timeWrapper() {
+        val time = "2019-06-22"
+
+        val calendar = Calendar.getInstance()
+        print("${calendar.time}\n")
+        if (time.endsWith("ago")) {
+            Regex("(\\d+)([dhm])").findAll(time).map { it.groupValues }.forEach {
+                calendar.add(when (it[2]) {
+                    "d" -> Calendar.DAY_OF_MONTH
+                    "h" -> Calendar.HOUR
+                    "m" -> Calendar.SECOND
+                    else -> return@forEach
+                }, -(it[1].toIntOrNull() ?: 0))
             }
+            print(calendar.time)
+        } else if (time.endsWith("前")) {
+            Regex("(\\d+)(年|月|天|小时|分|秒)").findAll(time).map { it.groupValues }.forEach {
+                calendar.add(when (it[2]) {
+                    "年" -> Calendar.YEAR
+                    "月" -> Calendar.MONTH
+                    "天" -> Calendar.DAY_OF_MONTH
+                    "小时" -> Calendar.HOUR
+                    "分" -> Calendar.MINUTE
+                    "秒" -> Calendar.SECOND
+                    else -> return@forEach
+                }, -(it[1].toIntOrNull() ?: 0))
+            }
+            print(calendar.time)
         }
-        assertEquals(4, 2 + 2)
+        try {
+            SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).parse(time)
+        } catch (e: Exception) {
+        }
+
+
     }
 }

@@ -21,7 +21,7 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
     @SuppressLint("SetTextI18n")
     override fun convert(helper: BaseViewHolder, item: CalendarSection) {
         helper.addOnClickListener(R.id.item_layout)
-        helper.setText(R.id.item_title, item.t.subject.getPrettyName())
+        helper.setText(R.id.item_title, item.t.subject.displayName)
         helper.setText(R.id.item_ep_name, item.t.episode?.parseSort(helper.itemView.context) + " " + (if(item.t.episode?.name_cn.isNullOrEmpty()) item.t.episode?.name?:"" else item.t.episode?.name_cn))
         helper.addOnClickListener(R.id.item_layout)
         GlideUtil.with(helper.itemView.item_cover)
@@ -29,7 +29,7 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
                 ?.apply(RequestOptions.errorOf(R.drawable.err_404))
                 ?.into(helper.itemView.item_cover)
         helper.itemView.item_time.text = ""
-        helper.itemView.item_chase.visibility = if(item.t.subject.collect) View.VISIBLE else View.GONE
+        helper.itemView.item_chase.visibility = if (item.t.subject.collect != null) View.VISIBLE else View.GONE
 
         val sp = PreferenceManager.getDefaultSharedPreferences(helper.itemView.context)
         val use30h = sp.getBoolean("calendar_use_30h", false)

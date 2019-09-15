@@ -1,8 +1,9 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
+import soko.ekibun.bangumi.api.bangumi.Bangumi
+
 data class Character(
         var id: Int = 0,
-        var url: String? = null,
         var name: String? = null,
         var name_cn: String? = null,
         var role_name: String? = null,
@@ -12,6 +13,7 @@ data class Character(
         var info: MonoInfo? = null,
         var actors: List<Person>? = null
 ){
+    val url = "${Bangumi.SERVER}/character/$id"
     /**
      * id : 3453
      * url : http://bgm.tv/character/3453

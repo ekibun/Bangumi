@@ -1,47 +1,89 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
-import com.google.gson.annotations.SerializedName
+import androidx.annotation.IntDef
+import androidx.annotation.StringDef
+import androidx.annotation.StringRes
+import soko.ekibun.bangumi.R
+import soko.ekibun.bangumi.api.bangumi.Bangumi
+import soko.ekibun.bangumi.util.HttpUtil
 
-
+/**
+ * 条目类
+ */
 data class Subject(
-        var id: Int = 0,
-        var url: String? = null,
-        var type: Int = 0,
+        val id: Int = 0,
+        @SubjectType var type: Int = TYPE_ANY,
         var name: String? = null,
         var name_cn: String? = null,
         var summary: String? = null,
-        var eps_count: Int = 0,
+        var images: Images? = null,
         var air_date: String? = null,
         var air_weekday: Int = 0,
-        var rating: RatingBean? = null,
-        var rank: Int = 0,
-        var images: Images? = null,
-        var collection: CollectionBean? = null,
-        var eps: Any? = null,
-        var crt: List<Character>? = null,
-        var staff: List<Person>? = null,
-        var topic: List<TopicBean>? = null,
-        var blog: List<BlogBean>? = null,
-        var collect: Boolean = false,
-        //web
         var infobox: List<Pair<String, String>>? = null,
-        var linked: List<Subject>? = null,
-        var commend: List<Subject>? = null,
-        var tags: List<Pair<String, Int>>? = null,
-        var typeString: String? = null,
-        var formhash: String? = null,
-        var interest: Collection? = null,
+        var category: String? = null,
+
+        var rating: UserRating? = null,
+        var collection: UserCollection? = null,
+
+        var eps: List<Episode>? = null,
+        var eps_count: Int = 0,
+        var vol_count: Int = 0,
         var ep_status: Int = 0,
         var vol_status: Int = 0,
-        var vol_count: Int = 0,
-        var has_vol: Boolean = false
-){
-    fun getPrettyName(): String{
-        return ((if(name_cn.isNullOrEmpty()) name else name_cn)?:"").replace("&amp;", "&")
-    }
-    data class BlogBean(
+
+        var crt: List<Character>? = null,
+        var staff: List<Person>? = null,
+        var topic: List<Topic>? = null,
+        var blog: List<Blog>? = null,
+        //web
+        var linked: List<Subject>? = null,
+        var recommend: List<Subject>? = null,
+        var tags: List<Pair<String, Int>>? = null,
+        var collect: Collection? = null
+) {
+    val url = "${Bangumi.SERVER}/subject/$id"
+
+    /**
+     * 显示用的条目名称
+     */
+    val displayName = HttpUtil.html2text((if (name_cn.isNullOrEmpty()) name else name_cn) ?: "")
+
+    /**
+     * 条目评分
+     * @property rank 排名
+     * @property total 总评分人数
+     * @property count 评分分布
+     * @property score 平均评分
+     * @property friend_score 朋友评分
+     * @property friend_count 朋友评分人数
+     */
+    class UserRating(
+            val rank: Int = 0,
+            val total: Int = 0,
+            val count: IntArray = IntArray(10),
+            val score: Float = 0f,
+            val friend_score: Float = 0f,
+            val friend_count: Int = 0
+    )
+
+    /**
+     * 条目收藏
+     * @property wish 想看
+     * @property collect 已看
+     * @property doing 在看
+     * @property on_hold 搁置
+     * @property dropped 抛弃
+     */
+    data class UserCollection(
+            val wish: Int = 0,
+            val collect: Int = 0,
+            val doing: Int = 0,
+            val on_hold: Int = 0,
+            val dropped: Int = 0
+    )
+
+    data class Blog(
             var id: Int = 0,
-            var url: String? = null,
             var title: String? = null,
             var summary: String? = null,
             var image: String? = null,
@@ -50,6 +92,7 @@ data class Subject(
             var dateline: String? = null,
             var user: UserInfo? = null
     ){
+        val url = "${Bangumi.SERVER}/blog/$id"
         /**
          * id : 273281
          * url : http://bgm.tv/blog/273281
@@ -66,9 +109,8 @@ data class Subject(
          */
     }
 
-    data class TopicBean(
+    data class Topic(
             var id: Int = 0,
-            var url: String? = null,
             var title: String? = null,
             var main_id: Int = 0,
             var timestamp: Long = 0,
@@ -76,6 +118,7 @@ data class Subject(
             var replies: Int = 0,
             var user: UserInfo? = null
     ) {
+        val url = "${Bangumi.SERVER}/subject/topic/$id"
         /**
          * id : 1
          * url : http://bgm.tv/subject/topic/1
@@ -88,71 +131,57 @@ data class Subject(
          */
     }
 
-    data class RatingBean (
-            var total: Int = 0,
-            var count: CountBean? = null,
-            var score: Double = 0.toDouble(),
-            var friend_score: Double = 0.toDouble()
-    ){
-        /**
-         * total : 3069
-         * count : {"10":331,"9":335,"8":907,"7":977,"6":391,"5":97,"4":19,"3":3,"2":2,"1":7}
-         * score : 7.6
-         */
+    @IntDef(TYPE_ANY, TYPE_BOOK, TYPE_ANIME, TYPE_MUSIC, TYPE_GAME, TYPE_REAL)
+    annotation class SubjectType
 
-        data class CountBean(
-                @SerializedName("10")
-                var c10: Int = 0,
-                @SerializedName("9")
-                var c9: Int = 0,
-                @SerializedName("8")
-                var c8: Int = 0,
-                @SerializedName("7")
-                var c7: Int = 0,
-                @SerializedName("6")
-                var c6: Int = 0,
-                @SerializedName("5")
-                var c5: Int = 0,
-                @SerializedName("4")
-                var c4: Int = 0,
-                @SerializedName("3")
-                var c3: Int = 0,
-                @SerializedName("2")
-                var c2: Int = 0,
-                @SerializedName("1")
-                var c1: Int = 0
-        ) {
-            fun toList(): IntArray{
-                return intArrayOf(c10, c9, c8, c7, c6, c5, c4, c3, c2, c1)
+    @StringDef(TYPE_NAME_BOOK, TYPE_NAME_ANIME, TYPE_NAME_MUSIC, TYPE_NAME_GAME, TYPE_NAME_REAL)
+    annotation class SubjectTypeName
+
+    companion object {
+        /**
+         * 条目类型定义
+         */
+        const val TYPE_ANY = 0
+        const val TYPE_BOOK = 1
+        const val TYPE_ANIME = 2
+        const val TYPE_MUSIC = 3
+        const val TYPE_GAME = 4
+        const val TYPE_REAL = 6
+
+        const val TYPE_NAME_BOOK = "book"
+        const val TYPE_NAME_ANIME = "anime"
+        const val TYPE_NAME_MUSIC = "music"
+        const val TYPE_NAME_GAME = "game"
+        const val TYPE_NAME_REAL = "real"
+
+        /**
+         * 条目类型Id->url请求字符串
+         */
+        @SubjectTypeName
+        fun getTypeName(@SubjectType type: Int): String {
+            return when (type) {
+                TYPE_BOOK -> TYPE_NAME_BOOK
+                TYPE_ANIME -> TYPE_NAME_ANIME
+                TYPE_MUSIC -> TYPE_NAME_MUSIC
+                TYPE_GAME -> TYPE_NAME_GAME
+                TYPE_REAL -> TYPE_NAME_REAL
+                else -> "subject"
             }
-            /**
-             * 10 : 331
-             * 9 : 335
-             * 8 : 907
-             * 7 : 977
-             * 6 : 391
-             * 5 : 97
-             * 4 : 19
-             * 3 : 3
-             * 2 : 2
-             * 1 : 7
-             */
         }
-    }
 
-    data class CollectionBean (
-            var wish: Int = 0,
-            var collect: Int = 0,
-            var doing: Int = 0,
-            var on_hold: Int = 0,
-            var dropped: Int = 0
-    ){
         /**
-         * wish : 171
-         * collect : 2011
-         * doing : 1880
-         * on_hold : 941
-         * dropped : 273
+         * 获取条目类型显示字符串
          */
+        @StringRes
+        fun getTypeRes(@SubjectType type: Int): Int {
+            return when (type) {
+                TYPE_BOOK -> R.string.book
+                TYPE_ANIME -> R.string.anime
+                TYPE_MUSIC -> R.string.music
+                TYPE_GAME -> R.string.game
+                TYPE_REAL -> R.string.real
+                else -> R.string.subject
+            }
+        }
     }
 }

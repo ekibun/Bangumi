@@ -4,18 +4,14 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.preference.PreferenceManager
-import androidx.core.view.MenuItemCompat
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.PopupMenu
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
-import android.view.WindowManager
-import android.webkit.WebView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.PopupMenu
+import androidx.core.view.MenuItemCompat
 import kotlinx.android.synthetic.main.activity_main.*
-import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
@@ -67,7 +63,6 @@ class MainActivity : BaseActivity() {
         downloadCacheProvider.unbindService()
     }
 
-    val ua by lazy { App.getUserAgent(this) }
     override fun onStart() {
         super.onStart()
         mainPresenter.refreshUser()

@@ -7,8 +7,7 @@ class TimeLine: SectionEntity<TimeLine.TimeLineItem> {
     constructor(t: TimeLineItem): super(t)
 
     data class TimeLineItem(
-            val userImg: String,
-            val userUrl: String,
+            val user: UserInfo,
             val action: String,
             val time: String,
             val content: String?,

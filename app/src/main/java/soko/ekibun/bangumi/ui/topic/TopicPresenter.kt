@@ -4,91 +4,59 @@ import android.annotation.SuppressLint
 import android.text.Editable
 import androidx.appcompat.app.AlertDialog
 import com.awarmisland.android.richedittext.handle.CustomHtml
-import com.google.gson.reflect.TypeToken
 import kotlinx.android.synthetic.main.activity_topic.*
-import okhttp3.FormBody
-import org.jsoup.Jsoup
-import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
 import soko.ekibun.bangumi.ui.web.WebActivity
-import soko.ekibun.bangumi.util.JsonUtil
+import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.ResourceUtil
 
 class TopicPresenter(private val context: TopicActivity) {
     private val topicView = TopicView(context)
 
-    init{
+    init {
         context.item_swipe.setOnRefreshListener {
             getTopic()
         }
     }
 
-    private val ua by lazy { App.getUserAgent(context) }
-    fun getTopic(scrollPost: String = ""){
+    fun getTopic(scrollPost: String = "") {
         context.item_swipe.isRefreshing = true
-        Bangumi.getTopic(context.openUrl, ua).enqueue(ApiHelper.buildCallback({topic->
+        Bangumi.getTopic(context.openUrl).enqueue(ApiHelper.buildCallback({ topic ->
             processTopic(topic, scrollPost)
-        }){context.item_swipe.isRefreshing = false})
+        }) { context.item_swipe.isRefreshing = false })
     }
 
-    private fun processTopic(topic: Topic, scrollPost: String){
+    private fun processTopic(topic: Topic, scrollPost: String) {
         context.btn_reply.setCompoundDrawablesWithIntrinsicBounds(
-                if(!topic.formhash.isNullOrEmpty()) ResourceUtil.getDrawable(context, R.drawable.ic_edit) else null,//left
+                if (HttpUtil.formhash.isNotEmpty()) ResourceUtil.getDrawable(context, R.drawable.ic_edit) else null,//left
                 null,
-                if(!topic.formhash.isNullOrEmpty()) ResourceUtil.getDrawable(context, R.drawable.ic_send) else null,//right
+                if (HttpUtil.formhash.isNotEmpty()) ResourceUtil.getDrawable(context, R.drawable.ic_send) else null,//right
                 null)
         context.btn_reply.setOnClickListener {
-            topic.formhash?.let{ formhash -> showReplyPopupWindow(topic.post, FormBody.Builder().add("lastview", topic.lastview!!).add("formhash", formhash),"", context.getString(R.string.parse_hint_reply_topic, topic.title)) }?:{
-                if(!topic.errorLink.isNullOrEmpty()) WebActivity.launchUrl(context, topic.errorLink, "")
-            }()
+            if (!topic.errorLink.isNullOrEmpty()) WebActivity.launchUrl(context, topic.errorLink, "")
+            else if (HttpUtil.formhash.isNotEmpty()) showReplyPopupWindow(topic)
         }
-        topicView.processTopic(topic, scrollPost){v, position ->
+        topicView.processTopic(topic, scrollPost) { v, position ->
             val post = topicView.adapter.data[position]
             when (v.id) {
                 R.id.item_avatar ->
                     WebActivity.launchUrl(v.context, "${Bangumi.SERVER}/user/${post.username}")
                 R.id.item_reply -> {
-                    val doc = Jsoup.parse(post.pst_content)
-                    doc.select("div.quote").remove()
-                    doc.select("br").after("$\$b\$r$")
-                    val quote = doc.body().text().replace("$\$b\$r$", "\n").let {
-                        if( it.length > 100) it.substring(0, 100) + "..." else it
-                    }
-                    val comment = if (post?.isSub == true)
-                        "[quote][b]${post.nickname}[/b] 说: $quote[/quote]\n" else ""
-                    showReplyPopupWindow(topic.post, FormBody.Builder()
-                            .add("lastview", topic.lastview!!)
-                            .add("formhash", topic.formhash!!)
-                            .add("topic_id", post.pst_mid)
-                            .add("related", post.relate)
-                            .add("post_uid", post.pst_uid), comment, context.getString(R.string.parse_hint_reply_post, post.nickname), post.pst_id)
+                    showReplyPopupWindow(topic, post)
                 }
                 R.id.item_del -> {
                     AlertDialog.Builder(context).setMessage(R.string.reply_dialog_remove)
                             .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
                                 if (post.floor == 1) {
-                                    val url = topic.post.replace(Bangumi.SERVER, "${Bangumi.SERVER}/erase").replace("/new_reply", "?gh=${topic.formhash}&ajax=1")
-                                    ApiHelper.buildHttpCall(url, mapOf("User-Agent" to ua)) {
-                                        true
-                                    }.enqueue(ApiHelper.buildCallback<Boolean>({
+                                    Bangumi.removeTopic(topic).enqueue(ApiHelper.buildCallback<Boolean>({
                                         if (it) context.finish()
                                     }) {})
                                 } else {
-                                    val url = Bangumi.SERVER + when (post.model) {
-                                        "group" -> "/erase/group/reply/" //http://bangumi.tv/group/reply/1365766/edit
-                                        "prsn" -> "/erase/reply/person/"
-                                        "crt" -> "/erase/reply/character/" //http://bangumi.tv/character/edit_reply/83994
-                                        "ep" -> "/erase/reply/ep/" //http://bangumi.tv/subject/ep/edit_reply/641453
-                                        "subject" -> "/erase/subject/reply/"//http://bangumi.tv/subject/reply/114260/edit
-                                        else -> ""
-                                    } + "${post.pst_id}?gh=${topic.formhash}&ajax=1"
-                                    ApiHelper.buildHttpCall(url, mapOf("User-Agent" to ua)) {
-                                        it.body()?.string()?.contains("\"status\":\"ok\"") == true
-                                    }.enqueue(ApiHelper.buildCallback<Boolean>({
+                                    Bangumi.removeTopicReply(post).enqueue(ApiHelper.buildCallback<Boolean>({
                                         val data = ArrayList(topicView.adapter.data)
                                         data.removeAll { topicPost -> topicPost.pst_id == post.pst_id }
                                         topicView.setNewData(data)
@@ -97,25 +65,9 @@ class TopicPresenter(private val context: TopicActivity) {
                             }.show()
                 }
                 R.id.item_edit -> {
-                    val url = if (post.floor == 1)
-                        topic.post.replace("/new_reply", "/edit")
-                    else Bangumi.SERVER + when (post.model) {
-                        "group" -> "/group/reply/${post.pst_id}/edit"
-                        "prsn" -> "/person/edit_reply/${post.pst_id}"
-                        "crt" -> "/character/edit_reply/${post.pst_id}"
-                        "ep" -> "/subject/ep/edit_reply/${post.pst_id}"
-                        "subject" -> "/subject/reply/${post.pst_id}/edit"
-                        else -> ""
-                    }
-                    //WebActivity.launchUrl(this@TopicActivity, url)
                     buildPopupWindow(context.getString(if (post.floor == 1) R.string.parse_hint_modify_topic else R.string.parse_hint_modify_post, topic.title), html = post.pst_content) { text, send ->
-                        val inputString = CustomHtml.toHtml(text)
                         if (send) {
-                            ApiHelper.buildHttpCall(url, mapOf("User-Agent" to ua), body = FormBody.Builder()
-                                    .add("formhash", topic.formhash!!)
-                                    .add("title", topic.title)
-                                    .add("submit", "改好了")
-                                    .add("content", inputString).build()) { true }.enqueue(ApiHelper.buildCallback({
+                            Bangumi.editTopicReply(topic, post, CustomHtml.toHtml(text)).enqueue(ApiHelper.buildCallback({
                                 getTopic(post.pst_id)
                             }))
                         }
@@ -136,48 +88,16 @@ class TopicPresenter(private val context: TopicActivity) {
 
     private val drafts = HashMap<String, Editable>()
     @SuppressLint("InflateParams")
-    private fun showReplyPopupWindow(post: String, data: FormBody.Builder, comment: String = "", hint: String = "", draftId: String = "topic") {
+    private fun showReplyPopupWindow(topic: Topic, post: TopicPost? = null) {
+        val draftId = post?.pst_id ?: "topic"
+        val hint = post?.let { context.getString(R.string.parse_hint_reply_post, post.nickname) }
+                ?: context.getString(R.string.parse_hint_reply_topic, topic.title)
         buildPopupWindow(hint, drafts[draftId]) { inputString, send ->
-            if(send){
-                data.add("submit", "submit")
-                data.add("content", comment + CustomHtml.toHtml(inputString))
-                ApiHelper.buildHttpCall(post, mapOf("User-Agent" to ua), body = data.build()){ response ->
-                    val replies = ArrayList(topicView.adapter.data)
-                    replies.removeAll { it.sub_floor > 0 }
-                    replies.sortedBy { it.floor }
-                    val posts = JsonUtil.toJsonObject(response.body()?.string()?:"").getAsJsonObject("posts")
-                    val main = JsonUtil.toEntity<Map<String, TopicPost>>(posts.get("main")?.toString()?:"", object: TypeToken<Map<String, TopicPost>>(){}.type)?: HashMap()
-                    main.forEach {
-                        it.value.floor = (replies.last()?.floor?:0)+1
-                        it.value.relate = it.key
-                        it.value.isExpanded = replies.firstOrNull { o-> o.pst_id == it.value.pst_id }?.isExpanded?: true
-                        replies.removeAll { o-> o.pst_id == it.value.pst_id }
-                        replies.add(it.value)
-                        //adapter.addData(it.value)
-                    }
-                    replies.toTypedArray().forEach { replies.addAll(it.subItems?:return@forEach) }
-                    replies.sortedBy { it.floor + it.sub_floor * 1.0f/replies.size }
-                    val sub = JsonUtil.toEntity<Map<String, TopicActivity.PostList>>(posts.get("sub")?.toString()?:"", object: TypeToken<Map<String, TopicActivity.PostList>>(){}.type)?:HashMap()
-                    sub.forEach {
-                        replies.lastOrNull { old-> old.pst_id == it.key }?.isExpanded = true
-                        var relate = replies.lastOrNull { old-> old.relate == it.key }?:return@forEach
-                        it.value.forEach { topicPost ->
-                            topicPost.isSub = true
-                            topicPost.floor = relate.floor
-                            topicPost.sub_floor = relate.sub_floor+1
-                            topicPost.editable = topicPost.is_self
-                            topicPost.relate = relate.relate
-                            replies.removeAll { o-> o.pst_id == topicPost.pst_id }
-                            replies.add(topicPost)
-                            relate = topicPost
-                        }
-                    }
-                    replies.sortedBy { it.floor + it.sub_floor * 1.0f/replies.size }
-                }.enqueue(ApiHelper.buildCallback<List<TopicPost>>({
+            if (send) {
+                Bangumi.replyTopic(topic, post, CustomHtml.toHtml(inputString)).enqueue(ApiHelper.buildCallback<List<TopicPost>>({
                     topicView.setNewData(it)
                 }) {})
-            }
-            else{
+            } else {
                 inputString?.let { drafts[draftId] = it }
             }
         }

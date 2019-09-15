@@ -3,11 +3,11 @@ package soko.ekibun.bangumi.ui.topic
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.preference.PreferenceManager
+import android.view.Menu
+import android.view.MenuItem
 import kotlinx.android.synthetic.main.activity_topic.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
-import android.view.*
 import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.view.SwipeBackActivity
 import soko.ekibun.bangumi.util.AppUtil
@@ -67,7 +67,6 @@ class TopicActivity : SwipeBackActivity() {
 
         private fun parseIntent(context: Context, topic: String, post: Int): Intent {
             val intent = Intent(context, TopicActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK // or Intent.FLAG_ACTIVITY_CLEAR_TOP
             intent.putExtra(EXTRA_TOPIC, topic)
             intent.putExtra(EXTRA_POST, post)
             return intent

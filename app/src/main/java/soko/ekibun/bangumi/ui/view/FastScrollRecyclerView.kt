@@ -2,16 +2,15 @@ package soko.ekibun.bangumi.ui.view
 
 import android.content.Context
 import android.graphics.Canvas
+import android.util.AttributeSet
+import android.view.MotionEvent
 import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import android.util.AttributeSet
-import android.util.Log
-import android.view.MotionEvent
-import soko.ekibun.bangumi.R
 import com.simplecityapps.recyclerview_fastscroll.interfaces.OnFastScrollStateChangeListener
 import com.simplecityapps.recyclerview_fastscroll.utils.Utils
+import soko.ekibun.bangumi.R
 import kotlin.math.roundToInt
 
 class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : androidx.recyclerview.widget.RecyclerView(context, attrs, defStyleAttr), RecyclerView.OnItemTouchListener {
@@ -100,29 +99,29 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
     }
 
     private var itemHeightCache = IntArray(0)
-    private fun updateItemHeightCache(){
-        val layoutManager = layoutManager?:return
-        val adapter = adapter?:return
-        if(itemHeightCache.size != adapter.itemCount)
-            itemHeightCache = IntArray(adapter.itemCount){200}
+    private fun updateItemHeightCache() {
+        val layoutManager = layoutManager ?: return
+        val adapter = adapter ?: return
+        if (itemHeightCache.size != adapter.itemCount)
+            itemHeightCache = IntArray(adapter.itemCount) { itemHeightCache.getOrNull(it) ?: 200 }
 
-        if(layoutManager is LinearLayoutManager){
-            val firstIndex= layoutManager.findFirstVisibleItemPosition()
+        if (layoutManager is LinearLayoutManager) {
+            val firstIndex = layoutManager.findFirstVisibleItemPosition()
             val lastIndex = layoutManager.findLastVisibleItemPosition()
-            for(i in firstIndex..lastIndex)
-                itemHeightCache[i] = layoutManager.findViewByPosition(i)?.height?:continue
-        }else if(adapter is MeasurableAdapter && layoutManager is StaggeredGridLayoutManager){
+            for (i in firstIndex..lastIndex)
+                itemHeightCache[i] = layoutManager.findViewByPosition(i)?.height ?: continue
+        } else if (adapter is MeasurableAdapter && layoutManager is StaggeredGridLayoutManager) {
             var lastItemHeight = 0
             val spanHeight = IntArray(layoutManager.spanCount) { 0 }
-            for(index in 0 until adapter.itemCount){
+            for (index in 0 until adapter.itemCount) {
                 val height = adapter.getItemHeight(index)
                 val fullspan = adapter.isFullSpan(index)
-                val totalOffset = if(fullspan) spanHeight.max()!! else spanHeight.min()!!
-                if(fullspan){
+                val totalOffset = if (fullspan) spanHeight.max()!! else spanHeight.min()!!
+                if (fullspan) {
                     spanHeight.forEachIndexed { i, _ ->
                         spanHeight[i] = totalOffset + height
                     }
-                }else{
+                } else {
                     spanHeight[spanHeight.indexOfFirst { it == totalOffset }] = totalOffset + height
                 }
                 itemHeightCache[index] = totalOffset + height - lastItemHeight
@@ -130,8 +129,9 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
             }
         }
     }
-    var nestedScrollRange = {0}
-    var nestedScrollDistance = {0}
+
+    var nestedScrollRange = { 0 }
+    var nestedScrollDistance = { 0 }
     /**
      * Maps the touch (from 0..1) to the adapter position that should be visible.
      */
@@ -155,7 +155,7 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
         val nestedDistance = nestedScrollDistance()
         val scrolledPastHeight = getScrolledPastHeight()
         val lastScrollBarY = (scrolledPastHeight + nestedDistance).toFloat() / availableScrollHeight * availableScrollBarHeight + nestedDistance + scrollTopMargin
-        var dy = (scrollBarY - lastScrollBarY) * availableScrollHeight/ availableScrollBarHeight
+        var dy = (scrollBarY - lastScrollBarY) * availableScrollHeight / availableScrollBarHeight
         startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL)
         val consumed = IntArray(2)
         val offsetInWindow = IntArray(2)
@@ -169,12 +169,12 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
         val adapter = adapter
         var totalOffset = 0
         itemHeightCache.forEachIndexed { index, height ->
-            if(scrollY >= totalOffset && scrollY<=totalOffset + height){
-                if(layoutManager is LinearLayoutManager)
+            if (scrollY >= totalOffset && scrollY <= totalOffset + height) {
+                if (layoutManager is LinearLayoutManager)
                     layoutManager.scrollToPositionWithOffset(index, totalOffset - scrollY.roundToInt())
-                else if(adapter is MeasurableAdapter && layoutManager is androidx.recyclerview.widget.StaggeredGridLayoutManager)
+                else if (adapter is MeasurableAdapter && layoutManager is StaggeredGridLayoutManager)
                     layoutManager.scrollToPositionWithOffset(index, totalOffset - scrollY.roundToInt())
-                val sectionedAdapter = (adapter as? SectionedAdapter)?:return ""
+                val sectionedAdapter = (adapter as? SectionedAdapter) ?: return ""
                 return sectionedAdapter.getSectionName(index)
             }
             totalOffset += height
@@ -182,23 +182,25 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
         return ""
     }
 
-    private fun getScrolledPastHeight(): Int{
+    private fun getScrolledPastHeight(): Int {
         val layoutManager = layoutManager
         val adapter = adapter
-        return if(layoutManager is LinearLayoutManager){
-            val firstIndex= layoutManager.findFirstVisibleItemPosition()
-            val topOffset = layoutManager.getDecoratedTop(layoutManager.findViewByPosition(firstIndex)?:return 0)
+        return if (layoutManager is LinearLayoutManager) {
+            val firstIndex = layoutManager.findFirstVisibleItemPosition()
+            val topOffset = layoutManager.getDecoratedTop(layoutManager.findViewByPosition(firstIndex) ?: return 0)
             itemHeightCache.sliceArray(0 until firstIndex).sum() - topOffset
-        } else if(adapter is MeasurableAdapter && layoutManager is StaggeredGridLayoutManager){
+        } else if (adapter is MeasurableAdapter && layoutManager is StaggeredGridLayoutManager) {
             val firstIndex = layoutManager.findFirstVisibleItemPositions(null)[0]
-            val topOffset = layoutManager.getDecoratedTop(layoutManager.findViewByPosition(firstIndex)?:return 0)
+            val topOffset = layoutManager.getDecoratedTop(layoutManager.findViewByPosition(firstIndex) ?: return 0)
             itemHeightCache.sliceArray(0 until firstIndex).sum() - topOffset
         } else 0
     }
+
     /**
      * Updates the bounds for the scrollbar.
      */
     var scrollTopMargin = 0
+
     private fun onUpdateScrollbar() {
         updateItemHeightCache()
 
@@ -223,9 +225,8 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
         // Calculate the current scroll position, the scrollY of the recycler view accounts for the
         // view padding, while the scrollBarY is drawn right up to the background padding (ignoring
         // padding)
-        val nestedY = nestedScrollDistance()
-        val scrollY = scrolledPastHeight + nestedY
-        val scrollBarY = scrollTopMargin + nestedY + (scrollY.toFloat() / availableScrollHeight * availableScrollBarHeight).toInt()
+        val nestedDistance = nestedScrollDistance()
+        val scrollBarY = (scrolledPastHeight + nestedDistance).toFloat() / availableScrollHeight * availableScrollBarHeight + nestedDistance + scrollTopMargin
 
         // Calculate the position and size of the scroll bar
         val scrollBarX: Int = if (Utils.isRtl(resources)) {
@@ -233,7 +234,7 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
         } else {
             width - mScrollbar.width
         }
-        mScrollbar.setThumbPosition(scrollBarX, scrollBarY)
+        mScrollbar.setThumbPosition(scrollBarX, scrollBarY.toInt())
     }
 
     interface SectionedAdapter {

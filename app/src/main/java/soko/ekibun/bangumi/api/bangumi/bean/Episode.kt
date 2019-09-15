@@ -1,15 +1,18 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
-import android.annotation.SuppressLint
 import android.content.Context
 import androidx.annotation.IntDef
+import androidx.annotation.StringDef
+import androidx.annotation.StringRes
 import soko.ekibun.bangumi.R
+import soko.ekibun.bangumi.api.bangumi.Bangumi
 import java.text.DecimalFormat
 
-
+/**
+ * 剧集类
+ */
 data class Episode(
-        var id: Int = 0,
-        var url: String? = null,
+        val id: Int = 0,
         @EpisodeType var type: Int = 0,
         var sort: Float = 0f,
         var name: String? = null,
@@ -18,33 +21,27 @@ data class Episode(
         var airdate: String? = null,
         var comment: Int = 0,
         var desc: String? = null,
-        var status: String? = null,
-        var progress: SubjectProgress.EpisodeProgress? = null,
-        //music
-        var cat: String? = null
+        @EpisodeStatus var status: String? = null,
+        @ProgressType var progress: String? = null,
+        var category: String? = null
 ) {
-    /**
-     * id : 4835
-     * url : http://bgm.tv/ep/4835
-     * type : 0
-     * sort : 1
-     * name : 廃部！
-     * name_cn : 废部！
-     * duration : 24m
-     * airdate : 2009-04-03
-     * comment : 12
-     * desc : 春、新入生がクラブを決めるころ。田井中律は幼馴染の秋山澪を連れて軽音部の見学へ行く。
-     * しかし部員全員が卒業してしまった軽音部は、新たに４人の部員が集まらないと廃部になってしまうという。
-     * 合唱部の見学にきた琴吹紬を仲間に加え、最後の一人を探していると…。
-     * status : Air
-     */
+    val url = "${Bangumi.SERVER}/ep/$id"
 
     fun parseSort(context: Context): String{
         return if(type == TYPE_MAIN)
             context.getString(R.string.parse_sort_ep, DecimalFormat("#.##").format(sort))
         else
-            context.getString(getTypeName(type)) + " ${DecimalFormat("#.##").format(sort)}"
+            context.getString(getTypeRes(type)) + " ${DecimalFormat("#.##").format(sort)}"
     }
+
+    @IntDef(TYPE_MAIN, TYPE_SP, TYPE_OP, TYPE_ED, TYPE_PV, TYPE_MAD, TYPE_OTHER, TYPE_MUSIC)
+    annotation class EpisodeType
+
+    @StringDef(STATUS_TODAY, STATUS_ONAIR, STATUS_NA)
+    annotation class EpisodeStatus
+
+    @StringDef(PROGRESS_WATCH, PROGRESS_QUEUE, PROGRESS_DROP, PROGRESS_REMOVE)
+    annotation class ProgressType
 
     companion object {
         const val TYPE_MAIN = 0
@@ -56,11 +53,11 @@ data class Episode(
         const val TYPE_OTHER = 6
         const val TYPE_MUSIC = 7
 
-        @IntDef(TYPE_MAIN, TYPE_SP, TYPE_OP, TYPE_ED, TYPE_PV, TYPE_MAD, TYPE_OTHER, TYPE_MUSIC)
-        annotation class EpisodeType
-
-        @SuppressLint("SwitchIntDef")
-        fun getTypeName(@EpisodeType type: Int): Int{
+        /**
+         * 剧集类型字符串资源
+         */
+        @StringRes
+        fun getTypeRes(@EpisodeType type: Int): Int {
             return when(type){
                 TYPE_MAIN -> R.string.episode_type_main
                 TYPE_SP -> R.string.episode_type_sp
@@ -72,5 +69,15 @@ data class Episode(
                 else -> R.string.episode_type_main
             }
         }
+
+        const val STATUS_TODAY = "Today"
+        const val STATUS_ONAIR = "Air"
+        const val STATUS_NA = "NA"
+
+        const val PROGRESS_WATCH = "watched"
+        const val PROGRESS_QUEUE = "queue"
+        const val PROGRESS_DROP = "drop"
+        const val PROGRESS_REMOVE = "remove"
+
     }
 }

@@ -1,19 +1,19 @@
 package soko.ekibun.bangumi.ui.search
 
+import android.widget.TextView
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.appcompat.widget.PopupMenu
-import android.widget.TextView
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.bangumi.bean.SubjectType
+import soko.ekibun.bangumi.api.bangumi.bean.Subject
 
 class SearchTypeView(view: TextView, onChange:()->Unit){
     val subjectTypeList = mapOf(
-            R.id.collection_type_all to SubjectType.ALL,
-            R.id.collection_type_anime to SubjectType.ANIME,
-            R.id.collection_type_book to SubjectType.BOOK,
-            R.id.collection_type_game to SubjectType.GAME,
-            R.id.collection_type_music to SubjectType.MUSIC,
-            R.id.collection_type_real to SubjectType.REAL)
+            R.id.collection_type_all to Subject.TYPE_ANY,
+            R.id.collection_type_anime to Subject.TYPE_ANIME,
+            R.id.collection_type_book to Subject.TYPE_BOOK,
+            R.id.collection_type_game to Subject.TYPE_GAME,
+            R.id.collection_type_music to Subject.TYPE_MUSIC,
+            R.id.collection_type_real to Subject.TYPE_REAL)
     val monoTypeList = mapOf(
             R.id.collection_type_mono to "all",
             R.id.collection_type_ctr to "crt",

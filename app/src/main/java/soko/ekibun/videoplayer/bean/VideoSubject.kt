@@ -2,8 +2,10 @@ package soko.ekibun.videoplayer.bean
 
 import android.os.Parcel
 import android.os.Parcelable
-import soko.ekibun.bangumi.api.bangumi.bean.*
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
+import soko.ekibun.bangumi.api.bangumi.bean.Images
+import soko.ekibun.bangumi.api.bangumi.bean.Subject
+import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.JsonUtil
 
 data class VideoSubject(
@@ -25,49 +27,53 @@ data class VideoSubject(
 ) : Parcelable {
 
     data class Token(
-        var formhash: String?,
-        var ua: String?,
-        var interest: Collection?
+            var formhash: String?,
+            var collect: Collection?
     )
-
-    fun getUserAgent(): String? {
-        return JsonUtil.toEntity(token?:"", Token::class.java)?.ua
-    }
 
     fun toSubject(): Subject{
         val data = JsonUtil.toEntity(token?:"", Token::class.java)
+        HttpUtil.formhash = data?.formhash ?: HttpUtil.formhash
         return Subject(
                 id = id?.toIntOrNull()?:0,
-                url = url,
-                images = Images(image, image, image, image, image),
+                images = Images(image ?: ""),
                 name = name,
-                typeString = type,
+                category = type,
                 air_date = air_date,
                 air_weekday = air_weekday,
-                rank = rank,
-                rating = Subject.RatingBean(rating_count, null, rating.toDouble()),
+                rating = Subject.UserRating(
+                        rank = rank,
+                        total = rating_count,
+                        score = rating
+                ),
                 summary = desc,
                 eps = eps?.map { it.toEpisode() },
-                interest = data?.interest,
-                formhash = data?.formhash
+                collect = data?.collect
         )
     }
 
-    constructor(subject: Subject, ua: String?) : this(BANGUMI_SITE,
+    constructor(subject: Subject) : this(BANGUMI_SITE,
             subject.id.toString(),
             subject.url,
             subject.images?.common,
-            subject.getPrettyName(),
-            subject.typeString,
+            subject.displayName,
+            subject.category,
             subject.air_date,
             subject.air_weekday,
-            subject.rank,
-            subject.rating?.score?.toFloat()?:0f,
+            subject.rating?.rank ?: 0,
+            subject.rating?.score ?: 0f,
             subject.rating?.total?:0,
             subject.summary,
-            (subject.eps as? List<*>)?.mapNotNull { VideoEpisode(it as? Episode?:return@mapNotNull null) },
-            subject.interest?.status?.name,
-            JsonUtil.toJson(Token(subject.formhash, ua, subject.interest))
+            subject.eps?.map { VideoEpisode(it) },
+            when (subject.collect?.status) {
+                Collection.TYPE_WISH -> "想看"
+                Collection.TYPE_COLLECT -> "看过"
+                Collection.TYPE_DO -> "在看"
+                Collection.TYPE_ON_HOLD -> "搁置"
+                Collection.TYPE_DROPPED -> "抛弃"
+                else -> null
+            },
+            JsonUtil.toJson(Token(HttpUtil.formhash, subject.collect))
     )
 
     constructor(source: Parcel) : this(

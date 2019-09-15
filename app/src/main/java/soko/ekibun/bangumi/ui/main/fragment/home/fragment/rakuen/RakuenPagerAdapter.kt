@@ -10,7 +10,6 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Rakuen
-import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.topic.TopicActivity
 
 class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private val pager: androidx.viewpager.widget.ViewPager, private val scrollTrigger: (Boolean)->Unit) : androidx.viewpager.widget.PagerAdapter(){
@@ -78,7 +77,7 @@ class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private
             R.id.topic_filter_post -> "my_group&filter=topic"
             R.id.topic_filter_reply -> "my_group&filter=reply"
             else -> "group"
-        } else listOf("", "group", "subject", "ep", "mono")[position], (fragment.activity as? MainActivity)?.ua?:"")
+        } else listOf("", "group", "subject", "ep", "mono")[position])
         item.second.isRefreshing = true
         topicCall[position]?.enqueue(ApiHelper.buildCallback({
             item.first.isUseEmpty(true)

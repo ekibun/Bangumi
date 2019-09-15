@@ -7,6 +7,7 @@ data class SubjectCache(
         val subject: VideoSubject,
         val videoList: List<VideoCache>
 ) : Parcelable {
+    @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
     constructor(source: Parcel) : this(
             source.readParcelable<VideoSubject>(VideoSubject::class.java.classLoader),
             source.createTypedArrayList(VideoCache.CREATOR)

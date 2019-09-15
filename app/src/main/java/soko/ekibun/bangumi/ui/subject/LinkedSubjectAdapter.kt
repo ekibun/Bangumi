@@ -13,9 +13,9 @@ class LinkedSubjectAdapter(data: MutableList<Subject>? = null) :
         BaseQuickAdapter<Subject, BaseViewHolder>(R.layout.item_subject_small, data) {
 
     override fun convert(helper: BaseViewHolder, item: Subject) {
-        helper.setText(R.id.item_title, item.getPrettyName())
-        helper.itemView.item_summary.visibility = if(item.typeString.isNullOrEmpty()) View.GONE else View.VISIBLE
-        helper.setText(R.id.item_summary, item.typeString)
+        helper.setText(R.id.item_title, item.displayName)
+        helper.itemView.item_summary.visibility = if (item.category.isNullOrEmpty()) View.GONE else View.VISIBLE
+        helper.setText(R.id.item_summary, item.category)
         GlideUtil.with(helper.itemView.item_cover)
                 ?.load(item.images?.getImage(helper.itemView.context))
                 ?.apply(RequestOptions.errorOf(R.drawable.err_404))

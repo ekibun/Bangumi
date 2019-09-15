@@ -15,7 +15,6 @@ import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.HttpUtil
-import java.net.URI
 
 class TopicView(private val context: TopicActivity){
     val adapter by lazy { PostAdapter() }
@@ -100,7 +99,8 @@ class TopicView(private val context: TopicActivity){
 
         if(topic.replies.isNotEmpty())
             GlideUtil.with(context.item_cover_blur)
-                    ?.load(HttpUtil.getUrl(if(topic.image.isEmpty()) topic.replies.firstOrNull()?.avatar?:"" else topic.image, URI.create(Bangumi.SERVER)))
+                    ?.load(Bangumi.parseUrl(if (topic.image.isEmpty()) topic.replies.firstOrNull()?.avatar
+                            ?: "" else topic.image))
                     ?.apply(RequestOptions.placeholderOf(context.item_cover_blur.drawable))
                     ?.apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)))
                     ?.into(context.item_cover_blur)
@@ -112,7 +112,7 @@ class TopicView(private val context: TopicActivity){
         adapter.setOnLoadMoreListener({adapter.loadMoreEnd()}, context.item_list)
         adapter.setEnableLoadMore(true)
         context.btn_reply.text = when {
-            !topic.formhash.isNullOrEmpty() -> context.getString(R.string.hint_reply)
+            HttpUtil.formhash.isNotEmpty() -> context.getString(R.string.hint_reply)
             !topic.error.isNullOrEmpty() -> topic.error
             topic.replies.isEmpty() -> context.getString(R.string.hint_empty_topic)
             else -> context.getString(R.string.hint_login_topic)

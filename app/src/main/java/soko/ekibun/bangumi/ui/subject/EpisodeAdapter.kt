@@ -7,14 +7,13 @@ import com.chad.library.adapter.base.BaseSectionQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
 import com.chad.library.adapter.base.entity.SectionEntity
 import com.oushangfeng.pinnedsectionitemdecoration.PinnedHeaderItemDecoration
+import com.oushangfeng.pinnedsectionitemdecoration.utils.FullSpanUtil
 import kotlinx.android.synthetic.main.item_episode.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
-import soko.ekibun.bangumi.util.ResourceUtil
-import soko.ekibun.bangumi.api.bangumi.bean.SubjectProgress
 import soko.ekibun.bangumi.ui.view.DragSelectTouchListener
-import com.oushangfeng.pinnedsectionitemdecoration.utils.FullSpanUtil
 import soko.ekibun.bangumi.ui.view.FastScrollRecyclerView
+import soko.ekibun.bangumi.util.ResourceUtil
 
 class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null) :
         BaseSectionQuickAdapter<EpisodeAdapter.SelectableSectionEntity<Episode>, BaseViewHolder>
@@ -63,10 +62,14 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
         helper.itemView.item_badge.backgroundTintList = ColorStateList.valueOf(
                 ResourceUtil.resolveColorAttr(helper.itemView.context,
                         when {
-                            item.t.progress?.status?.url_name?:"" in listOf(SubjectProgress.EpisodeProgress.EpisodeStatus.WATCH, SubjectProgress.EpisodeProgress.EpisodeStatus.QUEUE) -> R.attr.colorPrimary
+                            item.t.progress in listOf(Episode.PROGRESS_WATCH, Episode.PROGRESS_QUEUE) -> R.attr.colorPrimary
                             else -> android.R.attr.textColorSecondary
                         }))
-        helper.itemView.item_badge.text = item.t.progress?.status?.cn_name?:""
+        helper.itemView.item_badge.text = mapOf(
+                Episode.PROGRESS_WATCH to R.string.episode_status_watch,
+                Episode.PROGRESS_DROP to R.string.episode_status_drop,
+                Episode.PROGRESS_QUEUE to R.string.episode_status_wish
+        )[item.t.progress ?: ""]?.let { helper.itemView.context.getString(it) } ?: ""
         helper.itemView.ep_box.backgroundTintList = ColorStateList.valueOf(color)
         helper.itemView.ep_box.alpha = if((item.t.status?:"") in listOf("Air"))1f else 0.6f
         helper.addOnClickListener(R.id.ep_box)

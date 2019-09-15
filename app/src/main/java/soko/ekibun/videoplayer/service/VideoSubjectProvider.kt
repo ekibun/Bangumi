@@ -16,28 +16,26 @@ import soko.ekibun.videoplayer.callback.ISubjectCallback
 
 class VideoSubjectProvider : Service() {
 
-    private var mVideoSubjectProvider = object: IVideoSubjectProvider.Stub() {
+    private var mVideoSubjectProvider = object : IVideoSubjectProvider.Stub() {
         override fun getSubjectSeason(subject: VideoSubject, callback: IListSubjectCallback) {
-            val ua = subject.getUserAgent()
             val bgmSubject = subject.toSubject()
             BgmIpViewer.createInstance().subject(bgmSubject.id).enqueue(ApiHelper.buildCallback({
                 callback.onFinish(BgmIpViewer.getSeason(it, bgmSubject).map {
-                    VideoSubject(Subject(it.subject_id, "${Bangumi.SERVER}/subject/${it.subject_id}", bgmSubject.type, it.name, it.name_cn), ua)
+                    VideoSubject(Subject(it.subject_id, bgmSubject.type, it.name, it.name_cn))
                 })
             }, {}))
         }
 
         override fun refreshSubject(subject: VideoSubject, callback: ISubjectCallback) {
-            val ua = subject.getUserAgent()
-            Bangumi.getSubject(subject.toSubject(), ua?:"").enqueue(ApiHelper.buildCallback({
-                callback.onFinish(VideoSubject(it, ua))
-            }, { it?.let{ callback.onReject(it.toString()) } }))
+            Bangumi.getSubject(subject.toSubject()).enqueue(ApiHelper.buildCallback({
+                callback.onFinish(VideoSubject(it))
+            }, { it?.let { callback.onReject(it.toString()) } }))
         }
 
         override fun refreshEpisode(subject: VideoSubject, callback: IListEpisodeCallback) {
-            Bangumi.getSubjectEps(subject.id!!.toInt(),  subject.getUserAgent()?:"").enqueue(ApiHelper.buildCallback({ list ->
+            Bangumi.getSubjectEps(subject.toSubject()).enqueue(ApiHelper.buildCallback({ list ->
                 callback.onFinish(list.map { VideoEpisode(it) })
-            }, { it?.let{ callback.onReject(it.toString()) } }))
+            }, { it?.let { callback.onReject(it.toString()) } }))
         }
     }
 
