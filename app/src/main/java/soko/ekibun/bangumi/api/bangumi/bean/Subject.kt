@@ -5,7 +5,7 @@ import androidx.annotation.StringDef
 import androidx.annotation.StringRes
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
-import soko.ekibun.bangumi.util.HttpUtil
+import soko.ekibun.bangumi.util.TextUtil
 
 /**
  * 条目类
@@ -46,7 +46,7 @@ data class Subject(
     /**
      * 显示用的条目名称
      */
-    val displayName = HttpUtil.html2text((if (name_cn.isNullOrEmpty()) name else name_cn) ?: "")
+    val displayName = TextUtil.html2text((if (name_cn.isNullOrEmpty()) name else name_cn) ?: "")
 
     /**
      * 条目评分

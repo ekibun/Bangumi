@@ -1,5 +1,18 @@
 package soko.ekibun.bangumi.api.github.bean
 
+/**
+ * bangumi-data条目数据
+ * @property title 番组原始标题
+ * @property titleTranslate 番组标题翻译
+ * @property type 番组类型
+ * @property lang 番组语言
+ * @property officialSite 官网
+ * @property begin tv/web：番组开始时间；movie：上映日期；ova：首话发售时间
+ * @property end tv/web：番组完结时间；movie：无意义；ova：则为最终话发售时间（未确定则置空）
+ * @property comment 备注
+ * @property sites 站点
+ * @constructor
+ */
 data class BangumiItem(
         var title: String? = null,
         var titleTranslate: Map<String,List<String>>? = null,
@@ -11,42 +24,26 @@ data class BangumiItem(
         var comment: String? = null,
         var sites: List<SitesBean>? = null
 ) {
-    /**
-     * title : はねバド！
-     * titleTranslate : {"zh-Hans":["轻羽飞扬"]}
-     * type : tv
-     * lang : ja
-     * officialSite : http://hanebad.com/
-     * begin : 2018-07-01T15:00:00.000Z
-     * end :
-     * comment :
-     * sites : [{"site":"bangumi","id":"236590"},{"site":"bilibili","id":"24589","begin":"","official":true,"premuiumOnly":false,"censored":null,"exist":false,"comment":""}]
-     */
 
+    /**
+     * 站点数据
+     * @property site 站点名称
+     * @property id 站点 id，可用于替换模板中相应的字段
+     * @property url 如果当前url不符合urlTemplate中的规则时使用，优先级高于id
+     * @property begin 放送开始时间
+     * @property comment 备注
+     * @constructor
+     */
     data class SitesBean(
             var site: String? = null,
             var id: String? = null,
             var url: String? = null,
             var begin: String? = null,
-            var isOfficial: Boolean? = false,
-            var isPremuiumOnly: Boolean? = false,
-            var censored: Boolean? = null,
-            var isExist: Boolean? = false,
             var comment: String? = null
     ) {
-        /**
-         * site : bangumi
-         * id : 236590
-         * begin :
-         * official : true
-         * premuiumOnly : false
-         * censored : null
-         * exist : false
-         * comment :
-         */
 
-        fun color(): Int{
-            return (0xff000000 + when(site){
+        val color
+            get() = (0xff000000 + when (site) {
                 "offical" -> 0x888888
 
                 "bangumi" -> 0xf09199
@@ -69,60 +66,12 @@ data class BangumiItem(
 
                 "dmhy" -> 0x224477
                 "nyaa" -> 0x99daa9
-                else-> 0
+                else -> 0
             }).toInt()
-        }
-        /*
 
-    .avfun {
-        background-color: #fd4c5b;
-    }
-
-    .bilibili {
-        background-color: #24ace6;
-    }
-
-    .hulu {
-        background-color: #2bbd99;
-    }
-
-    .iqiyi {
-        background-color: #00be06;
-    }
-
-    .letv {
-        background-color: #e42112;
-    }
-
-    .netflix {
-        background-color: #e50914;
-    }
-
-    .niconico {
-        background-color: #060102;
-    }
-
-    .pptv {
-        background-color: #00a0e9;
-    }
-
-    .sohu {
-        background-color: #d6000a;
-    }
-
-    .tencent {
-        background-color: #ff820f;
-    }
-
-    .youku {
-        background-color: #1ebeff;
-    }
-
-    .youtube {
-        background-color: #ff0000;
-    }
+        /**
+         * 按urlTemplate返回站点网址
          */
-
         fun parseUrl(): String{
             if(!url.isNullOrEmpty()) return url.toString()
             return when(site){

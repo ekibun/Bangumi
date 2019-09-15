@@ -28,9 +28,9 @@ import java.util.List;
  * RichEditText 富文本
  */
 public class RichEditText extends AppCompatEditText implements View.OnClickListener {
-    public static final int EXCLUD_MODE = Spannable.SPAN_EXCLUSIVE_EXCLUSIVE;
-    public static final int EXCLUD_INCLUD_MODE = Spannable.SPAN_EXCLUSIVE_INCLUSIVE;
-    public static final int INCLUD_INCLUD_MODE = Spannable.SPAN_INCLUSIVE_INCLUSIVE;
+
+    private int upX = 0;
+    private int upY = 0;
 
     public RichEditText(Context context) {
         super(context);
@@ -46,9 +46,6 @@ public class RichEditText extends AppCompatEditText implements View.OnClickListe
         super(context, attrs, defStyleAttr);
         initView();
     }
-
-    private int upX = 0;
-    private int upY = 0;
 
     private void initView() {
         setLayerType(View.LAYER_TYPE_SOFTWARE, null);
@@ -127,9 +124,6 @@ public class RichEditText extends AppCompatEditText implements View.OnClickListe
 
     /**
      * bold italic
-     *
-     * @param isSet
-     * @param type
      */
     private void setStyleSpan(boolean isSet, int type) {
         FontStyle fontStyle = new FontStyle();
@@ -143,8 +137,6 @@ public class RichEditText extends AppCompatEditText implements View.OnClickListe
 
     /**
      * underline
-     *
-     * @param isSet
      */
     private void setUnderlineSpan(boolean isSet) {
         FontStyle fontStyle = new FontStyle();
@@ -153,9 +145,7 @@ public class RichEditText extends AppCompatEditText implements View.OnClickListe
     }
 
     /**
-     * Strikethrough
-     *
-     * @param isSet
+     * Strike through
      */
     private void setStrikeSpan(boolean isSet) {
         FontStyle fontStyle = new FontStyle();
@@ -171,23 +161,18 @@ public class RichEditText extends AppCompatEditText implements View.OnClickListe
 
     /**
      * 通用set Span
-     *
-     * @param fontStyle
-     * @param isSet
-     * @param tClass
-     * @param <T>
      */
     private <T> void setSpan(FontStyle fontStyle, boolean isSet, Class<T> tClass) {
         int start = getSelectionStart();
         int end = getSelectionEnd();
-        int mode = EXCLUD_INCLUD_MODE;
+        int mode = Spannable.SPAN_EXCLUSIVE_INCLUSIVE;
         T[] spans = getEditableText().getSpans(start, end, tClass);
         //获取
         List<SpanPart> spanStyles = getOldFontSytles(spans, fontStyle);
         for (SpanPart spanStyle : spanStyles) {
             if (spanStyle.start < start) {
                 if (start == end) {
-                    mode = EXCLUD_MODE;
+                    mode = Spannable.SPAN_EXCLUSIVE_EXCLUSIVE;
                 }
                 getEditableText().setSpan(getInitSpan(spanStyle), spanStyle.start, start, mode);
             }
@@ -197,7 +182,7 @@ public class RichEditText extends AppCompatEditText implements View.OnClickListe
         }
         if (isSet) {
             if (start == end) {
-                mode = INCLUD_INCLUD_MODE;
+                mode = Spannable.SPAN_INCLUSIVE_INCLUSIVE;
             }
             getEditableText().setSpan(getInitSpan(fontStyle), start, end, mode);
         }
@@ -205,11 +190,6 @@ public class RichEditText extends AppCompatEditText implements View.OnClickListe
 
     /**
      * 获取当前 选中 spans
-     *
-     * @param spans
-     * @param fontStyle
-     * @param <T>
-     * @return
      */
     private <T> List<SpanPart> getOldFontSytles(T[] spans, FontStyle fontStyle) {
         List<SpanPart> spanStyles = new ArrayList<>();
@@ -237,9 +217,6 @@ public class RichEditText extends AppCompatEditText implements View.OnClickListe
 
     /**
      * 返回 初始化 span
-     *
-     * @param fontStyle
-     * @return
      */
     private CharacterStyle getInitSpan(FontStyle fontStyle) {
         if (fontStyle.isBold) {
@@ -259,11 +236,7 @@ public class RichEditText extends AppCompatEditText implements View.OnClickListe
     }
 
     /**
-     * 获取某位置的  样式
-     *
-     * @param start
-     * @param end
-     * @return
+     * 获取某位置的 样式
      */
     private FontStyle getFontStyle(int start, int end) {
         FontStyle fontStyle = new FontStyle();

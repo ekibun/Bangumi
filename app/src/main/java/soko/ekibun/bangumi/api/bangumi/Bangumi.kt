@@ -12,6 +12,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.*
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.JsonUtil
+import soko.ekibun.bangumi.util.TextUtil
 import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.*
@@ -199,7 +200,7 @@ object Bangumi {
                     },
                     name = doc.selectFirst(".nameSingle> a")?.text() ?: subject.name,
                     name_cn = doc.selectFirst(".nameSingle> a")?.attr("title") ?: subject.name_cn,
-                    summary = doc.selectFirst("#subject_summary")?.let { HttpUtil.html2text(it.html()) }
+                    summary = doc.selectFirst("#subject_summary")?.let { TextUtil.html2text(it.html()) }
                             ?: subject.summary,
                     images = Images(parseImageUrl(doc.selectFirst(".infobox img.cover"))),
                     air_date = infobox?.firstOrNull { it.first in arrayOf("放送开始", "上映年度", "开始") }?.second ?: "",
@@ -822,7 +823,7 @@ object Bangumi {
         val comment = if (post?.isSub == true)
             "[quote][b]${post.nickname}[/b] 说: ${Jsoup.parse(post.pst_content).let { doc ->
                 doc.select("div.quote").remove()
-                HttpUtil.html2text(doc.html()).let {
+                TextUtil.html2text(doc.html()).let {
                     if (it.length > 100) it.substring(0, 100) + "..." else it
                 }
             }}[/quote]\n" else ""

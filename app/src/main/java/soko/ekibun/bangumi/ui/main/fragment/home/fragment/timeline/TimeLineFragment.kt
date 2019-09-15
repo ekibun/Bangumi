@@ -2,9 +2,9 @@ package soko.ekibun.bangumi.ui.main.fragment.home.fragment.timeline
 
 import android.os.Bundle
 import android.text.Editable
+import android.text.Spanned
 import android.view.View
 import androidx.appcompat.widget.PopupMenu
-import com.awarmisland.android.richedittext.handle.CustomHtml
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_timeline.*
 import soko.ekibun.bangumi.R
@@ -14,6 +14,7 @@ import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.HomeTabFragment
 import soko.ekibun.bangumi.ui.topic.ReplyDialog
 import soko.ekibun.bangumi.util.HttpUtil
+import soko.ekibun.bangumi.util.TextUtil
 
 class TimeLineFragment : HomeTabFragment(R.layout.fragment_timeline) {
     override val titleRes: Int = R.string.timeline
@@ -57,7 +58,7 @@ class TimeLineFragment : HomeTabFragment(R.layout.fragment_timeline) {
                 dialog.draft = draft
                 dialog.callback = { string, send ->
                     if (send) {
-                        Bangumi.addTimeLineComment(CustomHtml.toHtml(string)).enqueue(ApiHelper.buildCallback({
+                        Bangumi.addTimeLineComment(TextUtil.span2bbcode(string as Spanned)).enqueue(ApiHelper.buildCallback({
                             if (it) {
                                 draft = null
                                 if (item_pager?.currentItem ?: 2 !in 0..1) item_pager?.currentItem = 1

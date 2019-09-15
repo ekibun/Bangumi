@@ -10,9 +10,17 @@ import retrofit2.http.Path
 import soko.ekibun.bangumi.BuildConfig
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.trim21.bean.IpView
-import java.util.ArrayList
+import java.util.*
 
+/**
+ * 条目关联api（via @Trim21）
+ */
 interface BgmIpViewer {
+
+    /**
+     * 获取条目关联的条目链
+     * @param id 条目 id
+     */
     @GET("/api.v1/view_ip/subject/{id}")
     fun subject(@Path("id") id: Int,
                 @Header("user-agent") ua: String = "Bangumi-ekibun/${BuildConfig.VERSION_NAME} (${Build.MODEL}; Android:${Build.VERSION.RELEASE})"): Call<IpView>
@@ -25,21 +33,27 @@ interface BgmIpViewer {
                     .build().create(BgmIpViewer::class.java)
         }
 
+        /**
+         * 获取条目的季度条目链（OVA & 续集）
+         * @param it 条目链
+         * @param subject 当前条目
+         */
         fun getSeason(it: IpView, subject: Subject): List<IpView.Node>{
             val ret = ArrayList<IpView.Node>()
 
             val bgmIp = it.nodes?.firstOrNull { it.subject_id == subject.id }?:return ret
-            val id = it.edges?.firstOrNull{edge-> edge.source == bgmIp.id && edge.relation == "主线故事"}?.target?:bgmIp.id
+            val id = it.edges?.firstOrNull{ edge-> edge.source == bgmIp.id && edge.relation == "主线故事"}?.target?:bgmIp.id
 
-            it.edges?.filter { edge-> edge.target == id && edge.relation == "主线故事" }?.reversed()?.forEach { edge->
-                ret.add(0, it.nodes.firstOrNull{it.id == edge.source}?:return@forEach)
+            for (edge in it.edges?.filter { edge -> edge.target == id && edge.relation == "主线故事" }?.reversed()
+                    ?: ArrayList()) {
+                ret.add(0, it.nodes.firstOrNull { it.id == edge.source } ?: continue)
             }
             ret.add(0,it.nodes.firstOrNull { it.id == id }?:return ret)
             var prevId = id
             while(true){
                 prevId = it.edges?.firstOrNull { it.source == prevId && it.relation == "前传"}?.target?:break
-                it.edges.filter { edge-> edge.target == prevId && edge.relation == "主线故事" }.reversed().forEach {edge->
-                    ret.add(0, it.nodes.firstOrNull{it.id == edge.source}?:return@forEach)
+                for (edge in it.edges.filter { edge -> edge.target == prevId && edge.relation == "主线故事" }.reversed()) {
+                    ret.add(0, it.nodes.firstOrNull { it.id == edge.source } ?: continue)
                 }
                 ret.add(0, it.nodes.firstOrNull{it.id == prevId}?:break)
             }
@@ -47,8 +61,8 @@ interface BgmIpViewer {
             while(true){
                 nextId = it.edges?.firstOrNull { it.source == nextId && it.relation == "续集"}?.target?:break
                 ret.add(it.nodes.firstOrNull{it.id == nextId}?:break)
-                it.edges.filter { edge-> edge.target == nextId && edge.relation == "主线故事" }.forEach {edge->
-                    ret.add(it.nodes.firstOrNull{it.id == edge.source}?:return@forEach)
+                for (edge in it.edges.filter { edge -> edge.target == nextId && edge.relation == "主线故事" }) {
+                    ret.add(it.nodes.firstOrNull { it.id == edge.source } ?: continue)
                 }
             }
             return ret.distinct()

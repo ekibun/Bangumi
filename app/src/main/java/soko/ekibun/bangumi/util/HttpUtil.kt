@@ -1,7 +1,6 @@
 package soko.ekibun.bangumi.util
 
 import okhttp3.*
-import org.jsoup.Jsoup
 
 object HttpUtil {
     var ua = ""
@@ -20,14 +19,5 @@ object HttpUtil {
         val httpClient = OkHttpClient.Builder()
         if (useCookie) httpClient.cookieJar(WebViewCookieHandler())
         return httpClient.build().newCall(request.build())
-    }
-
-    /**
-     * 将html转换为字符串
-     */
-    fun html2text(string: String): String {
-        val doc = Jsoup.parse(string)
-        doc.select("br").after("$\$b\$r$")
-        return doc.body().text().replace("$\$b\$r$", "\n")
     }
 }

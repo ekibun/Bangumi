@@ -1,11 +1,12 @@
 package soko.ekibun.bangumi.util;
 
 import android.content.Context;
-import com.google.android.material.appbar.AppBarLayout;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.core.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.View;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.view.ViewCompat;
+import com.google.android.material.appbar.AppBarLayout;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Workaround AppBarLayout.Behavior for https://issuetracker.google.com/66996774
@@ -15,6 +16,7 @@ import android.view.View;
  *
  * Change the package name as you wish.
  */
+@SuppressWarnings("deprecation")
 public class FixAppBarLayoutBehavior extends AppBarLayout.Behavior {
 
     public FixAppBarLayoutBehavior() {
@@ -26,7 +28,7 @@ public class FixAppBarLayoutBehavior extends AppBarLayout.Behavior {
     }
 
     @Override
-    public void onNestedScroll(CoordinatorLayout coordinatorLayout, AppBarLayout child, View target,
+    public void onNestedScroll(@NotNull CoordinatorLayout coordinatorLayout, @NotNull AppBarLayout child, @NotNull View target,
                                int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int type) {
         super.onNestedScroll(coordinatorLayout, child, target, dxConsumed, dyConsumed,
                 dxUnconsumed, dyUnconsumed, type);
@@ -34,7 +36,7 @@ public class FixAppBarLayoutBehavior extends AppBarLayout.Behavior {
     }
 
     @Override
-    public void onNestedPreScroll(CoordinatorLayout coordinatorLayout, AppBarLayout child,
+    public void onNestedPreScroll(CoordinatorLayout coordinatorLayout, @NotNull AppBarLayout child,
                                   View target, int dx, int dy, int[] consumed, int type) {
         super.onNestedPreScroll(coordinatorLayout, child, target, dx, dy, consumed, type);
         stopNestedScrollIfNeeded(dy, child, target, type);

@@ -1,13 +1,19 @@
 package soko.ekibun.bangumi.ui.topic
 
-import androidx.appcompat.app.AlertDialog
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.ui.view.DragPhotoView
 import soko.ekibun.bangumi.util.AppUtil
 import soko.ekibun.bangumi.util.GlideUtil
 
+/**
+ * 图片浏览页 Adapter
+ * @property items 图片url列表
+ * @property onDismiss 关闭回调
+ * @constructor
+ */
 class PhotoPagerAdapter(private val items: List<String>, private val onDismiss: ()->Unit): androidx.viewpager.widget.PagerAdapter(){
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
@@ -35,7 +41,7 @@ class PhotoPagerAdapter(private val items: List<String>, private val onDismiss: 
     }
 
     override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
-        container.removeView(`object` as View)
+        container.removeView((`object` as? View) ?: return)
     }
 
     override fun getCount(): Int {

@@ -2,8 +2,8 @@ package soko.ekibun.bangumi.ui.topic
 
 import android.annotation.SuppressLint
 import android.text.Editable
+import android.text.Spanned
 import androidx.appcompat.app.AlertDialog
-import com.awarmisland.android.richedittext.handle.CustomHtml
 import kotlinx.android.synthetic.main.activity_topic.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
@@ -13,6 +13,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.ResourceUtil
+import soko.ekibun.bangumi.util.TextUtil
 
 class TopicPresenter(private val context: TopicActivity) {
     private val topicView = TopicView(context)
@@ -67,7 +68,7 @@ class TopicPresenter(private val context: TopicActivity) {
                 R.id.item_edit -> {
                     buildPopupWindow(context.getString(if (post.floor == 1) R.string.parse_hint_modify_topic else R.string.parse_hint_modify_post, topic.title), html = post.pst_content) { text, send ->
                         if (send) {
-                            Bangumi.editTopicReply(topic, post, CustomHtml.toHtml(text)).enqueue(ApiHelper.buildCallback({
+                            Bangumi.editTopicReply(topic, post, TextUtil.span2bbcode(text as Spanned)).enqueue(ApiHelper.buildCallback({
                                 getTopic(post.pst_id)
                             }))
                         }
@@ -94,7 +95,7 @@ class TopicPresenter(private val context: TopicActivity) {
                 ?: context.getString(R.string.parse_hint_reply_topic, topic.title)
         buildPopupWindow(hint, drafts[draftId]) { inputString, send ->
             if (send) {
-                Bangumi.replyTopic(topic, post, CustomHtml.toHtml(inputString)).enqueue(ApiHelper.buildCallback<List<TopicPost>>({
+                Bangumi.replyTopic(topic, post, TextUtil.span2bbcode(inputString as Spanned)).enqueue(ApiHelper.buildCallback<List<TopicPost>>({
                     topicView.setNewData(it)
                 }) {})
             } else {
