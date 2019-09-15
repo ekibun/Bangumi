@@ -9,12 +9,10 @@ import com.google.android.material.appbar.AppBarLayout
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_topic.*
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
-import soko.ekibun.bangumi.util.HttpUtil
 
 class TopicView(private val context: TopicActivity){
     val adapter by lazy { PostAdapter() }
@@ -99,10 +97,8 @@ class TopicView(private val context: TopicActivity){
 
         if(topic.replies.isNotEmpty())
             GlideUtil.with(context.item_cover_blur)
-                    ?.load(Bangumi.parseUrl(if (topic.image.isEmpty()) topic.replies.firstOrNull()?.avatar
-                            ?: "" else topic.image))
-                    ?.apply(RequestOptions.placeholderOf(context.item_cover_blur.drawable))
-                    ?.apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)))
+                    ?.load(topic.images.getImage(context))
+                    ?.apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)).placeholder(context.item_cover_blur.drawable))
                     ?.into(context.item_cover_blur)
         adapter.isUseEmpty(true)
         topic.replies.forEach { it.isExpanded = true }
@@ -112,7 +108,7 @@ class TopicView(private val context: TopicActivity){
         adapter.setOnLoadMoreListener({adapter.loadMoreEnd()}, context.item_list)
         adapter.setEnableLoadMore(true)
         context.btn_reply.text = when {
-            HttpUtil.formhash.isNotEmpty() -> context.getString(R.string.hint_reply)
+            !topic.lastview.isNullOrEmpty() -> context.getString(R.string.hint_reply)
             !topic.error.isNullOrEmpty() -> topic.error
             topic.replies.isEmpty() -> context.getString(R.string.hint_empty_topic)
             else -> context.getString(R.string.hint_login_topic)

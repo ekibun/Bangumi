@@ -14,7 +14,7 @@ class CommentAdapter(data: MutableList<Comment>? = null) :
 
     override fun convert(helper: BaseViewHolder, item: Comment) {
         @SuppressLint("SetTextI18n")
-        helper.itemView.item_user.text = "${item.user?.nickname}@${item.user?.username}"
+        helper.itemView.item_user.text = "${item.user?.nickname}"
         helper.itemView.item_time.text = item.time
         helper.itemView.item_title.text = item.comment
         //helper.itemView.item_rate.visibility = if(item.rate == 0) View.GONE else View.VISIBLE

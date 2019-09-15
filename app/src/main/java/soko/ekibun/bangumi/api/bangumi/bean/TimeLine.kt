@@ -18,9 +18,9 @@ class TimeLine: SectionEntity<TimeLine.TimeLineItem> {
             val sayUrl: String?
     ){
         data class ThumbItem(
-            val image: String,
-            val title: String,
-            val url: String
+                val images: Images,
+                val title: String,
+                val url: String
         )
     }
 }

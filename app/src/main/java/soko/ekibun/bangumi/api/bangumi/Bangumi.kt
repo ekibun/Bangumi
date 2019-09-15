@@ -80,7 +80,7 @@ object Bangumi {
                     airdate = epInfo?.firstOrNull { it.trim().startsWith("首播") }?.substringAfter(":"),
                     comment = epInfo?.firstOrNull { it.trim().startsWith("讨论") }?.trim()?.substringAfter("+")?.toIntOrNull()
                             ?: 0,
-                    status = if (cat.startsWith("Disc")) Episode.STATUS_ONAIR else li.selectFirst(".epAirStatus span")?.className(),
+                    status = if (cat.startsWith("Disc")) Episode.STATUS_AIR else li.selectFirst(".epAirStatus span")?.className(),
                     progress = li.selectFirst(".listEpPrgManager>span")?.let {
                         when {
                             it.hasClass("statusWatched") -> Episode.PROGRESS_WATCH
@@ -130,7 +130,7 @@ object Bangumi {
                             SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(airdate)
                         } catch (e: Exception) {
                             null
-                        }?.time ?: 0L < now) -> Episode.STATUS_ONAIR
+                        }?.time ?: 0L < now) -> Episode.STATUS_AIR
                         else -> Episode.STATUS_NA
                     },
                     progress = when {
@@ -406,7 +406,7 @@ object Bangumi {
                 MonoInfo(
                         name = a?.ownText()?.trim('/', ' '),
                         name_cn = a?.selectFirst("span.tip")?.text(),
-                        img = Images(parseImageUrl(it.selectFirst("img"))),
+                        images = Images(parseImageUrl(it.selectFirst("img"))),
                         summary = it.selectFirst(".prsn_info")?.text(),
                         url = parseUrl(a?.attr("href") ?: ""))
             }
@@ -477,12 +477,12 @@ object Bangumi {
                 val title = it.selectFirst(".title")
                 val group = it.selectFirst(".row").selectFirst("a")
                 Rakuen(
-                        img = parseUrl(Regex("""background-image:url\('([^']*)'\)""").find(it.selectFirst(".avatar")?.html()
-                                ?: "")?.groupValues?.get(1) ?: ""),
+                        images = Images(parseUrl(Regex("""background-image:url\('([^']*)'\)""").find(it.selectFirst(".avatar")?.html()
+                                ?: "")?.groupValues?.get(1) ?: "")),
                         topic = title.text(),
                         group = group?.text(),
-                        time = it.selectFirst(".time").text()?.replace("...", "") ?: "",
-                        plus = it.selectFirst(".grey").text(),
+                        time = it.selectFirst(".time")?.text()?.replace("...", "") ?: "",
+                        reply = it.selectFirst(".grey")?.text()?.trim('(', '+', ')')?.toIntOrNull() ?: 0,
                         url = parseUrl(title.attr("href") ?: ""),
                         groupUrl = parseUrl(group?.attr("href") ?: ""))
             }
@@ -527,7 +527,7 @@ object Bangumi {
                             thumbs = item.select("$cssInfo img").map {
                                 val url = it.parent().attr("href")
                                 TimeLine.TimeLineItem.ThumbItem(
-                                        image = parseImageUrl(it),
+                                        images = Images(parseImageUrl(it)),
                                         title = item.select("a[href=\"$url\"]")?.text() ?: "",
                                         url = url)
                             },
@@ -550,11 +550,9 @@ object Bangumi {
             val form = doc.selectFirst("#ReplyForm")
             HttpUtil.formhash = doc.selectFirst("input[name=formhash]")?.attr("value") ?: HttpUtil.formhash
             Topic(
-                    user_id = Regex("""/user/([^/]*)""").find(doc.selectFirst("#header .avatar")?.attr("href")
-                            ?: "")?.groupValues?.get(1) ?: "",
                     group = doc.selectFirst("#pageHeader span")?.text() ?: "",
                     title = doc.selectFirst("#pageHeader h1")?.ownText() ?: "",
-                    image = parseImageUrl(doc.selectFirst("#pageHeader img")),
+                    images = Images(parseImageUrl(doc.selectFirst("#pageHeader img"))),
                     replies = ArrayList<TopicPost>().let { replies ->
                         doc.select(".re_info")?.map { it.parent() }?.forEach {
                             val user = it.selectFirst(".inner a")

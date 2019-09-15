@@ -11,7 +11,6 @@ import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
 import soko.ekibun.bangumi.ui.web.WebActivity
-import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.ResourceUtil
 import soko.ekibun.bangumi.util.TextUtil
 
@@ -33,13 +32,13 @@ class TopicPresenter(private val context: TopicActivity) {
 
     private fun processTopic(topic: Topic, scrollPost: String) {
         context.btn_reply.setCompoundDrawablesWithIntrinsicBounds(
-                if (HttpUtil.formhash.isNotEmpty()) ResourceUtil.getDrawable(context, R.drawable.ic_edit) else null,//left
+                if (!topic.lastview.isNullOrEmpty()) ResourceUtil.getDrawable(context, R.drawable.ic_edit) else null,//left
                 null,
-                if (HttpUtil.formhash.isNotEmpty()) ResourceUtil.getDrawable(context, R.drawable.ic_send) else null,//right
+                if (!topic.lastview.isNullOrEmpty()) ResourceUtil.getDrawable(context, R.drawable.ic_send) else null,//right
                 null)
         context.btn_reply.setOnClickListener {
-            if (!topic.errorLink.isNullOrEmpty()) WebActivity.launchUrl(context, topic.errorLink, "")
-            else if (HttpUtil.formhash.isNotEmpty()) showReplyPopupWindow(topic)
+            if (!topic.lastview.isNullOrEmpty()) showReplyPopupWindow(topic)
+            else if (!topic.errorLink.isNullOrEmpty()) WebActivity.launchUrl(context, topic.errorLink, "")
         }
         topicView.processTopic(topic, scrollPost) { v, position ->
             val post = topicView.adapter.data[position]

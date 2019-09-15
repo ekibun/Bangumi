@@ -31,7 +31,7 @@ class CollectionListAdapter(data: MutableList<Subject>? = null) :
             else -> {
                 val eps = (item.eps as? List<*>)?.mapNotNull { it as? Episode }?.filter { it.type == Episode.TYPE_MAIN }
                 val watchTo = eps?.lastOrNull { it.progress == Episode.PROGRESS_WATCH }
-                val airTo = eps?.lastOrNull { it.status == Episode.STATUS_ONAIR }
+                val airTo = eps?.lastOrNull { it.status == Episode.STATUS_AIR }
                 helper.itemView.item_summary.setTextColor(ResourceUtil.resolveColorAttr(helper.itemView.context,
                         if (watchTo != airTo) R.attr.colorPrimary
                         else android.R.attr.textColorSecondary
@@ -39,7 +39,7 @@ class CollectionListAdapter(data: MutableList<Subject>? = null) :
                 (watchTo?.parseSort(helper.itemView.context)?.let { helper.itemView.context.getString(R.string.parse_watch_to, it) }
                         ?: helper.itemView.context.getString(R.string.hint_watch_nothing)) +
                         when {
-                            eps?.any { it.status != Episode.STATUS_ONAIR } == true -> airTo?.parseSort(helper.itemView.context)?.let { " / " + helper.itemView.context.getString(R.string.parse_update_to, it) }
+                            eps?.any { it.status != Episode.STATUS_AIR } == true -> airTo?.parseSort(helper.itemView.context)?.let { " / " + helper.itemView.context.getString(R.string.parse_update_to, it) }
                                     ?: ""
                             item.eps_count > 0 -> " / " + helper.itemView.context.getString(R.string.phrase_full_eps, item.eps_count)
                             else -> ""

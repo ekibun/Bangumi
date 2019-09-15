@@ -81,7 +81,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
 
         subjectView.episodeAdapter.onItemLongClickListener = BaseQuickAdapter.OnItemLongClickListener { _, _, position ->
             val eps = subjectView.episodeAdapter.data.subList(0, position + 1)
-            subjectView.episodeAdapter.data[position]?.let { openEpisode(it, subject, eps) }
+            subjectView.episodeAdapter.data[position]?.let { openEpisode(it, eps) }
             true
         }
 
@@ -98,12 +98,12 @@ class SubjectPresenter(private val context: SubjectActivity) {
                     }
                     popupMenu.setOnMenuItemClickListener { menu ->
                         val index = menu.itemId - Menu.FIRST
-                        updateProgress(subject, if (index == 1) eps else listOf(eps.last()), if (index == 1) EpisodeDialog.WATCH_TO else progressMap[if (index > 1) index - 1 else index])
+                        updateProgress(if (index == 1) eps else listOf(eps.last()), if (index == 1) EpisodeDialog.WATCH_TO else progressMap[if (index > 1) index - 1 else index])
                         false
                     }
                     popupMenu.show()
                 } else {
-                    openEpisode(it, subject, eps)
+                    openEpisode(it, eps)
                 }
             }
             //subjectView.episodeAdapter.data[position]?.let{ WebActivity.launchUrl(context, it.url) }
@@ -121,7 +121,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
             }
             popupMenu.setOnMenuItemClickListener { menu ->
                 val newStatus = progressMap[menu.itemId - Menu.FIRST]
-                updateProgress(subject, eps.map { it.t }, newStatus)
+                updateProgress(eps.map { it.t }, newStatus)
                 false
             }
             popupMenu.show()
@@ -137,7 +137,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
             val eps = subjectView.episodeDetailAdapter.data.subList(0, position + 1).filter { !it.isHeader }.map { it.t }
             if (eps.last().type == Episode.TYPE_MUSIC)
                 subjectView.episodeDetailAdapter.data[position]?.t?.let {
-                    openEpisode(it, subject, eps)
+                    openEpisode(it, eps)
                     true
                 } ?: false
             else subjectView.episodeDetailAdapter.longClickListener(position)
@@ -146,7 +146,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
         subjectView.episodeDetailAdapter.setOnItemChildClickListener { _, _, position ->
             val eps = subjectView.episodeDetailAdapter.data.subList(0, position + 1).filter { !it.isHeader }.map { it.t }
             if (eps.last().type == Episode.TYPE_MUSIC || subjectView.episodeDetailAdapter.clickListener(position))
-                subjectView.episodeDetailAdapter.data[position]?.t?.let { openEpisode(it, subject, eps) }
+                subjectView.episodeDetailAdapter.data[position]?.t?.let { openEpisode(it, eps) }
         }
 
         subjectView.linkedSubjectsAdapter.setOnItemClickListener { _, _, position ->
@@ -194,13 +194,13 @@ class SubjectPresenter(private val context: SubjectActivity) {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun openEpisode(episode: Episode, subject: Subject, eps: List<Episode>) {
+    private fun openEpisode(episode: Episode, eps: List<Episode>) {
         EpisodeDialog.showDialog(context, episode, eps, onAirInfo) { mEps, status ->
-            updateProgress(subject, mEps, status)
+            updateProgress(mEps, status)
         }
     }
 
-    private fun updateProgress(subject: Subject, eps: List<Episode>, newStatus: String) {
+    private fun updateProgress(eps: List<Episode>, newStatus: String) {
         EpisodeDialog.updateProgress(eps, newStatus) {
             subjectView.episodeAdapter.notifyDataSetChanged()
             subjectView.episodeDetailAdapter.notifyDataSetChanged()

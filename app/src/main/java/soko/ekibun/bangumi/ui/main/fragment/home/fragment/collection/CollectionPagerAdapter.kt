@@ -112,7 +112,7 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
                 item.first.addData(it.sortedByDescending {
                     val eps = it.eps?.filter { it.type == Episode.TYPE_MAIN }
                     val watchTo = eps?.lastOrNull { it.progress == Episode.PROGRESS_WATCH }
-                    val airTo = eps?.lastOrNull { it.status == Episode.STATUS_ONAIR }
+                    val airTo = eps?.lastOrNull { it.status == Episode.STATUS_AIR }
                     (if (watchTo != airTo) ":" else "") + (airTo?.airdate ?: "")
                 })
             }

@@ -16,14 +16,14 @@ class RakuenAdapter(data: MutableList<Rakuen>? = null) :
     @SuppressLint("SetTextI18n")
     override fun convert(helper: BaseViewHolder, item: Rakuen) {
         helper.itemView.item_title.text = item.topic
-        helper.itemView.item_time.text = "${item.time} ${item.plus}"
+        helper.itemView.item_time.text = "${item.time} (+${item.reply})"
         helper.itemView.item_group.visibility = View.GONE
         item.group?.let{
             helper.itemView.item_group.visibility = View.VISIBLE
             helper.itemView.item_group.text = it
         }
         GlideUtil.with(helper.itemView.item_avatar)
-                ?.load(item.img)
+                ?.load(item.images.getImage(helper.itemView.context))
                 ?.apply(RequestOptions.circleCropTransform().error(R.drawable.err_404))
                 ?.into(helper.itemView.item_avatar)
     }

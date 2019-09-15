@@ -1,9 +1,9 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
-data class MonoInfo(
-        var name: String? = null,
-        var name_cn: String? = null,
-        var img: Images? = null,
-        var summary: String? = null,
-        var url: String? = null
+open class MonoInfo(
+        val name: String? = null,
+        val name_cn: String? = null,
+        val images: Images? = null,
+        val summary: String? = null,
+        val url: String? = null
 )

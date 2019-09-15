@@ -83,14 +83,14 @@ data class Subject(
     )
 
     data class Blog(
-            var id: Int = 0,
-            var title: String? = null,
-            var summary: String? = null,
-            var image: String? = null,
-            var replies: Int = 0,
-            var timestamp: Long = 0,
-            var dateline: String? = null,
-            var user: UserInfo? = null
+            val id: Int = 0,
+            val title: String? = null,
+            val summary: String? = null,
+            val image: String? = null,
+            val replies: Int = 0,
+            val timestamp: Long = 0,
+            val dateline: String? = null,
+            val user: UserInfo? = null
     ){
         val url = "${Bangumi.SERVER}/blog/$id"
         /**
@@ -110,13 +110,13 @@ data class Subject(
     }
 
     data class Topic(
-            var id: Int = 0,
-            var title: String? = null,
-            var main_id: Int = 0,
-            var timestamp: Long = 0,
-            var lastpost: Int = 0,
-            var replies: Int = 0,
-            var user: UserInfo? = null
+            val id: Int = 0,
+            val title: String? = null,
+            val main_id: Int = 0,
+            val timestamp: Long = 0,
+            val lastpost: Int = 0,
+            val replies: Int = 0,
+            val user: UserInfo? = null
     ) {
         val url = "${Bangumi.SERVER}/subject/topic/$id"
         /**

@@ -6,6 +6,12 @@ import soko.ekibun.bangumi.R
 
 /**
  * 条目收藏信息
+ * @property status 收藏状态
+ * @property rating 评分
+ * @property comment 吐槽
+ * @property private 自己可见
+ * @property tag 标签
+ * @constructor
  */
 data class Collection(
         @CollectionStatusType val status: String? = null,

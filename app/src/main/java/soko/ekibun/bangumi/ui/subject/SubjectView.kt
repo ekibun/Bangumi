@@ -302,7 +302,7 @@ class SubjectView(private val context: SubjectActivity) {
     fun updateEpisode(episodes: List<Episode>): List<Episode> {
         if (episodes.none { it.id != 0 }) return subjectEpisode
         val mainEps = episodes.filter { it.type == Episode.TYPE_MAIN || it.type == Episode.TYPE_MUSIC }
-        val eps = mainEps.filter { it.status in listOf(Episode.STATUS_ONAIR) }
+        val eps = mainEps.filter { it.status in listOf(Episode.STATUS_AIR) }
         detail.episode_detail.text = if (eps.size == mainEps.size) context.getString(R.string.phrase_full_eps, eps.size) else
             eps.lastOrNull()?.parseSort(context)?.let { context.getString(R.string.parse_update_to, it) }
                     ?: context.getString(R.string.hint_air_nothing)
@@ -319,7 +319,7 @@ class SubjectView(private val context: SubjectActivity) {
         maps.forEach {
             episodeDetailAdapter.addData(EpisodeAdapter.SelectableSectionEntity(true, it.key))
             it.value.forEach { ep ->
-                if (ep.status in listOf(Episode.STATUS_ONAIR))
+                if (ep.status in listOf(Episode.STATUS_AIR))
                     episodeAdapter.addData(ep)
                 episodeDetailAdapter.addData(EpisodeAdapter.SelectableSectionEntity(ep))
             }
