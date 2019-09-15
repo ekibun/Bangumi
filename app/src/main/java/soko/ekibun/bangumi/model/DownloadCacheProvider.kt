@@ -17,58 +17,64 @@ import soko.ekibun.videoplayer.callback.IListSubjectCacheCallback
 import soko.ekibun.videoplayer.callback.ISubjectCacheCallback
 import soko.ekibun.videoplayer.callback.IVideoCacheCallback
 
-class DownloadCacheProvider(val context: AppCompatActivity, val onServiceConnectionChange: (Boolean)->Unit): ServiceConnection {
+/**
+ * 离线缓存数据类（aidl）
+ */
+class DownloadCacheProvider(val context: AppCompatActivity, val onServiceConnectionChange: (Boolean) -> Unit) : ServiceConnection {
     var aidl: IDownloadCacheProvider? = null
 
-    fun bindService(){
+    fun bindService() {
         val aidlIntent = Intent("soko.ekibun.videoplayer.downloadcacheprovider")
         val resloveInfos = context.packageManager.queryIntentServices(aidlIntent, 0)
-        if(resloveInfos.size < 1) return
+        if (resloveInfos.size < 1) return
         aidlIntent.component = ComponentName(resloveInfos[0].serviceInfo.packageName, resloveInfos[0].serviceInfo.name)
         context.bindService(aidlIntent, this, Context.BIND_AUTO_CREATE)
     }
 
-    fun unbindService(){
-        if(aidl != null) context.unbindService(this)
+    fun unbindService() {
+        if (aidl != null) context.unbindService(this)
     }
 
-    fun getCacheList(onFinish: (List<SubjectCache>)->Unit, onReject: (String)->Unit){
-        aidl?.getCacheList("bangumi", object: IListSubjectCacheCallback.Stub() {
+    fun getCacheList(onFinish: (List<SubjectCache>) -> Unit, onReject: (String) -> Unit) {
+        aidl?.getCacheList("bangumi", object : IListSubjectCacheCallback.Stub() {
             override fun onFinish(result: MutableList<SubjectCache>) {
                 onFinish(result)
             }
+
             override fun onReject(reason: String) {
                 onReject(reason)
             }
-        })?:{ onReject("aidl not initialized") }()
+        }) ?: { onReject("aidl not initialized") }()
     }
 
-    fun getSubjectCache(subject: Subject, onFinish: (SubjectCache)->Unit, onReject: (String)->Unit){
+    fun getSubjectCache(subject: Subject, onFinish: (SubjectCache) -> Unit, onReject: (String) -> Unit) {
         aidl?.getSubjectCache(VideoSubject(subject), object : ISubjectCacheCallback.Stub() {
             override fun onFinish(result: SubjectCache) {
                 onFinish(result)
             }
+
             override fun onReject(reason: String) {
                 onReject(reason)
             }
-        })?:{ onReject("aidl not initialized") }()
+        }) ?: { onReject("aidl not initialized") }()
     }
 
-    fun getEpisodeCache(subject: Subject, episode: Episode, onFinish: (VideoCache)->Unit, onReject: (String)->Unit){
+    fun getEpisodeCache(subject: Subject, episode: Episode, onFinish: (VideoCache) -> Unit, onReject: (String) -> Unit) {
         aidl?.getEpisodeCache(VideoSubject(subject), VideoEpisode(episode), object : IVideoCacheCallback.Stub() {
             override fun onFinish(result: VideoCache) {
                 onFinish(result)
             }
+
             override fun onReject(reason: String) {
                 onReject(reason)
             }
-        })?:{ onReject("aidl not initialized") }()
+        }) ?: { onReject("aidl not initialized") }()
     }
 
     override fun onServiceDisconnected(name: ComponentName?) {
         aidl = null
         onServiceConnectionChange(false)
-        if(!context.isDestroyed) bindService()
+        if (!context.isDestroyed) bindService()
     }
 
     override fun onServiceConnected(name: ComponentName?, service: IBinder) {

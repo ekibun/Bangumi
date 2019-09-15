@@ -3,8 +3,9 @@
 package soko.ekibun.bangumi.util
 
 import android.graphics.Canvas
-import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.AnimationDrawable
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.text.Html
 import android.util.Size
 import android.widget.TextView
@@ -18,7 +19,11 @@ import java.lang.ref.WeakReference
 class HtmlHttpImageGetter(container: TextView, private val drawables: ArrayList<String>, private val sizeInfos: HashMap<String, Size>) : Html.ImageGetter {
     private val container = WeakReference(container)
     override fun getDrawable(source: String): Drawable {
-        val urlDrawable = UrlDrawable(source, container, sizeInfos)
+        val urlDrawable = UrlDrawable(container) {
+            sizeInfos[source] = it
+        }
+        urlDrawable.url = Bangumi.parseUrl(source)
+        urlDrawable.size = sizeInfos[source]
         drawables.add(source)
         urlDrawable.loadImage()
         sizeInfos[source]?.let {
@@ -27,30 +32,35 @@ class HtmlHttpImageGetter(container: TextView, private val drawables: ArrayList<
         return urlDrawable
     }
 
-    class UrlDrawable(val url: String, val container: WeakReference<TextView>, val sizeInfos: HashMap<String, Size>) : BitmapDrawable() {
+    open class UrlDrawable(val container: WeakReference<TextView>, val updateSize: (Size) -> Unit = {}) : AnimationDrawable() {
         var drawable: Drawable? = null
         var error: Boolean? = null
+        var size: Size? = null
+        var url: String? = null
+        var uri: Uri? = null
 
-        fun loadImage() {
+        open fun update(resource: Drawable, defSize: Int) {
+            val drawable = when (resource) {
+                is com.bumptech.glide.load.resource.gif.GifDrawable -> GifDrawable(resource.buffer)
+                else -> resource
+            }
+            val size = if (defSize > 0) this.size
+                    ?: Size(defSize, defSize) else Size(resource.intrinsicWidth, resource.intrinsicHeight)
+            this.size = size
+            updateSize(size)
+            setBounds(0, 0, size.width, size.height)
+
+            drawable.setBounds(0, 0, size.width, size.height)
+            this.drawable?.callback = null
+            this.drawable = drawable
+            container.get()?.text = container.get()?.text
+            container.get()?.invalidate()
+        }
+
+        open fun loadImage() {
+            val url = this.url ?: return
             val view = container.get()
             view?.post {
-                val update = { resource: Drawable, defSize: Int ->
-                    val drawable = when (resource) {
-                        is com.bumptech.glide.load.resource.gif.GifDrawable -> GifDrawable(resource.buffer)
-                        else -> resource
-                    }
-                    val size = if (defSize > 0) sizeInfos[url]
-                            ?: Size(defSize, defSize) else Size(resource.intrinsicWidth, resource.intrinsicHeight)
-                    sizeInfos[url] = size
-                    setBounds(0, 0, size.width, size.height)
-
-                    drawable.setBounds(0, 0, size.width, size.height)
-                    this.drawable?.callback = null
-                    this.drawable = drawable
-                    //}
-                    container.get()?.text = container.get()?.text
-                    container.get()?.invalidate()
-                }
                 val textSize = view.textSize
                 val circularProgressDrawable = CircularProgressDrawable(view.context)
                 circularProgressDrawable.setColorSchemeColors(ResourceUtil.resolveColorAttr(view.context, android.R.attr.textColorSecondary))
@@ -58,15 +68,10 @@ class HtmlHttpImageGetter(container: TextView, private val drawables: ArrayList<
                 circularProgressDrawable.centerRadius = textSize / 2 - circularProgressDrawable.strokeWidth - 1f
                 circularProgressDrawable.progressRotation = 0.75f
                 circularProgressDrawable.start()
-                val url = Bangumi.parseUrl(url)
-                GlideUtil.loadWithProgress(url, view,
-                        RequestOptions().transform(SizeTransformation { width, _ ->
-                            val maxWidth = container.get()?.width?.toFloat() ?: return@SizeTransformation 1f
-                            val minWidth = container.get()?.textSize ?: return@SizeTransformation 1f
-                            Math.min(maxWidth, Math.max(minWidth, width.toFloat())) / width
-                        }).placeholder(circularProgressDrawable).error(R.drawable.ic_broken_image),
-                        viewTarget = false
-                ) { type, drawable ->
+                GlideUtil.loadWithProgress(url, view, RequestOptions().transform(SizeTransformation { width, _ ->
+                    val maxWidth = view.width.toFloat() - view.paddingLeft - view.paddingRight
+                    Math.min(maxWidth, Math.max(textSize, width.toFloat())) / width
+                }).placeholder(circularProgressDrawable).error(R.drawable.ic_broken_image), false, uri) { type, drawable ->
                     error = when (type) {
                         GlideUtil.TYPE_RESOURCE -> false
                         GlideUtil.TYPE_ERROR -> true

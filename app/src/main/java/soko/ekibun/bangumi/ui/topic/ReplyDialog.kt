@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.*
-import android.graphics.drawable.AnimationDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
@@ -23,11 +22,8 @@ import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
-import com.bumptech.glide.load.model.GlideUrl
-import com.bumptech.glide.load.model.Headers
-import com.bumptech.glide.request.RequestOptions
-import com.bumptech.glide.request.target.SimpleTarget
-import com.bumptech.glide.request.transition.Transition
+import com.awarmisland.android.richedittext.view.RichEditText
+import com.bumptech.glide.load.resource.gif.GifDrawable
 import kotlinx.android.synthetic.main.dialog_reply.view.*
 import okhttp3.MediaType
 import okhttp3.MultipartBody
@@ -43,6 +39,9 @@ import soko.ekibun.bangumi.ui.topic.PostAdapter.Companion.setTextLinkOpenByWebVi
 import soko.ekibun.bangumi.util.*
 import java.lang.ref.WeakReference
 
+/**
+ * 回复对话框
+ */
 class ReplyDialog: androidx.fragment.app.DialogFragment() {
     private var contentView: View? = null
 
@@ -50,66 +49,71 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
     var callback: (Editable?, Boolean) -> Unit = { _, _ -> }
     var html: String = ""
     var draft: Editable? = null
+
+    private fun showFormatPop(editText: RichEditText, anchor: View) {
+        val popup = PopupMenu(editText.context, anchor)
+        popup.menuInflater.inflate(R.menu.list_format, popup.menu)
+        // update Selection
+        var currentFontStyle = editText.fontStyle
+        val updateCheck = {
+            currentFontStyle = editText.fontStyle
+            popup.menu.findItem(R.id.format_bold)?.isChecked = currentFontStyle?.isBold ?: false
+            popup.menu.findItem(R.id.format_italic)?.isChecked = currentFontStyle?.isItalic ?: false
+            popup.menu.findItem(R.id.format_strike)?.isChecked = currentFontStyle?.isStrike ?: false
+            popup.menu.findItem(R.id.format_underline)?.isChecked = currentFontStyle?.isUnderline ?: false
+            popup.menu.findItem(R.id.format_mask)?.isChecked = currentFontStyle?.isMask ?: false
+        }
+        updateCheck()
+
+        popup.setOnMenuItemClickListener {
+            when (it.itemId) {
+                R.id.format_bold -> {
+                    editText.setBold(!(currentFontStyle?.isBold ?: false))
+                }
+                R.id.format_italic -> {
+                    editText.setItalic(!(currentFontStyle?.isItalic ?: false))
+                }
+                R.id.format_strike -> {
+                    editText.setStrike(!(currentFontStyle?.isStrike ?: false))
+                }
+                R.id.format_underline -> {
+                    editText.setUnderline(!(currentFontStyle?.isUnderline ?: false))
+                }
+                R.id.format_mask -> {
+                    editText.setMask(!(currentFontStyle?.isMask ?: false))
+                }
+                else -> return@setOnMenuItemClickListener true
+            }
+            updateCheck()
+            // Keep the popup menu open
+            it.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW)
+            it.actionView = View(context)
+            it.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
+                override fun onMenuItemActionExpand(item: MenuItem): Boolean {
+                    return false
+                }
+
+                override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
+                    return false
+                }
+            })
+            false
+        }
+        popup.show()
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val contentView = contentView ?: inflater.inflate(R.layout.dialog_reply, container)
         this.contentView = contentView
         val emojiAdapter = EmojiAdapter(emojiList)
         emojiAdapter.setOnItemChildClickListener { _, _, position ->
-            val drawable = UrlDrawable(WeakReference(contentView.item_input))
+            val drawable = CollapseUrlDrawable(WeakReference(contentView.item_input))
             drawable.url = emojiList[position].second
             drawable.loadImage()
             contentView.item_input.setImage(HtmlTagHandler.ClickableImage(ImageSpan(drawable, emojiList[position].first)) {})
         }
         contentView.item_btn_format.setOnClickListener { view ->
-            val popup = PopupMenu(view.context, view)
-            popup.menuInflater.inflate(R.menu.list_format, popup.menu)
-            // update Selection
-            var currentFontStyle = contentView.item_input.fontStyle
-            val updateCheck = {
-                currentFontStyle = contentView.item_input.fontStyle
-                popup.menu.findItem(R.id.format_bold)?.isChecked = currentFontStyle?.isBold ?: false
-                popup.menu.findItem(R.id.format_italic)?.isChecked = currentFontStyle?.isItalic ?: false
-                popup.menu.findItem(R.id.format_strike)?.isChecked = currentFontStyle?.isStrike ?: false
-                popup.menu.findItem(R.id.format_underline)?.isChecked = currentFontStyle?.isUnderline ?: false
-                popup.menu.findItem(R.id.format_mask)?.isChecked = currentFontStyle?.isMask ?: false
-            }
-            updateCheck()
-
-            popup.setOnMenuItemClickListener {
-                when (it.itemId) {
-                    R.id.format_bold -> {
-                        contentView.item_input.setBold(!(currentFontStyle?.isBold ?: false))
-                    }
-                    R.id.format_italic -> {
-                        contentView.item_input.setItalic(!(currentFontStyle?.isItalic ?: false))
-                    }
-                    R.id.format_strike -> {
-                        contentView.item_input.setStrike(!(currentFontStyle?.isStrike ?: false))
-                    }
-                    R.id.format_underline -> {
-                        contentView.item_input.setUnderline(!(currentFontStyle?.isUnderline ?: false))
-                    }
-                    R.id.format_mask -> {
-                        contentView.item_input.setMask(!(currentFontStyle?.isMask ?: false))
-                    }
-                    else -> return@setOnMenuItemClickListener true
-                }
-                updateCheck()
-                // Keep the popup menu open
-                it.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW)
-                it.actionView = View(context)
-                it.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
-                    override fun onMenuItemActionExpand(item: MenuItem): Boolean {
-                        return false
-                    }
-
-                    override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
-                        return false
-                    }
-                })
-                false
-            }
-            popup.show()
+            showFormatPop(contentView.item_input, view)
         }
         contentView.item_emoji_list.adapter = emojiAdapter
         contentView.item_emoji_list.layoutManager = GridLayoutManager(context, 7)
@@ -126,7 +130,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
                 contentView.item_nav_padding.layoutParams = contentView.item_nav_padding.layoutParams
             }
             contentView.item_emoji_list.visibility = if (insetsBottom > 200) View.INVISIBLE else if (contentView.item_btn_emoji.isSelected) View.VISIBLE else View.GONE
-            (contentView.item_lock.layoutParams as LinearLayout.LayoutParams).weight = 1f
+            (contentView.item_lock.layoutParams as? LinearLayout.LayoutParams)?.weight = 1f
         }
 
         contentView.item_btn_image.setOnClickListener {
@@ -178,7 +182,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
             contentView.item_input.text = draft
         } else {
             contentView.item_input.setText(setTextLinkOpenByWebView(Html.fromHtml(parseHtml(html),
-                    HtmlHttpImageGetter(contentView.item_input),
+                    CollapseHtmlHttpImageGetter(contentView.item_input),
                     HtmlTagHandler(contentView.item_input, onClick = onClickImage)), onClickUrl))
         }
 
@@ -194,11 +198,11 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
         return contentView
     }
 
-    val onClickImage = click@{ it: ImageSpan ->
+    val onClickImage = { it: ImageSpan ->
         //Toast.makeText(context?:return@click, (it.drawable as? UrlDrawable)?.url?:"", Toast.LENGTH_LONG).show()
     }
 
-    val onClickUrl = click@{ url: String ->
+    val onClickUrl = { url: String ->
         //Toast.makeText(context?:return@click, url, Toast.LENGTH_LONG).show()
     }
 
@@ -239,41 +243,36 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
         item_input.setImage(HtmlTagHandler.ClickableImage(ImageSpan(drawable), onClickImage))
     }
 
-    class HtmlHttpImageGetter(container: TextView) : Html.ImageGetter {
+    /**
+     *  限制最大高度url drawable ImageGetter
+     */
+    class CollapseHtmlHttpImageGetter(container: TextView) : Html.ImageGetter {
         private val container = WeakReference(container)
         override fun getDrawable(source: String): Drawable {
-            val urlDrawable = UrlDrawable(container)
+            val urlDrawable = CollapseUrlDrawable(container)
             urlDrawable.url = Bangumi.parseUrl(source)
             urlDrawable.loadImage()
             return urlDrawable
         }
     }
 
-    open class UrlDrawable(val container: WeakReference<TextView>) : AnimationDrawable() {
-        var drawable: Drawable? = null
-        var error: Boolean? = null
-        var url: String? = null
-        var uri: Uri? = null
+    /**
+     * 限制最大高度的 url drawable
+     */
+    open class CollapseUrlDrawable(container: WeakReference<TextView>) : HtmlHttpImageGetter.UrlDrawable(container) {
 
-        init {
-            container.get()?.let {
-                setBounds(0, 0, it.textSize.toInt(), it.textSize.toInt())
+        override fun update(resource: Drawable, defSize: Int) {
+            if (resource is GifDrawable) {
+                resource.start()
             }
-        }
-
-        fun update(drawable: Drawable, defSize: Int) {
-            if (drawable is com.bumptech.glide.load.resource.gif.GifDrawable) {
-                drawable.start()
-            }
-            val size = if (defSize > 0) Size(defSize, defSize) else Size(drawable.intrinsicWidth, drawable.intrinsicHeight)
+            val size = if (defSize > 0) Size(defSize, defSize) else Size(resource.intrinsicWidth, resource.intrinsicHeight)
             setBounds(0, 0, size.width, Math.min(size.height, 250))
 
-            drawable.setBounds(0, 0, size.width, size.height)
-            (this.drawable as? com.bumptech.glide.load.resource.gif.GifDrawable)?.stop()
+            resource.setBounds(0, 0, size.width, size.height)
+            (this.drawable as? GifDrawable)?.stop()
             this.drawable?.callback = null
-            this.drawable = drawable
-            //}
-            //container.get()?.text = container.get()?.text
+            this.drawable = resource
+
             container.get()?.let {
                 it.editableText.getSpans(0, it.editableText.length, ImageSpan::class.java).filter { it.drawable == this }.forEach { span ->
                     val start = it.editableText.getSpanStart(span)
@@ -287,77 +286,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
             }
         }
 
-        open fun loadImage() {
-            val view = container.get()
-            val url = this.url ?: return
-            view?.post {
-                val textSize = view.textSize
-                val circularProgressDrawable = CircularProgressDrawable(view.context)
-                circularProgressDrawable.setColorSchemeColors(ResourceUtil.resolveColorAttr(view.context, android.R.attr.textColorSecondary))
-                circularProgressDrawable.strokeWidth = 5f
-                circularProgressDrawable.centerRadius = textSize / 2 - circularProgressDrawable.strokeWidth - 1f
-                circularProgressDrawable.progressRotation = 0.75f
-                circularProgressDrawable.start()
-                ProgressAppGlideModule.expect(url, object : ProgressAppGlideModule.UIonProgressListener {
-                    override fun onProgress(bytesRead: Long, expectedLength: Long) {
-                        if (circularProgressDrawable.isRunning) circularProgressDrawable.stop()
-                        circularProgressDrawable.setStartEndTrim(0f, bytesRead * 1f / expectedLength)
-                        circularProgressDrawable.progressRotation = 0.75f
-                        circularProgressDrawable.invalidateSelf()
-                    }
-
-                    override fun getGranualityPercentage(): Float {
-                        return 1.0f
-                    }
-                })
-                GlideUtil.with(view)
-                        ?.asDrawable()?.let {
-                            if (uri != null) {
-                                it.load(uri)
-                            } else {
-                                it.load(GlideUrl(url, Headers {
-                                    mapOf("referer" to url,
-                                            "user-agent" to HttpUtil.ua
-                                    )
-                                }))
-                            }
-                        }?.apply(RequestOptions().transform(SizeTransformation { width, _ ->
-                            val maxWidth = view.width - view.paddingLeft - view.paddingRight - 10f
-                            val minWidth = textSize
-                            Math.min(maxWidth, Math.max(minWidth, width.toFloat())) / width
-                        }).placeholder(circularProgressDrawable).error(R.drawable.ic_broken_image))
-                        ?.into(object : SimpleTarget<Drawable>() {
-                            override fun onLoadStarted(placeholder: Drawable?) {
-                                error = null
-                                placeholder?.let { update(it, textSize.toInt()) }
-                            }
-
-                            override fun onLoadFailed(errorDrawable: Drawable?) {
-                                error = true
-                                if (circularProgressDrawable.isRunning) circularProgressDrawable.stop()
-                                errorDrawable?.let { update(it, textSize.toInt()) }
-                            }
-
-                            override fun onLoadCleared(placeholder: Drawable?) {
-                                error = null
-                                placeholder?.let { update(it, textSize.toInt()) }
-                            }
-
-                            override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
-                                if (circularProgressDrawable.isRunning) circularProgressDrawable.stop()
-                                error = false
-                                update(resource, 0)
-                            }
-
-                            override fun onStart() {}
-                            override fun onDestroy() {
-                                ProgressAppGlideModule.forget(url)
-                            }
-                        })
-            }
-        }
-
-        val gardientPaint by lazy {
+        private val gradientPaint by lazy {
             val paint = Paint()
             paint.isAntiAlias = true
             paint.color = 0xFF000000.toInt()
@@ -385,13 +314,21 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
             canvas.clipRect(bounds)
             drawable?.draw(canvas)
             if (bounds.height() != drawable?.bounds?.height()) {
-                canvas.drawRect(bounds, gardientPaint)
+                canvas.drawRect(bounds, gradientPaint)
             }
             canvas.restore()
         }
     }
 
-    class UploadDrawable(val requestBody: RequestBody, val fileName: String, container: WeakReference<TextView>, uri: Uri) : UrlDrawable(container) {
+    /**
+     * 上传图片 drawable
+     */
+    class UploadDrawable(
+            private val requestBody: RequestBody,
+            private val fileName: String,
+            container: WeakReference<TextView>,
+            uri: Uri
+    ) : CollapseUrlDrawable(container) {
 
         init {
             this.uri = uri

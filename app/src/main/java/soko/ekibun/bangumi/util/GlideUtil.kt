@@ -5,6 +5,7 @@ package soko.ekibun.bangumi.util
 import android.app.Activity
 import android.content.Context
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -24,7 +25,7 @@ object GlideUtil {
     const val TYPE_PLACEHOLDER = 1
     const val TYPE_ERROR = 2
 
-    fun loadWithProgress(url: String, view: View, options: RequestOptions, viewTarget: Boolean = true, callback: (Int, Drawable?) -> Unit) {
+    fun loadWithProgress(url: String, view: View, options: RequestOptions, viewTarget: Boolean = true, uri: Uri? = null, callback: (Int, Drawable?) -> Unit) {
         val request = with(view) ?: return
         val circularProgressDrawable = options.placeholderDrawable as? CircularProgressDrawable
         circularProgressDrawable?.start()
@@ -40,11 +41,13 @@ object GlideUtil {
                 return 1.0f
             }
         })
-        val req = request.asDrawable().load(GlideUrl(url, Headers {
-            mapOf("referer" to url,
-                    "user-agent" to HttpUtil.ua
-            )
-        })).apply(options).into(if (viewTarget) object : CustomViewTarget<View, Drawable>(view) {
+        request.asDrawable().let {
+            if (uri != null) {
+                it.load(uri)
+            } else {
+                it.load(GlideUrl(url, Headers { mapOf("referer" to url, "user-agent" to HttpUtil.ua) }))
+            }
+        }.apply(options).into(if (viewTarget) object : CustomViewTarget<View, Drawable>(view) {
 
             override fun onResourceLoading(placeholder: Drawable?) {
                 callback(TYPE_PLACEHOLDER, placeholder)

@@ -9,7 +9,6 @@ import android.view.View
 import android.widget.TextView
 import com.awarmisland.android.richedittext.view.RichEditText
 import org.xml.sax.XMLReader
-import soko.ekibun.bangumi.ui.topic.ReplyDialog
 import java.lang.ref.WeakReference
 import java.util.*
 
@@ -83,10 +82,7 @@ class HtmlTagHandler(view: TextView, private var baseSize: Float = 12f, private 
             if(drawable is HtmlHttpImageGetter.UrlDrawable) {
                 if (drawable.error == true) drawable.loadImage()
                 else if (drawable.error == false) onClick(image)
-            } else if (drawable is ReplyDialog.UrlDrawable) {
-                if (drawable.error == true) drawable.loadImage()
-                else if (drawable.error == false) onClick(image)
-            }else onClick(image)
+            } else onClick(image)
         }
     }
 

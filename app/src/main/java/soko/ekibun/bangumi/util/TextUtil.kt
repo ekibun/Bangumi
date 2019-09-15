@@ -65,7 +65,8 @@ object TextUtil {
                     is StrikethroughSpan -> out.append("[s]")
                     is PostAdapter.Companion.CustomURLSpan -> out.append("[url=${characterStyle.url}]")
                     is ImageSpan -> {
-                        var source = characterStyle.source ?: (characterStyle.drawable as? ReplyDialog.UrlDrawable)?.url
+                        var source = characterStyle.source
+                                ?: (characterStyle.drawable as? HtmlHttpImageGetter.UrlDrawable)?.url
                         if (source != null && source.startsWith("/img/smiles/"))
                             source = ReplyDialog.emojiList.firstOrNull { it.second.contains(source!!) }?.first
                         if (source != null && source.startsWith("("))
