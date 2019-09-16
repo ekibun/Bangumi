@@ -146,7 +146,7 @@ object Bangumi {
      * 获取用户收藏列表
      */
     fun getCollectionList(
-            @Subject.SubjectTypeName subject_type: String,
+            @Subject.SubjectType subject_type: String,
             username: String,
             @Collection.CollectionStatusType collection_status: String,
             page: Int = 1
@@ -274,12 +274,7 @@ object Bangumi {
                                 id = Regex("""/topic/([0-9]*)""").find(td0?.attr("href")
                                         ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 0,
                                 title = td0?.text() ?: "",
-                                timestamp = try {
-                                    SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(tds?.get(3)?.text()
-                                            ?: "").time / 1000
-                                } catch (e: Exception) {
-                                    0L
-                                },
+                                time = tds?.get(3)?.text(),
                                 replies = Regex("""([0-9]*)""").find(tds?.get(2)?.text()
                                         ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 0,
                                 user = parseUserInfo(tds?.get(1)?.selectFirst("a"))
@@ -294,13 +289,7 @@ object Bangumi {
                                 image = parseImageUrl(it.selectFirst("img")),
                                 replies = it.selectFirst("small.orange")?.text()?.trim('(', '+', ')')?.toIntOrNull()
                                         ?: 0,
-                                timestamp = try {
-                                    SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).parse(it.selectFirst("small.time")?.text()
-                                            ?: "").time / 1000
-                                } catch (e: Exception) {
-                                    0L
-                                },
-                                dateline = it.selectFirst("small.time")?.text() ?: "",
+                                time = it.selectFirst("small.time")?.text(),
                                 user = parseUserInfo(it.selectFirst(".tip_j a"))
                         )
                     },
@@ -356,7 +345,7 @@ object Bangumi {
                     },
                     collect = doc.selectFirst("#collectBoxForm")?.let {
                         Collection(
-                                status = it.selectFirst(".collectType input[checked=checked]").id(),
+                                status = it.selectFirst(".collectType input[checked=checked]")?.id() ?: return@let null,
                                 rating = it.selectFirst(".rating[checked]")?.attr("value")?.toIntOrNull() ?: 0,
                                 comment = it.selectFirst("#comment")?.text(),
                                 private = it.selectFirst("#privacy[checked]")?.attr("value")?.toIntOrNull() ?: 0,
@@ -371,17 +360,25 @@ object Bangumi {
      */
     fun searchSubject(
             keywords: String,
-            @Subject.SubjectType type: Int = Subject.TYPE_ANY,
+            @Subject.SubjectType type: String = Subject.TYPE_ANY,
             page: Int
     ): Call<List<Subject>> {
-        return ApiHelper.buildHttpCall("$SERVER/subject_search/${java.net.URLEncoder.encode(keywords, "utf-8")}?cat=$type&page=$page") { rsp ->
+        CookieManager.getInstance().setCookie(SERVER, "chii_searchDateLine=${System.currentTimeMillis() / 1000};")
+        return ApiHelper.buildHttpCall("$SERVER/subject_search/${java.net.URLEncoder.encode(keywords, "utf-8")}?cat=${when (type) {
+            Subject.TYPE_BOOK -> 1
+            Subject.TYPE_ANIME -> 2
+            Subject.TYPE_MUSIC -> 3
+            Subject.TYPE_GAME -> 4
+            Subject.TYPE_REAL -> 6
+            else -> 0
+        }}&page=$page") { rsp ->
             val doc = Jsoup.parse(rsp.body()?.string() ?: "")
+            if (doc.select("#colunmNotice") == null) throw Exception("search error")
             doc.select(".item").mapNotNull { item ->
                 val nameCN = item.selectFirst("h3")?.selectFirst("a")?.text()
                 Subject(
                         id = item.attr("id").split('_').last().toIntOrNull() ?: return@mapNotNull null,
-                        type = item.selectFirst(".ico_subject_type")?.classNames()?.mapNotNull { it.split('_').last().toIntOrNull() }?.firstOrNull()
-                                ?: 0,
+                        type = Subject.parseType(item.selectFirst(".ico_subject_type")?.classNames()?.mapNotNull { it.split('_').last().toIntOrNull() }?.firstOrNull()),
                         name = item.selectFirst("h3")?.selectFirst("small")?.text() ?: nameCN,
                         name_cn = nameCN,
                         summary = item.selectFirst(".info")?.text(),
@@ -399,8 +396,10 @@ object Bangumi {
             type: String,
             page: Int
     ): Call<List<MonoInfo>> {
+        CookieManager.getInstance().setCookie(SERVER, "chii_searchDateLine=${System.currentTimeMillis() / 1000};")
         return ApiHelper.buildHttpCall("$SERVER/mono_search/${java.net.URLEncoder.encode(keywords, "utf-8")}?cat=$type&page=$page") { rsp ->
             val doc = Jsoup.parse(rsp.body()?.string() ?: "")
+            if (doc.select("#colunmNotice") == null) throw Exception("search error")
             doc.select(".light_odd").map {
                 val a = it.selectFirst("h2 a")
                 MonoInfo(
@@ -444,7 +443,7 @@ object Bangumi {
      * 索引
      */
     fun browserAirTime(
-            @Subject.SubjectTypeName subject_type: String,
+            @Subject.SubjectType subject_type: String,
             year: Int,
             month: Int,
             page: Int,
@@ -648,7 +647,7 @@ object Bangumi {
                 val data = it.selectFirst(".headerInner a.textTip") ?: return@mapNotNull null
                 Subject(
                         id = data.attr("data-subject-id")?.toIntOrNull() ?: return@mapNotNull null,
-                        type = it.attr("subject_type")?.toIntOrNull() ?: Subject.TYPE_ANY,
+                        type = Subject.parseType(it.attr("subject_type")?.toIntOrNull()),
                         name = data.attr("data-subject-name"),
                         name_cn = data.attr("data-subject-name-cn"),
                         images = Images(parseImageUrl(it.selectFirst("img"))),

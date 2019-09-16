@@ -7,23 +7,15 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.preference.*
-import android.util.Log
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
-import android.widget.FrameLayout
-import android.widget.LinearLayout
-import android.widget.ListView
-import androidx.appcompat.widget.ActionBarOverlayLayout
-import androidx.appcompat.widget.ContentFrameLayout
-import androidx.core.app.NavUtils
-import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.model.ThemeModel
 import android.util.TypedValue
 import android.view.LayoutInflater
-import androidx.appcompat.widget.ActionBarContainer
-import androidx.appcompat.widget.Toolbar
+import android.view.MenuItem
+import android.view.ViewGroup
+import androidx.appcompat.widget.ContentFrameLayout
+import androidx.core.app.NavUtils
 import kotlinx.android.synthetic.main.appbar_layout.view.*
+import soko.ekibun.bangumi.R
+import soko.ekibun.bangumi.model.ThemeModel
 
 
 /**
@@ -38,7 +30,7 @@ import kotlinx.android.synthetic.main.appbar_layout.view.*
  */
 class SettingsActivity : AppCompatPreferenceActivity() {
 
-    private fun getActionBarHeight(): Int{
+    private fun getActionBarHeight(): Int {
         val tv = TypedValue()
         if (theme.resolveAttribute(android.R.attr.actionBarSize, tv, true))
             return TypedValue.complexToDimensionPixelSize(tv.data, resources.displayMetrics)
@@ -48,19 +40,16 @@ class SettingsActivity : AppCompatPreferenceActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         ThemeModel.updateNavigationTheme(this)
         super.onCreate(savedInstanceState)
-        
-        findViewById<ContentFrameLayout>(android.R.id.content)?.let {content ->
-            val appbar = (content.parent as? ViewGroup)?.let {
+
+        findViewById<ContentFrameLayout>(android.R.id.content)?.let { content ->
+            (content.parent as? ViewGroup)?.let {
                 val view = LayoutInflater.from(this).inflate(R.layout.appbar_layout, it, false)
                 it.addView(view, 0)
                 setSupportActionBar(view.toolbar)
-                view
             }
-            val paddingTop = appbar?.paddingTop?:0
             val paddingBottom = content.paddingBottom
             window.decorView.setOnApplyWindowInsetsListener { v, insets ->
                 content.setPadding(content.paddingLeft, content.paddingTop, content.paddingRight, paddingBottom + insets.systemWindowInsetBottom)
-                //appbar?.let{ it.setPadding(it.paddingLeft, paddingTop + insets.systemWindowInsetTop, it.paddingRight, it.paddingBottom) }
                 v.onApplyWindowInsets(insets)
             }
         }
@@ -131,7 +120,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
         }
 
         override fun onPreferenceTreeClick(preferenceScreen: PreferenceScreen?, preference: Preference): Boolean {
-            if(preference.key == "translucent_navigation") ThemeModel.updateNavigationTheme(activity)
+            if (preference.key == "translucent_navigation") ThemeModel.updateNavigationTheme(activity)
             return super.onPreferenceTreeClick(preferenceScreen, preference)
         }
 

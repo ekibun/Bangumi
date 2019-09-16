@@ -281,7 +281,7 @@ class SubjectView(private val context: SubjectActivity) {
 
         tagAdapter.setNewData(subject.tags)
         tagAdapter.setOnItemClickListener { _, _, position ->
-            WebActivity.launchUrl(context, "${Bangumi.SERVER}/${Subject.getTypeName(subject.type)}/tag/${tagAdapter.data[position].first}")
+            WebActivity.launchUrl(context, "${Bangumi.SERVER}/${subject.type}/tag/${tagAdapter.data[position].first}")
         }
 
         context.item_subject.setOnClickListener {

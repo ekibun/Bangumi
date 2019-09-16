@@ -144,7 +144,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
             dismiss()
         }
 
-        contentView.setOnApplyWindowInsetsListener { v, insets ->
+        contentView.setOnApplyWindowInsetsListener { _, insets ->
             insetsBottom = insets.systemWindowInsetBottom
             updateEmojiList()
             if (insetsBottom > 200) {
@@ -198,11 +198,11 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
         return contentView
     }
 
-    val onClickImage = { it: ImageSpan ->
+    val onClickImage = { _: ImageSpan ->
         //Toast.makeText(context?:return@click, (it.drawable as? UrlDrawable)?.url?:"", Toast.LENGTH_LONG).show()
     }
 
-    val onClickUrl = { url: String ->
+    val onClickUrl = { _: String ->
         //Toast.makeText(context?:return@click, url, Toast.LENGTH_LONG).show()
     }
 

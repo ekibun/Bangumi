@@ -10,12 +10,13 @@ data class VideoCache(
     var bytesDownloaded: Long = 0L,
     var percentDownloaded: Float = 0f
 ) : Parcelable {
+    @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
     constructor(source: Parcel) : this(
-        source.readParcelable<VideoEpisode>(VideoEpisode::class.java.classLoader),
-        source.readString(),
-        source.readLong(),
-        source.readLong(),
-        source.readFloat()
+            source.readParcelable<VideoEpisode>(VideoEpisode::class.java.classLoader),
+            source.readString(),
+            source.readLong(),
+            source.readLong(),
+            source.readFloat()
     )
 
     override fun describeContents() = 0

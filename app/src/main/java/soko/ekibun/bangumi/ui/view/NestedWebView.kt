@@ -10,9 +10,9 @@ import android.webkit.*
 
 class NestedWebView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = android.R.attr.webViewStyle) : WebView(context, attrs, defStyleAttr) {
 
-    var onProgressChanged = { view: WebView, newProgress: Int -> }
-    var shouldOverrideUrlLoading = { view: WebView, request: WebResourceRequest -> false }
-    var onReceivedTitle = { view: WebView?, title: String? -> }
+    var onProgressChanged = { _: WebView, _: Int -> }
+    var shouldOverrideUrlLoading = { _: WebView, _: WebResourceRequest -> false }
+    var onReceivedTitle = { _: WebView?, _: String? -> }
 
     var parentWebView: NestedWebView? = null
     var childWebView: NestedWebView? = null

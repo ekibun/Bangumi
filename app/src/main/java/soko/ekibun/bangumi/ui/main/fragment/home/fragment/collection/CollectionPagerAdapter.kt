@@ -104,7 +104,7 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
             item.second.isRefreshing = true
         val useApi = position == 2 && subjectTypeView.selectedType in arrayOf(R.id.collection_type_anime, R.id.collection_type_book, R.id.collection_type_real)
         collectionCalls[position] = if (useApi) Bangumi.getCollection()//api.collection(userName)
-        else Bangumi.getCollectionList(subjectTypeView.getTypeName(), userName, Collection.getTypeById(position + 1), page + 1)
+        else Bangumi.getCollectionList(subjectTypeView.getType(), userName, Collection.getTypeById(position + 1), page + 1)
         collectionCalls[position]?.enqueue(ApiHelper.buildCallback({ list ->
             item.first.isUseEmpty(true)
             list.filter { !useApi || it.type == subjectTypeView.getType() }.let {

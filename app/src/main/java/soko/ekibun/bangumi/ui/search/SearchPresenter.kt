@@ -120,7 +120,7 @@ class SearchPresenter(private val context: SearchActivity) {
             val page = loadCount
             if(typeView.subjectTypeList.containsKey(typeView.selectedType)){
                 subjectCall = Bangumi.searchSubject(key, typeView.subjectTypeList[typeView.selectedType]
-                        ?: 0, page + 1)//api.search(key, SubjectType.ALL, loadCount)
+                        ?: Subject.TYPE_ANY, page + 1)//api.search(key, SubjectType.ALL, loadCount)
                 subjectCall?.enqueue(ApiHelper.buildCallback({list->
                     //val list =it.list
                     if(list == null || list.isEmpty())

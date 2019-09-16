@@ -3,9 +3,9 @@ package soko.ekibun.bangumi.ui.view;
 import android.animation.ObjectAnimator;
 import android.content.res.Resources;
 import android.graphics.*;
-import androidx.annotation.Keep;
 import android.text.TextUtils;
-import com.simplecityapps.recyclerview_fastscroll.utils.Utils;
+import androidx.annotation.Keep;
+import soko.ekibun.bangumi.util.ResourceUtil;
 
 public class FastScrollPopup {
 
@@ -50,8 +50,8 @@ public class FastScrollPopup {
         mTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mTextPaint.setAlpha(0);
 
-        setTextSize(Utils.toScreenPixels(mRes, 44));
-        setBackgroundSize(Utils.toPixels(mRes, 88));
+        setTextSize(ResourceUtil.INSTANCE.toScreenPixels(mRes, 44));
+        setBackgroundSize(ResourceUtil.INSTANCE.toPixels(mRes, 88));
     }
 
     public void setBgColor(int color) {
@@ -122,7 +122,7 @@ public class FastScrollPopup {
             return new float[]{mCornerRadius, mCornerRadius, mCornerRadius, mCornerRadius, mCornerRadius, mCornerRadius, mCornerRadius, mCornerRadius};
         }
 
-        if (Utils.isRtl(mRes)) {
+        if (ResourceUtil.INSTANCE.isRtl(mRes)) {
             return new float[]{mCornerRadius, mCornerRadius, mCornerRadius, mCornerRadius, mCornerRadius, mCornerRadius, 0, 0};
         } else {
             return new float[]{mCornerRadius, mCornerRadius, mCornerRadius, mCornerRadius, 0, 0, mCornerRadius, mCornerRadius};
@@ -182,7 +182,7 @@ public class FastScrollPopup {
                 mBgBounds.right = mBgBounds.left + bgWidth;
                 mBgBounds.top = (recyclerView.getHeight() - bgHeight) / 2;
             } else {
-                if (Utils.isRtl(mRes)) {
+                if (ResourceUtil.INSTANCE.isRtl(mRes)) {
                     mBgBounds.left = (2 * recyclerView.getScrollBarWidth());
                     mBgBounds.right = mBgBounds.left + bgWidth;
                 } else {

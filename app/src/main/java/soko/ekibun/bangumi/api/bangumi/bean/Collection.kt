@@ -42,7 +42,7 @@ data class Collection(
          * 获取收藏类型字符串数组
          */
         @ArrayRes
-        fun getTypeNamesRes(@Subject.SubjectType type: Int): Int {
+        fun getTypeNamesRes(@Subject.SubjectType type: String): Int {
             return when (type) {
                 Subject.TYPE_BOOK -> R.array.collection_status_book
                 Subject.TYPE_MUSIC -> R.array.collection_status_music

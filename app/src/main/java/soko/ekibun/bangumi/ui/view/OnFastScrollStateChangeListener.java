@@ -1,4 +1,4 @@
-package com.simplecityapps.recyclerview_fastscroll.interfaces;
+package soko.ekibun.bangumi.ui.view;
 
 public interface OnFastScrollStateChangeListener {
 

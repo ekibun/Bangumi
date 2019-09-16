@@ -1,6 +1,5 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
-import androidx.annotation.IntDef
 import androidx.annotation.StringDef
 import androidx.annotation.StringRes
 import soko.ekibun.bangumi.R
@@ -12,7 +11,7 @@ import soko.ekibun.bangumi.util.TextUtil
  */
 data class Subject(
         val id: Int = 0,
-        @SubjectType var type: Int = TYPE_ANY,
+        @SubjectType var type: String = TYPE_ANY,
         var name: String? = null,
         var name_cn: String? = null,
         var summary: String? = null,
@@ -68,11 +67,6 @@ data class Subject(
 
     /**
      * 条目收藏
-     * @property wish 想看
-     * @property collect 已看
-     * @property doing 在看
-     * @property on_hold 搁置
-     * @property dropped 抛弃
      */
     data class UserCollection(
             val wish: Int = 0,
@@ -82,98 +76,53 @@ data class Subject(
             val dropped: Int = 0
     )
 
+    /**
+     * 日志
+     */
     data class Blog(
             val id: Int = 0,
             val title: String? = null,
             val summary: String? = null,
             val image: String? = null,
             val replies: Int = 0,
-            val timestamp: Long = 0,
-            val dateline: String? = null,
+            val time: String? = null,
             val user: UserInfo? = null
     ){
         val url = "${Bangumi.SERVER}/blog/$id"
-        /**
-         * id : 273281
-         * url : http://bgm.tv/blog/273281
-         * title : 度没掌握好，方向也有偏离
-         * summary : 度没掌握好，方向也有偏离。
-         * 前面真的很棒，乡村微奇幻卖萌搞笑片，小町偶尔的卖蠢衬托出乡村少女的天真。
-         * 可是随着片子的进展，（staff）欺负小町越来越过分，尤其是赤裸裸的表现出小町农村人的无知和自卑（被迫害妄想症），看着真是令人替她着急啊。
-         * 如果说这些是为片子最后升华 ...
-         * image :
-         * replies : 7
-         * timestamp : 1466485111
-         * dateline : 2016-6-21 04:58
-         * user : {"id":205577,"url":"http://bgm.tv/user/drawing","username":"drawing","nickname":"千叶铁矢","avatar":{"large":"http://lain.bgm.tv/pic/user/l/000/20/55/205577.jpg?r=1410168526","medium":"http://lain.bgm.tv/pic/user/m/000/20/55/205577.jpg?r=1410168526","small":"http://lain.bgm.tv/pic/user/s/000/20/55/205577.jpg?r=1410168526"},"formhash":null}
-         */
     }
 
+    /**
+     * 评论
+     */
     data class Topic(
             val id: Int = 0,
-            val title: String? = null,
-            val main_id: Int = 0,
-            val timestamp: Long = 0,
-            val lastpost: Int = 0,
+            val title: String = "",
+            val time: String? = null,
             val replies: Int = 0,
             val user: UserInfo? = null
     ) {
         val url = "${Bangumi.SERVER}/subject/topic/$id"
-        /**
-         * id : 1
-         * url : http://bgm.tv/subject/topic/1
-         * title : 拿这个来测试
-         * main_id : 1
-         * timestamp : 1216020847
-         * lastpost : 1497657984
-         * replies : 57
-         * user : {"id":2,"url":"http://bgm.tv/user/2","username":"2","nickname":"陈永仁","avatar":{"large":"http://lain.bgm.tv/pic/user/l/000/00/00/2.jpg?r=1322480632","medium":"http://lain.bgm.tv/pic/user/m/000/00/00/2.jpg?r=1322480632","small":"http://lain.bgm.tv/pic/user/s/000/00/00/2.jpg?r=1322480632"},"formhash":null}
-         */
     }
 
-    @IntDef(TYPE_ANY, TYPE_BOOK, TYPE_ANIME, TYPE_MUSIC, TYPE_GAME, TYPE_REAL)
+    @StringDef(TYPE_ANY, TYPE_BOOK, TYPE_ANIME, TYPE_MUSIC, TYPE_GAME, TYPE_REAL)
     annotation class SubjectType
-
-    @StringDef(TYPE_NAME_BOOK, TYPE_NAME_ANIME, TYPE_NAME_MUSIC, TYPE_NAME_GAME, TYPE_NAME_REAL)
-    annotation class SubjectTypeName
 
     companion object {
         /**
          * 条目类型定义
          */
-        const val TYPE_ANY = 0
-        const val TYPE_BOOK = 1
-        const val TYPE_ANIME = 2
-        const val TYPE_MUSIC = 3
-        const val TYPE_GAME = 4
-        const val TYPE_REAL = 6
-
-        const val TYPE_NAME_BOOK = "book"
-        const val TYPE_NAME_ANIME = "anime"
-        const val TYPE_NAME_MUSIC = "music"
-        const val TYPE_NAME_GAME = "game"
-        const val TYPE_NAME_REAL = "real"
-
-        /**
-         * 条目类型Id->url请求字符串
-         */
-        @SubjectTypeName
-        fun getTypeName(@SubjectType type: Int): String {
-            return when (type) {
-                TYPE_BOOK -> TYPE_NAME_BOOK
-                TYPE_ANIME -> TYPE_NAME_ANIME
-                TYPE_MUSIC -> TYPE_NAME_MUSIC
-                TYPE_GAME -> TYPE_NAME_GAME
-                TYPE_REAL -> TYPE_NAME_REAL
-                else -> "subject"
-            }
-        }
+        const val TYPE_ANY = "any"
+        const val TYPE_BOOK = "book"
+        const val TYPE_ANIME = "anime"
+        const val TYPE_MUSIC = "music"
+        const val TYPE_GAME = "game"
+        const val TYPE_REAL = "real"
 
         /**
          * 获取条目类型显示字符串
          */
         @StringRes
-        fun getTypeRes(@SubjectType type: Int): Int {
+        fun getTypeRes(@SubjectType type: String): Int {
             return when (type) {
                 TYPE_BOOK -> R.string.book
                 TYPE_ANIME -> R.string.anime
@@ -181,6 +130,18 @@ data class Subject(
                 TYPE_GAME -> R.string.game
                 TYPE_REAL -> R.string.real
                 else -> R.string.subject
+            }
+        }
+
+        @SubjectType
+        fun parseType(type: Int?): String {
+            return when (type) {
+                1 -> TYPE_BOOK
+                2 -> TYPE_ANIME
+                3 -> TYPE_MUSIC
+                4 -> TYPE_GAME
+                6 -> TYPE_REAL
+                else -> TYPE_ANY
             }
         }
     }

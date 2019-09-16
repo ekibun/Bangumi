@@ -8,9 +8,8 @@ import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import com.simplecityapps.recyclerview_fastscroll.interfaces.OnFastScrollStateChangeListener
-import com.simplecityapps.recyclerview_fastscroll.utils.Utils
 import soko.ekibun.bangumi.R
+import soko.ekibun.bangumi.util.ResourceUtil
 import kotlin.math.roundToInt
 
 class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : androidx.recyclerview.widget.RecyclerView(context, attrs, defStyleAttr), RecyclerView.OnItemTouchListener {
@@ -229,7 +228,7 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
         val scrollBarY = (scrolledPastHeight + nestedDistance).toFloat() / availableScrollHeight * availableScrollBarHeight + nestedDistance + scrollTopMargin
 
         // Calculate the position and size of the scroll bar
-        val scrollBarX: Int = if (Utils.isRtl(resources)) {
+        val scrollBarX: Int = if (ResourceUtil.isRtl(resources)) {
             0
         } else {
             width - mScrollbar.width

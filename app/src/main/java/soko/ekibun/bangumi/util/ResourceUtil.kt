@@ -1,20 +1,44 @@
 package soko.ekibun.bangumi.util
 
+import android.annotation.TargetApi
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.util.TypedValue
+import android.view.View
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
-import java.text.SimpleDateFormat
-import java.util.*
 
 object ResourceUtil{
 
-    fun dip2px(context: Context, dpValue: Float): Int{
-        val scale = context.resources.displayMetrics.density
-        return (dpValue * scale + 0.5f).toInt()
+    /**
+     * Converts dp to px
+     *
+     * @param res Resources
+     * @param dp  the value in dp
+     * @return int
+     */
+    fun toPixels(res: Resources, dp: Float): Int {
+        return (dp * res.displayMetrics.density).toInt()
+    }
+
+    /**
+     * Converts sp to px
+     *
+     * @param res Resources
+     * @param sp  the value in sp
+     * @return int
+     */
+    fun toScreenPixels(res: Resources, sp: Float): Int {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, res.displayMetrics).toInt()
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    fun isRtl(res: Resources): Boolean {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && res.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
     }
 
 
@@ -39,15 +63,5 @@ object ResourceUtil{
         val typedValue = TypedValue()
         theme.resolveAttribute(attrRes, typedValue, true)
         return typedValue
-    }
-
-    fun getTimeInterval(timeStamp: Long): String {
-        val interval = System.currentTimeMillis()/1000 - timeStamp
-        return when(interval){
-            in 0..60-> "刚刚"
-            in 0..(60 * 60)->"${interval/60}分钟前"
-            in 0..(24 * 60 * 60)->"${interval/60/60}小时前"
-            else-> SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(timeStamp * 1000)
-        }
     }
 }

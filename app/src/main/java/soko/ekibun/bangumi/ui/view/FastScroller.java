@@ -6,24 +6,18 @@ import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Point;
-import android.graphics.Rect;
-import android.graphics.Typeface;
+import android.graphics.*;
+import android.util.AttributeSet;
+import android.view.MotionEvent;
+import android.view.ViewConfiguration;
 import androidx.annotation.ColorInt;
 import androidx.annotation.IntDef;
 import androidx.annotation.Keep;
 import androidx.interpolator.view.animation.FastOutLinearInInterpolator;
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator;
 import androidx.recyclerview.widget.RecyclerView;
-import android.util.AttributeSet;
-import android.view.MotionEvent;
-import android.view.ViewConfiguration;
-
 import soko.ekibun.bangumi.R;
-import com.simplecityapps.recyclerview_fastscroll.interfaces.OnFastScrollStateChangeListener;
-import com.simplecityapps.recyclerview_fastscroll.utils.Utils;
+import soko.ekibun.bangumi.util.ResourceUtil;
 
 import java.lang.annotation.Retention;
 
@@ -82,10 +76,10 @@ public class FastScroller {
         mRecyclerView = recyclerView;
         mPopup = new FastScrollPopup(resources, recyclerView);
 
-        minThumbHeight = Utils.toPixels(resources, 48);
-        mWidth = Utils.toPixels(resources, 8);
+        minThumbHeight = ResourceUtil.INSTANCE.toPixels(resources, 48);
+        mWidth = ResourceUtil.INSTANCE.toPixels(resources, 8);
 
-        mTouchInset = Utils.toPixels(resources, -24);
+        mTouchInset = ResourceUtil.INSTANCE.toPixels(resources, -24);
 
         mThumb = new Paint(Paint.ANTI_ALIAS_FLAG);
         mTrack = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -102,8 +96,8 @@ public class FastScroller {
             int trackColor = typedArray.getColor(R.styleable.FastScrollRecyclerView_fastScrollTrackColor, 0x28000000);
             int popupBgColor = typedArray.getColor(R.styleable.FastScrollRecyclerView_fastScrollPopupBgColor, 0xff000000);
             int popupTextColor = typedArray.getColor(R.styleable.FastScrollRecyclerView_fastScrollPopupTextColor, 0xffffffff);
-            int popupTextSize = typedArray.getDimensionPixelSize(R.styleable.FastScrollRecyclerView_fastScrollPopupTextSize, Utils.toScreenPixels(resources, 44));
-            int popupBackgroundSize = typedArray.getDimensionPixelSize(R.styleable.FastScrollRecyclerView_fastScrollPopupBackgroundSize, Utils.toPixels(resources, 88));
+            int popupTextSize = typedArray.getDimensionPixelSize(R.styleable.FastScrollRecyclerView_fastScrollPopupTextSize, ResourceUtil.INSTANCE.toScreenPixels(resources, 44));
+            int popupBackgroundSize = typedArray.getDimensionPixelSize(R.styleable.FastScrollRecyclerView_fastScrollPopupBackgroundSize, ResourceUtil.INSTANCE.toPixels(resources, 88));
             @FastScroller.FastScrollerPopupPosition int popupPosition = typedArray.getInteger(R.styleable.FastScrollRecyclerView_fastScrollPopupPosition, FastScroller.FastScrollerPopupPosition.ADJACENT);
 
             mTrack.setColor(trackColor);
@@ -124,7 +118,7 @@ public class FastScroller {
                     if (mAutoHideAnimator != null) {
                         mAutoHideAnimator.cancel();
                     }
-                    mAutoHideAnimator = ObjectAnimator.ofInt(this, "offsetX", (Utils.isRtl(mRecyclerView.getResources()) ? -1 : 1) * mWidth);
+                    mAutoHideAnimator = ObjectAnimator.ofInt(this, "offsetX", (ResourceUtil.INSTANCE.isRtl(mRecyclerView.getResources()) ? -1 : 1) * mWidth);
                     mAutoHideAnimator.setInterpolator(new FastOutLinearInInterpolator());
                     mAutoHideAnimator.setDuration(200);
                     mAutoHideAnimator.start();
