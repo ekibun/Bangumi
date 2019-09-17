@@ -8,6 +8,8 @@ import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.chad.library.adapter.base.BaseQuickAdapter
+import com.chad.library.adapter.base.entity.AbstractExpandableItem
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.util.ResourceUtil
 import kotlin.math.roundToInt
@@ -97,24 +99,56 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
         }
     }
 
+    private fun getRealItemIndex(adapterItemIndex: Int): Int {
+        val adapter = (adapter as? BaseQuickAdapter<*, *>) ?: return adapterItemIndex
+        var cur = 0
+        for (index in 0..adapterItemIndex) {
+            val item = adapter.data.getOrNull(index) ?: return cur
+            if (item is AbstractExpandableItem<*> && item.level > 0) continue
+            val subItemCount = if (item is AbstractExpandableItem<*> && item.isExpanded) item.subItems?.size ?: 0 else 0
+            if (index + 1 + subItemCount > adapterItemIndex)
+                return cur + (adapterItemIndex - index)
+            cur += 1 + subItemCount
+        }
+        return cur
+    }
+
+    private fun getAdapterItemIndex(realItemIndex: Int): Int {
+        val adapter = (adapter as? BaseQuickAdapter<*, *>) ?: return realItemIndex
+        var cur = 0
+        for (index in 0 until adapter.itemCount) {
+            val item = adapter.data[index]
+            if (item is AbstractExpandableItem<*> && item.level > 0) continue
+            val subItemCount = if (item is AbstractExpandableItem<*> && item.isExpanded) item.subItems?.size ?: 0 else 0
+            if (cur + 1 + subItemCount > realItemIndex)
+                return index + (realItemIndex - cur)
+            cur += 1 + subItemCount
+        }
+        return realItemIndex
+    }
+
     private var itemHeightCache = IntArray(0)
     private fun updateItemHeightCache() {
         val layoutManager = layoutManager ?: return
         val adapter = adapter ?: return
-        if (itemHeightCache.size != adapter.itemCount)
-            itemHeightCache = IntArray(adapter.itemCount) { itemHeightCache.getOrNull(it) ?: 200 }
+        val itemCount = ((adapter as? BaseQuickAdapter<*, *>)?.data?.filter { it !is AbstractExpandableItem<*> || it.level == 0 }
+                ?.map { 1 + if (it is AbstractExpandableItem<*> && it.isExpanded) it.subItems?.size ?: 0 else 0 }?.sum()
+                ?: 0) + 1
+        if (itemHeightCache.size != itemCount)
+            itemHeightCache = IntArray(itemCount) { itemHeightCache.getOrNull(it) ?: 200 }
 
         if (layoutManager is LinearLayoutManager) {
             val firstIndex = layoutManager.findFirstVisibleItemPosition()
             val lastIndex = layoutManager.findLastVisibleItemPosition()
             for (i in firstIndex..lastIndex)
-                itemHeightCache[i] = layoutManager.findViewByPosition(i)?.height ?: continue
+                itemHeightCache[getRealItemIndex(i)] = layoutManager.findViewByPosition(i)?.height ?: continue
         } else if (adapter is MeasurableAdapter && layoutManager is StaggeredGridLayoutManager) {
             var lastItemHeight = 0
             val spanHeight = IntArray(layoutManager.spanCount) { 0 }
-            for (index in 0 until adapter.itemCount) {
-                val height = adapter.getItemHeight(index)
-                val fullspan = adapter.isFullSpan(index)
+            for (index in 0 until itemCount) {
+                val warpIndex = getAdapterItemIndex(index)
+                val height = adapter.getItemHeight(warpIndex)
+                val fullspan = adapter.isFullSpan(warpIndex)
                 val totalOffset = if (fullspan) spanHeight.max()!! else spanHeight.min()!!
                 if (fullspan) {
                     spanHeight.forEachIndexed { i, _ ->
@@ -162,19 +196,20 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
         dy -= consumed[1].toFloat()
         val scrollY = Math.min(Math.max(scrolledPastHeight + dy, 0f), availableScrollHeight.toFloat())
         dy -= scrollY - scrolledPastHeight
-        dispatchNestedScroll(consumed[0], consumed[1], 0, dy.roundToInt(), offsetInWindow)
+        dispatchNestedScroll(consumed[0], consumed[1], 0, Math.min(nestedDistance, dy.roundToInt()), offsetInWindow)
 
         val layoutManager = layoutManager
         val adapter = adapter
         var totalOffset = 0
         itemHeightCache.forEachIndexed { index, height ->
             if (scrollY >= totalOffset && scrollY <= totalOffset + height) {
+                val wrapIndex = getAdapterItemIndex(index)
                 if (layoutManager is LinearLayoutManager)
-                    layoutManager.scrollToPositionWithOffset(index, totalOffset - scrollY.roundToInt())
+                    layoutManager.scrollToPositionWithOffset(wrapIndex, totalOffset - scrollY.roundToInt())
                 else if (adapter is MeasurableAdapter && layoutManager is StaggeredGridLayoutManager)
-                    layoutManager.scrollToPositionWithOffset(index, totalOffset - scrollY.roundToInt())
+                    layoutManager.scrollToPositionWithOffset(wrapIndex, totalOffset - scrollY.roundToInt())
                 val sectionedAdapter = (adapter as? SectionedAdapter) ?: return ""
-                return sectionedAdapter.getSectionName(index)
+                return sectionedAdapter.getSectionName(wrapIndex)
             }
             totalOffset += height
         }
@@ -187,11 +222,11 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
         return if (layoutManager is LinearLayoutManager) {
             val firstIndex = layoutManager.findFirstVisibleItemPosition()
             val topOffset = layoutManager.getDecoratedTop(layoutManager.findViewByPosition(firstIndex) ?: return 0)
-            itemHeightCache.sliceArray(0 until firstIndex).sum() - topOffset
+            itemHeightCache.sliceArray(0 until getRealItemIndex(firstIndex)).sum() - topOffset
         } else if (adapter is MeasurableAdapter && layoutManager is StaggeredGridLayoutManager) {
             val firstIndex = layoutManager.findFirstVisibleItemPositions(null)[0]
             val topOffset = layoutManager.getDecoratedTop(layoutManager.findViewByPosition(firstIndex) ?: return 0)
-            itemHeightCache.sliceArray(0 until firstIndex).sum() - topOffset
+            itemHeightCache.sliceArray(0 until getRealItemIndex(firstIndex)).sum() - topOffset
         } else 0
     }
 
