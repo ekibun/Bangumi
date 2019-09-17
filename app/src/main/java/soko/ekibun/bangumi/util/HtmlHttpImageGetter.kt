@@ -11,6 +11,7 @@ import android.util.Size
 import android.widget.TextView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.request.target.Target
 import pl.droidsonroids.gif.GifDrawable
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
@@ -18,6 +19,14 @@ import java.lang.ref.WeakReference
 
 class HtmlHttpImageGetter(container: TextView, private val drawables: ArrayList<String>, private val sizeInfos: HashMap<String, Size>) : Html.ImageGetter {
     private val container = WeakReference(container)
+
+    init {
+        (container.tag as? ArrayList<*>)?.mapNotNull { it as? Target<*> }?.forEach {
+            GlideUtil.with(container)?.clear(it)
+        }
+        container.tag = ArrayList<Target<Drawable>>()
+    }
+
     override fun getDrawable(source: String): Drawable {
         val urlDrawable = UrlDrawable(container) {
             sizeInfos[source] = it
@@ -38,6 +47,10 @@ class HtmlHttpImageGetter(container: TextView, private val drawables: ArrayList<
         var size: Size? = null
         var url: String? = null
         var uri: Uri? = null
+
+        private fun addTarget(target: Target<Drawable>) {
+            container.get()?.let { v -> v.tag = (v.tag as? ArrayList<*>)?.toMutableList()?.add(target) }
+        }
 
         open fun update(resource: Drawable, defSize: Int) {
             val drawable = when (resource) {
@@ -78,7 +91,7 @@ class HtmlHttpImageGetter(container: TextView, private val drawables: ArrayList<
                         else -> null
                     }
                     drawable?.let { update(it, if (type == GlideUtil.TYPE_RESOURCE) 0 else textSize.toInt()) }
-                }
+                }?.let { addTarget(it) }
             }
         }
 

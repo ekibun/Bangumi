@@ -21,6 +21,7 @@ import kotlinx.android.synthetic.main.item_reply.view.*
 import org.jsoup.Jsoup
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
+import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
 import soko.ekibun.bangumi.ui.view.FastScrollRecyclerView
 import soko.ekibun.bangumi.ui.view.FixMultiViewPager
@@ -110,7 +111,7 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
         }
         helper.itemView.item_message.movementMethod = LinkMovementMethod.getInstance()
         GlideUtil.with(helper.itemView.item_avatar)
-                ?.load(Bangumi.parseUrl(item.avatar))
+                ?.load(Images(Bangumi.parseUrl(item.avatar)).small)
                 ?.apply(RequestOptions.errorOf(R.drawable.err_404))
                 ?.apply(RequestOptions.circleCropTransform())
                 ?.into(helper.itemView.item_avatar)

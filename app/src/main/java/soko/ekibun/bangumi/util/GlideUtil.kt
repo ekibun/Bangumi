@@ -17,6 +17,7 @@ import com.bumptech.glide.load.model.Headers
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.CustomViewTarget
 import com.bumptech.glide.request.target.SimpleTarget
+import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
 
 object GlideUtil {
@@ -25,8 +26,8 @@ object GlideUtil {
     const val TYPE_PLACEHOLDER = 1
     const val TYPE_ERROR = 2
 
-    fun loadWithProgress(url: String, view: View, options: RequestOptions, viewTarget: Boolean = true, uri: Uri? = null, callback: (Int, Drawable?) -> Unit) {
-        val request = with(view) ?: return
+    fun loadWithProgress(url: String, view: View, options: RequestOptions, viewTarget: Boolean = true, uri: Uri? = null, callback: (Int, Drawable?) -> Unit): Target<Drawable>? {
+        val request = with(view) ?: return null
         val circularProgressDrawable = options.placeholderDrawable as? CircularProgressDrawable
         circularProgressDrawable?.start()
         ProgressAppGlideModule.expect(url, object : ProgressAppGlideModule.UIonProgressListener {
@@ -41,7 +42,7 @@ object GlideUtil {
                 return 1.0f
             }
         })
-        request.asDrawable().let {
+        return request.asDrawable().let {
             if (uri != null) {
                 it.load(uri)
             } else {

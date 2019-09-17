@@ -10,9 +10,9 @@ import android.preference.PreferenceManager
 data class Images(private val url: String) {
     val medium: String = url.replace(Regex("/[lcmgs]/"), "/m/")
     val large: String = medium.replace("/m/", "/l/")
-    val common: String = if (medium.contains("/user/") || medium.contains("/crt/")) medium else medium.replace("/m/", "/c/")
+    val common: String = if (medium.contains(Regex("/(user|crt|icon)/"))) medium else medium.replace("/m/", "/c/")
     val small: String = medium.replace("/m/", "/s/")
-    val grid: String = if (medium.contains("/user/")) medium else medium.replace("/m/", "/g/")
+    val grid: String = if (medium.contains(Regex("/(user|icon)/"))) medium else medium.replace("/m/", "/g/")
 
     /**
      * 返回设置的图像清晰度
