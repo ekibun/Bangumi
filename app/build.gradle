@@ -60,7 +60,7 @@ dependencies {
     implementation 'com.xiaofeng.android:flowlayoutmanager:1.2.3.2'
     implementation 'com.nshmura:recyclertablayout:1.5.0'
     implementation 'com.github.chrisbanes:PhotoView:2.1.4'
-    implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.15'
+    implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.18'
     implementation 'am.util:viewpager:25.3.0'
     implementation 'com.squareup.retrofit2:converter-scalars:2.1.0'
     //implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.10.0'

@@ -27,7 +27,7 @@ class PhotoPagerAdapter(private val items: List<String>, private val onDismiss: 
             val dialog = AlertDialog.Builder(container.context)
                     .setItems(arrayOf(container.context.getString(R.string.share)))
                     { _, _ ->
-                        AppUtil.shareDrawable(container.context, photoView.drawable)
+                        AppUtil.shareDrawable(container.context, photoView.drawable ?: return@setItems)
                     }.setOnDismissListener {
                         container.systemUiVisibility = systemUiVisibility
                     }.create()

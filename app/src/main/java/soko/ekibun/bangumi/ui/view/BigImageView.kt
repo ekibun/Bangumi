@@ -6,7 +6,8 @@ import android.content.Context
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
-import com.bumptech.glide.request.target.ViewTarget
+import android.view.View
+import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.github.chrisbanes.photoview.PhotoView
 
@@ -15,7 +16,11 @@ open class BigImageView @JvmOverloads constructor(context: Context, attr: Attrib
 
     val glideTarget = MyViewTarget(this)
 
-    class MyViewTarget(view: BigImageView) : ViewTarget<BigImageView, Drawable>(view), Transition.ViewAdapter {
+    class MyViewTarget(private val view: BigImageView) : CustomTarget<Drawable>(), Transition.ViewAdapter {
+        override fun getView(): View {
+            return view
+        }
+
         private var animatable: Animatable? = null
         override fun getCurrentDrawable(): Drawable? {
             return view.drawable
@@ -38,7 +43,6 @@ open class BigImageView @JvmOverloads constructor(context: Context, attr: Attrib
         }
 
         override fun onLoadCleared(placeholder: Drawable?) {
-            super.onLoadCleared(placeholder)
             if (animatable != null) {
                 animatable!!.stop()
             }

@@ -242,7 +242,7 @@ class SubjectView(private val context: SubjectActivity) {
                 val dialog = AlertDialog.Builder(context)
                         .setItems(arrayOf(context.getString(R.string.share)))
                         { _, _ ->
-                            AppUtil.shareDrawable(context, photoView.drawable)
+                            AppUtil.shareDrawable(context, photoView.drawable ?: return@setItems)
                         }.setOnDismissListener {
                             popWindow.contentView.systemUiVisibility = systemUiVisibility
                         }.create()
