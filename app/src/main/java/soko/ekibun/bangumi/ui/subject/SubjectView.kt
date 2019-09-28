@@ -211,7 +211,7 @@ class SubjectView(private val context: SubjectActivity) {
         context.item_air_week.text = if (artist != null) "${artist.first}：${Jsoup.parse(artist.second).body().text()}" else "更新时间：${CalendarAdapter.weekList[subject.air_weekday]}"
         detail.item_detail.text = if (subject.summary.isNullOrEmpty()) subject.name else subject.summary
 
-        context.item_play.visibility = if ((PlayerBridge.checkActivity(context) || PlayerBridge.checkActivity(context)) && subject.type in listOf(Subject.TYPE_ANIME, Subject.TYPE_REAL)) View.VISIBLE else View.GONE
+        context.item_play.visibility = if (PlayerBridge.checkActivity(context, subject)) View.VISIBLE else View.GONE
 
         subject.rating?.let {
             context.detail_score.text = if (it.score == 0f) "-" else String.format("%.1f", it.score)

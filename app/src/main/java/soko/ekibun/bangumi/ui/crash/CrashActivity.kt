@@ -2,9 +2,8 @@ package soko.ekibun.bangumi.ui.crash
 
 import android.content.Context
 import android.content.Intent
-import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_crash.*
 import retrofit2.Call
@@ -13,7 +12,6 @@ import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.xxxlin.Xxxlin
 import soko.ekibun.bangumi.api.xxxlin.bean.BaseResult
 import soko.ekibun.bangumi.ui.splash.SplashActivity
-import soko.ekibun.bangumi.util.AppUtil
 
 class CrashActivity : AppCompatActivity() {
 

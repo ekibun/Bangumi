@@ -28,7 +28,8 @@ data class VideoSubject(
 
     data class Token(
             var formhash: String?,
-            var collect: Collection?
+            var collect: Collection?,
+            @Subject.SubjectType var type: String?
     )
 
     fun toSubject(): Subject{
@@ -38,6 +39,7 @@ data class VideoSubject(
                 id = id?.toIntOrNull()?:0,
                 images = Images(image ?: ""),
                 name = name,
+                type = data?.type ?: Subject.TYPE_ANY,
                 category = type,
                 air_date = air_date,
                 air_weekday = air_weekday,
@@ -73,7 +75,7 @@ data class VideoSubject(
                 Collection.TYPE_DROPPED -> "抛弃"
                 else -> null
             },
-            JsonUtil.toJson(Token(HttpUtil.formhash, subject.collect))
+            JsonUtil.toJson(Token(HttpUtil.formhash, subject.collect, subject.type))
     )
 
     constructor(source: Parcel) : this(
