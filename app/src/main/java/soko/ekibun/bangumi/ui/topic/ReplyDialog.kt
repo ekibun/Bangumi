@@ -261,17 +261,17 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
      */
     open class CollapseUrlDrawable(container: WeakReference<TextView>) : HtmlHttpImageGetter.UrlDrawable(container) {
 
-        override fun update(resource: Drawable, defSize: Int) {
-            if (resource is GifDrawable) {
-                resource.start()
-            }
-            val size = if (defSize > 0) Size(defSize, defSize) else Size(resource.intrinsicWidth, resource.intrinsicHeight)
-            setBounds(0, 0, size.width, Math.min(size.height, 250))
-
-            resource.setBounds(0, 0, size.width, size.height)
+        override fun update(drawable: Drawable, defSize: Int) {
+            (drawable as? GifDrawable)?.start()
+            val size = if (defSize > 0) Size(defSize, defSize) else Size(drawable.intrinsicWidth, drawable.intrinsicHeight)
             (this.drawable as? GifDrawable)?.stop()
             this.drawable?.callback = null
-            this.drawable = resource
+            this.drawable = drawable
+            setBounds(0, 0, size.width, Math.min(size.height, 250))
+            drawable.setBounds(0, 0, size.width, size.height)
+            mBuffer = Bitmap.createBitmap(bounds.width(), bounds.height(), Bitmap.Config.ARGB_8888)
+            this.drawable?.setBounds(0, 0, size.width, size.height)
+            updateBuffer()
 
             container.get()?.let {
                 it.editableText.getSpans(0, it.editableText.length, ImageSpan::class.java).filter { it.drawable == this }.forEach { span ->
@@ -295,28 +295,14 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
             paint
         }
 
-        override fun draw(canvas: Canvas) {
-            drawable?.callback = object : Callback {
-                override fun invalidateDrawable(who: Drawable) {
-                    val view = container.get() ?: return
-                    view.post { view.invalidate() }
-                }
-
-                override fun scheduleDrawable(who: Drawable, what: Runnable, `when`: Long) {
-                    container.get()?.postDelayed(what, `when`)
-                }
-
-                override fun unscheduleDrawable(who: Drawable, what: Runnable) {
-                    container.get()?.removeCallbacks(what)
-                }
-            }
-            canvas.save()
-            canvas.clipRect(bounds)
+        override fun updateBuffer() {
+            val canvas = Canvas(mBuffer)
+            canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
             drawable?.draw(canvas)
             if (bounds.height() != drawable?.bounds?.height()) {
                 canvas.drawRect(bounds, gradientPaint)
             }
-            canvas.restore()
+            invalidateSelf()
         }
     }
 

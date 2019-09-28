@@ -48,7 +48,6 @@ public class RichEditText extends AppCompatEditText implements View.OnClickListe
     }
 
     private void initView() {
-        setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         setOnClickListener(this);
     }
 

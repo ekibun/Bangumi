@@ -1,8 +1,6 @@
-@file:Suppress("DEPRECATION")
-
 package soko.ekibun.bangumi.util
 
-import android.graphics.Canvas
+import android.graphics.*
 import android.graphics.drawable.AnimationDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
@@ -10,9 +8,9 @@ import android.text.Html
 import android.util.Size
 import android.widget.TextView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
+import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
-import pl.droidsonroids.gif.GifDrawable
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import java.lang.ref.WeakReference
@@ -48,24 +46,26 @@ class HtmlHttpImageGetter(container: TextView, private val drawables: ArrayList<
         var url: String? = null
         var uri: Uri? = null
 
+        protected var mBuffer: Bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+        private val mPaint = Paint(Paint.FILTER_BITMAP_FLAG or Paint.DITHER_FLAG)
+
         private fun addTarget(target: Target<Drawable>) {
             container.get()?.let { v -> v.tag = (v.tag as? ArrayList<*>)?.toMutableList()?.add(target) }
         }
 
-        open fun update(resource: Drawable, defSize: Int) {
-            val drawable = when (resource) {
-                is com.bumptech.glide.load.resource.gif.GifDrawable -> GifDrawable(resource.buffer)
-                else -> resource
-            }
+        open fun update(drawable: Drawable, defSize: Int) {
+            (drawable as? GifDrawable)?.start()
             val size = if (defSize > 0) this.size
-                    ?: Size(defSize, defSize) else Size(resource.intrinsicWidth, resource.intrinsicHeight)
+                    ?: Size(defSize, defSize) else Size(drawable.intrinsicWidth, drawable.intrinsicHeight)
             this.size = size
             updateSize(size)
-            setBounds(0, 0, size.width, size.height)
-
-            drawable.setBounds(0, 0, size.width, size.height)
             this.drawable?.callback = null
             this.drawable = drawable
+            setBounds(0, 0, size.width, size.height)
+            mBuffer = Bitmap.createBitmap(bounds.width(), bounds.height(), Bitmap.Config.ARGB_8888)
+            this.drawable?.bounds = bounds
+            updateBuffer()
+
             container.get()?.text = container.get()?.text
             container.get()?.invalidate()
         }
@@ -95,10 +95,17 @@ class HtmlHttpImageGetter(container: TextView, private val drawables: ArrayList<
             }
         }
 
+        open fun updateBuffer() {
+            val bufferCanvas = Canvas(mBuffer)
+            bufferCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
+            drawable?.draw(bufferCanvas)
+            invalidateSelf()
+        }
+
         override fun draw(canvas: Canvas) {
-            drawable?.callback = object : Callback {
+            this.drawable?.callback = object : Callback {
                 override fun invalidateDrawable(who: Drawable) {
-                    if (who is CircularProgressDrawable) container.get()?.let { it.text = it.text }
+                    updateBuffer()
                     container.get()?.invalidate()
                 }
 
@@ -110,7 +117,7 @@ class HtmlHttpImageGetter(container: TextView, private val drawables: ArrayList<
                     container.get()?.removeCallbacks(what)
                 }
             }
-            drawable?.draw(canvas)
+            canvas.drawBitmap(mBuffer, bounds, bounds, mPaint)
         }
     }
 }
