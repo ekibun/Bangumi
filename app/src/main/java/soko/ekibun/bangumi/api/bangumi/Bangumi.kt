@@ -637,6 +637,60 @@ object Bangumi {
     }
 
     /**
+     * 移动版的进度管理
+     */
+    fun getMobileCollection(): Call<List<Subject>> {
+        return ApiHelper.buildHttpCall("$SERVER/m/prg") { rsp ->
+            val doc = Jsoup.parse(rsp.body()?.string() ?: "")
+            doc.select("#cloumnSubjectInfo .subjectItem").mapNotNull {
+                var cat = "本篇"
+                Subject(
+                        id = it.id().split("_").getOrNull(1)?.toIntOrNull() ?: return@mapNotNull null,
+                        name = it.selectFirst(".header a[title]")?.attr("title"),
+                        images = Images(parseUrl(Regex("""background-image:url\('([^']*)'\)""").find(it.selectFirst(".cover").attr("style")
+                                ?: "")?.groupValues?.get(1) ?: "")),
+                        eps = it.selectFirst(".prg_list").children().mapNotNull eps@{ ep ->
+                            if (ep.hasClass("cat")) cat = ep.text()
+                            Episode(
+                                    id = ep.id().split("_").getOrNull(1)?.toIntOrNull() ?: return@eps null,
+                                    type = when (cat) {
+                                        "本篇" -> Episode.TYPE_MAIN
+                                        "SP" -> Episode.TYPE_SP
+                                        "OP" -> Episode.TYPE_OP
+                                        "ED" -> Episode.TYPE_ED
+                                        "PV" -> Episode.TYPE_PV
+                                        "MAD" -> Episode.TYPE_MAD
+                                        else -> Episode.TYPE_OTHER
+                                    },
+                                    name = ep.attr("title"),
+                                    sort = ep.text().toFloatOrNull() ?: 0f,
+                                    status = when {
+                                        it.hasClass("epBtnToday") -> Episode.STATUS_TODAY
+                                        it.hasClass("epBtnAir") || it.hasClass("epBtnWatched") -> Episode.STATUS_AIR
+                                        else -> Episode.STATUS_NA
+                                    },
+                                    progress = when {
+                                        it.hasClass("epBtnWatched") -> Episode.PROGRESS_WATCH
+                                        it.hasClass("epBtnQueue") -> Episode.PROGRESS_QUEUE
+                                        it.hasClass("epBtnDrop") -> Episode.PROGRESS_DROP
+                                        else -> null
+                                    }
+                            )
+                        },
+                        eps_count = it.selectFirst(".prgBatchManagerForm .grey")?.text()?.trim(' ', '/')?.toIntOrNull()
+                                ?: it.selectFirst("input[name=watchedeps]")?.parent()?.ownText()?.trim(' ', '/')?.toIntOrNull()
+                                ?: 0,
+                        vol_count = it.selectFirst("input[name=watched_vols]")?.parent()?.let {
+                            it.ownText().trim(' ', '/').toIntOrNull() ?: -1
+                        } ?: 0,
+                        ep_status = it.selectFirst("input[name=watchedeps]")?.attr("value")?.toIntOrNull() ?: 0,
+                        vol_status = it.selectFirst("input[name=watched_vols]")?.attr("value")?.toIntOrNull() ?: 0
+                )
+            }
+        }
+    }
+
+    /**
      * 主页的进度管理
      */
     fun getCollection(): Call<List<Subject>> {

@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import retrofit2.Call
 import soko.ekibun.bangumi.api.ApiHelper
+import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
@@ -161,16 +162,12 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: an
             it.value.second.isRefreshing = false
         }}))
 
-        /* TODO
         chaseCall?.cancel()
-        val user = (fragment.activity as? MainActivity)?.user?:return
-        val userName = user.username?:user.id.toString()
-        chaseCall = Bangumi.createInstance().collection(userName)
+        chaseCall = Bangumi.getMobileCollection()
         chaseCall?.enqueue(ApiHelper.buildCallback({
             chaseList = it
             setOnAirList(raw?:return@buildCallback)
         }, {}))
-         */
     }
 
     override fun getItemPosition(`object`: Any): Int {
