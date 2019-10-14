@@ -5,14 +5,25 @@ import android.text.Editable
 import android.text.Spanned
 import androidx.appcompat.app.AlertDialog
 import kotlinx.android.synthetic.main.activity_topic.*
+import org.jsoup.Jsoup
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
+import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.ResourceUtil
 import soko.ekibun.bangumi.util.TextUtil
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
+import kotlin.collections.List
+import kotlin.collections.filter
+import kotlin.collections.forEach
+import kotlin.collections.lastOrNull
+import kotlin.collections.removeAll
+import kotlin.collections.set
 
 class TopicPresenter(private val context: TopicActivity) {
     private val topicView = TopicView(context)
@@ -21,13 +32,55 @@ class TopicPresenter(private val context: TopicActivity) {
         context.item_swipe.setOnRefreshListener {
             getTopic()
         }
+        topicView.adapter.setOnLoadMoreListener({ if (!context.item_swipe.isRefreshing) getTopic() }, context.item_list)
     }
 
     fun getTopic(scrollPost: String = "") {
         context.item_swipe.isRefreshing = true
-        Bangumi.getTopic(context.openUrl).enqueue(ApiHelper.buildCallback({ topic ->
+
+        if (topicView.adapter.data.isEmpty()) {
+            Bangumi.getTopicAsync(context.openUrl, { data ->
+                val doc = Jsoup.parse(data)
+                context.runOnUiThread {
+                    topicView.processTopicBefore(
+                            title = doc.selectFirst("#pageHeader h1")?.ownText() ?: "",
+                            links = LinkedHashMap<String, String>().let { links ->
+                                doc.selectFirst("#pageHeader")?.select("a")?.filter { !it.text().isNullOrEmpty() }?.forEach {
+                                    links[it.text()] = Bangumi.parseUrl(it.attr("href") ?: "")
+                                }
+                                links
+                            },
+                            images = Images(Bangumi.parseImageUrl(doc.selectFirst("#pageHeader img")))
+                    )
+                }
+            }, {
+                context.runOnUiThread {
+                    val last = topicView.adapter.data.lastOrNull()
+                    val floor = (last?.floor ?: 1) + if (it.isSub) 0 else 1
+                    val subFloor = 1 + if (it.isSub) last?.sub_floor ?: 0 else 0
+                    it.floor = floor
+                    it.sub_floor = subFloor
+                    it.editable = it.is_self
+                    if (it.isSub) topicView.adapter.data.lastOrNull { p -> !p.isSub }?.let { ref ->
+                        ref.editable = false
+                        ref.addSubItem(it)
+                        //topicView.adapter.notifyItemChanged(topicView.adapter.data.indexOf(ref))
+                        topicView.adapter.addData(it)
+                    } else {
+                        it.isExpanded = true
+                        topicView.adapter.addData(it)
+                    }
+                }
+            })
+        } else {
+            Bangumi.getTopic(context.openUrl)
+        }
+                .enqueue(ApiHelper.buildCallback({ topic ->
             processTopic(topic, scrollPost)
-        }) { context.item_swipe.isRefreshing = false })
+                }) {
+                    context.item_swipe.isRefreshing = false
+                    topicView.adapter.loadMoreFail()
+                })
     }
 
     private fun processTopic(topic: Topic, scrollPost: String) {

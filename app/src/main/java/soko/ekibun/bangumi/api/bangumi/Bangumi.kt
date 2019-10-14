@@ -6,6 +6,9 @@ import okhttp3.FormBody
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.TextNode
+import org.xmlpull.v1.XmlPullParser
+import org.xmlpull.v1.XmlPullParserException
+import org.xmlpull.v1.XmlPullParserFactory
 import retrofit2.Call
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.*
@@ -35,7 +38,7 @@ object Bangumi {
     /**
      * 获取图片的URL
      */
-    private fun parseImageUrl(cover: Element?): String {
+    fun parseImageUrl(cover: Element?): String {
         return parseUrl(if (cover?.hasAttr("src") == true) cover.attr("src") ?: "" else cover?.attr("data-cfsrc") ?: "")
     }
 
@@ -541,6 +544,99 @@ object Bangumi {
     /**
      * 讨论
      */
+    fun getTopicAsync(url: String, onBeforePost: (data: String) -> Unit, onNewPost: (post: TopicPost) -> Unit): Call<Topic> {
+        return ApiHelper.buildHttpCall(url) { rsp ->
+            val parser = XmlPullParserFactory.newInstance().newPullParser()
+            parser.setInput(rsp.body()!!.charStream())
+            var beforeData = ""
+            var lastData = ""
+            var tagDepth = 0
+            val replies = ArrayList<TopicPost>()
+            val updateReply = {
+                val it = Jsoup.parse(lastData)
+                it.outputSettings().prettyPrint(false)
+
+                val user = it.selectFirst(".inner a")
+                val data = (it.selectFirst(".icons_cmt")?.attr("onclick") ?: "").split(",")
+                val relate = data.getOrNull(2)?.toIntOrNull() ?: 0
+                val post_id = data.getOrNull(3)?.toIntOrNull() ?: 0
+                val post = TopicPost(
+                        pst_id = (if (post_id == 0) relate else post_id).toString(),
+                        pst_mid = data.getOrNull(1) ?: "",
+                        pst_uid = data.getOrNull(5) ?: "",
+                        pst_content = it.selectFirst(".topic_content")?.html()
+                                ?: it.selectFirst(".message")?.html()
+                                ?: it.selectFirst(".cmt_sub_content")?.html() ?: "",
+                        username = Regex("""/user/([^/]*)""").find(user?.attr("href")
+                                ?: "")?.groupValues?.get(1) ?: "",
+                        nickname = user?.text() ?: "",
+                        sign = it.selectFirst(".inner .tip_j")?.text() ?: "",
+                        avatar = Regex("""background-image:url\('([^']*)'\)""").find(it.selectFirst(".avatar")?.html()
+                                ?: "")?.groupValues?.get(1) ?: "",
+                        dateline = it.selectFirst(".re_info")?.text()?.split("/")?.get(0)?.trim()?.substringAfter(" - ")
+                                ?: "",
+                        is_self = it.selectFirst(".re_info")?.text()?.contains("/") == true,
+                        isSub = it.selectFirst(".re_info a")?.text()?.contains("-") ?: false,
+                        editable = it.selectFirst(".re_info")?.text()?.contains("/") == true,
+                        relate = relate.toString(),
+                        model = Regex("'([^']*)'").find(data.getOrNull(0) ?: "")?.groupValues?.get(1) ?: ""
+                )
+                replies += post
+                onNewPost(post)
+            }
+            while (parser.eventType != XmlPullParser.END_DOCUMENT) {
+                when (parser.eventType) {
+                    XmlPullParser.START_TAG -> {
+                        if (parser.getAttributeValue("", "id")?.startsWith("post_") == true) {
+                            if (tagDepth != 0) {
+                                updateReply()
+                            } else {
+                                beforeData = lastData
+                                onBeforePost(beforeData)
+                            }
+                            tagDepth = parser.depth
+                            lastData = ""
+                        } else if (tagDepth != 0 && parser.getAttributeValue("", "id")?.contains("reply_wrapper") == true) {
+                            updateReply()
+                            lastData = ""
+                            tagDepth = 0
+                        }
+                        lastData += "<${parser.name} ${(0 until parser.attributeCount).joinToString(" ") { "${parser.getAttributeName(it)}=\"${parser.getAttributeValue(it)}\"" }}>"
+                    }
+                    XmlPullParser.END_TAG -> {
+                        if (parser.name != "br") lastData += "</${parser.name}>"
+                    }
+                    XmlPullParser.TEXT -> {
+                        lastData += parser.text
+                    }
+                }
+                try {
+                    parser.next()
+                } catch (e: XmlPullParserException) {
+                }
+            }
+
+            val doc = Jsoup.parse(beforeData + lastData)
+            val error = doc.selectFirst("#reply_wrapper")?.selectFirst(".tip")
+            val form = doc.selectFirst("#ReplyForm")
+            Topic(
+                    group = doc.selectFirst("#pageHeader span")?.text() ?: "",
+                    title = doc.selectFirst("#pageHeader h1")?.ownText() ?: "",
+                    images = Images(parseImageUrl(doc.selectFirst("#pageHeader img"))),
+                    replies = replies,
+                    post = parseUrl("${form?.attr("action")}?ajax=1"),
+                    lastview = form?.selectFirst("input[name=lastview]")?.attr("value"),
+                    links = LinkedHashMap<String, String>().let { links ->
+                        doc.selectFirst("#pageHeader")?.select("a")?.filter { !it.text().isNullOrEmpty() }?.forEach {
+                            links[it.text()] = parseUrl(it.attr("href") ?: "")
+                        }
+                        links
+                    },
+                    error = error?.text(),
+                    errorLink = parseUrl(error?.selectFirst("a")?.attr("href") ?: ""))
+        }
+    }
+
     fun getTopic(url: String): Call<Topic> {
         return ApiHelper.buildHttpCall(url) { rsp ->
             val doc = Jsoup.parse(rsp.body()?.string() ?: "")

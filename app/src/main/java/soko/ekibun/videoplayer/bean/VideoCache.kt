@@ -12,8 +12,8 @@ data class VideoCache(
 ) : Parcelable {
     @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
     constructor(source: Parcel) : this(
-            source.readParcelable<VideoEpisode>(VideoEpisode::class.java.classLoader),
-            source.readString(),
+            source.readParcelable<VideoEpisode>(VideoEpisode::class.java.classLoader)!!,
+            source.readString()!!,
             source.readLong(),
             source.readLong(),
             source.readFloat()
