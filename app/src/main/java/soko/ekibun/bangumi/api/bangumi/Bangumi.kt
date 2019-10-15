@@ -130,7 +130,7 @@ object Bangumi {
                     status = when {
                         it.hasClass("epBtnToday") -> Episode.STATUS_TODAY
                         it.hasClass("epBtnAir") || (try {
-                            SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(airdate)
+                            SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(airdate ?: "")
                         } catch (e: Exception) {
                             null
                         }?.time ?: 0L < now) -> Episode.STATUS_AIR
@@ -544,6 +544,35 @@ object Bangumi {
     /**
      * 讨论
      */
+    private fun parseTopicPost(it: Element): TopicPost {
+        val user = it.selectFirst(".inner a")
+        val data = (it.selectFirst(".icons_cmt")?.attr("onclick") ?: "").split(",")
+        val relate = data.getOrNull(2)?.toIntOrNull() ?: 0
+        val post_id = data.getOrNull(3)?.toIntOrNull() ?: 0
+        return TopicPost(
+                pst_id = (if (post_id == 0) relate else post_id).toString(),
+                pst_mid = data.getOrNull(1) ?: "",
+                pst_uid = data.getOrNull(5) ?: "",
+                pst_content = it.selectFirst(".topic_content")?.html()
+                        ?: it.selectFirst(".message")?.html()
+                        ?: it.selectFirst(".cmt_sub_content")?.html() ?: "",
+                username = Regex("""/user/([^/]*)""").find(user?.attr("href")
+                        ?: "")?.groupValues?.get(1) ?: "",
+                nickname = user?.text() ?: "",
+                sign = it.selectFirst(".inner .tip_j")?.text() ?: "",
+                avatar = Regex("""background-image:url\('([^']*)'\)""").find(it.selectFirst(".avatar")?.html()
+                        ?: "")?.groupValues?.get(1) ?: "",
+                dateline = it.selectFirst(".re_info")?.text()?.split("/")?.get(0)?.trim()?.substringAfter(" - ")
+                        ?: "",
+                is_self = it.selectFirst(".re_info")?.text()?.contains("/") == true,
+                isSub = it.selectFirst(".re_info a")?.text()?.contains("-") ?: false,
+                editable = it.selectFirst(".re_info")?.text()?.contains("/") == true,
+                relate = relate.toString(),
+                model = Regex("'([^']*)'").find(data.getOrNull(0) ?: "")?.groupValues?.get(1) ?: ""
+        )
+    }
+
+
     fun getTopicAsync(url: String, onBeforePost: (data: String) -> Unit, onNewPost: (post: TopicPost) -> Unit): Call<Topic> {
         return ApiHelper.buildHttpCall(url) { rsp ->
             val parser = XmlPullParserFactory.newInstance().newPullParser()
@@ -556,31 +585,7 @@ object Bangumi {
                 val it = Jsoup.parse(lastData)
                 it.outputSettings().prettyPrint(false)
 
-                val user = it.selectFirst(".inner a")
-                val data = (it.selectFirst(".icons_cmt")?.attr("onclick") ?: "").split(",")
-                val relate = data.getOrNull(2)?.toIntOrNull() ?: 0
-                val post_id = data.getOrNull(3)?.toIntOrNull() ?: 0
-                val post = TopicPost(
-                        pst_id = (if (post_id == 0) relate else post_id).toString(),
-                        pst_mid = data.getOrNull(1) ?: "",
-                        pst_uid = data.getOrNull(5) ?: "",
-                        pst_content = it.selectFirst(".topic_content")?.html()
-                                ?: it.selectFirst(".message")?.html()
-                                ?: it.selectFirst(".cmt_sub_content")?.html() ?: "",
-                        username = Regex("""/user/([^/]*)""").find(user?.attr("href")
-                                ?: "")?.groupValues?.get(1) ?: "",
-                        nickname = user?.text() ?: "",
-                        sign = it.selectFirst(".inner .tip_j")?.text() ?: "",
-                        avatar = Regex("""background-image:url\('([^']*)'\)""").find(it.selectFirst(".avatar")?.html()
-                                ?: "")?.groupValues?.get(1) ?: "",
-                        dateline = it.selectFirst(".re_info")?.text()?.split("/")?.get(0)?.trim()?.substringAfter(" - ")
-                                ?: "",
-                        is_self = it.selectFirst(".re_info")?.text()?.contains("/") == true,
-                        isSub = it.selectFirst(".re_info a")?.text()?.contains("-") ?: false,
-                        editable = it.selectFirst(".re_info")?.text()?.contains("/") == true,
-                        relate = relate.toString(),
-                        model = Regex("'([^']*)'").find(data.getOrNull(0) ?: "")?.groupValues?.get(1) ?: ""
-                )
+                val post = parseTopicPost(it)
                 replies += post
                 onNewPost(post)
             }
@@ -648,36 +653,9 @@ object Bangumi {
                     group = doc.selectFirst("#pageHeader span")?.text() ?: "",
                     title = doc.selectFirst("#pageHeader h1")?.ownText() ?: "",
                     images = Images(parseImageUrl(doc.selectFirst("#pageHeader img"))),
-                    replies = ArrayList<TopicPost>().let { replies ->
-                        doc.select(".re_info")?.map { it.parent() }?.forEach {
-                            val user = it.selectFirst(".inner a")
-                            val data = (it.selectFirst(".icons_cmt")?.attr("onclick") ?: "").split(",")
-                            val relate = data.getOrNull(2)?.toIntOrNull() ?: 0
-                            val post_id = data.getOrNull(3)?.toIntOrNull() ?: 0
-                            replies += TopicPost(
-                                    pst_id = (if (post_id == 0) relate else post_id).toString(),
-                                    pst_mid = data.getOrNull(1) ?: "",
-                                    pst_uid = data.getOrNull(5) ?: "",
-                                    pst_content = it.selectFirst(".topic_content")?.html()
-                                            ?: it.selectFirst(".message")?.html()
-                                            ?: it.selectFirst(".cmt_sub_content")?.html() ?: "",
-                                    username = Regex("""/user/([^/]*)""").find(user?.attr("href")
-                                            ?: "")?.groupValues?.get(1) ?: "",
-                                    nickname = user?.text() ?: "",
-                                    sign = it.selectFirst(".inner .tip_j")?.text() ?: "",
-                                    avatar = Regex("""background-image:url\('([^']*)'\)""").find(it.selectFirst(".avatar")?.html()
-                                            ?: "")?.groupValues?.get(1) ?: "",
-                                    dateline = it.selectFirst(".re_info")?.text()?.split("/")?.get(0)?.trim()?.substringAfter(" - ")
-                                            ?: "",
-                                    is_self = it.selectFirst(".re_info")?.text()?.contains("/") == true,
-                                    isSub = it.selectFirst(".re_info a")?.text()?.contains("-") ?: false,
-                                    editable = it.selectFirst(".re_info")?.text()?.contains("/") == true,
-                                    relate = relate.toString(),
-                                    model = Regex("'([^']*)'").find(data.getOrNull(0) ?: "")?.groupValues?.get(1) ?: ""
-                            )
-                        }
-                        replies
-                    },
+                    replies = doc.select(".re_info")?.map { it.parent() }?.mapNotNull {
+                        parseTopicPost(it)
+                    } ?: ArrayList<TopicPost>(),
                     post = parseUrl("${form?.attr("action")}?ajax=1"),
                     lastview = form?.selectFirst("input[name=lastview]")?.attr("value"),
                     links = LinkedHashMap<String, String>().let { links ->
