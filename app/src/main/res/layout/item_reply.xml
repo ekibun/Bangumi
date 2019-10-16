@@ -8,17 +8,27 @@
         android:layout_height="wrap_content"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"
-        android:paddingStart="12dp"
+        android:paddingStart="8dp"
         android:paddingEnd="12dp"
         android:transitionName="container"
         tools:ignore="RtlHardcoded,HardcodedText">
 
-    <View android:id="@+id/offset"
-          android:visibility="gone"
-          android:layout_width="25dp"
-          app:layout_constraintTop_toTopOf="parent"
-          app:layout_constraintStart_toStartOf="parent"
-          android:layout_height="0dp" />
+    <TextView android:id="@+id/offset"
+              android:visibility="gone"
+              tools:visibility="visible"
+              tools:text="关闭"
+              android:textSize="@dimen/textSizeSmall"
+              android:padding="4dp"
+              android:minWidth="25dp"
+              android:background="@drawable/bg_round_rect"
+              android:backgroundTint="@color/colorAccent"
+              android:textColor="@android:color/white"
+              app:layout_constraintTop_toTopOf="@+id/item_avatar"
+              app:layout_constraintStart_toStartOf="parent"
+              android:layout_marginStart="4dp"
+              android:layout_height="wrap_content"
+              android:layout_width="wrap_content"
+              app:layout_constraintBottom_toBottomOf="@+id/item_avatar"/>
     <com.github.siyamed.shapeimageview.CircularImageView
             app:siBorderAlpha="0"
             android:id="@+id/item_avatar"
@@ -27,6 +37,7 @@
             android:scaleType="centerCrop"
             tools:ignore="ContentDescription"
             tools:src="@drawable/err_404"
+            android:layout_marginStart="4dp"
             app:layout_constraintStart_toEndOf="@+id/offset"
             app:layout_constraintTop_toTopOf="parent"/>
     <TextView
@@ -39,7 +50,8 @@
             android:textColor="?android:textColorPrimary"
             tools:text="User Name"
             app:layout_constraintStart_toEndOf="@+id/item_avatar"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/item_avatar"
+            app:layout_constraintBottom_toTopOf="@+id/item_message"
             android:layout_marginLeft="8dp"/>
     <TextView
             android:id="@+id/item_user_sign"
@@ -64,11 +76,14 @@
             tools:text="Reply Content"
             app:layout_constraintTop_toBottomOf="@+id/item_user"
             app:layout_constraintStart_toStartOf="@+id/item_user"
+            app:layout_constraintBottom_toTopOf="@+id/item_action_box"
             app:layout_constraintEnd_toEndOf="parent"/>
     <LinearLayout android:layout_width="0dp"
+                  android:id="@+id/item_action_box"
                   android:layout_height="wrap_content"
                   app:layout_constraintEnd_toEndOf="parent"
                   app:layout_constraintTop_toBottomOf="@+id/item_message"
+                  app:layout_constraintBottom_toBottomOf="parent"
                   app:layout_constraintStart_toStartOf="@+id/item_user">
         <TextView
                 android:paddingTop="8dp"

@@ -13,16 +13,10 @@ import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
 import soko.ekibun.bangumi.ui.web.WebActivity
-import soko.ekibun.bangumi.util.ResourceUtil
 import soko.ekibun.bangumi.util.TextUtil
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
-import kotlin.collections.List
-import kotlin.collections.filter
-import kotlin.collections.forEach
-import kotlin.collections.lastOrNull
-import kotlin.collections.removeAll
 import kotlin.collections.set
 
 class TopicPresenter(private val context: TopicActivity) {
@@ -74,21 +68,15 @@ class TopicPresenter(private val context: TopicActivity) {
             })
         } else {
             Bangumi.getTopic(context.openUrl)
-        }
-                .enqueue(ApiHelper.buildCallback({ topic ->
+        }.enqueue(ApiHelper.buildCallback({ topic ->
             processTopic(topic, scrollPost)
-                }) {
-                    context.item_swipe.isRefreshing = false
-                    topicView.adapter.loadMoreFail()
-                })
+        }) {
+            context.item_swipe.isRefreshing = false
+            topicView.adapter.loadMoreFail()
+        })
     }
 
     private fun processTopic(topic: Topic, scrollPost: String) {
-        context.btn_reply.setCompoundDrawablesWithIntrinsicBounds(
-                if (!topic.lastview.isNullOrEmpty()) ResourceUtil.getDrawable(context, R.drawable.ic_edit) else null,//left
-                null,
-                if (!topic.lastview.isNullOrEmpty()) ResourceUtil.getDrawable(context, R.drawable.ic_send) else null,//right
-                null)
         context.btn_reply.setOnClickListener {
             if (!topic.lastview.isNullOrEmpty()) showReplyPopupWindow(topic)
             else if (!topic.errorLink.isNullOrEmpty()) WebActivity.launchUrl(context, topic.errorLink, "")

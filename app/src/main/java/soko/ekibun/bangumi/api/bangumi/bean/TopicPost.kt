@@ -19,7 +19,8 @@ data class TopicPost(
         var relate: String = "",
         val model: String = "",
         var floor: Int = 0,
-        var sub_floor: Int = 0
+        var sub_floor: Int = 0,
+        var badge: String? = null
 ):  AbstractExpandableItem<TopicPost>(), MultiItemEntity{
     override fun getItemType(): Int {
         return if(isSub) 1 else 0

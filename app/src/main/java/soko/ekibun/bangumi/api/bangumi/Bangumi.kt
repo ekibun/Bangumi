@@ -549,26 +549,30 @@ object Bangumi {
         val data = (it.selectFirst(".icons_cmt")?.attr("onclick") ?: "").split(",")
         val relate = data.getOrNull(2)?.toIntOrNull() ?: 0
         val post_id = data.getOrNull(3)?.toIntOrNull() ?: 0
+        val badge = it.selectFirst(".badgeState")?.text()
         return TopicPost(
                 pst_id = (if (post_id == 0) relate else post_id).toString(),
                 pst_mid = data.getOrNull(1) ?: "",
                 pst_uid = data.getOrNull(5) ?: "",
-                pst_content = it.selectFirst(".topic_content")?.html()
+                pst_content = if (!badge.isNullOrEmpty()) it.selectFirst(".inner")?.ownText() ?: ""
+                else it.selectFirst(".topic_content")?.html()
                         ?: it.selectFirst(".message")?.html()
                         ?: it.selectFirst(".cmt_sub_content")?.html() ?: "",
                 username = Regex("""/user/([^/]*)""").find(user?.attr("href")
                         ?: "")?.groupValues?.get(1) ?: "",
                 nickname = user?.text() ?: "",
-                sign = it.selectFirst(".inner .tip_j")?.text() ?: "",
+                sign = if (!badge.isNullOrEmpty()) "" else it.selectFirst(".inner .tip_j")?.text() ?: "",
                 avatar = Regex("""background-image:url\('([^']*)'\)""").find(it.selectFirst(".avatar")?.html()
                         ?: "")?.groupValues?.get(1) ?: "",
-                dateline = it.selectFirst(".re_info")?.text()?.split("/")?.get(0)?.trim()?.substringAfter(" - ")
+                dateline = if (!badge.isNullOrEmpty()) it.selectFirst(".inner .tip_j")?.text() ?: ""
+                else it.selectFirst(".re_info")?.text()?.split("/")?.get(0)?.trim()?.substringAfter(" - ")
                         ?: "",
                 is_self = it.selectFirst(".re_info")?.text()?.contains("/") == true,
                 isSub = it.selectFirst(".re_info a")?.text()?.contains("-") ?: false,
                 editable = it.selectFirst(".re_info")?.text()?.contains("/") == true,
                 relate = relate.toString(),
-                model = Regex("'([^']*)'").find(data.getOrNull(0) ?: "")?.groupValues?.get(1) ?: ""
+                model = Regex("'([^']*)'").find(data.getOrNull(0) ?: "")?.groupValues?.get(1) ?: "",
+                badge = badge
         )
     }
 
@@ -653,9 +657,9 @@ object Bangumi {
                     group = doc.selectFirst("#pageHeader span")?.text() ?: "",
                     title = doc.selectFirst("#pageHeader h1")?.ownText() ?: "",
                     images = Images(parseImageUrl(doc.selectFirst("#pageHeader img"))),
-                    replies = doc.select(".re_info")?.map { it.parent() }?.mapNotNull {
+                    replies = doc.select("div[id^=post_]")?.mapNotNull {
                         parseTopicPost(it)
-                    } ?: ArrayList<TopicPost>(),
+                    } ?: ArrayList(),
                     post = parseUrl("${form?.attr("action")}?ajax=1"),
                     lastview = form?.selectFirst("input[name=lastview]")?.attr("value"),
                     links = LinkedHashMap<String, String>().let { links ->

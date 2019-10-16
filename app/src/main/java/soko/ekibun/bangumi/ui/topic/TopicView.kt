@@ -14,6 +14,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
+import soko.ekibun.bangumi.util.ResourceUtil
 
 class TopicView(private val context: TopicActivity) {
     val adapter by lazy { PostAdapter() }
@@ -121,12 +122,24 @@ class TopicView(private val context: TopicActivity) {
         }
 
         adapter.loadMoreEnd()
+        val lastPost = topic.replies.lastOrNull()
         context.btn_reply.text = when {
             !topic.lastview.isNullOrEmpty() -> context.getString(R.string.hint_reply)
             !topic.error.isNullOrEmpty() -> topic.error
             topic.replies.isEmpty() -> context.getString(R.string.hint_empty_topic)
+            !lastPost?.badge.isNullOrEmpty() -> context.getString(R.string.hint_closed_topic)
             else -> context.getString(R.string.hint_login_topic)
         }
+        context.btn_reply.setCompoundDrawablesWithIntrinsicBounds(
+                when {
+                    !topic.lastview.isNullOrEmpty() -> ResourceUtil.getDrawable(context, R.drawable.ic_edit)
+                    topic.replies.isNotEmpty() -> ResourceUtil.getDrawable(context, R.drawable.ic_lock)
+                    else -> null
+                },//left
+                null,
+                if (!topic.lastview.isNullOrEmpty()) ResourceUtil.getDrawable(context, R.drawable.ic_send) else null,//right
+                null
+        )
 
         adapter.setOnItemChildClickListener { _, v, position ->
             onItemClick(v, position)

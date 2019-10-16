@@ -54,11 +54,10 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
         helper.addOnClickListener(R.id.item_reply)
         helper.addOnClickListener(R.id.item_edit)
         helper.addOnClickListener(R.id.item_avatar)
-        helper.itemView.item_user.text = item.nickname
-        helper.itemView.item_user_sign.text = if (item.sign.length < 2) "" else item.sign.substring(1, item.sign.length - 1)
+        helper.itemView.item_user.text = if (item.badge.isNullOrEmpty()) item.nickname else "${item.nickname} ${item.pst_content}"
+        helper.itemView.item_user_sign.text = if (item.badge.isNullOrEmpty()) if (item.sign.length < 2) "" else item.sign.substring(1, item.sign.length - 1) else item.dateline
         val subFloor = if (item.sub_floor > 0) "-${item.sub_floor}" else ""
         helper.itemView.item_time.text = "#${item.floor}$subFloor - ${item.dateline}"
-        helper.itemView.offset.visibility = if (item.isSub) View.VISIBLE else View.GONE
         helper.itemView.item_reply.visibility = if (item.relate.toIntOrNull() ?: 0 > 0) View.VISIBLE else View.GONE
         helper.itemView.item_del.visibility = if (item.editable) View.VISIBLE else View.GONE
         helper.itemView.item_edit.visibility = helper.itemView.item_del.visibility
@@ -70,51 +69,63 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
             if (item.isExpanded) collapse(index) else expand(index)
         }
 
-        val drawables = ArrayList<String>()
-        helper.itemView.item_message.let { item_message ->
-            val makeSpan = {
-                @Suppress("DEPRECATION")
-                setTextLinkOpenByWebView(
-                        Html.fromHtml(parseHtml(item.pst_content), HtmlHttpImageGetter(item_message, drawables, imaageSizes), HtmlTagHandler(item_message) { imageSpan ->
-                            helper.itemView.item_message?.let { itemView ->
-                                val imageList = drawables.filter { (it.startsWith("http") || !it.contains("smile")) }.toList()
-                                val index = imageList.indexOfFirst { d -> d == imageSpan.source }
-                                if (index < 0) return@HtmlTagHandler
-                                val popWindow = PopupWindow(itemView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, true)
-                                val viewPager = FixMultiViewPager(itemView.context)
-                                popWindow.contentView = viewPager
-                                viewPager.adapter = PhotoPagerAdapter(imageList.map { Bangumi.parseUrl(it) }) {
-                                    popWindow.dismiss()
-                                }
-                                viewPager.currentItem = index
-                                popWindow.isClippingEnabled = false
-                                popWindow.animationStyle = R.style.AppTheme_FadeInOut
-                                popWindow.showAtLocation(itemView, Gravity.CENTER, 0, 0)
-                                popWindow.contentView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                                        or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                                        or View.SYSTEM_UI_FLAG_FULLSCREEN)
-                            }
-                        })) {
-                    WebActivity.launchUrl(helper.itemView.context, Bangumi.parseUrl(it), "")
-                }
-            }
-            item_message.text = if (item.pst_content.length < 10000) makeSpan() else largeContent.getOrPut(item.pst_id, makeSpan)
-        }
-        helper.itemView.item_message.onFocusChangeListener = View.OnFocusChangeListener { view, focus ->
-            if (!focus) {
-                view.tag = null
-                (view as TextView).text = view.text
-            }
-        }
-        helper.itemView.item_message.movementMethod = LinkMovementMethod.getInstance()
         GlideUtil.with(helper.itemView.item_avatar)
                 ?.load(Images(Bangumi.parseUrl(item.avatar)).small)
                 ?.apply(RequestOptions.errorOf(R.drawable.err_404))
                 ?.apply(RequestOptions.circleCropTransform())
                 ?.into(helper.itemView.item_avatar)
+
+        helper.itemView.item_message.visibility = if (item.badge.isNullOrEmpty()) View.VISIBLE else View.GONE
+        helper.itemView.item_action_box.visibility = helper.itemView.item_message.visibility
+        helper.itemView.offset.text = item.badge
+        helper.itemView.offset.visibility = when {
+            !item.badge.isNullOrEmpty() -> View.VISIBLE
+            item.isSub -> View.INVISIBLE
+            else -> View.GONE
+        }
+
+        if (item.badge.isNullOrEmpty()) {
+            val drawables = ArrayList<String>()
+            helper.itemView.item_message.let { item_message ->
+                val makeSpan = {
+                    @Suppress("DEPRECATION")
+                    setTextLinkOpenByWebView(
+                            Html.fromHtml(parseHtml(item.pst_content), HtmlHttpImageGetter(item_message, drawables, imaageSizes), HtmlTagHandler(item_message) { imageSpan ->
+                                helper.itemView.item_message?.let { itemView ->
+                                    val imageList = drawables.filter { (it.startsWith("http") || !it.contains("smile")) }.toList()
+                                    val index = imageList.indexOfFirst { d -> d == imageSpan.source }
+                                    if (index < 0) return@HtmlTagHandler
+                                    val popWindow = PopupWindow(itemView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, true)
+                                    val viewPager = FixMultiViewPager(itemView.context)
+                                    popWindow.contentView = viewPager
+                                    viewPager.adapter = PhotoPagerAdapter(imageList.map { Bangumi.parseUrl(it) }) {
+                                        popWindow.dismiss()
+                                    }
+                                    viewPager.currentItem = index
+                                    popWindow.isClippingEnabled = false
+                                    popWindow.animationStyle = R.style.AppTheme_FadeInOut
+                                    popWindow.showAtLocation(itemView, Gravity.CENTER, 0, 0)
+                                    popWindow.contentView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                            or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                                            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                                            or View.SYSTEM_UI_FLAG_FULLSCREEN)
+                                }
+                            })) {
+                        WebActivity.launchUrl(helper.itemView.context, Bangumi.parseUrl(it), "")
+                    }
+                }
+                item_message.text = if (item.pst_content.length < 10000) makeSpan() else largeContent.getOrPut(item.pst_id, makeSpan)
+            }
+            helper.itemView.item_message.onFocusChangeListener = View.OnFocusChangeListener { view, focus ->
+                if (!focus) {
+                    view.tag = null
+                    (view as TextView).text = view.text
+                }
+            }
+            helper.itemView.item_message.movementMethod = LinkMovementMethod.getInstance()
+        }
     }
 
     override fun onViewAttachedToWindow(holder: BaseViewHolder) {

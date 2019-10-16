@@ -236,6 +236,7 @@
     <string name="hint_reply">不吐槽一下吗</string>
     <string name="hint_empty_topic">这里什么都没有哟</string>
     <string name="hint_login_topic">登录后才可以评论哦</string>
+    <string name="hint_closed_topic">主题已关闭</string>
     <string name="hint_submit_error">提交出现了一些问题，请稍后再试</string>
     <string name="hint_back_to_close">再按一次退出程序</string>
     <string name="hint_no_play_source">暂无播放源</string>
