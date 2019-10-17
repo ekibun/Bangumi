@@ -117,7 +117,7 @@ class TopicView(private val context: TopicActivity) {
         setNewData(topic.replies)
         (context.item_list?.layoutManager as? androidx.recyclerview.widget.LinearLayoutManager)?.let { layoutManager ->
             val scrollIndex = adapter.data.indexOfFirst { it.pst_id == scrollPost }
-            if (scrollIndex < 0) return@let
+            if (scrollIndex <= 0) return@let
             layoutManager.scrollToPositionWithOffset(scrollIndex, 0)
         }
 
