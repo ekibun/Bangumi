@@ -196,7 +196,7 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
         dy -= consumed[1].toFloat()
         val scrollY = Math.min(Math.max(scrolledPastHeight + dy, 0f), availableScrollHeight.toFloat())
         dy -= scrollY - scrolledPastHeight
-        dispatchNestedScroll(consumed[0], consumed[1], 0, Math.min(nestedDistance, dy.roundToInt()), offsetInWindow)
+        dispatchNestedScroll(consumed[0], consumed[1], 0, Math.max(-nestedDistance + consumed[1], dy.roundToInt()), offsetInWindow)
 
         val layoutManager = layoutManager
         val adapter = adapter

@@ -26,10 +26,12 @@ class TopicPresenter(private val context: TopicActivity) {
         context.item_swipe.setOnRefreshListener {
             getTopic()
         }
-        topicView.adapter.setOnLoadMoreListener({ if (!context.item_swipe.isRefreshing) getTopic() }, context.item_list)
+        topicView.adapter.setOnLoadMoreListener({ if (loadMoreFail == true) getTopic() }, context.item_list)
     }
 
+    var loadMoreFail: Boolean? = null
     fun getTopic(scrollPost: String = "") {
+        loadMoreFail = null
         context.item_swipe.isRefreshing = true
 
         if (topicView.adapter.data.isEmpty()) {
@@ -71,6 +73,7 @@ class TopicPresenter(private val context: TopicActivity) {
         }.enqueue(ApiHelper.buildCallback({ topic ->
             processTopic(topic, scrollPost)
         }) {
+            loadMoreFail = it != null
             context.item_swipe.isRefreshing = false
             topicView.adapter.loadMoreFail()
         })

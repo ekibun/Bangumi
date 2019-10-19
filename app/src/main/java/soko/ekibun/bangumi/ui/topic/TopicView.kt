@@ -72,6 +72,7 @@ class TopicView(private val context: TopicActivity) {
         val scroll2Top = {
             if (context.item_list.canScrollVertically(-1) || appBarOffset != 0) {
                 context.app_bar.setExpanded(true, true)
+                context.item_list.stopScroll()
                 (context.item_list.layoutManager as androidx.recyclerview.widget.LinearLayoutManager).scrollToPositionWithOffset(0, 0)
                 true
             } else false
