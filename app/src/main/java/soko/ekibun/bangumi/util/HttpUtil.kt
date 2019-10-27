@@ -5,6 +5,7 @@ import okhttp3.*
 object HttpUtil {
     var ua = ""
     var formhash = ""
+    val httpCookieClient: OkHttpClient by lazy { OkHttpClient.Builder().cookieJar(WebViewCookieHandler()).build() }
 
     /**
      * 封装OkHttp请求，携带Cookie和User-Agent
@@ -16,8 +17,7 @@ object HttpUtil {
                 .url(url)
                 .headers(Headers.of(mutableHeader))
         if (body != null) request.post(body)
-        val httpClient = OkHttpClient.Builder()
-        if (useCookie) httpClient.cookieJar(WebViewCookieHandler())
-        return httpClient.build().newCall(request.build())
+        val httpClient = if (useCookie) httpCookieClient else OkHttpClient()
+        return httpClient.newCall(request.build())
     }
 }
