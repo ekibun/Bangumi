@@ -13,6 +13,7 @@ import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
+import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import java.util.*
 
 class IndexPagerAdapter(private val fragment: IndexFragment, private val pager: androidx.viewpager.widget.ViewPager, private val scrollTrigger: (Boolean)->Unit): RecyclePagerAdapter<IndexPagerAdapter.IndexPagerViewHolder>() {
@@ -89,6 +90,7 @@ class IndexPagerAdapter(private val fragment: IndexFragment, private val pager: 
         adapter.emptyView = LayoutInflater.from(parent.context).inflate(R.layout.view_empty, parent, false)
         adapter.isUseEmpty(false)
         adapter.setEnableLoadMore(true)
+        adapter.setLoadMoreView(BrvahLoadMoreView())
         adapter.setOnLoadMoreListener({
             loadIndex(viewHolder)
         }, recyclerView)

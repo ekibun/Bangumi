@@ -12,6 +12,7 @@ import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
+import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.TextUtil
 import java.util.*
@@ -26,6 +27,7 @@ class TopicPresenter(private val context: TopicActivity) {
         context.item_swipe.setOnRefreshListener {
             getTopic()
         }
+        topicView.adapter.setLoadMoreView(BrvahLoadMoreView())
         topicView.adapter.setOnLoadMoreListener({ if (loadMoreFail == true) getTopic() }, context.item_list)
     }
 

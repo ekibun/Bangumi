@@ -17,6 +17,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.MonoInfo
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.model.SearchHistoryModel
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
+import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.web.WebActivity
 
 class SearchPresenter(private val context: SearchActivity) {
@@ -55,6 +56,7 @@ class SearchPresenter(private val context: SearchActivity) {
 
         context.search_list.layoutManager = LinearLayoutManager(context)
         subjectAdapter.setEnableLoadMore(true)
+        subjectAdapter.setLoadMoreView(BrvahLoadMoreView())
         subjectAdapter.setOnLoadMoreListener({
             search()
         },context.search_list)
@@ -62,6 +64,7 @@ class SearchPresenter(private val context: SearchActivity) {
             SubjectActivity.startActivity(context, subjectAdapter.data[position])
         }
         monoAdapter.setEnableLoadMore(true)
+        monoAdapter.setLoadMoreView(BrvahLoadMoreView())
         monoAdapter.setOnLoadMoreListener({
             search()
         },context.search_list)

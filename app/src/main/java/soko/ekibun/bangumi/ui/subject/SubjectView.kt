@@ -63,7 +63,9 @@ class SubjectView(private val context: SubjectActivity) {
     val scroll2Top = {
         if (appBarOffset != 0 || if (context.episode_detail_list.visibility == View.VISIBLE) context.episode_detail_list.canScrollVertically(-1) else context.comment_list.canScrollVertically(-1)) {
             context.app_bar.setExpanded(true, true)
+            context.comment_list.stopScroll()
             (context.comment_list.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(0, 0)
+            context.episode_detail_list.stopScroll()
             (context.episode_detail_list.layoutManager as StaggeredGridLayoutManager).scrollToPositionWithOffset(0, 0)
             true
         } else false

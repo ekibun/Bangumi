@@ -26,6 +26,7 @@ import soko.ekibun.bangumi.api.github.GithubRaw
 import soko.ekibun.bangumi.api.github.bean.BangumiItem
 import soko.ekibun.bangumi.api.github.bean.OnAirInfo
 import soko.ekibun.bangumi.api.trim21.BgmIpViewer
+import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.PlayerBridge
@@ -229,6 +230,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
 
         var commentPage = 1
         subjectView.commentAdapter.setEnableLoadMore(true)
+        subjectView.commentAdapter.setLoadMoreView(BrvahLoadMoreView())
         subjectView.commentAdapter.setOnLoadMoreListener({
             loadComment(subject, commentPage)
             commentPage++

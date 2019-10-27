@@ -19,6 +19,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
+import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 
 class CollectionPagerAdapter(private val context: Context, val fragment: CollectionFragment, private val pager: ViewPager, private val scrollTrigger: (Boolean) -> Unit) : androidx.viewpager.widget.PagerAdapter() {
     private var tabList = context.resources.getStringArray(R.array.collection_status_anime)
@@ -56,6 +57,7 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
             adapter.emptyView = LayoutInflater.from(container.context).inflate(R.layout.view_empty, container, false)
             adapter.isUseEmpty(false)
             adapter.setEnableLoadMore(true)
+            adapter.setLoadMoreView(BrvahLoadMoreView())
             adapter.setOnLoadMoreListener({
                 loadCollectionList(position)
             }, recyclerView)
