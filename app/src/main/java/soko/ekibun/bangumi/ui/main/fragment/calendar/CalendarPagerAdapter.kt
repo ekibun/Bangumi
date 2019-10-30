@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import android.preference.PreferenceManager
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowInsets
 import retrofit2.Call
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
@@ -21,6 +22,7 @@ import kotlin.collections.HashMap
 
 class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: androidx.viewpager.widget.ViewPager, private val scrollTrigger: (Boolean)->Unit) : androidx.viewpager.widget.PagerAdapter(){
     val sp:SharedPreferences by lazy { PreferenceManager.getDefaultSharedPreferences(pager.context) }
+    var windowInsets: WindowInsets? = null
 
     init{
         pager.addOnPageChangeListener(object: androidx.viewpager.widget.ViewPager.OnPageChangeListener{
@@ -36,6 +38,8 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: an
             val swipeRefreshLayout = androidx.swiperefreshlayout.widget.SwipeRefreshLayout(pager.context)
             val recyclerView = androidx.recyclerview.widget.RecyclerView(pager.context)
             recyclerView.overScrollMode = View.OVER_SCROLL_NEVER
+            recyclerView.setPadding(0, 0, 0, windowInsets?.systemWindowInsetBottom ?: 0)
+            recyclerView.clipToPadding = false
             recyclerView.addOnScrollListener(object: androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {
                     scrollTrigger((items[CalendarAdapter.getCalendarInt(getPostDate(pager.currentItem))]?.second?.tag as? androidx.recyclerview.widget.RecyclerView)?.canScrollVertically(-1) == true)

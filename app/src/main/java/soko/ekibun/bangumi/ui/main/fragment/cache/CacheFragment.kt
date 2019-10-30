@@ -43,6 +43,11 @@ class CacheFragment: DrawerFragment(R.layout.content_cache) {
                 item_swipe?.isRefreshing = false
                 adapter.setNewData(null) })
         }
+
+        root_layout?.setOnApplyWindowInsetsListener { _, insets ->
+            item_list?.dispatchApplyWindowInsets(insets)
+            insets
+        }
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {

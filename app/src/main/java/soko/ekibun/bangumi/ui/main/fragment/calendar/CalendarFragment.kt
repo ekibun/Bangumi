@@ -20,6 +20,11 @@ class CalendarFragment: DrawerFragment(R.layout.content_calendar) {
         item_tabs?.setUpWithViewPager(item_pager)
         item_tabs?.setUpWithAdapter(CalendarTabAdapter(item_pager))
         item_pager?.currentItem = 7
+
+        root_layout?.setOnApplyWindowInsetsListener { _, insets ->
+            adapter.windowInsets = insets
+            insets
+        }
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {

@@ -13,13 +13,19 @@ class IndexFragment: DrawerFragment(R.layout.content_index){
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        item_pager?.adapter = IndexPagerAdapter(this, item_pager){
+        val adapter = IndexPagerAdapter(this, item_pager) {
             app_bar.isPressed = it
             item_tab_container.isPressed = it
         }
+        item_pager?.adapter = adapter
         item_tabs?.setUpWithViewPager(item_pager)
 
         item_pager?.currentItem = getNowIndex()
+
+        root_layout?.setOnApplyWindowInsetsListener { _, insets ->
+            adapter.windowInsets = insets
+            insets
+        }
     }
 
     override fun processBack(): Boolean{

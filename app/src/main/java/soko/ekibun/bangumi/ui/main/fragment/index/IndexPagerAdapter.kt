@@ -6,6 +6,7 @@ import android.util.SparseIntArray
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowInsets
 import kotlinx.android.synthetic.main.content_index.*
 import retrofit2.Call
 import soko.ekibun.bangumi.R
@@ -17,6 +18,8 @@ import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import java.util.*
 
 class IndexPagerAdapter(private val fragment: IndexFragment, private val pager: androidx.viewpager.widget.ViewPager, private val scrollTrigger: (Boolean)->Unit): RecyclePagerAdapter<IndexPagerAdapter.IndexPagerViewHolder>() {
+    var windowInsets: WindowInsets? = null
+
     private val indexTypeView = IndexTypeView(fragment.item_type) {
         pageIndex.clear()
         pager.adapter?.notifyDataSetChanged()
@@ -78,6 +81,8 @@ class IndexPagerAdapter(private val fragment: IndexFragment, private val pager: 
         val swipeRefreshLayout = androidx.swiperefreshlayout.widget.SwipeRefreshLayout(parent.context)
         val recyclerView = androidx.recyclerview.widget.RecyclerView(parent.context)
         recyclerView.overScrollMode = View.OVER_SCROLL_NEVER
+        recyclerView.setPadding(0, 0, 0, windowInsets?.systemWindowInsetBottom ?: 0)
+        recyclerView.clipToPadding = false
         val adapter = SubjectAdapter()
         val viewHolder = IndexPagerViewHolder(swipeRefreshLayout, adapter)
         recyclerView.addOnScrollListener(object: androidx.recyclerview.widget.RecyclerView.OnScrollListener() {

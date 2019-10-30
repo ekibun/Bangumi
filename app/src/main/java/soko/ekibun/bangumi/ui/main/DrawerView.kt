@@ -2,6 +2,7 @@ package soko.ekibun.bangumi.ui.main
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.core.view.ViewCompat
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.switch_item.view.*
 import soko.ekibun.bangumi.R
@@ -12,7 +13,6 @@ import soko.ekibun.bangumi.ui.main.fragment.home.HomeFragment
 import soko.ekibun.bangumi.ui.main.fragment.index.IndexFragment
 import soko.ekibun.bangumi.ui.search.SearchActivity
 import soko.ekibun.bangumi.ui.setting.SettingsActivity
-import soko.ekibun.bangumi.util.PlayerBridge
 
 class DrawerView(private val context: MainActivity, onNightModeChange: (Boolean)->Unit, onLogout: ()->Unit){
     var checkedId = R.id.nav_home
@@ -28,6 +28,11 @@ class DrawerView(private val context: MainActivity, onNightModeChange: (Boolean)
     init{
         switch.setOnCheckedChangeListener { _, isChecked ->
             onNightModeChange(isChecked)
+        }
+
+        context.content_frame.setOnApplyWindowInsetsListener { _, insets ->
+            context.content_frame.setPadding(0, insets.systemWindowInsetTop, 0, 0)
+            insets.replaceSystemWindowInsets(insets.systemWindowInsetLeft, 0, insets.systemWindowInsetRight, insets.systemWindowInsetBottom)
         }
 
         context.nav_view.setNavigationItemSelectedListener {
@@ -71,5 +76,6 @@ class DrawerView(private val context: MainActivity, onNightModeChange: (Boolean)
                 .replace(R.id.content_frame, fragments[id]!!).commit()
         context.nav_view.setCheckedItem(id)
         context.invalidateOptionsMenu()
+      ViewCompat.requestApplyInsets(context.drawer_layout)
     }
 }
