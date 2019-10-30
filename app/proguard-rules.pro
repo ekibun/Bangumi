@@ -27,7 +27,18 @@
 -dontwarn org.conscrypt.**
 -dontwarn javax.annotation.**
 
--dontwarn org.xmlpull.v1.**
+-dontwarn org.xmlpull.v1.XmlPullParser
+-dontwarn org.xmlpull.v1.XmlSerializer
+-keep class org.xmlpull.v1.* {*;}
 
 # Gson
 -keep class soko.ekibun.bangumi.api.**.bean.**{*;} # 自定义数据模型的bean目录
+
+#不混淆Parcelable和它的子类，还有Creator成员变量
+-keep class * implements android.os.Parcelable {
+    public static final android.os.Parcelable$Creator *;
+}
+
+# custom view
+-keep class soko.ekibun.bangumi.ui.view.NotifyActionProvider {*;}
+-keep class soko.ekibun.bangumi.ui.view.*View {*;}

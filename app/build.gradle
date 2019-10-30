@@ -9,6 +9,12 @@ static def getAlphaVersionName() {
 }
 
 android {
+    packagingOptions {
+        exclude 'lib/*/libRSSupport.so'
+        exclude 'lib/*/librsjni.so'
+        exclude 'lib/*/librsjni_androidx.so'
+    }
+
     compileSdkVersion 29
     buildToolsVersion '29.0.2'
     defaultConfig {
@@ -20,8 +26,14 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
+        debug {
+            shrinkResources true
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
         release {
-            minifyEnabled false
+            shrinkResources true
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }

@@ -106,6 +106,7 @@ class TopicPresenter(private val context: TopicActivity) {
                                         val data = ArrayList(topicView.adapter.data)
                                         data.removeAll { topicPost -> topicPost.pst_id == post.pst_id }
                                         topicView.setNewData(data)
+                                        topicView.adapter.loadMoreEnd()
                                     }) {})
                                 }
                             }.show()
@@ -142,6 +143,7 @@ class TopicPresenter(private val context: TopicActivity) {
             if (send) {
                 Bangumi.replyTopic(topic, post, TextUtil.span2bbcode(inputString as Spanned)).enqueue(ApiHelper.buildCallback<List<TopicPost>>({
                     topicView.setNewData(it)
+                    topicView.adapter.loadMoreEnd()
                 }) {})
             } else {
                 inputString?.let { drafts[draftId] = it }
