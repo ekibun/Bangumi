@@ -37,7 +37,7 @@ class TopicPresenter(private val context: TopicActivity) {
         context.item_swipe.isRefreshing = true
 
         if (topicView.adapter.data.isEmpty()) {
-            Bangumi.getTopicAsync(context.openUrl, { data ->
+            Bangumi.getTopicSax(context.openUrl, { data ->
                 val doc = Jsoup.parse(data)
                 context.runOnUiThread {
                     topicView.processTopicBefore(

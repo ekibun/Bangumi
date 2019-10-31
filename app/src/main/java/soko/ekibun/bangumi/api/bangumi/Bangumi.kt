@@ -7,8 +7,6 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.TextNode
 import org.xmlpull.v1.XmlPullParser
-import org.xmlpull.v1.XmlPullParserException
-import org.xmlpull.v1.XmlPullParserFactory
 import retrofit2.Call
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.*
@@ -100,14 +98,14 @@ object Bangumi {
     /**
      * 主页和概览的剧集信息
      */
-    private fun parseProgressList(item: Element, doc: Element = item): List<Episode> {
+    private fun parseProgressList(item: Element, doc: Element? = null): List<Episode> {
         if (item.selectFirst("ul.line_list_music") != null) return parseLineList(item)
         var cat = "本篇"
         val now = Date().time
-        return item.select("ul.prg_list>li").mapNotNull { li ->
+        return item.select("ul.prg_list li").mapNotNull { li ->
             if (li.hasClass("subtitle")) cat = li.text()
             val it = li.selectFirst("a") ?: return@mapNotNull null
-            val rel = doc.selectFirst(it.attr("rel"))
+            val rel = doc?.selectFirst(it.attr("rel"))
             val epInfo = rel?.selectFirst(".tip")?.textNodes()?.map { it.text() }
             val airdate = epInfo?.firstOrNull { it.startsWith("首播") }?.substringAfter(":")
             Episode(
@@ -121,7 +119,7 @@ object Bangumi {
                         "MAD" -> Episode.TYPE_MAD
                         else -> Episode.TYPE_OTHER
                     },
-                    sort = it.text().toFloatOrNull() ?: 0f,
+                    sort = Regex("""\d*(\.\d*)?""").find(it.text())?.groupValues?.getOrNull(0)?.toFloatOrNull() ?: 0f,
                     name = it.attr("title")?.substringAfter(" "),
                     name_cn = epInfo?.firstOrNull { it.startsWith("中文标题") }?.substringAfter(":"),
                     duration = epInfo?.firstOrNull { it.startsWith("时长") }?.substringAfter(":"),
@@ -129,11 +127,11 @@ object Bangumi {
                     comment = rel?.selectFirst(".cmt .na")?.text()?.trim('(', ')', '+')?.toIntOrNull() ?: 0,
                     status = when {
                         it.hasClass("epBtnToday") -> Episode.STATUS_TODAY
-                        it.hasClass("epBtnAir") || (try {
+                        it.hasClass("epBtnAir") || it.hasClass("epBtnWatched") || (rel != null && (try {
                             SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(airdate ?: "")
                         } catch (e: Exception) {
                             null
-                        }?.time ?: 0L < now) -> Episode.STATUS_AIR
+                        }?.time ?: 0L < now)) -> Episode.STATUS_AIR
                         else -> Episode.STATUS_NA
                     },
                     progress = when {
@@ -244,7 +242,7 @@ object Bangumi {
                                 dropped = list.firstOrNull { it[2] == "抛弃" }?.get(1)?.toIntOrNull() ?: 0
                         )
                     },
-                    eps = parseProgressList(doc),
+                    eps = parseProgressList(doc, doc),
                     eps_count = doc.selectFirst("input[name=watchedeps]")?.parent()?.ownText()?.trim(' ', '/')?.toIntOrNull()
                             ?: 0,
                     ep_status = doc.selectFirst("input[name=watchedeps]")?.attr("value")?.toIntOrNull() ?: 0,
@@ -577,51 +575,34 @@ object Bangumi {
     }
 
 
-    fun getTopicAsync(url: String, onBeforePost: (data: String) -> Unit, onNewPost: (post: TopicPost) -> Unit): Call<Topic> {
+    fun getTopicSax(url: String, onBeforePost: (data: String) -> Unit, onNewPost: (post: TopicPost) -> Unit): Call<Topic> {
         return ApiHelper.buildHttpCall(url) { rsp ->
-            val parser = XmlPullParserFactory.newInstance().newPullParser()
-            parser.setInput(rsp.body()!!.charStream())
             var beforeData = ""
-            var lastData = ""
-            var tagDepth = 0
             val replies = ArrayList<TopicPost>()
-            val updateReply = {
-                val it = Jsoup.parse(lastData)
+            val updateReply = { str: String ->
+                val it = Jsoup.parse(str)
                 it.outputSettings().prettyPrint(false)
 
                 val post = parseTopicPost(it)
                 replies += post
                 onNewPost(post)
             }
-            while (parser.eventType != XmlPullParser.END_DOCUMENT) {
-                when (parser.eventType) {
-                    XmlPullParser.START_TAG -> {
-                        if (parser.getAttributeValue("", "id")?.startsWith("post_") == true) {
-                            if (tagDepth != 0) {
-                                updateReply()
-                            } else {
-                                beforeData = lastData
-                                onBeforePost(beforeData)
-                            }
-                            tagDepth = parser.depth
-                            lastData = ""
-                        } else if (tagDepth != 0 && parser.getAttributeValue("", "id")?.contains("reply_wrapper") == true) {
-                            updateReply()
-                            lastData = ""
-                            tagDepth = 0
+            val lastData = ApiHelper.parseWithSax(rsp) { parser, str ->
+                when {
+                    parser.eventType != XmlPullParser.START_TAG -> ApiHelper.SaxEventType.NOTHING
+                    parser.getAttributeValue("", "id")?.startsWith("post_") == true -> {
+                        if (beforeData.isEmpty()) {
+                            beforeData = str
+                            onBeforePost(str)
+                        } else {
+                            updateReply(str)
                         }
-                        lastData += "<${parser.name} ${(0 until parser.attributeCount).joinToString(" ") { "${parser.getAttributeName(it)}=\"${parser.getAttributeValue(it)}\"" }}>"
+                        ApiHelper.SaxEventType.BEGIN
                     }
-                    XmlPullParser.END_TAG -> {
-                        if (parser.name != "br") lastData += "</${parser.name}>"
+                    parser.getAttributeValue("", "id")?.contains("reply_wrapper") == true -> {
+                        ApiHelper.SaxEventType.BEGIN
                     }
-                    XmlPullParser.TEXT -> {
-                        lastData += parser.text
-                    }
-                }
-                try {
-                    parser.next()
-                } catch (e: XmlPullParserException) {
+                    else -> ApiHelper.SaxEventType.NOTHING
                 }
             }
 
@@ -768,11 +749,56 @@ object Bangumi {
         }
     }
 
+    fun getCollectionSax(onNewSubject: (Subject) -> Unit): Call<List<Subject>> {
+        return ApiHelper.buildHttpCall(SERVER) { rsp ->
+            val ret = ArrayList<Subject>()
+
+            val addSubject = addSubject@{ str: String ->
+                val it = Jsoup.parse(str).selectFirst(".infoWrapper") ?: return@addSubject
+                val data = it.selectFirst(".headerInner a.textTip") ?: return@addSubject
+                val subject = Subject(
+                        id = data.attr("data-subject-id")?.toIntOrNull() ?: return@addSubject,
+                        type = Subject.parseType(it.attr("subject_type")?.toIntOrNull()),
+                        name = data.attr("data-subject-name"),
+                        name_cn = data.attr("data-subject-name-cn"),
+                        images = Images(parseImageUrl(it.selectFirst("img"))),
+                        eps = parseProgressList(it),
+                        eps_count = it.selectFirst(".prgBatchManagerForm .grey")?.text()?.trim(' ', '/')?.toIntOrNull()
+                                ?: it.selectFirst("input[name=watchedeps]")?.parent()?.ownText()?.trim(' ', '/')?.toIntOrNull()
+                                ?: 0,
+                        vol_count = it.selectFirst("input[name=watched_vols]")?.parent()?.let {
+                            it.ownText().trim(' ', '/').toIntOrNull() ?: -1
+                        } ?: 0,
+                        ep_status = it.selectFirst("input[name=watchedeps]")?.attr("value")?.toIntOrNull() ?: 0,
+                        vol_status = it.selectFirst("input[name=watched_vols]")?.attr("value")?.toIntOrNull() ?: 0)
+
+                ret += subject
+                onNewSubject(subject)
+            }
+            ApiHelper.parseWithSax(rsp) { parser, str ->
+                when {
+                    parser.eventType != XmlPullParser.START_TAG -> ApiHelper.SaxEventType.NOTHING
+                    parser.getAttributeValue("", "id")?.startsWith("subjectPanel_") == true -> {
+                        addSubject(str)
+                        ApiHelper.SaxEventType.BEGIN
+                    }
+                    parser.getAttributeValue("", "id")?.contains("columnHomeB") == true -> {
+                        ApiHelper.SaxEventType.END
+                    }
+                    else -> ApiHelper.SaxEventType.NOTHING
+                }
+            }
+            ret
+        }
+    }
+
     /**
      * 主页的进度管理
      */
     fun getCollection(): Call<List<Subject>> {
         return ApiHelper.buildHttpCall(SERVER) {
+
+
             val doc = Jsoup.parse(it.body()?.string() ?: "")
             if (doc.selectFirst(".idBadgerNeue a.avatar") == null) throw Exception("no login")
             doc.select("#cloumnSubjectInfo .infoWrapper").mapNotNull {

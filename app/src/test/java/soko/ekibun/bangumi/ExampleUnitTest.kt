@@ -1,7 +1,11 @@
 package soko.ekibun.bangumi
 
 import okhttp3.*
+import org.jsoup.Jsoup
 import org.junit.Test
+import org.xmlpull.v1.XmlPullParser
+import org.xmlpull.v1.XmlPullParserException
+import org.xmlpull.v1.XmlPullParserFactory
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -27,63 +31,34 @@ class ExampleUnitTest {
             }
 
             override fun onResponse(call: Call, response: Response) {
-                println("onResponse")
-                println("onResponse ${response.body()!!.string().length}")
-                finished = true
-                /*
                 try{
                     val parser = XmlPullParserFactory.newInstance().newPullParser()
                     parser.setInput(response.body()!!.charStream())
                     var lastData = ""
                     var tagDepth = 0
-                    val updateReply = {
-                        val it = Jsoup.parse(lastData)
-                        it.outputSettings().prettyPrint(false)
-
-                        val user = it.selectFirst(".inner a")
-                        val data = (it.selectFirst(".icons_cmt")?.attr("onclick") ?: "").split(",")
-                        val relate = data.getOrNull(2)?.toIntOrNull() ?: 0
-                        val post_id = data.getOrNull(3)?.toIntOrNull() ?: 0
-                        println(TopicPost(
-                                pst_id = (if (post_id == 0) relate else post_id).toString(),
-                                pst_mid = data.getOrNull(1) ?: "",
-                                pst_uid = data.getOrNull(5) ?: "",
-                                pst_content = it.selectFirst(".topic_content")?.html()
-                                        ?: it.selectFirst(".message")?.html()
-                                        ?: it.selectFirst(".cmt_sub_content")?.html() ?: "",
-                                username = Regex("""/user/([^/]*)""").find(user?.attr("href")
-                                        ?: "")?.groupValues?.get(1) ?: "",
-                                nickname = user?.text() ?: "",
-                                sign = it.selectFirst(".inner .tip_j")?.text() ?: "",
-                                avatar = Regex("""background-image:url\('([^']*)'\)""").find(it.selectFirst(".avatar")?.html()
-                                        ?: "")?.groupValues?.get(1) ?: "",
-                                dateline = it.selectFirst(".re_info")?.text()?.split("/")?.get(0)?.trim()?.substringAfter(" - ")
-                                        ?: "",
-                                is_self = it.selectFirst(".re_info")?.text()?.contains("/") == true,
-                                isSub = it.selectFirst(".re_info a")?.text()?.contains("-") ?: false,
-                                editable = it.selectFirst(".re_info")?.text()?.contains("/") == true,
-                                relate = relate.toString(),
-                                model = Regex("'([^']*)'").find(data.getOrNull(0) ?: "")?.groupValues?.get(1) ?: ""
-                        ))
+                    val updateData = {
+                        println(lastData)
                     }
                     while (parser.eventType != XmlPullParser.END_DOCUMENT) {
                         when(parser.eventType){
                             XmlPullParser.START_TAG -> {
-                                if(parser.getAttributeValue("", "id")?.startsWith("post_") == true){
-                                    if(tagDepth != 0){
-                                        updateReply()
-                                    }else {
-                                        val doc = Jsoup.parse(lastData)
-                                        println("group=${ doc.selectFirst("#pageHeader span")?.text() ?: ""}")
-                                        println("title=${ doc.selectFirst("#pageHeader h1")?.ownText() ?: ""}")
-                                        println("images=${ doc.selectFirst("#pageHeader img")?.ownText() ?: ""}")
+                                if (parser.getAttributeValue("", "id")?.startsWith("subjectPanel_") == true) {
+                                    if (parser.getAttributeValue("", "id")?.startsWith("post_") == true) {
+                                        if (tagDepth != 0) {
+                                            updateData()
+                                        } else {
+                                            val doc = Jsoup.parse(lastData)
+                                            println("group=${doc.selectFirst("#pageHeader span")?.text() ?: ""}")
+                                            println("title=${doc.selectFirst("#pageHeader h1")?.ownText() ?: ""}")
+                                            println("images=${doc.selectFirst("#pageHeader img")?.ownText() ?: ""}")
+                                        }
+                                        tagDepth = parser.depth
+                                        lastData = ""
+                                    } else if (tagDepth != 0 && parser.getAttributeValue("", "id")?.contains("reply_wrapper") == true) {
+                                        updateData()
+                                        lastData = ""
+                                        tagDepth = 0
                                     }
-                                    tagDepth = parser.depth
-                                    lastData = ""
-                                }else if(tagDepth != 0 && parser.getAttributeValue("", "id")?.contains("reply_wrapper") == true){
-                                    updateReply()
-                                    lastData = ""
-                                    tagDepth = 0
                                 }
                                 lastData += "<${parser.name} ${(0 until parser.attributeCount).joinToString(" ") { "${parser.getAttributeName(it)}=\"${parser.getAttributeValue(it)}\"" }}>"
                             }
@@ -99,19 +74,9 @@ class ExampleUnitTest {
                         } catch (e: XmlPullParserException) {
                         }
                     }
-
-                    val rest = Jsoup.parse(lastData)
-                    val error = rest.selectFirst("#reply_wrapper")?.selectFirst(".tip")
-                    val form = rest.selectFirst("#ReplyForm")
-                    println("error=${error?.text()}")
-                    println("errorLink=${error?.selectFirst("a")?.attr("href") ?: ""}")
-                    println("post=${"${form?.attr("action")}?ajax=1"}")
-                    println("lastview=${form?.selectFirst("input[name=lastview]")?.attr("value")}")
                 } finally {
                     finished = true
                 }
-
-                 */
             }
         })
 

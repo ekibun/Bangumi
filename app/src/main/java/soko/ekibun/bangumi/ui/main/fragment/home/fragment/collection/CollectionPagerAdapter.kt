@@ -2,6 +2,7 @@ package soko.ekibun.bangumi.ui.main.fragment.home.fragment.collection
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -59,7 +60,7 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
             adapter.setEnableLoadMore(true)
             adapter.setLoadMoreView(BrvahLoadMoreView())
             adapter.setOnLoadMoreListener({
-                loadCollectionList(position)
+                if (!swipeRefreshLayout.isRefreshing) loadCollectionList(position)
             }, recyclerView)
             adapter.setOnItemClickListener { _, v, position ->
                 SubjectActivity.startActivity(v.context, adapter.data[position])
@@ -105,18 +106,35 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
         if (page == 0)
             item.second.isRefreshing = true
         val useApi = position == 2 && subjectTypeView.selectedType in arrayOf(R.id.collection_type_anime, R.id.collection_type_book, R.id.collection_type_real)
-        collectionCalls[position] = if (useApi) Bangumi.getCollection()//api.collection(userName)
+        collectionCalls[position] = if (useApi) Bangumi.getCollectionSax {
+            Log.v("EPS", "${it.eps}")
+            if (it.type != subjectTypeView.getType()) return@getCollectionSax
+            item.second.post {
+                item.first.setNewData(
+                        item.first.data.plus(it).sortedByDescending {
+                            val eps = it.eps?.filter { it.type == Episode.TYPE_MAIN }
+                            val watchTo = eps?.lastOrNull { it.progress == Episode.PROGRESS_WATCH }
+                            val airTo = eps?.lastOrNull { it.status == Episode.STATUS_AIR }
+                            (if (watchTo != airTo) ":" else "") + (airTo?.airdate ?: "")
+                        }.toMutableList()
+                )
+
+            }
+        }
         else Bangumi.getCollectionList(subjectTypeView.getType(), userName, Collection.getTypeById(position + 1), page + 1)
         collectionCalls[position]?.enqueue(ApiHelper.buildCallback({ list ->
             item.first.isUseEmpty(true)
             list.filter { !useApi || it.type == subjectTypeView.getType() }.let {
-                if (!useApi) it.forEach { it.type = subjectTypeView.getType() }
-                item.first.addData(it.sortedByDescending {
-                    val eps = it.eps?.filter { it.type == Episode.TYPE_MAIN }
-                    val watchTo = eps?.lastOrNull { it.progress == Episode.PROGRESS_WATCH }
-                    val airTo = eps?.lastOrNull { it.status == Episode.STATUS_AIR }
-                    (if (watchTo != airTo) ":" else "") + (airTo?.airdate ?: "")
-                })
+                if (!useApi) {
+                    it.forEach { it.type = subjectTypeView.getType() }
+                    item.first.addData(it.sortedByDescending {
+                        val eps = it.eps?.filter { it.type == Episode.TYPE_MAIN }
+                        val watchTo = eps?.lastOrNull { it.progress == Episode.PROGRESS_WATCH }
+                        val airTo = eps?.lastOrNull { it.status == Episode.STATUS_AIR }
+                        (if (watchTo != airTo) ":" else "") + (airTo?.airdate ?: "")
+                    })
+                }
+
             }
             if (useApi || list.size < 10)
                 item.first.loadMoreEnd()
