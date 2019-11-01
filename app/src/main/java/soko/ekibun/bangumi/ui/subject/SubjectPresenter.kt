@@ -1,19 +1,15 @@
 package soko.ekibun.bangumi.ui.subject
 
 import android.annotation.SuppressLint
-import android.net.Uri
 import android.view.Menu
 import android.view.View
 import android.widget.PopupMenu
 import androidx.appcompat.app.AlertDialog
-import androidx.browser.customtabs.CustomTabsIntent
 import com.chad.library.adapter.base.BaseQuickAdapter
 import kotlinx.android.synthetic.main.activity_subject.*
-import kotlinx.android.synthetic.main.activity_subject.view.*
-import kotlinx.android.synthetic.main.subject_blog.view.*
+import kotlinx.android.synthetic.main.brvah_quick_view_load_more.view.*
 import kotlinx.android.synthetic.main.subject_buttons.*
-import kotlinx.android.synthetic.main.subject_character.view.*
-import kotlinx.android.synthetic.main.subject_topic.view.*
+import kotlinx.android.synthetic.main.subject_detail.view.*
 import retrofit2.Call
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
@@ -23,29 +19,40 @@ import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.github.GithubRaw
-import soko.ekibun.bangumi.api.github.bean.BangumiItem
 import soko.ekibun.bangumi.api.github.bean.OnAirInfo
 import soko.ekibun.bangumi.api.trim21.BgmIpViewer
+import soko.ekibun.bangumi.api.trim21.bean.IpView
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.PlayerBridge
-import java.util.*
 
 class SubjectPresenter(private val context: SubjectActivity) {
     val subjectView by lazy { SubjectView(context) }
 
     lateinit var subject: Subject
 
-    fun refresh() {
-        refreshSubject()
-        refreshProgress()
-    }
+    var commentPage = 1
 
     @SuppressLint("SetTextI18n")
     fun init(subject: Subject) {
         this.subject = subject
         subjectView.updateSubject(subject)
+
+
+        subjectView.commentAdapter.setEnableLoadMore(true)
+        subjectView.commentAdapter.setLoadMoreView(BrvahLoadMoreView())
+        subjectView.commentAdapter.setOnLoadMoreListener({
+            loadComment(subject)
+        }, context.comment_list)
+        loadComment(subject)
+        subjectView.detail.load_more_load_fail_view.setOnClickListener {
+            loadComment(subject)
+        }
+
+        context.item_swipe.setOnRefreshListener {
+            refresh()
+        }
 
         subjectView.detail.character_detail.setOnClickListener {
             WebActivity.launchUrl(context, "${subject.url}/characters")
@@ -169,14 +176,6 @@ class SubjectPresenter(private val context: SubjectActivity) {
             WebActivity.launchUrl(context, subjectView.blogAdapter.data[position]?.url, "")
         }
 
-        subjectView.sitesAdapter.setOnItemClickListener { _, _, position ->
-            try {
-                CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(subjectView.sitesAdapter.data[position].parseUrl()))
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-
         subjectView.commentAdapter.setOnItemClickListener { _, _, position ->
             WebActivity.launchUrl(context, subjectView.commentAdapter.data[position].user?.url)
         }
@@ -208,72 +207,75 @@ class SubjectPresenter(private val context: SubjectActivity) {
         }
     }
 
-    private var subjectCall: Call<Subject>? = null
-    private fun refreshSubject() {
+    private var onAirInfo: OnAirInfo? = null
+    private var subjectCall: Call<Unit>? = null
+    fun refresh() {
         subjectCall?.cancel()
-        subjectCall = Bangumi.getSubject(subject)
-        subjectCall?.enqueue(ApiHelper.buildCallback({
-            subject = it
-            refreshLines(it)
-            refreshCollection()
-            subjectView.updateSubject(it)
-        }, {}))
+        context.item_swipe.isRefreshing = true
 
-        BgmIpViewer.createInstance().subject(subject.id).enqueue(ApiHelper.buildCallback({
-            val ret = BgmIpViewer.getSeason(it, subject)
-            if (ret.size > 1) {
-                subjectView.seasonAdapter.setNewData(ret.distinct())
-                subjectView.seasonAdapter.currentId = subject.id
-                subjectView.seasonLayoutManager.scrollToPositionWithOffset(subjectView.seasonAdapter.data.indexOfFirst { it.subject_id == subject.id }, 0)
+        subjectCall = ApiHelper.buildGroupCall(
+                arrayOf(Bangumi.getSubject(subject),
+                        GithubRaw.createInstance().onAirInfo(subject.id / 1000, subject.id),
+                        BgmIpViewer.createInstance().subject(subject.id),
+                        Bangumi.getSubjectEps(subject))
+        ) { _, it ->
+            when (it) {
+                is Subject -> {
+                    subject = it
+                    refreshCollection()
+                    subjectView.updateSubject(it)
+                }
+                is OnAirInfo -> {
+                    onAirInfo = it
+                }
+                is IpView -> {
+                    val ret = BgmIpViewer.getSeason(it, subject)
+                    if (ret.size > 1) {
+                        subjectView.seasonAdapter.setNewData(ret.distinct())
+                        subjectView.seasonAdapter.currentId = subject.id
+                        subjectView.seasonLayoutManager.scrollToPositionWithOffset(subjectView.seasonAdapter.data.indexOfFirst { it.subject_id == subject.id }, 0)
+                    }
+                }
+                is List<*> -> {
+                    subject.eps = subjectView.updateEpisode(it.mapNotNull { it as? Episode })
+                }
             }
-        }, {}))
+        }
 
-        var commentPage = 1
-        subjectView.commentAdapter.setEnableLoadMore(true)
-        subjectView.commentAdapter.setLoadMoreView(BrvahLoadMoreView())
-        subjectView.commentAdapter.setOnLoadMoreListener({
-            loadComment(subject, commentPage)
-            commentPage++
-        }, context.comment_list)
-        loadComment(subject, commentPage)
-        commentPage++
+        subjectCall?.enqueue(ApiHelper.buildCallback({}, {
+            context.item_swipe.isRefreshing = false
+        }))
     }
 
-    private fun loadComment(subject: Subject, page: Int) {
+    private fun loadComment(subject: Subject) {
+        val page = commentPage
+        subjectView.detail.comment_load_info.visibility = if (page == 1) View.VISIBLE else View.GONE
+        subjectView.detail.load_more_loading_view.visibility = View.VISIBLE
+        subjectView.detail.load_more_load_fail_view.visibility = View.GONE
+        subjectView.detail.load_more_load_end_view.visibility = View.GONE
+
         Bangumi.getComments(subject, page).enqueue(ApiHelper.buildCallback({
+            commentPage++
             if (page == 1)
                 subjectView.commentAdapter.setNewData(null)
-            if (it?.isEmpty() == true)
+            if (it?.isEmpty() == true) {
+                subjectView.detail.load_more_loading_view.visibility = View.GONE
+                subjectView.detail.load_more_load_fail_view.visibility = View.GONE
+                subjectView.detail.load_more_load_end_view.visibility = View.VISIBLE
                 subjectView.commentAdapter.loadMoreEnd()
-            else {
+            } else {
+                subjectView.detail.comment_load_info.visibility = View.GONE
                 subjectView.commentAdapter.loadMoreComplete()
                 subjectView.commentAdapter.addData(it)
             }
         }, {
             subjectView.detail.item_comment_header.visibility = View.VISIBLE
             subjectView.commentAdapter.loadMoreFail()
+
+            subjectView.detail.load_more_loading_view.visibility = View.GONE
+            subjectView.detail.load_more_load_fail_view.visibility = View.VISIBLE
+            subjectView.detail.load_more_load_end_view.visibility = View.GONE
         }))
-    }
-
-    private var onAirInfo: OnAirInfo? = null
-    private fun refreshLines(subject: Subject) {
-        val dateList = subject.air_date?.replace("/", "-")?.replace("年", "-")?.replace("月", "-")?.replace("日", "")?.split("-")
-                ?: return
-        val year = dateList.getOrNull(0)?.toIntOrNull() ?: 0
-        val month = dateList.getOrNull(1)?.toIntOrNull() ?: 1
-        GithubRaw.createInstance().bangumiData(year, String.format("%02d", month)).enqueue(ApiHelper.buildCallback({
-            subjectView.sitesAdapter.setNewData(null)
-            it.filter { it.sites?.filter { it.site == "bangumi" }?.getOrNull(0)?.id?.toIntOrNull() == subject.id }.forEach {
-                if (subjectView.sitesAdapter.data.size == 0 && !it.officialSite.isNullOrEmpty())
-                    subjectView.sitesAdapter.addData(BangumiItem.SitesBean("official", "", it.officialSite))
-                subjectView.sitesAdapter.addData(it.sites?.filter { it.site != "bangumi" } ?: ArrayList())
-            }
-            subjectView.detail.site_list.visibility = if (subjectView.sitesAdapter.data.isEmpty()) View.GONE else View.VISIBLE
-        }, {}))
-
-        GithubRaw.createInstance().onAirInfo(subject.id / 1000, subject.id).enqueue(ApiHelper.buildCallback({
-            onAirInfo = it
-        }, {}))
     }
 
     private fun removeCollection(subject: Subject) {

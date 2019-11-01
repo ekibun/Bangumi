@@ -8,7 +8,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:layout_marginEnd="4dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="2dp"
         android:clickable="true"
         android:backgroundTint="?colorAccent"
         android:backgroundTintMode="src_in"

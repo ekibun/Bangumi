@@ -1,115 +1,318 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
-        android:paddingBottom="0dp"
-        android:layout_height="wrap_content"
-        android:transitionName="container">
-    <com.github.siyamed.shapeimageview.RoundedImageView
-            app:siRadius="8dp"
-            app:siBorderAlpha="0"
-            android:id="@+id/item_cover"
-            android:transitionName="cover"
-            android:layout_width="75dp"
-            android:layout_height="100dp"
-            android:scaleType="centerCrop"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginStart="12dp"
-            tools:src="@drawable/err_404"
-            android:contentDescription="@string/desc_cover"/>
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:divider="@drawable/divider"
+        android:showDividers="middle"
+        android:paddingTop="20dp"
+        tools:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:orientation="vertical">
 
-    <TextView
-            android:id="@+id/detail_score"
-            android:textColor="?attr/colorAccent"
-            android:layout_width="wrap_content"
+    <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="24sp"
-            app:layout_constraintRight_toLeftOf="@+id/detail_score_count"
-            app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginEnd="2dp"
-            tools:text="5.5"
-            tools:ignore="RtlSymmetry"/>
-    <TextView
-            android:id="@+id/detail_score_count"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            tools:text="×88"
-            android:textSize="12sp"
-            android:layout_marginEnd="6dp"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintBaseline_toBaselineOf="@+id/detail_score"
-            tools:ignore="RtlSymmetry"/>
-
-    <TextView
-            android:id="@+id/item_friend_score_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="12sp"
-            app:layout_constraintRight_toLeftOf="@+id/detail_friend_score"
-            app:layout_constraintTop_toBottomOf="@+id/detail_score"
-            android:layout_margin="3dp"
-            tools:text="@string/friend_score"
-            tools:ignore="RtlSymmetry"/>
-
-    <TextView
-            android:id="@+id/detail_friend_score"
-            android:textColor="?attr/colorAccent"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="16sp"
-            app:layout_constraintRight_toRightOf="@+id/detail_score_count"
-            app:layout_constraintTop_toBottomOf="@+id/detail_score"
-            android:layout_marginEnd="4dp"
-            tools:text="5.5"
-            tools:ignore="RtlSymmetry"/>
-
-    <TextView
-            android:id="@+id/item_subject_title"
-            android:layout_width="0dp"
-            android:maxLines="1"
-            android:ellipsize="end"
-            android:layout_height="wrap_content"
+            android:paddingTop="8dp"
             android:paddingBottom="8dp"
-            tools:text="TV"
-            app:layout_constraintRight_toLeftOf="@+id/detail_score"
-            app:layout_constraintLeft_toLeftOf="@+id/item_info"
-            app:layout_constraintTop_toTopOf="parent"/>
+            android:gravity="center"
+            android:orientation="vertical">
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:id="@+id/item_detail"
+                tools:text="Subject Summary"
+                android:maxLines="5"
+                android:ellipsize="end"/>
 
-    <TextView
-            android:id="@+id/item_info"
-            android:layout_width="0dp"
-            android:maxLines="1"
-            android:ellipsize="end"
-            android:layout_height="wrap_content"
-            tools:text="放送日期：2019年4月7日 周日"
-            app:layout_constraintLeft_toRightOf="@+id/item_cover"
-            app:layout_constraintRight_toLeftOf="@+id/item_friend_score_label"
-            android:paddingBottom="8dp"
-            android:layout_marginStart="8dp"
-            app:layout_constraintTop_toBottomOf="@+id/item_subject_title"/>
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/tag_list"
+                android:paddingTop="6dp"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:clipToPadding="false"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:orientation="horizontal"
+                tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_tag"/>
+    </LinearLayout>
 
-    <TextView
-            android:id="@+id/item_air_time"
-            android:layout_width="0dp"
+    <LinearLayout
+            android:id="@+id/item_progress"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="8dp"
-            android:maxLines="1"
-            android:ellipsize="end"
-            tools:text="动画制作：P.A.WORKS"
-            app:layout_constraintTop_toBottomOf="@+id/item_info"
-            app:layout_constraintStart_toStartOf="@+id/item_info"
-            app:layout_constraintEnd_toEndOf="@+id/item_info"/>
+            android:paddingLeft="2dp"
+            android:paddingRight="2dp"
+            android:background="?android:colorBackground">
 
-    <TextView
-            android:id="@+id/item_air_week"
-            android:layout_width="0dp"
+        <TextView
+                android:id="@+id/item_progress_info"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:maxLines="1"
+                android:padding="14dp"
+                tools:text="看到 第16/25话"
+                android:textColor="?android:textColorPrimary"
+                android:ellipsize="end"/>
+
+        <TextView
+                android:id="@+id/item_progress_edit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/subject_progress_edit"
+                android:clickable="true"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:focusable="true"
+                android:padding="14dp"/>
+    </LinearLayout>
+
+    <LinearLayout android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:id="@+id/item_episodes"
+                  android:visibility="gone"
+                  tools:visibility="visible"
+                  android:orientation="vertical">
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:background="?android:colorBackground">
+            <TextView android:layout_width="0dp"
+                      android:layout_weight="1"
+                      android:layout_height="wrap_content"
+                      android:textAppearance="@android:style/TextAppearance.Material.Subhead"
+                      android:padding="12dp"
+                      android:text="@string/episodes"/>
+            <TextView android:layout_width="wrap_content"
+                      android:layout_height="match_parent"
+                      android:padding="12dp"
+                      android:id="@+id/episode_detail"
+                      android:clickable="true"
+                      android:background="?android:attr/selectableItemBackgroundBorderless"
+                      tools:text="更新到第3话"
+                      android:focusable="true"/>
+        </LinearLayout>
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/episode_list"
+                android:layout_width="match_parent"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:clipToPadding="false"
+                android:layout_height="wrap_content"
+                tools:orientation="horizontal"
+                tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_episode_small"/>
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/season_list"
+                android:layout_width="match_parent"
+                android:padding="8dp"
+                android:clipToPadding="false"
+                android:layout_height="wrap_content"
+                tools:orientation="horizontal"
+                tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_season"/>
+    </LinearLayout>
+
+    <LinearLayout android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:id="@+id/item_character"
+                  android:visibility="gone"
+                  tools:visibility="visible"
+                  android:orientation="vertical">
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:background="?android:colorBackground">
+            <TextView android:layout_width="0dp"
+                      android:layout_weight="1"
+                      android:layout_height="wrap_content"
+                      android:textAppearance="@android:style/TextAppearance.Material.Subhead"
+                      android:padding="12dp"
+                      android:text="@string/character_info"/>
+            <TextView android:layout_width="wrap_content"
+                      android:layout_height="match_parent"
+                      android:padding="12dp"
+                      android:id="@+id/character_detail"
+                      android:text="@string/more"
+                      android:clickable="true"
+                      android:background="?android:attr/selectableItemBackgroundBorderless"
+                      android:focusable="true"/>
+        </LinearLayout>
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/character_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="6dp"
+                android:paddingRight="6dp"
+                android:clipToPadding="false"
+                android:nestedScrollingEnabled="false"
+                tools:orientation="horizontal"
+                tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_character"/>
+    </LinearLayout>
+
+    <LinearLayout
+            android:id="@+id/item_linked"
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:maxLines="1"
-            android:ellipsize="end"
-            app:layout_constraintTop_toBottomOf="@+id/item_air_time"
-            app:layout_constraintStart_toStartOf="@+id/item_air_time"
-            app:layout_constraintEnd_toEndOf="@+id/item_air_time"/>
-</androidx.constraintlayout.widget.ConstraintLayout>
+            android:orientation="vertical">
+
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@android:style/TextAppearance.Material.Subhead"
+                android:padding="12dp"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="4dp"
+                android:text="@string/subject_linked"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/linked_list"
+                android:layout_width="match_parent"
+                android:paddingLeft="6dp"
+                android:paddingRight="6dp"
+                android:clipToPadding="false"
+                android:nestedScrollingEnabled="false"
+                android:layout_height="wrap_content"
+                tools:orientation="horizontal"
+                tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_subject_small"/>
+    </LinearLayout>
+
+    <LinearLayout
+            android:id="@+id/item_commend"
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@android:style/TextAppearance.Material.Subhead"
+                android:padding="12dp"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="4dp"
+                android:text="@string/subject_commend"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/commend_list"
+                android:layout_width="match_parent"
+                android:paddingLeft="6dp"
+                android:paddingRight="6dp"
+                android:clipToPadding="false"
+                android:nestedScrollingEnabled="false"
+                android:layout_height="wrap_content"
+                tools:orientation="horizontal"
+                tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_subject_small"/>
+    </LinearLayout>
+
+    <LinearLayout android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:id="@+id/item_blogs"
+                  android:visibility="gone"
+                  tools:visibility="visible"
+                  android:orientation="vertical">
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:background="?android:colorBackground">
+            <TextView android:layout_width="0dp"
+                      android:layout_weight="1"
+                      android:layout_height="wrap_content"
+                      android:textAppearance="@android:style/TextAppearance.Material.Subhead"
+                      android:padding="12dp"
+                      android:text="@string/subject_blog"/>
+            <TextView android:layout_width="wrap_content"
+                      android:layout_height="match_parent"
+                      android:padding="12dp"
+                      android:id="@+id/blog_detail"
+                      android:text="@string/more"
+                      android:clickable="true"
+                      android:background="?android:attr/selectableItemBackgroundBorderless"
+                      android:focusable="true"/>
+        </LinearLayout>
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/blog_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:listitem="@layout/item_blog"
+                tools:layout_height="200dp"
+                app:layout_constraintTop_toBottomOf="@+id/item_title"/>
+    </LinearLayout>
+
+    <LinearLayout android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:id="@+id/item_topics"
+                  android:visibility="gone"
+                  tools:visibility="visible"
+                  android:orientation="vertical">
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:background="?android:colorBackground">
+            <TextView android:layout_width="0dp"
+                      android:layout_weight="1"
+                      android:layout_height="wrap_content"
+                      android:textAppearance="@android:style/TextAppearance.Material.Subhead"
+                      android:padding="12dp"
+                      android:text="@string/subject_topics"/>
+            <TextView android:layout_width="wrap_content"
+                      android:layout_height="match_parent"
+                      android:padding="12dp"
+                      android:id="@+id/topic_detail"
+                      android:text="@string/more"
+                      android:clickable="true"
+                      android:background="?android:attr/selectableItemBackgroundBorderless"
+                      android:focusable="true"/>
+        </LinearLayout>
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/topic_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:listitem="@layout/item_subject_topic"
+                tools:layout_height="200dp"
+                app:layout_constraintTop_toBottomOf="@+id/item_title"/>
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/item_comment_header"
+                tools:visibility="visible"
+                android:textAppearance="@android:style/TextAppearance.Material.Subhead"
+                android:padding="12dp"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="4dp"
+                android:text="@string/subject_comment"/>
+
+        <include
+                layout="@layout/brvah_quick_view_load_more"
+                android:id="@+id/comment_load_info"/>
+    </LinearLayout>
+</LinearLayout>

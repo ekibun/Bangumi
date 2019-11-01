@@ -42,6 +42,7 @@ class SubjectActivity : SwipeBackActivity() {
         root_layout.setOnApplyWindowInsetsListener { _, insets ->
             episode_detail_list.setPadding(episode_detail_list.paddingLeft, episode_detail_list.paddingTop, episode_detail_list.paddingRight, episodePaddingBottom + insets.systemWindowInsetBottom)
             comment_list.setPadding(comment_list.paddingLeft, comment_list.paddingTop, comment_list.paddingRight, listPaddingBottom + insets.systemWindowInsetBottom)
+            toolbar_container.setPadding(0, insets.systemWindowInsetTop, 0, 0)
             insets
         }
     }
@@ -62,14 +63,14 @@ class SubjectActivity : SwipeBackActivity() {
     }
 
     override fun processBack() {
-        if (episode_detail_list.visibility == View.VISIBLE) return
+        if (episode_detail_list_container.visibility == View.VISIBLE) return
         super.processBack()
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             when {
-                episode_detail_list.visibility == View.VISIBLE -> subjectPresenter.subjectView.closeEpisodeDetail()
+                episode_detail_list_container.visibility == View.VISIBLE -> subjectPresenter.subjectView.closeEpisodeDetail()
                 else -> finish()
             }
             return true

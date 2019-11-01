@@ -44,6 +44,7 @@
             android:id="@+id/item_time"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
             android:textSize="@dimen/textSizeSmall"
             android:padding="1dp"
             android:ellipsize="end"
@@ -53,7 +54,8 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/item_user"/>
     <TextView
-            android:paddingTop="8dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginStart="4dp"
             android:id="@+id/item_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

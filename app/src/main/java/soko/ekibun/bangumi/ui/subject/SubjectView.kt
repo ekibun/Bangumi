@@ -1,6 +1,5 @@
 package soko.ekibun.bangumi.ui.subject
 
-import android.animation.LayoutTransition
 import android.annotation.SuppressLint
 import android.view.Gravity
 import android.view.View
@@ -15,18 +14,12 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.appbar.AppBarLayout
-import com.google.android.material.appbar.CollapsingToolbarLayout
-import com.xiaofeng.flowlayoutmanager.FlowLayoutManager
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_subject.*
-import kotlinx.android.synthetic.main.activity_subject.view.*
-import kotlinx.android.synthetic.main.subject_blog.*
 import kotlinx.android.synthetic.main.subject_buttons.*
-import kotlinx.android.synthetic.main.subject_character.*
 import kotlinx.android.synthetic.main.subject_detail.*
-import kotlinx.android.synthetic.main.subject_episode.*
-import kotlinx.android.synthetic.main.subject_episode.view.*
-import kotlinx.android.synthetic.main.subject_topic.*
+import kotlinx.android.synthetic.main.subject_detail.view.*
+import kotlinx.android.synthetic.main.subject_panel.*
 import org.jsoup.Jsoup
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
@@ -36,10 +29,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarAdapter
 import soko.ekibun.bangumi.ui.view.DragPhotoView
 import soko.ekibun.bangumi.ui.web.WebActivity
-import soko.ekibun.bangumi.util.AppUtil
-import soko.ekibun.bangumi.util.GlideUtil
-import soko.ekibun.bangumi.util.HttpUtil
-import soko.ekibun.bangumi.util.PlayerBridge
+import soko.ekibun.bangumi.util.*
 
 class SubjectView(private val context: SubjectActivity) {
 
@@ -51,12 +41,11 @@ class SubjectView(private val context: SubjectActivity) {
     val tagAdapter = TagAdapter()
     val topicAdapter = TopicAdapter()
     val blogAdapter = BlogAdapter()
-    val sitesAdapter = SitesAdapter()
     val commentAdapter = CommentAdapter()
     val seasonAdapter = SeasonAdapter()
     val seasonLayoutManager = LinearLayoutManager(context)
 
-    val detail: LinearLayout = context.subject_detail
+    val detail = context.subject_detail as LinearLayout
 
 
     var appBarOffset = -1
@@ -72,7 +61,8 @@ class SubjectView(private val context: SubjectActivity) {
     }
 
     init {
-        val marginEnd = (context.item_buttons.layoutParams as CollapsingToolbarLayout.LayoutParams).marginEnd
+        val marginEnd = ResourceUtil.toPixels(context.resources, 12f)
+        val dp20 = ResourceUtil.toPixels(context.resources, 20f)
         (context.title_expand.layoutParams as ConstraintLayout.LayoutParams).marginEnd = 3 * marginEnd
 
         context.app_bar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
@@ -81,13 +71,16 @@ class SubjectView(private val context: SubjectActivity) {
             appBarOffset = verticalOffset
             context.item_scrim.alpha = ratio
             context.item_subject.alpha = 1 - ratio
-            context.item_buttons.translationY = -(context.toolbar.height - context.item_buttons.height * 9 / 8) * ratio / 2 - context.item_buttons.height / 16
+            context.item_subject.translationY = -(4 + ratio * 0.8f) * dp20
+
+            context.item_buttons.translationY = -context.toolbar.height * ratio / 2
             context.title_collapse.alpha = 1 - (1 - ratio) * (1 - ratio) * (1 - ratio)
             context.title_expand.alpha = 1 - ratio
             context.item_buttons.translationX = -2.2f * marginEnd * ratio
             context.app_bar.elevation = Math.max(0f, 12 * (ratio - 0.95f) / 0.05f)
 
-            context.episode_detail_list.invalidate()
+            detail.setPadding(0, ((1 - ratio) * dp20).toInt(), 0, 0)
+            context.episode_detail_list_container.setPadding(0, ((1 - ratio) * dp20).toInt(), 0, 0)
         })
 
         context.season_list.adapter = seasonAdapter
@@ -118,10 +111,10 @@ class SubjectView(private val context: SubjectActivity) {
         }
         context.episode_detail_list.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         context.episode_detail_list.nestedScrollDistance = {
-            -appBarOffset
+            -appBarOffset * (context.app_bar.totalScrollRange + dp20) / context.app_bar.totalScrollRange
         }
         context.episode_detail_list.nestedScrollRange = {
-            context.app_bar.totalScrollRange
+            context.app_bar.totalScrollRange + dp20
         }
 
         context.item_close.setOnClickListener {
@@ -158,12 +151,6 @@ class SubjectView(private val context: SubjectActivity) {
         context.blog_list.layoutManager = LinearLayoutManager(context)
         context.blog_list.isNestedScrollingEnabled = false
 
-        context.site_list.adapter = sitesAdapter
-        val flowLayoutManager = FlowLayoutManager()
-        flowLayoutManager.isAutoMeasureEnabled = true
-        context.site_list.layoutManager = flowLayoutManager
-        context.site_list.isNestedScrollingEnabled = false
-
         context.tag_list.adapter = tagAdapter
         val tagLayoutManager = LinearLayoutManager(context)
         tagLayoutManager.orientation = RecyclerView.HORIZONTAL
@@ -172,8 +159,6 @@ class SubjectView(private val context: SubjectActivity) {
 
         context.comment_list.adapter = commentAdapter
         context.comment_list.layoutManager = LinearLayoutManager(context)
-
-        detail.layoutTransition.enableTransitionType(LayoutTransition.CHANGING)
 
         context.root_layout.removeView(detail)
         commentAdapter.setHeaderView(detail)
@@ -196,22 +181,28 @@ class SubjectView(private val context: SubjectActivity) {
 
         context.title_collapse.text = subject.displayName
         context.title_expand.text = context.title_collapse.text
-        context.title_expand.post {
-            val layoutParams = (context.title_collapse.layoutParams as ConstraintLayout.LayoutParams)
-            layoutParams.marginEnd = 3 * (context.item_buttons.layoutParams as CollapsingToolbarLayout.LayoutParams).marginEnd + context.item_buttons.width
-            context.title_collapse.layoutParams = layoutParams
-            (context.item_subject.layoutParams as CollapsingToolbarLayout.LayoutParams).topMargin = context.toolbar_container.height
-        }
-        context.item_info.text = (if (subject.category.isNullOrEmpty()) context.getString(Subject.getTypeRes(subject.type)) else subject.category) + " · " + subject.name
-        context.item_subject_title.visibility = View.GONE
-        val saleDate = subject.infobox?.firstOrNull { it.first in arrayOf("发售日期", "发售日", "发行日期") }
-        val artist = subject.infobox?.firstOrNull { it.first.substringBefore(" ") in arrayOf("动画制作", "作者", "开发", "游戏制作", "艺术家") }
-                ?: subject.infobox?.firstOrNull { it.first.substringBefore(" ") in arrayOf("导演", "发行") }
-        context.item_air_time.text = if (saleDate != null) "${saleDate.first}：${Jsoup.parse(saleDate.second).body().text()}"
-        else "放送日期：${subject.air_date
-                ?: ""} ${if (artist != null) CalendarAdapter.weekList[subject.air_weekday] else ""}"
-        context.item_air_week.text = if (artist != null) "${artist.first}：${Jsoup.parse(artist.second).body().text()}" else "更新时间：${CalendarAdapter.weekList[subject.air_weekday]}"
-        detail.item_detail.text = if (subject.summary.isNullOrEmpty()) subject.name else subject.summary
+        context.title_collapse.setPadding(context.title_collapse.paddingLeft, context.title_collapse.paddingTop, context.item_buttons.width, context.title_collapse.paddingBottom)
+
+        context.item_subject_title.text = subject.name
+
+        val infoBoxPreview = ArrayList<String>()
+        infoBoxPreview.add(if (subject.category.isNullOrEmpty()) context.getString(Subject.getTypeRes(subject.type)) else subject.category!!)
+        infoBoxPreview.add(subject.infobox?.firstOrNull { it.first in arrayOf("发售日期", "发售日", "发行日期") }?.let {
+            "${Jsoup.parse(it.second).body().text()} ${it.first.substring(0, 2)}"
+        } ?: "${subject.air_date ?: ""} ${CalendarAdapter.weekList[subject.air_weekday]}")
+
+        infoBoxPreview.addAll(subject.infobox?.filter {
+            it.first.substringBefore(" ") in arrayOf("动画制作", "作者", "开发", "游戏制作", "艺术家")
+        }?.map { "${it.first}：${Jsoup.parse(it.second).body().text()}" } ?: ArrayList())
+
+        infoBoxPreview.addAll(subject.infobox?.filter {
+            it.first.substringBefore(" ") in arrayOf("导演", "发行", "出版社", "连载杂志", "作曲", "作词", "编曲", "插图", "作画")
+        }?.map { "${it.first}：${Jsoup.parse(it.second).body().text()}" } ?: ArrayList())
+
+        context.item_subject_info.text = infoBoxPreview.joinToString(" / ")
+
+        detail.item_detail.text = subject.summary
+        detail.item_detail.visibility = if (subject.summary.isNullOrEmpty()) View.GONE else View.VISIBLE
 
         context.item_play.visibility = if (PlayerBridge.checkActivity(context, subject)) View.VISIBLE else View.GONE
 
@@ -308,7 +299,9 @@ class SubjectView(private val context: SubjectActivity) {
         detail.episode_detail.text = if (eps.size == mainEps.size) context.getString(R.string.phrase_full_eps, eps.size) else
             eps.lastOrNull()?.parseSort(context)?.let { context.getString(R.string.parse_update_to, it) }
                     ?: context.getString(R.string.hint_air_nothing)
-
+        episodes.forEach { ep ->
+            ep.progress = ep.progress ?: subjectEpisode.firstOrNull { it.id == ep.id }?.progress
+        }
         subjectEpisode = episodes.plus(subjectEpisode).distinctBy { it.id }.sortedBy { it.sort }
         val maps = LinkedHashMap<String, List<Episode>>()
         subjectEpisode.forEach {
@@ -326,7 +319,7 @@ class SubjectView(private val context: SubjectActivity) {
                 episodeDetailAdapter.addData(EpisodeAdapter.SelectableSectionEntity(ep))
             }
         }
-        if (!scrolled || episodeDetailAdapter.data.size != lastEpisodeSize) {
+        if ((!scrolled || episodeDetailAdapter.data.size != lastEpisodeSize) && episodeAdapter.data.any { it.progress != null }) {
             scrolled = true
 
             var lastView = 0
@@ -346,9 +339,7 @@ class SubjectView(private val context: SubjectActivity) {
     private var scrolled = false
 
     private fun showEpisodeDetail(show: Boolean) {
-        context.episode_detail_list_header.visibility = if (show) View.VISIBLE else View.INVISIBLE
-        context.episode_detail_list_header.animation = AnimationUtils.loadAnimation(context, if (show) R.anim.move_in else R.anim.move_out)
-        context.episode_detail_list.visibility = if (show) View.VISIBLE else View.INVISIBLE
-        context.episode_detail_list.animation = AnimationUtils.loadAnimation(context, if (show) R.anim.move_in else R.anim.move_out)
+        context.episode_detail_list_container.visibility = if (show) View.VISIBLE else View.INVISIBLE
+        context.episode_detail_list_container.animation = AnimationUtils.loadAnimation(context, if (show) R.anim.move_in else R.anim.move_out)
     }
 }

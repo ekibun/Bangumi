@@ -1,5 +1,6 @@
 package soko.ekibun.bangumi.api.bangumi
 
+import android.util.Log
 import android.webkit.CookieManager
 import com.google.gson.reflect.TypeToken
 import okhttp3.FormBody
@@ -591,6 +592,7 @@ object Bangumi {
                 when {
                     parser.eventType != XmlPullParser.START_TAG -> ApiHelper.SaxEventType.NOTHING
                     parser.getAttributeValue("", "id")?.startsWith("post_") == true -> {
+                        Log.v("POST", str)
                         if (beforeData.isEmpty()) {
                             beforeData = str
                             onBeforePost(str)
@@ -600,6 +602,7 @@ object Bangumi {
                         ApiHelper.SaxEventType.BEGIN
                     }
                     parser.getAttributeValue("", "id")?.contains("reply_wrapper") == true -> {
+                        updateReply(str)
                         ApiHelper.SaxEventType.BEGIN
                     }
                     else -> ApiHelper.SaxEventType.NOTHING
@@ -783,6 +786,7 @@ object Bangumi {
                         ApiHelper.SaxEventType.BEGIN
                     }
                     parser.getAttributeValue("", "id")?.contains("columnHomeB") == true -> {
+                        addSubject(str)
                         ApiHelper.SaxEventType.END
                     }
                     else -> ApiHelper.SaxEventType.NOTHING

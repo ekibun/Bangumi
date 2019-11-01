@@ -42,6 +42,7 @@
     <TextView
             android:id="@+id/item_time"
             android:layout_width="0dp"
+            android:layout_marginTop="2dp"
             android:layout_height="wrap_content"
             android:textSize="@dimen/textSizeSmall"
             android:ellipsize="end"
@@ -51,7 +52,8 @@
             app:layout_constraintTop_toBottomOf="@+id/item_user"
             tools:text="2019-04-23"/>
     <TextView
-            android:paddingTop="8dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginStart="4dp"
             android:id="@+id/item_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -66,19 +68,19 @@
             app:layout_constraintEnd_toEndOf="parent"
             tools:text="Blog Title"/>
     <TextView
-            android:paddingTop="8dp"
+            android:layout_marginTop="4dp"
             android:id="@+id/item_summary"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/textSizeMedium"
+            android:textSize="14sp"
             android:ellipsize="end"
-            android:maxLines="4"
-            app:layout_constraintStart_toStartOf="parent"
+            android:maxLines="2"
+            app:layout_constraintStart_toStartOf="@+id/item_title"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/item_title"
             tools:text="Blog Content..."/>
     <TextView
-            android:paddingTop="8dp"
+            android:layout_marginTop="6dp"
             android:alpha="0.5"
             android:id="@+id/item_comment"
             android:layout_width="0dp"
@@ -89,7 +91,7 @@
             app:layout_constraintLeft_toRightOf="@+id/item_avatar"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/item_summary"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/item_summary"
             app:layout_constraintEnd_toEndOf="parent"
             tools:text="0 回复"/>
 
