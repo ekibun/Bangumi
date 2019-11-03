@@ -106,20 +106,7 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
         if (page == 0)
             item.second.isRefreshing = true
         val useApi = position == 2 && subjectTypeView.selectedType in arrayOf(R.id.collection_type_anime, R.id.collection_type_book, R.id.collection_type_real)
-        collectionCalls[position] = if (useApi) Bangumi.getCollectionSax {
-            if (it.type != subjectTypeView.getType()) return@getCollectionSax
-            item.second.post {
-                item.first.setNewData(
-                        item.first.data.plus(it).sortedByDescending {
-                            val eps = it.eps?.filter { it.type == Episode.TYPE_MAIN }
-                            val watchTo = eps?.lastOrNull { it.progress == Episode.PROGRESS_WATCH }
-                            val airTo = eps?.lastOrNull { it.status == Episode.STATUS_AIR }
-                            (if (watchTo != airTo) ":" else "") + (airTo?.airdate ?: "")
-                        }.toMutableList()
-                )
-
-            }
-        }
+        collectionCalls[position] = if (useApi) Bangumi.getCollectionSax {}
         else Bangumi.getCollectionList(subjectTypeView.getType(), userName, Collection.getTypeById(position + 1), page + 1)
         collectionCalls[position]?.enqueue(ApiHelper.buildCallback({ list ->
             item.first.isUseEmpty(true)
@@ -133,8 +120,7 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
                         val watchTo = eps?.lastOrNull { it.progress == Episode.PROGRESS_WATCH }
                         val airTo = eps?.lastOrNull { it.status == Episode.STATUS_AIR }
                         (if (watchTo != airTo) ":" else "") + (airTo?.airdate ?: "")
-                    }.toMutableList()
-                    )
+                    }.toMutableList())
                 }
             }
             if (useApi || list.size < 10)

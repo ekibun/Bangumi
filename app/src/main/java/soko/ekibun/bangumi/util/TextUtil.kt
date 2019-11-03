@@ -5,6 +5,7 @@ import android.text.Spanned
 import android.text.TextUtils
 import android.text.style.*
 import org.jsoup.Jsoup
+import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.ui.topic.PostAdapter
 import soko.ekibun.bangumi.ui.topic.ReplyDialog
 import kotlin.math.roundToInt
@@ -21,6 +22,24 @@ object TextUtil {
         val doc = Jsoup.parse(string)
         doc.select("br").after("$\$b\$r$")
         return doc.body().text().replace("$\$b\$r$", "\n")
+    }
+
+    /**
+     * 将bbcode转换为html
+     */
+    fun bbcode2html(text: String): String {
+        return text.replace("\n", "<br/>").replace(Regex("""\[(/?(b|i|u|mask))]"""), "<$1>")
+                .replace("[s]", "<span style=\"text-decoration:line-through\">")
+                .replace(Regex("""\[img](.*?)\[/img]"""), "<img src=\"$1\"/>")
+                .replace(Regex("""\[color=(.*?)]"""), "<span style=\"color:$1\"/>")
+                .replace(Regex("""\[size=(.*?)]"""), "<span style=\"font-size:$1px\"/>")
+                .replace(Regex("""\[(/color|/s|/size)]"""), "</span>").let {
+                    var ret = it
+                    ReplyDialog.emojiList.forEach {
+                        ret = ret.replace(it.first, "<img src=\"${it.second.replace(Bangumi.SERVER, "")}\"/>")
+                    }
+                    ret
+                }
     }
 
     /**

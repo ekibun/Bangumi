@@ -12,7 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="8sp"
-        android:textColor="@drawable/color_selectable"
+        android:textColor="@color/color_selectable"
         tools:text="全部小组"
         app:layout_constraintBottom_toTopOf="@android:id/title"
         app:layout_constraintStart_toStartOf="parent"
@@ -22,7 +22,7 @@
     <TextView
             android:id="@android:id/title"
             android:textAppearance="@android:style/TextAppearance.DeviceDefault.Widget.TabWidget"
-            android:textColor="@drawable/color_selectable"
+            android:textColor="@color/color_selectable"
             android:text="@string/rakuen_topic"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

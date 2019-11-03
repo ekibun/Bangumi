@@ -1,7 +1,6 @@
 package soko.ekibun.bangumi.ui.main.fragment.home.fragment.timeline
 
 import android.os.Bundle
-import android.text.Editable
 import android.text.Spanned
 import android.view.View
 import androidx.appcompat.widget.PopupMenu
@@ -51,7 +50,7 @@ class TimeLineFragment : HomeTabFragment(R.layout.fragment_timeline) {
             item_new?.hide()
         } else {
             item_new?.show()
-            var draft: Editable? = null
+            var draft: String? = null
             item_new?.setOnClickListener {
                 val dialog = ReplyDialog()
                 dialog.hint = context?.getString(R.string.timeline_dialog_add) ?: ""

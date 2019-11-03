@@ -1,9 +1,10 @@
 package soko.ekibun.bangumi.ui.topic
 
 import android.annotation.SuppressLint
-import android.text.Editable
+import android.text.Html
 import android.text.Spanned
 import androidx.appcompat.app.AlertDialog
+import androidx.preference.PreferenceManager
 import kotlinx.android.synthetic.main.activity_topic.*
 import org.jsoup.Jsoup
 import soko.ekibun.bangumi.R
@@ -124,16 +125,18 @@ class TopicPresenter(private val context: TopicActivity) {
         }
     }
 
-    private fun buildPopupWindow(hint: String = "", draft: Editable? = null, html: String = "", callback: (Editable?, Boolean) -> Unit) {
+    private fun buildPopupWindow(hint: String = "", draft: String? = null, html: String = "", callback: (String?, Boolean) -> Unit) {
         val dialog = ReplyDialog()
         dialog.hint = hint
-        dialog.draft = draft
-        dialog.html = html
+        dialog.draft = draft ?: {
+            TextUtil.span2bbcode(Html.fromHtml(ReplyDialog.parseHtml(html)))
+        }()
+        dialog.bbCode = PreferenceManager.getDefaultSharedPreferences(context).getBoolean("use_bbcode", false)
         dialog.callback = callback
         dialog.show(context.supportFragmentManager, "reply")
     }
 
-    private val drafts = HashMap<String, Editable>()
+    private val drafts = HashMap<String, String>()
     @SuppressLint("InflateParams")
     private fun showReplyPopupWindow(topic: Topic, post: TopicPost? = null) {
         val draftId = post?.pst_id ?: "topic"

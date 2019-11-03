@@ -5,7 +5,8 @@
         xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-    <View android:id="@+id/item_lock" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"/>
+    <View android:id="@+id/item_lock" android:layout_width="match_parent" android:layout_height="0dp"
+          android:layout_weight="1"/>
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -13,14 +14,33 @@
             android:elevation="20dp"
             android:id="@+id/item_container"
             android:background="@drawable/bg_round_dialog">
-        <TextView
-                android:id="@+id/item_hint"
-                android:layout_marginTop="12dp"
-                android:layout_marginLeft="12dp"
-                android:layout_marginRight="12dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:singleLine="true"/>
+        <LinearLayout android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:orientation="horizontal">
+            <TextView
+                    android:id="@+id/item_hint"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginStart="12dp"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    tools:text="回复：2333"
+                    android:singleLine="true"/>
+            <ImageButton
+                    android:id="@+id/item_bbcode"
+                    android:layout_width="wrap_content"
+                    android:tint="@color/color_selectable"
+                    android:layout_marginTop="6dp"
+                    android:layout_marginLeft="6dp"
+                    android:layout_marginRight="6dp"
+                    android:translationY="4dp"
+                    android:tintMode="src_in"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:layout_height="wrap_content"
+                    app:srcCompat="@drawable/ic_code"
+                    tools:activate="true" tools:ignore="ContentDescription"/>
+        </LinearLayout>
+
 
         <com.awarmisland.android.richedittext.view.RichEditText
                 android:id="@+id/item_input"
@@ -38,7 +58,7 @@
                 android:focusableInTouchMode="true"
                 android:inputType="textMultiLine"
                 tools:ignore="LabelFor">
-            <requestFocus />
+            <requestFocus/>
         </com.awarmisland.android.richedittext.view.RichEditText>
 
         <LinearLayout

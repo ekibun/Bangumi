@@ -5,7 +5,7 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
 static def getAlphaVersionName() {
-    "alpha" + new Date().format("yyyyMMdd")
+    'alpha' + new Date().format('yyyyMMdd')
 }
 
 android {
@@ -18,12 +18,12 @@ android {
     compileSdkVersion 29
     buildToolsVersion '29.0.2'
     defaultConfig {
-        applicationId "soko.ekibun.bangumi"
+        applicationId 'soko.ekibun.bangumi'
         minSdkVersion 22
         targetSdkVersion 29
         versionCode 1
         versionName getAlphaVersionName()
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
     buildTypes {
         release {
@@ -38,6 +38,7 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.preference:preference:1.1.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0-alpha4', {
         exclude group: 'com.android.support', module: 'support-annotations'

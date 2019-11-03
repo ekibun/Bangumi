@@ -13,7 +13,7 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintBottom_toTopOf="@+id/item_date"
             android:background="@drawable/bg_round_rect"
-            android:backgroundTint="@drawable/color_selectable"
+            android:backgroundTint="@color/color_selectable"
             />
     <TextView
             android:id="@+id/item_date"
@@ -23,7 +23,7 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintBottom_toTopOf="@+id/item_week"
             android:textSize="12sp"
-            android:textColor="@drawable/color_selectable"
+            android:textColor="@color/color_selectable"
             android:layout_marginBottom="2dp"
             tools:text="4-19"
             />
@@ -36,9 +36,9 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             android:background="@drawable/bg_calendar_selector"
-            android:textColor="@drawable/color_calendar_selector"
+            android:textColor="@color/color_calendar_selector"
             android:backgroundTintMode="src_in"
-            android:backgroundTint="@drawable/color_selectable"
+            android:backgroundTint="@color/color_selectable"
             android:textSize="14sp"
             tools:text="三"
             />

@@ -11,7 +11,6 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
-import android.text.Editable
 import android.text.Html
 import android.text.style.ImageSpan
 import android.util.Size
@@ -46,9 +45,17 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
     private var contentView: View? = null
 
     var hint: String = ""
-    var callback: (Editable?, Boolean) -> Unit = { _, _ -> }
-    var html: String = ""
-    var draft: Editable? = null
+    var callback: (String?, Boolean) -> Unit = { _, _ -> }
+    var draft: String? = null
+
+    var bbCode: Boolean = false
+
+    private fun insertCode(code: String) {
+        val contentView = contentView ?: return
+        contentView.item_input.editableText.insert(contentView.item_input.selectionStart, "[$code]")
+        contentView.item_input.editableText.insert(contentView.item_input.selectionEnd, "[/$code]")
+        contentView.item_input.setSelection(contentView.item_input.selectionEnd - code.length - 3)
+    }
 
     private fun showFormatPop(editText: RichEditText, anchor: View) {
         val popup = PopupMenu(editText.context, anchor)
@@ -66,6 +73,17 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
         updateCheck()
 
         popup.setOnMenuItemClickListener {
+            if (bbCode) {
+                insertCode(when (it.itemId) {
+                    R.id.format_bold -> "b"
+                    R.id.format_italic -> "i"
+                    R.id.format_strike -> "s"
+                    R.id.format_underline -> "u"
+                    R.id.format_mask -> "mask"
+                    else -> return@setOnMenuItemClickListener true
+                })
+                return@setOnMenuItemClickListener true
+            }
             when (it.itemId) {
                 R.id.format_bold -> {
                     editText.setBold(!(currentFontStyle?.isBold ?: false))
@@ -105,8 +123,26 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val contentView = contentView ?: inflater.inflate(R.layout.dialog_reply, container)
         this.contentView = contentView
+
+        contentView.item_bbcode.isSelected = bbCode
+        contentView.item_bbcode.setOnClickListener {
+            bbCode = !bbCode
+            contentView.item_bbcode.isSelected = bbCode
+            if (bbCode) {
+                contentView.item_input.setText(TextUtil.span2bbcode(contentView.item_input.editableText))
+            } else {
+                contentView.item_input.setText(setTextLinkOpenByWebView(Html.fromHtml(parseHtml(TextUtil.bbcode2html(contentView.item_input.editableText.toString())),
+                        CollapseHtmlHttpImageGetter(contentView.item_input),
+                        HtmlTagHandler(contentView.item_input, onClick = onClickImage)), onClickUrl))
+            }
+        }
+
         val emojiAdapter = EmojiAdapter(emojiList)
         emojiAdapter.setOnItemChildClickListener { _, _, position ->
+            if (bbCode) {
+                contentView.item_input.editableText.replace(contentView.item_input.selectionStart, contentView.item_input.selectionEnd, emojiList[position].first)
+                return@setOnItemChildClickListener
+            }
             val drawable = CollapseUrlDrawable(WeakReference(contentView.item_input))
             drawable.url = emojiList[position].second
             drawable.loadImage()
@@ -139,7 +175,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
             startActivityForResult(intent, 1)
         }
         contentView.item_btn_send.setOnClickListener {
-            callback(contentView.item_input.editableText, true)
+            callback(TextUtil.span2bbcode(contentView.item_input.editableText), true)
             callback = { _, _ -> }
             dismiss()
         }
@@ -178,12 +214,14 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
         contentView.item_lock.setOnClickListener { dismiss() }
         contentView.item_hint.text = hint
 
-        if (draft != null) {
-            contentView.item_input.text = draft
-        } else {
-            contentView.item_input.setText(setTextLinkOpenByWebView(Html.fromHtml(parseHtml(html),
-                    CollapseHtmlHttpImageGetter(contentView.item_input),
-                    HtmlTagHandler(contentView.item_input, onClick = onClickImage)), onClickUrl))
+        if (!draft.isNullOrEmpty()) {
+            if (bbCode) {
+                contentView.item_input.setText(draft)
+            } else {
+                contentView.item_input.setText(setTextLinkOpenByWebView(Html.fromHtml(parseHtml(TextUtil.bbcode2html(draft!!)),
+                        CollapseHtmlHttpImageGetter(contentView.item_input),
+                        HtmlTagHandler(contentView.item_input, onClick = onClickImage)), onClickUrl))
+            }
         }
 
         dialog?.window?.let { ThemeModel.updateNavigationTheme(it, contentView.context) }
@@ -208,7 +246,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        callback(contentView?.item_input?.editableText, false)
+        callback(contentView?.item_input?.editableText?.let { TextUtil.span2bbcode(it) }, false)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -238,9 +276,20 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
             cursor.getString(nameIndex)
         } ?: "image.jpg"
         val requestBody = RequestBody.create(MediaType.parse(mimeType), inputStream.readBytes())
-        val drawable = UploadDrawable(requestBody, fileName, WeakReference(item_input), data?.data ?: return)
+        var span: HtmlTagHandler.ClickableImage? = null
+        val drawable = UploadDrawable(requestBody, fileName, WeakReference(item_input), data?.data ?: return) {
+            if (bbCode) {
+                val start = item_input.editableText.getSpanStart(span)
+                val end = item_input.editableText.getSpanEnd(span)
+                if (start < 0 || end < 0) return@UploadDrawable
+                item_input.editableText.removeSpan(span)
+                item_input.editableText.removeSpan(span?.image)
+                item_input.editableText.replace(start, end, "[img]$it[/img]")
+            }
+        }
         drawable.loadImage()
-        item_input.setImage(HtmlTagHandler.ClickableImage(ImageSpan(drawable), onClickImage))
+        span = HtmlTagHandler.ClickableImage(ImageSpan(drawable), onClickImage)
+        item_input.setImage(span)
     }
 
     /**
@@ -313,7 +362,8 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
             private val requestBody: RequestBody,
             private val fileName: String,
             container: WeakReference<TextView>,
-            uri: Uri
+            uri: Uri,
+            private val onUploaded: (String) -> Unit
     ) : CollapseUrlDrawable(container) {
 
         init {
@@ -343,6 +393,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
                         val imgUrl = response.body()?.success_image?.firstOrNull()?.url
                         if (imgUrl != null) {
                             url = "https://upload.cc/$imgUrl"
+                            onUploaded(url!!)
                             loadImage()
                         } else {
                             error = true
