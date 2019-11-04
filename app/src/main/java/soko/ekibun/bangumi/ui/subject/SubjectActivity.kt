@@ -36,6 +36,7 @@ class SubjectActivity : SwipeBackActivity() {
                             ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 0
                     Subject(id)
                 }())
+        subjectPresenter.refresh()
 
         val episodePaddingBottom = episode_detail_list.paddingBottom
         val listPaddingBottom = comment_list.paddingBottom
@@ -45,11 +46,6 @@ class SubjectActivity : SwipeBackActivity() {
             toolbar_container.setPadding(0, insets.systemWindowInsetTop, 0, 0)
             insets
         }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        subjectPresenter.refresh()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
