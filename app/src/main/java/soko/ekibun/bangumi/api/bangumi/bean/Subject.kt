@@ -45,7 +45,7 @@ data class Subject(
     /**
      * 显示用的条目名称
      */
-    val displayName = TextUtil.html2text((if (name_cn.isNullOrEmpty()) name else name_cn) ?: "")
+    val displayName get() = TextUtil.html2text((if (name_cn.isNullOrEmpty()) name else name_cn) ?: "")
 
     /**
      * 条目评分

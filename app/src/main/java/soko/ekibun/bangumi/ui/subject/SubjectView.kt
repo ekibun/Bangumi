@@ -313,7 +313,7 @@ class SubjectView(private val context: SubjectActivity) {
     fun updateEpisodeLabel(episodes: List<Episode>, subject: Subject) {
         val mainEps = episodes.filter { it.type == Episode.TYPE_MAIN || it.type == Episode.TYPE_MUSIC }
         val eps = mainEps.filter { it.status in listOf(Episode.STATUS_AIR) }
-        detail.episode_detail.text = if (eps.size == mainEps.size && subject.eps_count > 0) context.getString(R.string.phrase_full_eps, eps.size) else
+        detail.episode_detail.text = if (eps.size == mainEps.size && (subject.type == Subject.TYPE_MUSIC || subject.eps_count > 0)) context.getString(R.string.phrase_full_eps, eps.size) else
             eps.lastOrNull()?.parseSort(context)?.let { context.getString(R.string.parse_update_to, it) }
                     ?: context.getString(R.string.hint_air_nothing)
     }
@@ -322,7 +322,7 @@ class SubjectView(private val context: SubjectActivity) {
     fun updateEpisode(episodes: List<Episode>): List<Episode> {
         if (episodes.none { it.id != 0 }) return subjectEpisode
         episodes.forEach { ep ->
-            ep.progress = ep.progress ?: subjectEpisode.firstOrNull { it.id == ep.id }?.progress
+            ep.merge(subjectEpisode.firstOrNull { it.id == ep.id } ?: return@forEach)
         }
         subjectEpisode = episodes.plus(subjectEpisode).distinctBy { it.id }.sortedBy { it.sort }
         val maps = LinkedHashMap<String, List<Episode>>()

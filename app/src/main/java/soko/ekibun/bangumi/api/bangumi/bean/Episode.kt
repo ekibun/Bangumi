@@ -40,6 +40,20 @@ data class Episode(
 ) {
     val url = "${Bangumi.SERVER}/ep/$id"
 
+    fun merge(ep: Episode) {
+        sort = if (sort == 0f) ep.sort else sort
+        name = name ?: ep.name
+        name_cn = name_cn ?: ep.name_cn
+        duration = duration ?: ep.duration
+        airdate = ep.airdate ?: ep.airdate
+        comment = if (comment == 0) ep.comment else comment
+        desc = desc ?: ep.desc
+        status = status ?: ep.status
+        progress = progress ?: ep.progress
+        category = category ?: ep.category
+    }
+
+
     fun parseSort(context: Context): String{
         return if(type == TYPE_MAIN)
             context.getString(R.string.parse_sort_ep, DecimalFormat("#.##").format(sort))
