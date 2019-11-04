@@ -1,6 +1,7 @@
 package soko.ekibun.bangumi.ui.subject
 
 import android.annotation.SuppressLint
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -176,129 +177,153 @@ class SubjectView(private val context: SubjectActivity) {
     }
 
     @SuppressLint("SetTextI18n")
-    fun updateSubject(subject: Subject) {
-        if (context.isDestroyed) return
+    fun updateSubject(subject: Subject, tag: String? = null) {
+        if (context.isDestroyed || tag == "") return
 
-        context.title_collapse.text = subject.displayName
-        context.title_expand.text = context.title_collapse.text
-        context.title_collapse.setPadding(context.title_collapse.paddingLeft, context.title_collapse.paddingTop, context.item_buttons.width, context.title_collapse.paddingBottom)
+        Log.v("subject", "tag = $tag")
 
-        context.item_subject_title.text = subject.name
-
-        val infoBoxPreview = ArrayList<String>()
-        infoBoxPreview.add(if (subject.category.isNullOrEmpty()) context.getString(Subject.getTypeRes(subject.type)) else subject.category!!)
-        infoBoxPreview.add(subject.infobox?.firstOrNull { it.first in arrayOf("发售日期", "发售日", "发行日期") }?.let {
-            "${Jsoup.parse(it.second).body().text()} ${it.first.substring(0, 2)}"
-        } ?: "${subject.air_date ?: ""} ${CalendarAdapter.weekList[subject.air_weekday]}")
-
-        infoBoxPreview.addAll(subject.infobox?.filter {
-            it.first.substringBefore(" ") in arrayOf("动画制作", "作者", "开发", "游戏制作", "艺术家")
-        }?.map { "${it.first}：${Jsoup.parse(it.second).body().text()}" } ?: ArrayList())
-
-        infoBoxPreview.addAll(subject.infobox?.filter {
-            it.first.substringBefore(" ") in arrayOf("导演", "发行", "出版社", "连载杂志", "作曲", "作词", "编曲", "插图", "作画")
-        }?.map { "${it.first}：${Jsoup.parse(it.second).body().text()}" } ?: ArrayList())
-
-        context.item_subject_info.text = infoBoxPreview.joinToString(" / ")
-
-        detail.item_detail.text = subject.summary
-        detail.item_detail.visibility = if (subject.summary.isNullOrEmpty()) View.GONE else View.VISIBLE
-
-        context.item_play.visibility = if (PlayerBridge.checkActivity(context, subject)) View.VISIBLE else View.GONE
-
-        subject.rating?.let {
-            context.detail_score.text = if (it.score == 0f) "-" else String.format("%.1f", it.score)
-            context.detail_friend_score.text = if (it.friend_score == 0f) "-" else String.format("%.1f", it.friend_score)
-            context.detail_score_count.text = "×${if (it.total > 1000) "${it.total / 1000}k" else it.total.toString()}"
-            context.item_friend_score_label.text = context.getString(R.string.friend_score)
+        if (tag == null || tag == "name") {
+            context.title_collapse.text = subject.displayName
+            context.title_expand.text = context.title_collapse.text
+            context.title_collapse.setPadding(context.title_collapse.paddingLeft, context.title_collapse.paddingTop, context.item_buttons.width, context.title_collapse.paddingBottom)
+            context.item_subject_title.text = subject.name
         }
-        GlideUtil.with(context.item_cover)
-                ?.load(subject.images?.getImage(context))
-                ?.apply(RequestOptions.placeholderOf(context.item_cover.drawable))
-                ?.apply(RequestOptions.errorOf(R.drawable.err_404))
-                ?.into(context.item_cover)
-        context.item_cover.setOnClickListener {
-            val popWindow = PopupWindow(it, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, true)
-            val photoView = DragPhotoView(it.context)
-            popWindow.contentView = photoView
-            GlideUtil.with(photoView)?.load(subject.images?.large)
+        if (tag == null || tag == "infobox" || tag == "name") {
+            val infoBoxPreview = ArrayList<String>()
+            infoBoxPreview.add(if (subject.category.isNullOrEmpty()) context.getString(Subject.getTypeRes(subject.type)) else subject.category!!)
+            infoBoxPreview.add(subject.infobox?.firstOrNull { it.first in arrayOf("发售日期", "发售日", "发行日期") }?.let {
+                "${Jsoup.parse(it.second).body().text()} ${it.first.substring(0, 2)}"
+            } ?: "${subject.air_date ?: ""} ${CalendarAdapter.weekList[subject.air_weekday]}")
+
+            infoBoxPreview.addAll(subject.infobox?.filter {
+                it.first.substringBefore(" ") in arrayOf("动画制作", "作者", "开发", "游戏制作", "艺术家")
+            }?.map { "${it.first}：${Jsoup.parse(it.second).body().text()}" } ?: ArrayList())
+
+            infoBoxPreview.addAll(subject.infobox?.filter {
+                it.first.substringBefore(" ") in arrayOf("导演", "发行", "出版社", "连载杂志", "作曲", "作词", "编曲", "插图", "作画")
+            }?.map { "${it.first}：${Jsoup.parse(it.second).body().text()}" } ?: ArrayList())
+
+            context.item_subject_info.text = infoBoxPreview.joinToString(" / ")
+        }
+
+        if (tag == null || tag == "summary") {
+            detail.item_detail.text = subject.summary
+            detail.item_detail.visibility = if (subject.summary.isNullOrEmpty()) View.GONE else View.VISIBLE
+        }
+
+        if (tag == null || tag == "type") {
+            context.item_play.visibility = if (PlayerBridge.checkActivity(context, subject)) View.VISIBLE else View.GONE
+        }
+
+        if (tag == null || tag == "collect") {
+            updateEpisodeLabel(subject.eps ?: ArrayList(), subject)
+            detail.item_progress.visibility = if (HttpUtil.formhash.isNotEmpty() && subject.collect?.status == Collection.TYPE_DO && subject.type in listOf(Subject.TYPE_ANIME, Subject.TYPE_REAL, Subject.TYPE_BOOK)) View.VISIBLE else View.GONE
+            detail.item_progress_info.text = context.getString(R.string.phrase_progress,
+                    (if (subject.vol_count != 0) context.getString(R.string.parse_sort_vol, "${subject.vol_status}${if (subject.vol_count == 0) "" else "/${subject.vol_count}"}") + " " else "") +
+                            context.getString(R.string.parse_sort_ep, "${subject.ep_status}${if (subject.eps_count == 0) "" else "/${subject.eps_count}"}"))
+            subject.rating?.let {
+                context.detail_score.text = if (it.score == 0f) "-" else String.format("%.1f", it.score)
+                context.detail_friend_score.text = if (it.friend_score == 0f) "-" else String.format("%.1f", it.friend_score)
+                context.detail_score_count.text = "×${if (it.total > 1000) "${it.total / 1000}k" else it.total.toString()}"
+                context.item_friend_score_label.text = context.getString(R.string.friend_score)
+            }
+        }
+
+        if (tag == null || tag == "images") {
+            GlideUtil.with(context.item_cover)
+                    ?.load(subject.images?.getImage(context))
                     ?.apply(RequestOptions.placeholderOf(context.item_cover.drawable))
-                    ?.into(photoView.glideTarget)
-            photoView.mTapListener = {
-                popWindow.dismiss()
-            }
-            photoView.mExitListener = {
-                popWindow.dismiss()
-            }
-            photoView.mLongClickListener = {
-                val systemUiVisibility = popWindow.contentView.systemUiVisibility
-                val dialog = AlertDialog.Builder(context)
-                        .setItems(arrayOf(context.getString(R.string.share)))
-                        { _, _ ->
-                            AppUtil.shareDrawable(context, photoView.drawable ?: return@setItems)
-                        }.setOnDismissListener {
-                            popWindow.contentView.systemUiVisibility = systemUiVisibility
-                        }.create()
-                dialog.window?.decorView?.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    ?.apply(RequestOptions.errorOf(R.drawable.err_404))
+                    ?.into(context.item_cover)
+            context.item_cover.setOnClickListener {
+                val popWindow = PopupWindow(it, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, true)
+                val photoView = DragPhotoView(it.context)
+                popWindow.contentView = photoView
+                GlideUtil.with(photoView)?.load(subject.images?.large)
+                        ?.apply(RequestOptions.placeholderOf(context.item_cover.drawable))
+                        ?.into(photoView.glideTarget)
+                photoView.mTapListener = {
+                    popWindow.dismiss()
+                }
+                photoView.mExitListener = {
+                    popWindow.dismiss()
+                }
+                photoView.mLongClickListener = {
+                    val systemUiVisibility = popWindow.contentView.systemUiVisibility
+                    val dialog = AlertDialog.Builder(context)
+                            .setItems(arrayOf(context.getString(R.string.share)))
+                            { _, _ ->
+                                AppUtil.shareDrawable(context, photoView.drawable ?: return@setItems)
+                            }.setOnDismissListener {
+                                popWindow.contentView.systemUiVisibility = systemUiVisibility
+                            }.create()
+                    dialog.window?.decorView?.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION)
+                    dialog.show()
+                }
+                popWindow.isClippingEnabled = false
+                popWindow.animationStyle = R.style.AppTheme_FadeInOut
+                popWindow.showAtLocation(it, Gravity.CENTER, 0, 0)
+                popWindow.contentView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                         or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION)
-                dialog.show()
+                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_FULLSCREEN)
             }
-            popWindow.isClippingEnabled = false
-            popWindow.animationStyle = R.style.AppTheme_FadeInOut
-            popWindow.showAtLocation(it, Gravity.CENTER, 0, 0)
-            popWindow.contentView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_FULLSCREEN)
+            GlideUtil.with(context.item_cover_blur)
+                    ?.load(subject.images?.getImage(context))
+                    ?.apply(RequestOptions.placeholderOf(context.item_cover_blur.drawable))
+                    ?.apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)))
+                    ?.into(context.item_cover_blur)
         }
 
-        GlideUtil.with(context.item_cover_blur)
-                ?.load(subject.images?.getImage(context))
-                ?.apply(RequestOptions.placeholderOf(context.item_cover_blur.drawable))
-                ?.apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)))
-                ?.into(context.item_cover_blur)
-        subject.eps?.let { subject.eps = updateEpisode(it) }
-        detail.item_topics.visibility = if (subject.topic?.isNotEmpty() == true) View.VISIBLE else View.GONE
-        topicAdapter.setNewData(subject.topic)
-        detail.item_blogs.visibility = if (subject.blog?.isNotEmpty() == true) View.VISIBLE else View.GONE
-        blogAdapter.setNewData(subject.blog)
-        detail.item_character.visibility = if (subject.crt?.isNotEmpty() == true) View.VISIBLE else View.GONE
-        characterAdapter.setNewData(subject.crt)
-        detail.item_linked.visibility = if (subject.linked?.isNotEmpty() == true) View.VISIBLE else View.GONE
-        linkedSubjectsAdapter.setNewData(subject.linked)
-        detail.item_commend.visibility = if (subject.recommend?.isNotEmpty() == true) View.VISIBLE else View.GONE
-        recommendSubjectsAdapter.setNewData(subject.recommend)
-
-        tagAdapter.setNewData(subject.tags?.toMutableList())
-        tagAdapter.setOnItemClickListener { _, _, position ->
-            WebActivity.launchUrl(context, "${Bangumi.SERVER}/${subject.type}/tag/${tagAdapter.data[position].first}")
+        if (tag == null || tag == "eps")
+            subject.eps?.let {
+                val eps = updateEpisode(it)
+                updateEpisodeLabel(eps, subject)
+                subject.eps = eps
+            }
+        if (tag == null || tag == "topic") {
+            detail.item_topics.visibility = if (subject.topic?.isNotEmpty() == true) View.VISIBLE else View.GONE
+            topicAdapter.setNewData(subject.topic)
         }
-
-        context.item_subject.setOnClickListener {
-            if (scroll2Top()) return@setOnClickListener
-            InfoboxDialog.showDialog(context, subject)
+        if (tag == null || tag == "blog") {
+            detail.item_blogs.visibility = if (subject.blog?.isNotEmpty() == true) View.VISIBLE else View.GONE
+            blogAdapter.setNewData(subject.blog)
         }
-        detail.item_detail.setOnClickListener {
-            InfoboxDialog.showDialog(context, subject)
+        if (tag == null || tag == "crt") {
+            detail.item_character.visibility = if (subject.crt?.isNotEmpty() == true) View.VISIBLE else View.GONE
+            characterAdapter.setNewData(subject.crt)
         }
+        if (tag == null || tag == "linked") {
+            detail.item_linked.visibility = if (subject.linked?.isNotEmpty() == true) View.VISIBLE else View.GONE
+            linkedSubjectsAdapter.setNewData(subject.linked)
+        }
+        if (tag == null || tag == "recommend") {
+            detail.item_commend.visibility = if (subject.recommend?.isNotEmpty() == true) View.VISIBLE else View.GONE
+            recommendSubjectsAdapter.setNewData(subject.recommend)
+        }
+        if (tag == null || tag == "tags") {
+            tagAdapter.setNewData(subject.tags?.toMutableList())
+            tagAdapter.setOnItemClickListener { _, _, position ->
+                WebActivity.launchUrl(context, "${Bangumi.SERVER}/${subject.type}/tag/${tagAdapter.data[position].first}")
+            }
+        }
+    }
 
-        detail.item_progress.visibility = if (HttpUtil.formhash.isNotEmpty() && subject.collect?.status == Collection.TYPE_DO && subject.type in listOf(Subject.TYPE_ANIME, Subject.TYPE_REAL, Subject.TYPE_BOOK)) View.VISIBLE else View.GONE
-        detail.item_progress_info.text = context.getString(R.string.phrase_progress,
-                (if (subject.vol_count != 0) context.getString(R.string.parse_sort_vol, "${subject.vol_status}${if (subject.vol_count == 0) "" else "/${subject.vol_count}"}") + " " else "") +
-                        context.getString(R.string.parse_sort_ep, "${subject.ep_status}${if (subject.eps_count == 0) "" else "/${subject.eps_count}"}"))
+    fun updateEpisodeLabel(episodes: List<Episode>, subject: Subject) {
+        val mainEps = episodes.filter { it.type == Episode.TYPE_MAIN || it.type == Episode.TYPE_MUSIC }
+        val eps = mainEps.filter { it.status in listOf(Episode.STATUS_AIR) }
+        detail.episode_detail.text = if (eps.size == mainEps.size && subject.eps_count > 0) context.getString(R.string.phrase_full_eps, eps.size) else
+            eps.lastOrNull()?.parseSort(context)?.let { context.getString(R.string.parse_update_to, it) }
+                    ?: context.getString(R.string.hint_air_nothing)
     }
 
     private var subjectEpisode: List<Episode> = ArrayList()
     fun updateEpisode(episodes: List<Episode>): List<Episode> {
         if (episodes.none { it.id != 0 }) return subjectEpisode
-        val mainEps = episodes.filter { it.type == Episode.TYPE_MAIN || it.type == Episode.TYPE_MUSIC }
-        val eps = mainEps.filter { it.status in listOf(Episode.STATUS_AIR) }
-        detail.episode_detail.text = if (eps.size == mainEps.size) context.getString(R.string.phrase_full_eps, eps.size) else
-            eps.lastOrNull()?.parseSort(context)?.let { context.getString(R.string.parse_update_to, it) }
-                    ?: context.getString(R.string.hint_air_nothing)
         episodes.forEach { ep ->
             ep.progress = ep.progress ?: subjectEpisode.firstOrNull { it.id == ep.id }?.progress
         }

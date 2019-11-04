@@ -39,6 +39,14 @@ class SubjectPresenter(private val context: SubjectActivity) {
         this.subject = subject
         subjectView.updateSubject(subject)
 
+        context.item_subject.setOnClickListener {
+            if (subjectView.scroll2Top()) return@setOnClickListener
+            InfoboxDialog.showDialog(context, subject)
+        }
+        subjectView.detail.item_detail.setOnClickListener {
+            InfoboxDialog.showDialog(context, subject)
+        }
+
 
         subjectView.commentAdapter.setEnableLoadMore(true)
         subjectView.commentAdapter.setLoadMoreView(BrvahLoadMoreView())
@@ -214,8 +222,14 @@ class SubjectPresenter(private val context: SubjectActivity) {
         context.item_swipe.isRefreshing = true
 
         subjectCall = ApiHelper.buildGroupCall(
-                arrayOf(Bangumi.getSubject(subject),
-                        GithubRaw.createInstance().onAirInfo(subject.id / 1000, subject.id),
+                arrayOf(GithubRaw.createInstance().onAirInfo(subject.id / 1000, subject.id),
+                        Bangumi.getSubjectSax(subject) { newSubject, tag ->
+                            subject = newSubject
+                            context.runOnUiThread {
+                                if (tag == "collect") refreshCollection()
+                                subjectView.updateSubject(newSubject, tag)
+                            }
+                        },
                         BgmIpViewer.createInstance().subject(subject.id),
                         Bangumi.getSubjectEps(subject))
         ) { _, it ->
@@ -237,7 +251,9 @@ class SubjectPresenter(private val context: SubjectActivity) {
                     }
                 }
                 is List<*> -> {
-                    subject.eps = subjectView.updateEpisode(it.mapNotNull { it as? Episode })
+                    val eps = subjectView.updateEpisode(it.mapNotNull { it as? Episode })
+                    subjectView.updateEpisodeLabel(eps, subject)
+                    subject.eps = eps
                 }
             }
         }
@@ -344,7 +360,9 @@ class SubjectPresenter(private val context: SubjectActivity) {
         epCalls?.cancel()
         epCalls = Bangumi.getSubjectEps(subject)
         epCalls?.enqueue(ApiHelper.buildCallback({
-            subject.eps = subjectView.updateEpisode(it)
+            val eps = subjectView.updateEpisode(it)
+            subjectView.updateEpisodeLabel(eps, subject)
+            subject.eps = eps
         }, {}))
     }
 }

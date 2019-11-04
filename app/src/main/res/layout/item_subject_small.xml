@@ -32,13 +32,13 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:ellipsize="middle"
-            android:maxLines="2"
             android:textColor="?android:textColorPrimary"
             android:textSize="@dimen/textSizeMedium"
             tools:text="Subject Name"
             app:layout_constraintLeft_toLeftOf="@+id/item_cover"
             app:layout_constraintRight_toRightOf="@+id/item_cover"
-            app:layout_constraintTop_toBottomOf="@+id/item_cover"/>
+            app:layout_constraintTop_toBottomOf="@+id/item_cover"
+            android:singleLine="true"/>
 
     <TextView
             android:id="@+id/item_summary"

@@ -178,6 +178,290 @@ object Bangumi {
      * 获取条目信息
      * @param subject 条目
      */
+    fun getSubjectSax(subject: Subject, onUpdate: (Subject, String) -> Unit): Call<Subject> {
+        return ApiHelper.buildHttpCall(subject.url) { rsp ->
+            var lastTag = ""
+            var tankobon: List<Subject>? = null
+            val updateSubject = { str: String, newTag: String ->
+                val doc = Jsoup.parse(str)
+                doc.outputSettings().prettyPrint(false)
+
+                when (lastTag) {
+                    "type" -> subject.type = when (doc.selectFirst("#navMenuNeue .focus").text()) {
+                        "动画" -> Subject.TYPE_ANIME
+                        "书籍" -> Subject.TYPE_BOOK
+                        "音乐" -> Subject.TYPE_MUSIC
+                        "游戏" -> Subject.TYPE_GAME
+                        "三次元" -> Subject.TYPE_REAL
+                        else -> Subject.TYPE_ANY
+                    }
+                    "name" -> {
+                        subject.name = doc.selectFirst(".nameSingle> a")?.text() ?: subject.name
+                        subject.name_cn = doc.selectFirst(".nameSingle> a")?.attr("title") ?: subject.name_cn
+                        subject.category = doc.selectFirst(".nameSingle small")?.text() ?: subject.category
+                    }
+                    "summary" -> subject.summary = doc.selectFirst("#subject_summary")?.let { TextUtil.html2text(it.html()) }
+                            ?: subject.summary
+                    "images" -> subject.images = doc.selectFirst(".infobox img.cover")?.let { Images(parseImageUrl(it)) }
+                            ?: subject.images
+                    "infobox" -> {
+                        val infobox = doc.select("#infobox li")?.map { li ->
+                            val tip = li.selectFirst("span.tip")?.text() ?: ""
+                            var value = ""
+                            li.childNodes()?.forEach { if (it !is Element || !it.hasClass("tip")) value += it.outerHtml() }
+                            Pair(tip.trim(':', ' '), value.trim())
+                        }
+                        subject.infobox = infobox ?: subject.infobox
+                        subject.air_date = infobox?.firstOrNull { it.first in arrayOf("放送开始", "上映年度", "开始") }?.second
+                                ?: subject.air_date
+                        subject.air_weekday = ("一二三四五六日".map { "星期$it" }.indexOf(infobox?.firstOrNull { it.first == "放送星期" }?.second
+                                ?: "") + 1).let {
+                            if (it == 0) "月火水木金土日".map { "${it}曜日" }.indexOf(infobox?.firstOrNull { it.first == "放送星期" }?.second
+                                    ?: "") + 1 else it
+                        }
+                    }
+                    "eps" -> subject.eps = parseProgressList(doc)
+                    "tags" -> {
+                        subject.tags = doc.select(".subject_tag_section a")?.map {
+                            Pair(it.selectFirst("span")?.text() ?: "", it.selectFirst("small")?.text()?.toIntOrNull()
+                                    ?: 0)
+                        }
+                    }
+                    "collection" -> {
+                        subject.collection = doc.select("#subjectPanelCollect .tip_i a")?.mapNotNull { Regex("(\\d+)人(.+)").find(it.text())?.groupValues }?.let { list ->
+                            Subject.UserCollection(
+                                    wish = list.firstOrNull { it[2].contains("想") }?.get(1)?.toIntOrNull() ?: 0,
+                                    collect = list.firstOrNull { it[2].contains("过") }?.get(1)?.toIntOrNull() ?: 0,
+                                    doing = list.firstOrNull { it[2].contains("在") }?.get(1)?.toIntOrNull() ?: 0,
+                                    on_hold = list.firstOrNull { it[2] == "搁置" }?.get(1)?.toIntOrNull() ?: 0,
+                                    dropped = list.firstOrNull { it[2] == "抛弃" }?.get(1)?.toIntOrNull() ?: 0
+                            )
+                        }
+                    }
+                    "collect" -> {
+                        subject.rating = Subject.UserRating(
+                                rank = doc.selectFirst(".global_score .alarm")?.text()?.trim('#')?.toIntOrNull()
+                                        ?: subject.rating?.rank ?: 0,
+                                total = doc.selectFirst("span[property=\"v:votes\"]")?.text()?.toIntOrNull()
+                                        ?: subject.rating?.total ?: 0,
+                                count = {
+                                    val counts = IntArray(10)
+                                    doc.select(".horizontalChart li")?.forEach {
+                                        counts[(it.selectFirst(".label")?.text()?.toIntOrNull()
+                                                ?: 0) - 1] = it.selectFirst(".count").text()?.trim('(', ')')?.toIntOrNull()
+                                                ?: 0
+                                    }
+                                    counts
+                                }(),
+                                score = doc.selectFirst(".global_score .number")?.text()?.toFloatOrNull()
+                                        ?: subject.rating?.score ?: 0f,
+                                friend_score = doc.selectFirst(".frdScore .num")?.text()?.toFloatOrNull()
+                                        ?: subject.rating?.friend_score ?: 0f,
+                                friend_count = doc.selectFirst(".frdScore a.l")?.text()?.split(" ")?.getOrNull(0)?.toIntOrNull()
+                                        ?: subject.rating?.friend_count ?: 0
+                        )
+                        subject.collect = doc.selectFirst("#collectBoxForm")?.let {
+                            Collection(
+                                    status = doc.selectFirst(".collectType input[checked=checked]")?.id()
+                                            ?: return@let null,
+                                    rating = doc.selectFirst(".rating[checked]")?.attr("value")?.toIntOrNull() ?: 0,
+                                    comment = doc.selectFirst("#comment")?.text(),
+                                    private = doc.selectFirst("#privacy[checked]")?.attr("value")?.toIntOrNull() ?: 0,
+                                    tag = doc.selectFirst("#tags")?.attr("value")?.split(" ")?.filter { it.isNotEmpty() }
+                                            ?: ArrayList(),
+                                    myTag = doc.select("div.tagList")?.firstOrNull {
+                                        it.selectFirst("span.tip_j")?.text()?.contains("我的标签") ?: false
+                                    }
+                                            ?.select("div.inner a")?.map { it.text() }
+                            )
+                        }
+                        subject.eps_count = doc.selectFirst("input[name=watchedeps]")?.parent()?.ownText()?.trim(' ', '/')?.toIntOrNull()
+                                ?: 0
+                        subject.ep_status = doc.selectFirst("input[name=watchedeps]")?.attr("value")?.toIntOrNull() ?: 0
+                        subject.vol_count = doc.selectFirst("input[name=watched_vols]")?.let {
+                            it.parent()?.ownText()?.trim(' ', '/')?.toIntOrNull() ?: -1
+                        } ?: 0
+                        subject.vol_status = doc.selectFirst("input[name=watched_vols]")?.attr("value")?.toIntOrNull()
+                                ?: 0
+                    }
+                    "sections" -> {
+                        val subtitle = doc.selectFirst(".subtitle")?.text()
+                        when {
+                            subtitle == "角色介绍" -> {
+                                lastTag = "crt"
+                                subject.crt = doc.select("li")?.map {
+                                    val a = it.selectFirst("a.avatar")
+                                    Character(
+                                            id = Regex("""/character/([0-9]*)""").find(a?.attr("href")
+                                                    ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 0,
+                                            name = a?.text() ?: "",
+                                            name_cn = it.selectFirst(".info .tip")?.text() ?: "",
+                                            role_name = it.selectFirst(".info .badge_job_tip")?.text() ?: "",
+                                            images = Images(parseUrl(Regex("""background-image:url\('([^']*)'\)""").find(a?.html()
+                                                    ?: "")?.groupValues?.get(1) ?: "")),
+                                            comment = it.selectFirst("small.fade")?.text()?.trim('(', '+', ')')?.toIntOrNull()
+                                                    ?: 0,
+                                            actors = it.select("a[rel=\"v:starring\"]").map { psn ->
+                                                Person(
+                                                        id = Regex("""/person/([0-9]*)""").find(psn.attr("href")
+                                                                ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 0,
+                                                        name = psn.text() ?: "")
+                                            })
+                                }
+                            }
+                            subtitle == "讨论版" -> {
+                                lastTag = "topic"
+                                subject.topic = doc.select(".topic_list tr")?.mapNotNull {
+                                    val tds = it.select("td")
+                                    val td0 = tds?.get(0)?.selectFirst("a")
+                                    if (td0?.attr("href").isNullOrEmpty()) null else Subject.Topic(
+                                            id = Regex("""/topic/([0-9]*)""").find(td0?.attr("href")
+                                                    ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 0,
+                                            title = td0?.text() ?: "",
+                                            time = tds?.get(3)?.text(),
+                                            replies = Regex("""([0-9]*)""").find(tds?.get(2)?.text()
+                                                    ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 0,
+                                            user = parseUserInfo(tds?.get(1)?.selectFirst("a"))
+                                    )
+                                }
+                            }
+                            subtitle == "评论" -> {
+                                lastTag = "blog"
+                                subject.blog = doc.select("div.item")?.map {
+                                    Subject.Blog(
+                                            id = Regex("""/blog/([0-9]*)""").find(it.selectFirst(".title a")?.attr("href")
+                                                    ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 0,
+                                            title = it.selectFirst(".title a")?.text() ?: "",
+                                            summary = it.selectFirst(".content")?.ownText() ?: "",
+                                            image = parseImageUrl(it.selectFirst("img")),
+                                            replies = it.selectFirst("small.orange")?.text()?.trim('(', '+', ')')?.toIntOrNull()
+                                                    ?: 0,
+                                            time = it.selectFirst("small.time")?.text(),
+                                            user = parseUserInfo(it.selectFirst(".tip_j a"))
+                                    )
+                                }
+                            }
+                            subtitle == "单行本" -> tankobon = doc.select("li")?.map {
+                                val avatar = it.selectFirst(".avatar")
+                                val title = avatar?.attr("title")?.split("/ ")
+                                Subject(
+                                        id = Regex("""/subject/([0-9]*)""").find(avatar?.attr("href")
+                                                ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 0,
+                                        name = title?.getOrNull(0),
+                                        name_cn = title?.getOrNull(1),
+                                        category = "单行本",
+                                        images = Images(parseUrl(Regex("""background-image:url\('([^']*)'\)""").find(avatar?.html()
+                                                ?: "")?.groupValues?.get(1) ?: ""))
+                                )
+                            }
+                            subtitle == "关联条目" -> {
+                                lastTag = "linked"
+                                var sub = ""
+                                val linked = doc.select("li")?.mapNotNull {
+                                    val newSub = it.selectFirst(".sub").text()
+                                    if (!newSub.isNullOrEmpty()) sub = newSub
+                                    val avatar = it.selectFirst(".avatar")
+                                    val title = it.selectFirst(".title")
+                                    val id = Regex("""/subject/([0-9]*)""").find(title?.attr("href")
+                                            ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 0
+                                    if (tankobon?.firstOrNull { b -> b.id == id } == null)
+                                        Subject(id = id,
+                                                name = title?.text(),
+                                                name_cn = avatar.attr("title"),
+                                                category = sub,
+                                                images = Images(parseUrl(Regex("""background-image:url\('([^']*)'\)""").find(avatar?.html()
+                                                        ?: "")?.groupValues?.get(1) ?: ""))
+                                        )
+                                    else null
+                                }?.toMutableList() ?: ArrayList()
+                                linked.addAll(0, tankobon ?: ArrayList())
+                                subject.linked = linked
+                            }
+                            subtitle?.contains("大概会喜欢") ?: false -> {
+                                lastTag = "recommend"
+                                subject.recommend = doc.select("li")?.map {
+                                    val avatar = it.selectFirst(".avatar")
+                                    val title = it.selectFirst(".info a")
+                                    Subject(
+                                            id = Regex("""/subject/([0-9]*)""").find(title?.attr("href")
+                                                    ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 0,
+                                            name = title?.text(),
+                                            name_cn = avatar.attr("title"),
+                                            images = Images(parseUrl(Regex("""background-image:url\('([^']*)'\)""").find(avatar?.html()
+                                                    ?: "")?.groupValues?.get(1) ?: ""))
+                                    )
+                                }
+                            }
+                        }
+
+                    }
+                }
+                onUpdate(subject, lastTag)
+                lastTag = newTag
+            }
+            val lastData = ApiHelper.parseWithSax(rsp) { parser, str ->
+                val attr = { name: String -> parser.getAttributeValue("", name) }
+                val hasClass = { cls: String -> attr("class")?.split(" ")?.contains(cls) ?: false }
+                when {
+                    parser.eventType != XmlPullParser.START_TAG -> ApiHelper.SaxEventType.NOTHING
+                    parser.name == "input" && attr("name") == "formhash" -> {
+                        HttpUtil.formhash = attr("value") ?: HttpUtil.formhash
+                        ApiHelper.SaxEventType.NOTHING
+                    }
+                    attr("id") == "navMenuNeue" -> {
+                        HttpUtil.formhash = attr("value") ?: HttpUtil.formhash
+                        updateSubject(str, "type")
+                        ApiHelper.SaxEventType.BEGIN
+                    }
+                    hasClass("nameSingle") -> {
+                        updateSubject(str, "name")
+                        ApiHelper.SaxEventType.BEGIN
+                    }
+                    attr("id") == "subject_summary" -> {
+                        updateSubject(str, "summary")
+                        ApiHelper.SaxEventType.BEGIN
+                    }
+                    hasClass("infobox") -> {
+                        updateSubject(str, "images")
+                        ApiHelper.SaxEventType.BEGIN
+                    }
+                    attr("id") == "infobox" -> {
+                        updateSubject(str, "infobox")
+                        ApiHelper.SaxEventType.BEGIN
+                    }
+                    attr("id") == "subjectPanelCollect" -> {
+                        updateSubject(str, "collection")
+                        ApiHelper.SaxEventType.BEGIN
+                    }
+                    attr("id") == "panelInterestWrapper" -> {
+                        updateSubject(str, "collect")
+                        ApiHelper.SaxEventType.BEGIN
+                    }
+                    hasClass("line_list_music") || hasClass("prg_list") -> {
+                        updateSubject(str, "eps")
+                        ApiHelper.SaxEventType.BEGIN
+                    }
+                    hasClass("subject_section") -> {
+                        updateSubject(str, "sections")
+                        ApiHelper.SaxEventType.BEGIN
+                    }
+                    hasClass("subject_tag_section") -> {
+                        updateSubject(str, "tags")
+                        ApiHelper.SaxEventType.BEGIN
+                    }
+                    else -> ApiHelper.SaxEventType.NOTHING
+                }
+            }
+            updateSubject(lastData, "")
+            subject
+        }
+    }
+
+
+    /**
+     * 获取条目信息
+     * @param subject 条目
+     */
     fun getSubject(
             subject: Subject
     ): Call<Subject> {
