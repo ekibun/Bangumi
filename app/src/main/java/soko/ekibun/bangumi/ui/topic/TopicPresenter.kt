@@ -2,7 +2,6 @@ package soko.ekibun.bangumi.ui.topic
 
 import android.annotation.SuppressLint
 import android.text.Html
-import android.text.Spanned
 import androidx.appcompat.app.AlertDialog
 import androidx.preference.PreferenceManager
 import kotlinx.android.synthetic.main.activity_topic.*
@@ -115,7 +114,7 @@ class TopicPresenter(private val context: TopicActivity) {
                 R.id.item_edit -> {
                     buildPopupWindow(context.getString(if (post.floor == 1) R.string.parse_hint_modify_topic else R.string.parse_hint_modify_post, topic.title), html = post.pst_content) { text, send ->
                         if (send) {
-                            Bangumi.editTopicReply(topic, post, TextUtil.span2bbcode(text as Spanned)).enqueue(ApiHelper.buildCallback({
+                            Bangumi.editTopicReply(topic, post, text ?: "").enqueue(ApiHelper.buildCallback({
                                 getTopic(post.pst_id)
                             }))
                         }
@@ -125,6 +124,7 @@ class TopicPresenter(private val context: TopicActivity) {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun buildPopupWindow(hint: String = "", draft: String? = null, html: String = "", callback: (String?, Boolean) -> Unit) {
         val dialog = ReplyDialog()
         dialog.hint = hint
@@ -144,7 +144,7 @@ class TopicPresenter(private val context: TopicActivity) {
                 ?: context.getString(R.string.parse_hint_reply_topic, topic.title)
         buildPopupWindow(hint, drafts[draftId]) { inputString, send ->
             if (send) {
-                Bangumi.replyTopic(topic, post, TextUtil.span2bbcode(inputString as Spanned)).enqueue(ApiHelper.buildCallback<List<TopicPost>>({
+                Bangumi.replyTopic(topic, post, inputString ?: "").enqueue(ApiHelper.buildCallback<List<TopicPost>>({
                     topicView.setNewData(it)
                     topicView.adapter.loadMoreEnd()
                 }) {})

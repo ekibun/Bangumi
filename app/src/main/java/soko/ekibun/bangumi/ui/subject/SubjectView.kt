@@ -1,7 +1,6 @@
 package soko.ekibun.bangumi.ui.subject
 
 import android.annotation.SuppressLint
-import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -179,8 +178,6 @@ class SubjectView(private val context: SubjectActivity) {
     @SuppressLint("SetTextI18n")
     fun updateSubject(subject: Subject, tag: String? = null) {
         if (context.isDestroyed || tag == "") return
-
-        Log.v("subject", "tag = $tag")
 
         if (tag == null || tag == "name") {
             context.title_collapse.text = subject.displayName
