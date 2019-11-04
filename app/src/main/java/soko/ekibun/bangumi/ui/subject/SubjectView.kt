@@ -272,7 +272,7 @@ class SubjectView(private val context: SubjectActivity) {
         detail.item_commend.visibility = if (subject.recommend?.isNotEmpty() == true) View.VISIBLE else View.GONE
         recommendSubjectsAdapter.setNewData(subject.recommend)
 
-        tagAdapter.setNewData(subject.tags)
+        tagAdapter.setNewData(subject.tags?.toMutableList())
         tagAdapter.setOnItemClickListener { _, _, position ->
             WebActivity.launchUrl(context, "${Bangumi.SERVER}/${subject.type}/tag/${tagAdapter.data[position].first}")
         }

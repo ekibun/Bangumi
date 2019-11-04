@@ -18,7 +18,8 @@ data class Collection(
         val rating : Int = 0,
         val comment : String? = null,
         val private : Int = 0,
-        val tag: List<String>? = null
+        val tag: List<String>? = null,
+        var myTag: List<String>? = null
 ) {
     val statusId = status?.let { arrayOf(TYPE_WISH, TYPE_COLLECT, TYPE_DO, TYPE_ON_HOLD, TYPE_DROPPED).indexOf(it) + 1 }
             ?: 0

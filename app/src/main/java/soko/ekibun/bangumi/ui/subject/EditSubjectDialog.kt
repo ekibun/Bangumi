@@ -4,10 +4,12 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
-import android.widget.EditText
+import android.widget.RadioButton
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -33,7 +35,7 @@ class EditSubjectDialog(context: Context) : Dialog(context, R.style.AppTheme_Dia
 
     lateinit var subject: Subject
     lateinit var collection: Collection
-    @SuppressLint("InflateParams")
+    @SuppressLint("InflateParams", "SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val view = LayoutInflater.from(context).inflate(R.layout.dialog_edit_subject, null)
@@ -52,29 +54,49 @@ class EditSubjectDialog(context: Context) : Dialog(context, R.style.AppTheme_Dia
                 Collection.TYPE_DO to R.id.radio_do,
                 Collection.TYPE_ON_HOLD to R.id.radio_hold,
                 Collection.TYPE_DROPPED to R.id.radio_dropped)
-        val adapter = EditTagAdapter()
-        val layoutManager = LinearLayoutManager(context)
-        layoutManager.orientation = RecyclerView.HORIZONTAL
-        view.item_tag_list.layoutManager = layoutManager
-        view.item_tag_list.adapter = adapter
-        if (collection.status != null) {
-            view.item_subject_status.check(selectMap.getValue(collection.status!!))
-            view.item_rating.rating = collection.rating.toFloat()
-            view.item_comment.setText(collection.comment)
-            view.item_private.isChecked = collection.private == 1
-            adapter.setNewData(collection.tag?.filter { it.isNotEmpty() })
-        }
-        view.item_remove.visibility = if (HttpUtil.formhash.isEmpty()) View.INVISIBLE else View.VISIBLE
-        view.item_tag_add.setOnClickListener {
-            val editText = EditText(view.context)
-            AlertDialog.Builder(view.context)
-                    .setView(editText)
-                    .setTitle(R.string.subject_dialog_add_tag)
-                    .setPositiveButton(R.string.submit) { _, _ ->
-                        adapter.addData(editText.text.split(" ").filter { it.isNotEmpty() })
-                    }.show()
-        }
+        view.findViewById<RadioButton>(selectMap[collection.status] ?: R.id.radio_collect)?.isChecked = true
 
+        view.item_tags.setText(collection.tag?.joinToString(" "))
+
+        val hasTag = { tag: String ->
+            view.item_tags.editableText.split(" ").contains(tag)
+        }
+        val myTagAdapter = TagAdapter(null, hasTag)
+        myTagAdapter.setNewData(collection.myTag?.map { it to 0 }?.toMutableList())
+        val myTagLayoutManager = LinearLayoutManager(context)
+        myTagLayoutManager.orientation = RecyclerView.HORIZONTAL
+        view.item_my_tag_list.layoutManager = myTagLayoutManager
+        view.item_my_tag_list.adapter = myTagAdapter
+        myTagAdapter.setOnItemClickListener { _, _, position ->
+            val tag = myTagAdapter.data[position].first
+            if (!hasTag(tag)) view.item_tags.setText("${view.item_tags.editableText.trim()} $tag".trim())
+            else view.item_tags.setText(view.item_tags.editableText.trim().toString().replace(tag, "").replace("  ", " "))
+        }
+        val userTagAdapter = TagAdapter(null, hasTag)
+        userTagAdapter.setNewData(subject.tags?.toMutableList())
+        val userTagLayoutManager = LinearLayoutManager(context)
+        userTagLayoutManager.orientation = RecyclerView.HORIZONTAL
+        view.item_user_tag_list.layoutManager = userTagLayoutManager
+        view.item_user_tag_list.adapter = userTagAdapter
+        userTagAdapter.setOnItemClickListener { _, _, position ->
+            val tag = userTagAdapter.data[position].first
+            if (!hasTag(tag)) view.item_tags.setText("${view.item_tags.editableText.trim()} $tag".trim())
+            else view.item_tags.setText(view.item_tags.editableText.trim().toString().replace(tag, "").replace("  ", " "))
+        }
+        view.item_tags.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                myTagAdapter.notifyDataSetChanged()
+                userTagAdapter.notifyDataSetChanged()
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            }
+        })
+
+        view.item_remove.visibility = if (HttpUtil.formhash.isEmpty()) View.INVISIBLE else View.VISIBLE
         view.item_remove.setOnClickListener {
             AlertDialog.Builder(context).setTitle(R.string.collection_dialog_remove)
                     .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
@@ -93,7 +115,7 @@ class EditSubjectDialog(context: Context) : Dialog(context, R.style.AppTheme_Dia
                     rating = view.item_rating.rating.toInt(),
                     comment = view.item_comment.text.toString(),
                     private = if (view.item_private.isChecked) 1 else 0,
-                    tag = adapter.data
+                    tag = view.item_tags.editableText.split(" ")
             )).enqueue(ApiHelper.buildCallback({
                 subject.collect = it
                 dismiss()

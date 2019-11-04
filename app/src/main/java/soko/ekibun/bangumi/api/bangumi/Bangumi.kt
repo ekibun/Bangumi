@@ -352,7 +352,10 @@ object Bangumi {
                                 comment = it.selectFirst("#comment")?.text(),
                                 private = it.selectFirst("#privacy[checked]")?.attr("value")?.toIntOrNull() ?: 0,
                                 tag = it.selectFirst("#tags")?.attr("value")?.split(" ")?.filter { it.isNotEmpty() }
-                                        ?: ArrayList())
+                                        ?: ArrayList(),
+                                myTag = it.select("div.tagList")?.firstOrNull { it.selectFirst("span.tip_j").text().contains("我的标签") }
+                                        ?.select("div.inner a")?.map { it.text() }
+                        )
                     })
         }
     }

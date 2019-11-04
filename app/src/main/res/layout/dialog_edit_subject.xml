@@ -101,6 +101,7 @@
                 android:layout_width="match_parent"
                 android:paddingLeft="12dp"
                 android:paddingRight="12dp"
+                android:paddingTop="4dp"
                 android:layout_height="wrap_content">
             <TextView
                     android:id="@+id/item_tag_title"
@@ -109,31 +110,52 @@
                     android:padding="8dp"
                     android:textAppearance="@android:style/TextAppearance.Material.Subhead"
                     android:text="@string/subject_tag"/>
+            <soko.ekibun.bangumi.ui.view.CleanableEditText
+                    android:id="@+id/item_tags"
+                    android:hint="暂无标签"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/textSizeMedium"/>
+        </LinearLayout>
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp"
+                android:layout_height="wrap_content">
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="8dp"
+                    android:text="常用标签"/>
             <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/item_tag_list"
+                    android:id="@+id/item_user_tag_list"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:paddingEnd="20dp"
                     tools:ignore="RtlSymmetry"
                     tools:orientation="horizontal"
                     tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     tools:listitem="@layout/item_tag"/>
-            <ImageView
-                    android:id="@+id/item_tag_add"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
+        </LinearLayout>
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp"
+                android:layout_height="wrap_content">
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="8dp"
+                    android:text="我的标签"/>
+            <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/item_my_tag_list"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:padding="2dp"
-                    android:translationX="-20dp"
-                    android:src="@drawable/ic_add"
-                    android:tint="?android:textColorPrimary"
-                    android:background="@drawable/bg_round_rect"
-                    android:backgroundTint="@color/colorTransGrey"
-                    app:layout_constraintTop_toTopOf="@+id/item_tag_title"
-                    app:layout_constraintBottom_toBottomOf="@+id/item_tag_title"
-                    app:layout_constraintRight_toRightOf="@+id/item_tag_list"
-                    android:contentDescription="@string/subject_dialog_add_tag"/>
+                    tools:ignore="RtlSymmetry"
+                    tools:orientation="horizontal"
+                    tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:listitem="@layout/item_tag"/>
         </LinearLayout>
         <soko.ekibun.bangumi.ui.view.CleanableEditText
                 android:id="@+id/item_comment"

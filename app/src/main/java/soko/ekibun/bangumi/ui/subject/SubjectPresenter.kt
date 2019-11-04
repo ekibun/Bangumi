@@ -297,6 +297,11 @@ class SubjectPresenter(private val context: SubjectActivity) {
         context.item_collect_info.text = context.resources.getStringArray(Collection.getTypeNamesRes(subject.type)).getOrNull(body.statusId - 1)
                 ?: context.getString(R.string.collect)
 
+        subjectView.tagAdapter.hasTag = {
+            body.tag?.contains(it) ?: false
+        }
+        subjectView.tagAdapter.setNewData(subjectView.tagAdapter.data)
+
         context.item_collect.setOnClickListener {
             if (HttpUtil.formhash.isEmpty()) return@setOnClickListener
             val popupMenu = PopupMenu(context, context.item_collect)
