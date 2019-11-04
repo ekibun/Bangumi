@@ -323,14 +323,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
             updateBuffer()
 
             container.get()?.let {
-                it.editableText.getSpans(0, it.editableText.length, ImageSpan::class.java).filter { it.drawable == this }.forEach { span ->
-                    val start = it.editableText.getSpanStart(span)
-                    val end = it.editableText.getSpanEnd(span)
-                    val flags = it.editableText.getSpanFlags(span)
-
-                    it.editableText.removeSpan(span)
-                    it.editableText.setSpan(span, start, end, flags)
-                }
+                it.text = it.editableText
                 it.invalidate()
             }
         }

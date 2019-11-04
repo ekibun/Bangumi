@@ -31,8 +31,8 @@ object TextUtil {
         return text.replace("\n", "<br/>").replace(Regex("""\[(/?(b|i|u|mask))]"""), "<$1>")
                 .replace("[s]", "<span style=\"text-decoration:line-through\">")
                 .replace(Regex("""\[img](.*?)\[/img]"""), "<img src=\"$1\"/>")
-                .replace(Regex("""\[color=(.*?)]"""), "<span style=\"color:$1\"/>")
-                .replace(Regex("""\[size=(.*?)]"""), "<span style=\"font-size:$1px\"/>")
+                .replace(Regex("""\[color=(.*?)]"""), "<span style=\"color:$1\">")
+                .replace(Regex("""\[size=(.*?)]"""), "<span style=\"font-size:$1px\">")
                 .replace(Regex("""\[(/color|/s|/size)]"""), "</span>").let {
                     var ret = it
                     ReplyDialog.emojiList.forEach {
