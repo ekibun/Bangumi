@@ -1,6 +1,6 @@
 # Bangumi
 [![GitHub release](	https://img.shields.io/github/release/ekibun/Bangumi.svg)](https://github.com/ekibun/Bangumi/releases)
-[![GitHub license](	https://img.shields.io/github/license/ekibun/Bangumi.svg)](https://github.com/ekibun/Bangumi)
+[![GitHub license](	https://img.shields.io/github/license/ekibun/Bangumi.svg?)](https://github.com/ekibun/Bangumi)
 ![](https://img.shields.io/github/downloads/ekibun/Bangumi/total.svg) 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/5ece30aa9efd456ea07f96fff1a914c5)](https://www.codacy.com/manual/ekibun/Bangumi?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ekibun/Bangumi&amp;utm_campaign=Badge_Grade)
 
