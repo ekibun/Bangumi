@@ -83,6 +83,7 @@ object TextUtil {
                     is UnderlineSpan -> out.append("[u]")
                     is StrikethroughSpan -> out.append("[s]")
                     is PostAdapter.Companion.CustomURLSpan -> out.append("[url=${characterStyle.url}]")
+                    is URLSpan -> out.append("[url=${characterStyle.url}]")
                     is ImageSpan -> {
                         var source = characterStyle.source
                                 ?: (characterStyle.drawable as? HtmlHttpImageGetter.UrlDrawable)?.url
@@ -105,6 +106,7 @@ object TextUtil {
                     is ForegroundColorSpan -> out.append("[/color]")
                     is RelativeSizeSpan -> out.append("[/size]")
                     is PostAdapter.Companion.CustomURLSpan -> out.append("[/url]")
+                    is URLSpan -> out.append("[/url]")
                     is StrikethroughSpan -> out.append("[/s]")
                     is UnderlineSpan -> out.append("[/u]")
                     is StyleSpan -> {
