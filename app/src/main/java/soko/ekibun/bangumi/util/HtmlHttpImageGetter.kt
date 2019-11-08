@@ -1,6 +1,7 @@
 package soko.ekibun.bangumi.util
 
 import android.graphics.*
+import android.graphics.drawable.Animatable
 import android.graphics.drawable.AnimationDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
@@ -8,7 +9,6 @@ import android.text.Html
 import android.util.Size
 import android.widget.TextView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
-import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import soko.ekibun.bangumi.R
@@ -54,11 +54,12 @@ class HtmlHttpImageGetter(container: TextView, private val drawables: ArrayList<
         }
 
         open fun update(drawable: Drawable, defSize: Int) {
-            (drawable as? GifDrawable)?.start()
+            (drawable as? Animatable)?.start()
             val size = if (defSize > 0) this.size
                     ?: Size(defSize, defSize) else Size(drawable.intrinsicWidth, drawable.intrinsicHeight)
             this.size = size
             updateSize(size)
+            (this.drawable as? Animatable)?.stop()
             this.drawable?.callback = null
             this.drawable = drawable
             setBounds(0, 0, size.width, size.height)
@@ -100,6 +101,11 @@ class HtmlHttpImageGetter(container: TextView, private val drawables: ArrayList<
             bufferCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
             drawable?.draw(bufferCanvas)
             invalidateSelf()
+        }
+
+        override fun setVisible(visible: Boolean, restart: Boolean): Boolean {
+            drawable?.setVisible(visible, restart)
+            return super.setVisible(visible, restart)
         }
 
         override fun draw(canvas: Canvas) {

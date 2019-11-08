@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.*
+import android.graphics.drawable.Animatable
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
@@ -22,7 +23,6 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.awarmisland.android.richedittext.view.RichEditText
-import com.bumptech.glide.load.resource.gif.GifDrawable
 import kotlinx.android.synthetic.main.dialog_reply.view.*
 import okhttp3.MediaType
 import okhttp3.MultipartBody
@@ -311,9 +311,9 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
     open class CollapseUrlDrawable(container: WeakReference<TextView>) : HtmlHttpImageGetter.UrlDrawable(container) {
 
         override fun update(drawable: Drawable, defSize: Int) {
-            (drawable as? GifDrawable)?.start()
+            (drawable as? Animatable)?.start()
             val size = if (defSize > 0) Size(defSize, defSize) else Size(drawable.intrinsicWidth, drawable.intrinsicHeight)
-            (this.drawable as? GifDrawable)?.stop()
+            (this.drawable as? Animatable)?.stop()
             this.drawable?.callback = null
             this.drawable = drawable
             setBounds(0, 0, size.width, Math.min(size.height, 250))
