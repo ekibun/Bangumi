@@ -2,6 +2,7 @@ package soko.ekibun.bangumi.ui.view
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.net.Uri
 import android.os.Message
 import android.util.AttributeSet
 import android.view.MotionEvent
@@ -13,6 +14,8 @@ class NestedWebView @JvmOverloads constructor(context: Context, attrs: Attribute
     var onProgressChanged = { _: WebView, _: Int -> }
     var shouldOverrideUrlLoading = { _: WebView, _: WebResourceRequest -> false }
     var onReceivedTitle = { _: WebView?, _: String? -> }
+
+    var onShowFileChooser = { _: ValueCallback<Array<Uri>>?, _: WebChromeClient.FileChooserParams? -> false }
 
     var parentWebView: NestedWebView? = null
     var childWebView: NestedWebView? = null
@@ -65,12 +68,17 @@ class NestedWebView @JvmOverloads constructor(context: Context, attrs: Attribute
     companion object {
 
         val mWebChromeClient = object: WebChromeClient(){
+            override fun onShowFileChooser(webView: WebView?, filePathCallback: ValueCallback<Array<Uri>>?, fileChooserParams: FileChooserParams?): Boolean {
+                return (webView as? NestedWebView)?.onShowFileChooser?.invoke(filePathCallback, fileChooserParams)
+                        ?: super.onShowFileChooser(webView, filePathCallback, fileChooserParams)
+            }
+
             override fun onCreateWindow(view: WebView, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message): Boolean {
                 val parent = (view.parent as? ViewGroup) ?: return false
                 val webview = (view as? NestedWebView)?: return false
                 val newView = NestedWebView(view.context)
                 newView.onProgressChanged = webview.onProgressChanged
-                //newView.shouldOverrideUrlLoading = webview.shouldOverrideUrlLoading
+                newView.onShowFileChooser = webview.onShowFileChooser
                 newView.onReceivedTitle = webview.onReceivedTitle
                 newView.parentWebView = webview
                 webview.childWebView = newView
