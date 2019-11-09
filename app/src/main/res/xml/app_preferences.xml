@@ -38,9 +38,13 @@
 
         <androidx.preference.SwitchPreference
                 app:key="check_update"
-                app:title="检查更新"
+                app:title="启动时检查更新"
                 app:summary="启动应用时检查更新"
                 app:defaultValue="true"/>
+
+        <androidx.preference.Preference
+                app:key="check_update_now"
+                app:title="检查更新"/>
 
     </androidx.preference.PreferenceScreen>
 </androidx.preference.PreferenceScreen>

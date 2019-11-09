@@ -7,20 +7,19 @@ import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.MenuItemCompat
 import androidx.preference.PreferenceManager
 import kotlinx.android.synthetic.main.activity_main.*
+import soko.ekibun.bangumi.BuildConfig
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
-import soko.ekibun.bangumi.api.github.Github
 import soko.ekibun.bangumi.model.DownloadCacheProvider
 import soko.ekibun.bangumi.ui.search.SearchActivity
 import soko.ekibun.bangumi.ui.view.BaseActivity
 import soko.ekibun.bangumi.ui.view.NotifyActionProvider
 import soko.ekibun.bangumi.ui.web.WebActivity
+import soko.ekibun.bangumi.util.AppUtil
 
 class MainActivity : BaseActivity() {
     val downloadCacheProvider by lazy{ DownloadCacheProvider(this){
@@ -40,22 +39,7 @@ class MainActivity : BaseActivity() {
             mainPresenter.refreshUser()
 
         val sp = PreferenceManager.getDefaultSharedPreferences(this)
-        if(sp.getBoolean("check_update", true)){
-            Github.createInstance().releases().enqueue(ApiHelper.buildCallback({
-                val release = it.firstOrNull()?:return@buildCallback
-                val current = packageManager?.getPackageInfo(packageName, 0)?.versionName?:""
-                if(!isFinishing && release.tag_name?.compareTo(current)?:0 > 0 && sp.getString("ignore_tag", "") != release.tag_name)
-                    AlertDialog.Builder(this)
-                            .setTitle( getString(R.string.parse_new_version, release.tag_name))
-                            .setMessage( it.filter { it.tag_name?.compareTo(current)?:0 > 0 }.map { "${it.tag_name}\n${it.body}" }.reduce { acc, s -> "$acc\n$s" } )
-                            .setPositiveButton(R.string.download){_, _ ->
-                                WebActivity.launchUrl(this@MainActivity, release.assets?.firstOrNull()?.browser_download_url, "")
-                            }.setNegativeButton(R.string.ignore){_, _ ->
-                                sp.edit().putString("ignore_tag", release.tag_name).apply()
-                            }.show()
-            }) {})
-        }
-
+        if (BuildConfig.AUTO_UPDATES && sp.getBoolean("check_update", true)) AppUtil.checkUpdate(this)
     }
 
     override fun onDestroy() {

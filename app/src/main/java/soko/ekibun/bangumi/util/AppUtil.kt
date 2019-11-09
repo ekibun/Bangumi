@@ -1,16 +1,23 @@
 package soko.ekibun.bangumi.util
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.Drawable
-import android.net.Uri
-import com.bumptech.glide.load.resource.gif.GifDrawable
-import soko.ekibun.bangumi.R
-import java.io.File
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
-import java.io.FileOutputStream
+import android.graphics.drawable.Drawable
+import android.net.Uri
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.FileProvider
+import androidx.preference.PreferenceManager
+import com.bumptech.glide.load.resource.gif.GifDrawable
+import soko.ekibun.bangumi.BuildConfig
+import soko.ekibun.bangumi.R
+import soko.ekibun.bangumi.api.ApiHelper
+import soko.ekibun.bangumi.api.github.Github
+import soko.ekibun.bangumi.ui.web.WebActivity
+import java.io.File
+import java.io.FileOutputStream
 import java.nio.ByteBuffer
 
 object AppUtil {
@@ -58,5 +65,38 @@ object AppUtil {
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
             context.startActivity(intent)
         }catch(e: Exception){ e.printStackTrace() }
+    }
+
+    fun checkUpdate(activity: Activity, checkIgnore: Boolean = true, onLatest: () -> Unit = {}) {
+        when (BuildConfig.FLAVOR) {
+            "github" -> {
+                val sp = PreferenceManager.getDefaultSharedPreferences(activity)
+                Github.createInstance().releases().enqueue(ApiHelper.buildCallback({
+                    if (activity.isFinishing) return@buildCallback
+                    val release = it.firstOrNull() ?: return@buildCallback
+                    val checkNew = { tag: String? ->
+                        val version = tag?.split("-")
+                        val versionName = version?.getOrNull(0) ?: ""
+                        val versionCode = version?.getOrNull(1)?.toIntOrNull() ?: 0
+                        versionName > BuildConfig.VERSION_NAME || versionCode > BuildConfig.VERSION_CODE
+                    }
+                    if (checkNew(release.tag_name) && (checkIgnore || sp.getString("ignore_tag", "") != release.tag_name))
+                        AlertDialog.Builder(activity)
+                                .setTitle(activity.getString(R.string.parse_new_version, release.tag_name))
+                                .setMessage(it.filter { checkNew(it.tag_name) }.map { "${it.tag_name}\n${it.body}" }.reduce { acc, s -> "$acc\n$s" })
+                                .setPositiveButton(R.string.download) { _, _ ->
+                                    WebActivity.launchUrl(activity, release.assets?.firstOrNull()?.browser_download_url, "")
+                                }.setNegativeButton(R.string.ignore) { _, _ ->
+                                    sp.edit().putString("ignore_tag", release.tag_name).apply()
+                                }.show()
+                    else {
+                        onLatest()
+                    }
+                }) {})
+            }
+            "coolapk" -> {
+                WebActivity.launchUrl(activity, "https://www.coolapk.com/apk/soko.ekibun.bangumi", "")
+            }
+        }
     }
 }

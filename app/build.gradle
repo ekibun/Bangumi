@@ -4,6 +4,9 @@ apply plugin: 'kotlin-android'
 
 apply plugin: 'kotlin-android-extensions'
 
+def cmd = 'bash -c "git rev-list HEAD --count"'
+def gitVersion = cmd.execute().text.trim().toInteger()
+
 static def getAlphaVersionName() {
     'alpha' + new Date().format('yyyyMMdd')
 }
@@ -21,15 +24,26 @@ android {
         applicationId 'soko.ekibun.bangumi'
         minSdkVersion 22
         targetSdkVersion 29
-        versionCode 1
+        versionCode gitVersion
         versionName getAlphaVersionName()
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        buildConfigField "boolean", "AUTO_UPDATES", "true"
     }
     buildTypes {
         release {
             shrinkResources true
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    flavorDimensions "versionCode"
+    productFlavors {
+        coolapk {
+            dimension "versionCode"
+            buildConfigField "boolean", "AUTO_UPDATES", "false"
+        }
+        github {
+            dimension "versionCode"
         }
     }
 }
