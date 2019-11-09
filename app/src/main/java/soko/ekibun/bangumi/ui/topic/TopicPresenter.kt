@@ -14,6 +14,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.web.WebActivity
+import soko.ekibun.bangumi.util.HtmlTagHandler
 import soko.ekibun.bangumi.util.TextUtil
 import java.util.*
 import kotlin.collections.ArrayList
@@ -129,7 +130,7 @@ class TopicPresenter(private val context: TopicActivity) {
         val dialog = ReplyDialog()
         dialog.hint = hint
         dialog.draft = draft ?: {
-            TextUtil.span2bbcode(Html.fromHtml(ReplyDialog.parseHtml(html)))
+            TextUtil.span2bbcode(Html.fromHtml(ReplyDialog.parseHtml(html), null, HtmlTagHandler()))
         }()
         dialog.bbCode = PreferenceManager.getDefaultSharedPreferences(context).getBoolean("use_bbcode", false)
         dialog.callback = callback

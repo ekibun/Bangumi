@@ -12,10 +12,11 @@ import org.xml.sax.XMLReader
 import java.lang.ref.WeakReference
 import java.util.*
 
-class HtmlTagHandler(view: TextView, private var baseSize: Float = 12f, private val onClick: (ImageSpan) -> Unit) : Html.TagHandler {
-    private val bgColor = view.textColors.defaultColor
-    private val colorInv = ResourceUtil.resolveColorAttr(view.context, android.R.attr.textColorPrimaryInverse)
-    private val widget = WeakReference(view)
+class HtmlTagHandler(view: TextView? = null, private var baseSize: Float = 12f, private val onClick: (ImageSpan) -> Unit = {}) : Html.TagHandler {
+    private val bgColor = view?.textColors?.defaultColor ?: Color.BLACK
+    private val colorInv = view?.let { ResourceUtil.resolveColorAttr(it.context, android.R.attr.textColorPrimaryInverse) }
+            ?: Color.WHITE
+    private val widget = WeakReference<TextView>(view)
 
     override fun handleTag(openning: Boolean, tag: String, output: Editable, xmlReader: XMLReader) {
         if (tag.toLowerCase(Locale.getDefault()) == "img") {

@@ -421,7 +421,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
 
     companion object {
         fun parseHtml(html: String): String {
-            val doc = Jsoup.parse(html, Bangumi.SERVER)
+            val doc = Jsoup.parse(html.replace(Regex("</?noscript>"), ""), Bangumi.SERVER)
             doc.outputSettings().indentAmount(0).prettyPrint(false)
             doc.select("script").remove()
             doc.select("img").forEach {
