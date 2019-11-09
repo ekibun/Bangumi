@@ -42,7 +42,7 @@ class TimeLineAdapter(data: MutableList<TimeLine>? = null) :
             AlertDialog.Builder(helper.itemView.context).setMessage(R.string.timeline_dialog_remove)
                     .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
                         ApiHelper.buildHttpCall("${item.t.delUrl}&ajax=1") {
-                            it.body()?.string()?.contains("\"status\":\"ok\"") == true
+                            it.body?.string()?.contains("\"status\":\"ok\"") == true
                         }.enqueue(ApiHelper.buildCallback<Boolean>({ success ->
                             if (!success) return@buildCallback
                             val index = data.indexOfFirst { it === item }

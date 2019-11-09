@@ -45,6 +45,8 @@ class HtmlHttpImageGetter(container: TextView, private val drawables: ArrayList<
         var size: Size? = null
         var url: String? = null
         var uri: Uri? = null
+        val textSize get() = container.get()?.textSize ?: 10f
+        val maxWidth get() = container.get()?.let { it.width.toFloat() - it.paddingLeft - it.paddingRight } ?: 1000f
 
         protected var mBuffer: Bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
         private val mPaint = Paint(Paint.FILTER_BITMAP_FLAG or Paint.DITHER_FLAG)
@@ -54,14 +56,17 @@ class HtmlHttpImageGetter(container: TextView, private val drawables: ArrayList<
         }
 
         open fun update(drawable: Drawable, defSize: Int) {
-            (drawable as? Animatable)?.start()
+            val width = Math.max(textSize, Math.min(drawable.intrinsicWidth.toFloat(), maxWidth))
+
             val size = if (defSize > 0) this.size
-                    ?: Size(defSize, defSize) else Size(drawable.intrinsicWidth, drawable.intrinsicHeight)
+                    ?: Size(defSize, defSize) else Size(width.toInt(), (drawable.intrinsicHeight * width / drawable.intrinsicWidth).toInt())
             this.size = size
             updateSize(size)
             (this.drawable as? Animatable)?.stop()
             this.drawable?.callback = null
             this.drawable = drawable
+            this.drawable?.callback = drawableCallback
+            (drawable as? Animatable)?.start()
             setBounds(0, 0, size.width, size.height)
             mBuffer = Bitmap.createBitmap(bounds.width(), bounds.height(), Bitmap.Config.ARGB_8888)
             this.drawable?.bounds = bounds
@@ -82,10 +87,7 @@ class HtmlHttpImageGetter(container: TextView, private val drawables: ArrayList<
                 circularProgressDrawable.centerRadius = textSize / 2 - circularProgressDrawable.strokeWidth - 1f
                 circularProgressDrawable.progressRotation = 0.75f
                 circularProgressDrawable.start()
-                GlideUtil.loadWithProgress(url, view, RequestOptions().transform(SizeTransformation { width, _ ->
-                    val maxWidth = view.width.toFloat() - view.paddingLeft - view.paddingRight
-                    Math.min(maxWidth, Math.max(textSize, width.toFloat())) / width
-                }).placeholder(circularProgressDrawable).error(R.drawable.ic_broken_image), false, uri) { type, drawable ->
+                GlideUtil.loadWithProgress(url, view, RequestOptions().placeholder(circularProgressDrawable).error(R.drawable.ic_broken_image), false, uri) { type, drawable ->
                     error = when (type) {
                         GlideUtil.TYPE_RESOURCE -> false
                         GlideUtil.TYPE_ERROR -> true
@@ -108,21 +110,22 @@ class HtmlHttpImageGetter(container: TextView, private val drawables: ArrayList<
             return super.setVisible(visible, restart)
         }
 
-        override fun draw(canvas: Canvas) {
-            this.drawable?.callback = object : Callback {
-                override fun invalidateDrawable(who: Drawable) {
-                    updateBuffer()
-                    container.get()?.invalidate()
-                }
-
-                override fun scheduleDrawable(who: Drawable, what: Runnable, `when`: Long) {
-                    container.get()?.postDelayed(what, `when`)
-                }
-
-                override fun unscheduleDrawable(who: Drawable, what: Runnable) {
-                    container.get()?.removeCallbacks(what)
-                }
+        val drawableCallback = object : Callback {
+            override fun invalidateDrawable(who: Drawable) {
+                updateBuffer()
+                container.get()?.invalidate()
             }
+
+            override fun scheduleDrawable(who: Drawable, what: Runnable, `when`: Long) {
+                container.get()?.postDelayed(what, `when`)
+            }
+
+            override fun unscheduleDrawable(who: Drawable, what: Runnable) {
+                container.get()?.removeCallbacks(what)
+            }
+        }
+
+        override fun draw(canvas: Canvas) {
             canvas.drawBitmap(mBuffer, bounds, bounds, mPaint)
         }
     }

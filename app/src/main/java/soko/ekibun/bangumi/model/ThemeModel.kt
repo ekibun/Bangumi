@@ -5,11 +5,11 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Build
-import android.preference.PreferenceManager
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.preference.PreferenceManager
 import soko.ekibun.bangumi.util.ResourceUtil
 
 class ThemeModel(context: Context){

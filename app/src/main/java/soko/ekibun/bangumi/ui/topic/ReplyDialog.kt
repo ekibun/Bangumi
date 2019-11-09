@@ -24,7 +24,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.awarmisland.android.richedittext.view.RichEditText
 import kotlinx.android.synthetic.main.dialog_reply.view.*
-import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import org.jsoup.Jsoup
@@ -275,7 +275,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
             cursor.moveToFirst()
             cursor.getString(nameIndex)
         } ?: "image.jpg"
-        val requestBody = RequestBody.create(MediaType.parse(mimeType), inputStream.readBytes())
+        val requestBody = RequestBody.create(mimeType.toMediaTypeOrNull(), inputStream.readBytes())
         var span: HtmlTagHandler.ClickableImage? = null
         val drawable = UploadDrawable(requestBody, fileName, WeakReference(item_input), data?.data ?: return) {
             if (bbCode) {
@@ -311,11 +311,13 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
     open class CollapseUrlDrawable(container: WeakReference<TextView>) : HtmlHttpImageGetter.UrlDrawable(container) {
 
         override fun update(drawable: Drawable, defSize: Int) {
-            (drawable as? Animatable)?.start()
             val size = if (defSize > 0) Size(defSize, defSize) else Size(drawable.intrinsicWidth, drawable.intrinsicHeight)
             (this.drawable as? Animatable)?.stop()
             this.drawable?.callback = null
             this.drawable = drawable
+            this.drawable?.callback = drawableCallback
+            (drawable as? Animatable)?.start()
+
             setBounds(0, 0, size.width, Math.min(size.height, 250))
             drawable.setBounds(0, 0, size.width, size.height)
             mBuffer = Bitmap.createBitmap(bounds.width(), bounds.height(), Bitmap.Config.ARGB_8888)

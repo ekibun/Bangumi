@@ -3,7 +3,6 @@ package soko.ekibun.bangumi.ui.main
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.preference.PreferenceManager
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
@@ -11,6 +10,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.MenuItemCompat
+import androidx.preference.PreferenceManager
 import kotlinx.android.synthetic.main.activity_main.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
@@ -83,8 +83,14 @@ class MainActivity : BaseActivity() {
             popup.menu.findItem(R.id.notify_type_notify)?.title = "${getString(R.string.notify_notify)}${if(notify != 0) " (+$notify)" else ""}"
             popup.setOnMenuItemClickListener{
                 when(it.itemId){
-                    R.id.notify_type_inbox -> WebActivity.launchUrl(this, "${Bangumi.SERVER}/pm")
-                    R.id.notify_type_notify -> WebActivity.launchUrl(this, "${Bangumi.SERVER}/notify" + if(notify == 0) "/all" else "")
+                    R.id.notify_type_inbox -> {
+                        mainPresenter.user?.notify = Pair(0, mainPresenter.user?.notify?.second ?: 0)
+                        WebActivity.launchUrl(this, "${Bangumi.SERVER}/pm")
+                    }
+                    R.id.notify_type_notify -> {
+                        mainPresenter.user?.notify = Pair(mainPresenter.user?.notify?.first ?: 0, 0)
+                        WebActivity.launchUrl(this, "${Bangumi.SERVER}/notify" + if (notify == 0) "/all" else "")
+                    }
                 }
                 true
             }

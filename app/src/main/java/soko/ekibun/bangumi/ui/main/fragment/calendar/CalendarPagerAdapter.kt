@@ -2,10 +2,10 @@ package soko.ekibun.bangumi.ui.main.fragment.calendar
 
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
-import android.preference.PreferenceManager
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
+import androidx.preference.PreferenceManager
 import retrofit2.Call
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi

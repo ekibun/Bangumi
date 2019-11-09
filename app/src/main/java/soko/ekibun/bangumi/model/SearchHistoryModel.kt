@@ -2,7 +2,7 @@ package soko.ekibun.bangumi.model
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 import com.google.gson.reflect.TypeToken
 import soko.ekibun.bangumi.util.JsonUtil
 

@@ -17,13 +17,13 @@ object ApiHelper {
     fun <T> buildCallback(callback: (T) -> Unit, finish: (Throwable?) -> Unit = {}): Callback<T> {
         return object : Callback<T> {
             override fun onFailure(call: Call<T>, t: Throwable) {
-                Log.e("errUrl", call.request().url().toString())
+                Log.e("errUrl", call.request().url.toString())
                 if (!t.toString().contains("Canceled")) finish(t)
                 t.printStackTrace()
             }
 
             override fun onResponse(call: Call<T>, response: Response<T>) {
-                Log.v("finUrl", call.request()?.url().toString())
+                Log.v("finUrl", call.request()?.url.toString())
                 Log.v("finUrl", response.toString())
                 finish(null)
                 response.body()?.let { callback(it) }
@@ -39,7 +39,7 @@ object ApiHelper {
 
     fun parseWithSax(rsp: okhttp3.Response, checkEvent: (XmlPullParser, String) -> SaxEventType): String {
         val parser = XmlPullParserFactory.newInstance().newPullParser()
-        parser.setInput(rsp.body()!!.charStream())
+        parser.setInput(rsp.body!!.charStream())
 
         var lastData = ""
         loop@ while (parser.eventType != XmlPullParser.END_DOCUMENT) {
@@ -98,7 +98,7 @@ object ApiHelper {
             }
 
             override fun isExecuted(): Boolean {
-                return okHttpCall.isExecuted
+                return okHttpCall.isExecuted()
             }
 
             override fun clone(): Call<T> {
@@ -106,7 +106,7 @@ object ApiHelper {
             }
 
             override fun isCanceled(): Boolean {
-                return okHttpCall.isCanceled
+                return okHttpCall.isCanceled()
             }
 
             override fun cancel() {

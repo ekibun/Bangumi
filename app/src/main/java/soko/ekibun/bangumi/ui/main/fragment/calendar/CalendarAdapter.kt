@@ -1,8 +1,8 @@
 package soko.ekibun.bangumi.ui.main.fragment.calendar
 
 import android.annotation.SuppressLint
-import android.preference.PreferenceManager
 import android.view.View
+import androidx.preference.PreferenceManager
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseSectionQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
@@ -114,7 +114,7 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
         fun getNowInt(use_30h: Boolean):Int{
             val cal = Calendar.getInstance()
             val hourNow = cal.get(Calendar.HOUR_OF_DAY)
-            cal.add(java.util.Calendar.DAY_OF_MONTH, when{
+            cal.add(Calendar.DAY_OF_MONTH, when {
                 hourNow < if(use_30h) 6 else 0 -> -1
                 else -> 0
             })

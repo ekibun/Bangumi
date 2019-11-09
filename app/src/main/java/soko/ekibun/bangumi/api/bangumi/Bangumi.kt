@@ -153,7 +153,7 @@ object Bangumi {
             page: Int = 1
     ): Call<List<Subject>> {
         return ApiHelper.buildHttpCall("$SERVER/$subject_type/list/$username/$collection_status?page=$page") {
-            val doc = Jsoup.parse(it.body()?.string() ?: "")
+            val doc = Jsoup.parse(it.body?.string() ?: "")
             val ret = ArrayList<Subject>()
             for (item in doc.select(".item")) {
                 val id = item.attr("id").split('_').getOrNull(1)?.toIntOrNull() ?: continue
@@ -465,7 +465,7 @@ object Bangumi {
             subject: Subject
     ): Call<Subject> {
         return ApiHelper.buildHttpCall(subject.url) { response ->
-            val doc = Jsoup.parse(response.body()?.string() ?: "")
+            val doc = Jsoup.parse(response.body?.string() ?: "")
 
             val infobox = doc.select("#infobox li")?.map { li ->
                 val tip = li.selectFirst("span.tip")?.text() ?: ""
@@ -660,7 +660,7 @@ object Bangumi {
             Subject.TYPE_REAL -> 6
             else -> 0
         }}&page=$page") { rsp ->
-            val doc = Jsoup.parse(rsp.body()?.string() ?: "")
+            val doc = Jsoup.parse(rsp.body?.string() ?: "")
             if (doc.select("#colunmNotice") == null) throw Exception("search error")
             doc.select(".item").mapNotNull { item ->
                 val nameCN = item.selectFirst("h3")?.selectFirst("a")?.text()
@@ -686,7 +686,7 @@ object Bangumi {
     ): Call<List<MonoInfo>> {
         CookieManager.getInstance().setCookie(SERVER, "chii_searchDateLine=${System.currentTimeMillis() / 1000};")
         return ApiHelper.buildHttpCall("$SERVER/mono_search/${java.net.URLEncoder.encode(keywords, "utf-8")}?cat=$type&page=$page") { rsp ->
-            val doc = Jsoup.parse(rsp.body()?.string() ?: "")
+            val doc = Jsoup.parse(rsp.body?.string() ?: "")
             if (doc.select("#colunmNotice") == null) throw Exception("search error")
             doc.select(".light_odd").map {
                 val a = it.selectFirst("h2 a")
@@ -708,7 +708,7 @@ object Bangumi {
             page: Int
     ): Call<List<Comment>> {
         return ApiHelper.buildHttpCall("$SERVER/subject/${subject.id}/comments?page=$page") { rsp ->
-            val doc = Jsoup.parse(rsp.body()?.string() ?: "")
+            val doc = Jsoup.parse(rsp.body?.string() ?: "")
             doc.select("#comment_box .item").mapNotNull {
                 val user = it.selectFirst(".text a")
                 val username = Regex("""/user/([^/]*)""").find(user?.attr("href") ?: "")?.groupValues?.get(1)
@@ -738,7 +738,7 @@ object Bangumi {
             sub_cat: String
     ): Call<List<Subject>> {
         return ApiHelper.buildHttpCall("$SERVER/$subject_type/browser${if (sub_cat.isEmpty()) "" else "/$sub_cat"}/airtime/$year-$month?page=$page") {
-            val doc = Jsoup.parse(it.body()?.string() ?: "")
+            val doc = Jsoup.parse(it.body?.string() ?: "")
             doc.select(".item").mapNotNull {
                 val nameCN = it.selectFirst("h3 a")?.text()
                 Subject(
@@ -759,7 +759,7 @@ object Bangumi {
             type: String
     ): Call<List<Rakuen>> {
         return ApiHelper.buildHttpCall("$SERVER/rakuen/topiclist" + if (type.isEmpty()) "" else "?type=$type") { rsp ->
-            val doc = Jsoup.parse(rsp.body()?.string() ?: "")
+            val doc = Jsoup.parse(rsp.body?.string() ?: "")
             doc.select(".item_list").mapNotNull {
                 val title = it.selectFirst(".title")
                 val group = it.selectFirst(".row").selectFirst("a")
@@ -786,7 +786,7 @@ object Bangumi {
             global: Boolean
     ): Call<List<TimeLine>> {
         return ApiHelper.buildHttpCall("$SERVER${if (usr == null) "" else "/user/${usr.username}"}/timeline?type=$type&page=$page&ajax=1", useCookie = !global) { rsp ->
-            val doc = Jsoup.parse(rsp.body()?.string() ?: "")
+            val doc = Jsoup.parse(rsp.body?.string() ?: "")
             val ret = ArrayList<TimeLine>()
             var user = usr ?: UserInfo()
             val cssInfo = if (usr == null) ".info" else ".info_full"
@@ -917,7 +917,7 @@ object Bangumi {
 
     fun getTopic(url: String): Call<Topic> {
         return ApiHelper.buildHttpCall(url) { rsp ->
-            val doc = Jsoup.parse(rsp.body()?.string() ?: "")
+            val doc = Jsoup.parse(rsp.body?.string() ?: "")
             doc.outputSettings().prettyPrint(false)
             val error = doc.selectFirst("#reply_wrapper")?.selectFirst(".tip")
             val form = doc.selectFirst("#ReplyForm")
@@ -948,13 +948,13 @@ object Bangumi {
     fun getUserInfo(reload: () -> Unit): Call<UserInfo> {
         val cookieManager = CookieManager.getInstance()
         return ApiHelper.buildHttpCall("$SERVER/settings") {
-            val doc = Jsoup.parse(it.body()?.string() ?: "")
+            val doc = Jsoup.parse(it.body?.string() ?: "")
             val user = doc.selectFirst(".idBadgerNeue a.avatar") ?: throw Exception("login failed")
             val username = Regex("""/user/([^/]*)""").find(user.attr("href") ?: "")?.groupValues?.get(1)
             it.headers("set-cookie").forEach {
                 cookieManager.setCookie(SERVER, it)
             }
-            if (it.headers("set-cookie").size > 0) reload()
+            if (it.headers("set-cookie").isNotEmpty()) reload()
             HttpUtil.formhash = doc.selectFirst("input[name=formhash]")?.attr("value") ?: HttpUtil.formhash
             UserInfo(
                     id = username?.toIntOrNull() ?: 0,
@@ -979,7 +979,7 @@ object Bangumi {
             subject: Subject
     ): Call<List<Episode>> {
         return ApiHelper.buildHttpCall("$SERVER/subject/${subject.id}/ep") {
-            parseLineList(Jsoup.parse(it.body()?.string() ?: ""))
+            parseLineList(Jsoup.parse(it.body?.string() ?: ""))
         }
     }
 
@@ -988,7 +988,7 @@ object Bangumi {
      */
     fun getMobileCollection(): Call<List<Subject>> {
         return ApiHelper.buildHttpCall("$SERVER/m/prg") { rsp ->
-            val doc = Jsoup.parse(rsp.body()?.string() ?: "")
+            val doc = Jsoup.parse(rsp.body?.string() ?: "")
             doc.select("#cloumnSubjectInfo .subjectItem").mapNotNull {
                 var cat = "本篇"
                 Subject(
@@ -1088,7 +1088,7 @@ object Bangumi {
         return ApiHelper.buildHttpCall(SERVER) {
 
 
-            val doc = Jsoup.parse(it.body()?.string() ?: "")
+            val doc = Jsoup.parse(it.body?.string() ?: "")
             if (doc.selectFirst(".idBadgerNeue a.avatar") == null) throw Exception("no login")
             doc.select("#cloumnSubjectInfo .infoWrapper").mapNotNull {
                 val data = it.selectFirst(".headerInner a.textTip") ?: return@mapNotNull null
@@ -1136,7 +1136,7 @@ object Bangumi {
             subject: Subject
     ): Call<Boolean> {
         return ApiHelper.buildHttpCall("$SERVER/subject/${subject.id}/remove?gh=${HttpUtil.formhash}") {
-            it.code() == 200
+            it.code == 200
         }
     }
 
@@ -1150,7 +1150,7 @@ object Bangumi {
     ): Call<Boolean> {
         return ApiHelper.buildHttpCall("$SERVER/subject/ep/$id/status/$status?gh=${HttpUtil.formhash}&ajax=1", body = FormBody.Builder()
                 .add("ep_id", epIds ?: id.toString()).build()) {
-            it.body()?.string()?.contains("\"status\":\"ok\"") == true
+            it.body?.string()?.contains("\"status\":\"ok\"") == true
         }
     }
 
@@ -1168,7 +1168,7 @@ object Bangumi {
                 .add("watchedeps", watchedeps)
         if (subject.vol_count != 0) body.add("watched_vols", watched_vols)
         return ApiHelper.buildHttpCall("$SERVER/subject/set/watched/${subject.id}", body = body.build()) {
-            it.code() == 200
+            it.code == 200
         }
     }
 
@@ -1182,7 +1182,7 @@ object Bangumi {
                 .add("say_input", say_input)
                 .add("formhash", HttpUtil.formhash)
                 .add("submit", "submit").build()) {
-            it.body()?.string()?.contains("\"status\":\"ok\"") == true
+            it.body?.string()?.contains("\"status\":\"ok\"") == true
         }
     }
 
@@ -1193,7 +1193,7 @@ object Bangumi {
         return ApiHelper.buildHttpCall("$SERVER/logout/${HttpUtil.formhash}") {
             val cookieManager = CookieManager.getInstance()
             it.headers("set-cookie").forEach { cookieManager.setCookie(SERVER, it) }
-            it.code()
+            it.code
         }
     }
 
@@ -1205,7 +1205,7 @@ object Bangumi {
             topic: Topic
     ): Call<Boolean> {
         return ApiHelper.buildHttpCall(topic.post.replace(SERVER, "$SERVER/erase").replace("/new_reply", "?gh=${HttpUtil.formhash}&ajax=1")) {
-            it.code() == 200
+            it.code == 200
         }
     }
 
@@ -1224,7 +1224,7 @@ object Bangumi {
             "subject" -> "/erase/subject/reply/"
             else -> ""
         } + "${post.pst_id}?gh=${HttpUtil.formhash}&ajax=1") {
-            it.body()?.string()?.contains("\"status\":\"ok\"") == true
+            it.body?.string()?.contains("\"status\":\"ok\"") == true
         }
     }
 
@@ -1251,7 +1251,7 @@ object Bangumi {
                 .add("title", topic.title)
                 .add("submit", "改好了")
                 .add("content", content).build()) {
-            it.code() == 200
+            it.code == 200
         }
     }
 
@@ -1287,7 +1287,7 @@ object Bangumi {
             val replies = ArrayList(topic.replies)
             replies.removeAll { it.sub_floor > 0 }
             replies.sortedBy { it.floor }
-            val posts = JsonUtil.toJsonObject(rsp.body()?.string() ?: "").getAsJsonObject("posts")
+            val posts = JsonUtil.toJsonObject(rsp.body?.string() ?: "").getAsJsonObject("posts")
             val main = JsonUtil.toEntity<Map<String, TopicPost>>(posts.get("main")?.toString()
                     ?: "", object : TypeToken<Map<String, TopicPost>>() {}.type) ?: HashMap()
             main.forEach {
