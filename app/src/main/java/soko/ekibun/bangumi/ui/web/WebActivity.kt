@@ -86,7 +86,7 @@ class WebActivity : BaseActivity() {
             webview.onReceivedTitle = { _: WebView?, title: String? ->
                 if (title != null) this@WebActivity.title = title
             }
-            webview.shouldOverrideUrlLoading = { _: WebView, request: WebResourceRequest ->
+            webview.shouldOverrideUrlLoading = { view: WebView, request: WebResourceRequest ->
                 val url = request.url.toString()
                 if (jumpUrl(this@WebActivity, url, openUrl)) {
                     true
@@ -101,8 +101,8 @@ class WebActivity : BaseActivity() {
                 } else {
                     val bgmUrl = url.replace(Regex("""^https?://(bgm\.tv|bangumi\.tv|chii\.in)"""), Bangumi.SERVER)
                     if (bgmUrl != url) {
-                        webview.loadUrl(bgmUrl)
-                        true
+                        view.post { view.loadUrl(bgmUrl) }
+                        false
                     } else false
                 }
             }
