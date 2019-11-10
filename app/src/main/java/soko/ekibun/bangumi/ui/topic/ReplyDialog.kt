@@ -134,6 +134,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
                 contentView.item_input.setText(setTextLinkOpenByWebView(Html.fromHtml(parseHtml(TextUtil.bbcode2html(contentView.item_input.editableText.toString())),
                         CollapseHtmlHttpImageGetter(contentView.item_input),
                         HtmlTagHandler(contentView.item_input, onClick = onClickImage)), onClickUrl))
+                contentView.item_input.post { contentView.item_input.text = contentView.item_input.text }
             }
         }
 
@@ -221,6 +222,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
                 contentView.item_input.setText(setTextLinkOpenByWebView(Html.fromHtml(parseHtml(TextUtil.bbcode2html(draft!!)),
                         CollapseHtmlHttpImageGetter(contentView.item_input),
                         HtmlTagHandler(contentView.item_input, onClick = onClickImage)), onClickUrl))
+                contentView.item_input.post { contentView.item_input.text = contentView.item_input.text }
             }
         }
 
@@ -311,7 +313,8 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
     open class CollapseUrlDrawable(container: WeakReference<TextView>) : HtmlHttpImageGetter.UrlDrawable(container) {
 
         override fun update(drawable: Drawable, defSize: Int) {
-            val size = if (defSize > 0) Size(defSize, defSize) else Size(drawable.intrinsicWidth, drawable.intrinsicHeight)
+            val width = Math.max(textSize, Math.min(drawable.intrinsicWidth.toFloat(), maxWidth))
+            val size = if (defSize > 0) Size(defSize, defSize) else Size(width.toInt(), (drawable.intrinsicHeight * width / drawable.intrinsicWidth).toInt())
             (this.drawable as? Animatable)?.stop()
             this.drawable?.callback = null
             this.drawable = drawable
@@ -325,7 +328,14 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
             updateBuffer()
 
             container.get()?.let {
-                it.text = it.editableText
+                it.editableText.getSpans(0, it.editableText.length, ImageSpan::class.java).filter { it.drawable == this }.forEach { span ->
+                    val start = it.editableText.getSpanStart(span)
+                    val end = it.editableText.getSpanEnd(span)
+                    val flags = it.editableText.getSpanFlags(span)
+
+                    it.editableText.removeSpan(span)
+                    it.editableText.setSpan(span, start, end, flags)
+                }
                 it.invalidate()
             }
         }
