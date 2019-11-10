@@ -110,7 +110,8 @@ class NestedWebView @JvmOverloads constructor(context: Context, attrs: Attribute
 
         val mWebViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-                return (view as? NestedWebView)?.shouldOverrideUrlLoading?.invoke(view, request) ?: super.shouldOverrideUrlLoading(view, request)
+                return ((view as? NestedWebView)?.shouldOverrideUrlLoading?.invoke(view, request)
+                        ?: false) || super.shouldOverrideUrlLoading(view, request)
             }
         }
     }
