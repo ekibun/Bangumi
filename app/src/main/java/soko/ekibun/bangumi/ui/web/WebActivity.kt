@@ -25,7 +25,13 @@ import java.net.URI
 
 class WebActivity : BaseActivity() {
     private val isAuth by lazy { intent.getBooleanExtra(IS_AUTH, false) }
-    private val openUrl by lazy { intent.getStringExtra(OPEN_URL)!!.replace(Regex("""^https?://(bgm\.tv|bangumi\.tv|chii\.in)"""), Bangumi.SERVER) }
+    private val openUrl by lazy {
+        (intent.getStringExtra(OPEN_URL) ?: {
+            val url = intent.data?.toString()
+            if (jumpUrl(this, url, "")) finish()
+            url ?: ""
+        }()).replace(Regex("""^https?://(bgm\.tv|bangumi\.tv|chii\.in)"""), Bangumi.SERVER)
+    }
 
     private var filePathsCallback: ValueCallback<Array<Uri>>? = null
 

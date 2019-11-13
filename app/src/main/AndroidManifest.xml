@@ -45,7 +45,8 @@
         <service
                 android:name="soko.ekibun.videoplayer.service.VideoSubjectProvider"
                 android:enabled="true"
-                android:exported="true">
+                android:exported="true"
+                tools:ignore="ExportedService">
             <intent-filter>
                 <action android:name="soko.ekibun.videoplayer.subjectprovider.bangumi"/>
 
@@ -79,12 +80,6 @@
         <activity
                 android:name=".ui.web.WebActivity"
                 android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation">
-        </activity>
-        <activity android:name=".ui.search.SearchActivity">
-        </activity>
-        <activity
-                android:name=".ui.subject.SubjectActivity"
-                android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
 
@@ -93,7 +88,6 @@
 
                 <data
                         android:host="bgm.tv"
-                        android:pathPrefix="/subject"
                         android:scheme="http"/>
             </intent-filter>
             <intent-filter>
@@ -104,9 +98,15 @@
 
                 <data
                         android:host="bgm.tv"
-                        android:pathPrefix="/subject"
                         android:scheme="https"/>
             </intent-filter>
+        </activity>
+        <activity android:name=".ui.search.SearchActivity"
+                  android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation">
+        </activity>
+        <activity
+                android:name=".ui.subject.SubjectActivity"
+                android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
 
@@ -129,7 +129,8 @@
                         android:scheme="ekibun"/>
             </intent-filter>
         </activity>
-        <activity android:name=".ui.topic.TopicActivity">
+        <activity android:name=".ui.topic.TopicActivity"
+                  android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation">
         </activity>
         <activity android:name=".ui.crash.CrashActivity">
         </activity>
