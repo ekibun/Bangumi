@@ -252,7 +252,7 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
         val availableScrollBarHeight = scrollRange - mScrollbar.mThumbHeight
 
         // Only show the scrollbar if there is height to be scrolled
-        if (availableScrollHeight <= 0) {
+        if (availableScrollHeight <= 0 || (adapter as? BaseQuickAdapter<*, *>)?.data?.let { it.size == 0 } == true) {
             mScrollbar.setThumbPosition(-1, -1)
             return
         }

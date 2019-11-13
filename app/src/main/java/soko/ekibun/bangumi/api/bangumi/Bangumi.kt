@@ -829,8 +829,8 @@ object Bangumi {
     /**
      * 讨论
      */
-    private fun parseTopicPost(it: Element): TopicPost {
-        val user = it.selectFirst(".inner a")
+    private fun parseTopicPost(it: Element): TopicPost? {
+        val user = it.selectFirst(".inner a") ?: return null
         val data = (it.selectFirst(".icons_cmt")?.attr("onclick") ?: "").split(",")
         val relate = data.getOrNull(2)?.toIntOrNull() ?: 0
         val post_id = data.getOrNull(3)?.toIntOrNull() ?: 0
@@ -843,9 +843,9 @@ object Bangumi {
                 else it.selectFirst(".topic_content")?.html()
                         ?: it.selectFirst(".message")?.html()
                         ?: it.selectFirst(".cmt_sub_content")?.html() ?: "",
-                username = Regex("""/user/([^/]*)""").find(user?.attr("href")
+                username = Regex("""/user/([^/]*)""").find(user.attr("href")
                         ?: "")?.groupValues?.get(1) ?: "",
-                nickname = user?.text() ?: "",
+                nickname = user.text() ?: "",
                 sign = if (!badge.isNullOrEmpty()) "" else it.selectFirst(".inner .tip_j")?.text() ?: "",
                 avatar = Regex("""background-image:url\('([^']*)'\)""").find(it.selectFirst(".avatar")?.html()
                         ?: "")?.groupValues?.get(1) ?: "",
@@ -870,9 +870,10 @@ object Bangumi {
                 val it = Jsoup.parse(str)
                 it.outputSettings().prettyPrint(false)
 
-                val post = parseTopicPost(it)
-                replies += post
-                onNewPost(post)
+                parseTopicPost(it)?.let {
+                    replies += it
+                    onNewPost(it)
+                }
             }
             val lastData = ApiHelper.parseWithSax(rsp) { parser, str ->
                 when {

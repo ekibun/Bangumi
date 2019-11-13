@@ -20,6 +20,14 @@ class TopicView(private val context: TopicActivity) {
     val adapter by lazy { PostAdapter() }
 
     private var appBarOffset = 0
+    private val scroll2Top = {
+        if (context.item_list.canScrollVertically(-1) || appBarOffset != 0) {
+            context.app_bar.setExpanded(true, true)
+            context.item_list.stopScroll()
+            (context.item_list.layoutManager as androidx.recyclerview.widget.LinearLayoutManager).scrollToPositionWithOffset(0, 0)
+            true
+        } else false
+    }
 
     init {
         context.item_list.adapter = adapter
@@ -63,20 +71,6 @@ class TopicView(private val context: TopicActivity) {
                 context.item_swipe.setOnChildScrollUpCallback { _, _ -> canScroll }
             }
         })
-    }
-
-    fun processTopicBefore(title: String, links: Map<String, String>, images: Images) {
-        context.title_collapse.text = title
-        context.title_expand.text = context.title_collapse.text
-
-        val scroll2Top = {
-            if (context.item_list.canScrollVertically(-1) || appBarOffset != 0) {
-                context.app_bar.setExpanded(true, true)
-                context.item_list.stopScroll()
-                (context.item_list.layoutManager as androidx.recyclerview.widget.LinearLayoutManager).scrollToPositionWithOffset(0, 0)
-                true
-            } else false
-        }
         context.title_collapse.setOnClickListener {
             if (scroll2Top()) return@setOnClickListener
             WebActivity.launchUrl(context, context.openUrl)
@@ -85,6 +79,12 @@ class TopicView(private val context: TopicActivity) {
             if (scroll2Top()) return@setOnClickListener
             WebActivity.launchUrl(context, context.openUrl)
         }
+    }
+
+    fun processTopicBefore(title: String, links: Map<String, String>, images: Images) {
+        context.title_collapse.text = title
+        context.title_expand.text = context.title_collapse.text
+
         links.toList().getOrNull(0)?.let { link ->
             context.title_slice_0.text = link.first
             context.title_slice_0.setOnClickListener {
