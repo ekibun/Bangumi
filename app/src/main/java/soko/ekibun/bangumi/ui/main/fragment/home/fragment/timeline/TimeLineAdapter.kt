@@ -16,6 +16,9 @@ import soko.ekibun.bangumi.ui.topic.PostAdapter
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
 
+/**
+ * 时间线Adapter
+ */
 class TimeLineAdapter(data: MutableList<TimeLine>? = null) :
         BaseSectionQuickAdapter<TimeLine, BaseViewHolder>
         (R.layout.item_timeline, R.layout.header_episode, data) {

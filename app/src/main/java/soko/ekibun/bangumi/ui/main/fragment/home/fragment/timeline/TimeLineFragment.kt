@@ -15,6 +15,9 @@ import soko.ekibun.bangumi.ui.topic.ReplyDialog
 import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.TextUtil
 
+/**
+ * 时间线
+ */
 class TimeLineFragment : HomeTabFragment(R.layout.fragment_timeline) {
     override val titleRes: Int = R.string.timeline
     override val iconRes: Int = R.drawable.ic_timelapse

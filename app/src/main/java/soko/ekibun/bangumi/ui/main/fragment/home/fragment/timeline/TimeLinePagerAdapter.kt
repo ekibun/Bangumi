@@ -11,6 +11,9 @@ import soko.ekibun.bangumi.api.bangumi.bean.TimeLine
 import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 
+/**
+ * 时间线PagerAdapter
+ */
 class TimeLinePagerAdapter(context: Context, val fragment: TimeLineFragment, private val pager: androidx.viewpager.widget.ViewPager, private val scrollTrigger: (Boolean)->Unit) : androidx.viewpager.widget.PagerAdapter(){
     private val tabList = context.resources.getStringArray(R.array.timeline_list)
     private var topicCall = HashMap<Int, Call<List<TimeLine>>>()

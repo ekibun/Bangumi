@@ -12,6 +12,9 @@ import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
 import soko.ekibun.bangumi.util.PlayerBridge
 
+/**
+ * 缓存页
+ */
 class CacheFragment: DrawerFragment(R.layout.content_cache) {
     override val titleRes: Int = R.string.cache
 

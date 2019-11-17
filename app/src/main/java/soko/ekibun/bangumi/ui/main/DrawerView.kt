@@ -14,7 +14,10 @@ import soko.ekibun.bangumi.ui.main.fragment.index.IndexFragment
 import soko.ekibun.bangumi.ui.search.SearchActivity
 import soko.ekibun.bangumi.ui.setting.SettingsActivity
 
-class DrawerView(private val context: MainActivity, onNightModeChange: (Boolean)->Unit, onLogout: ()->Unit){
+/**
+ * 抽屉
+ */
+class DrawerView(private val context: MainActivity, onNightModeChange: (Boolean) -> Unit, onLogout: () -> Unit) {
     var checkedId = R.id.nav_home
     val homeFragment = HomeFragment()
     private val fragments: Map<Int, DrawerFragment> = mapOf(
@@ -25,7 +28,7 @@ class DrawerView(private val context: MainActivity, onNightModeChange: (Boolean)
     )
     val switch = context.nav_view.menu.findItem(R.id.nav_night).actionView.item_switch!!
 
-    init{
+    init {
         switch.setOnCheckedChangeListener { _, isChecked ->
             onNightModeChange(isChecked)
         }
@@ -36,46 +39,59 @@ class DrawerView(private val context: MainActivity, onNightModeChange: (Boolean)
         }
 
         context.nav_view.setNavigationItemSelectedListener {
-            if(it.itemId != R.id.nav_night)
+            if (it.itemId != R.id.nav_night)
                 context.drawer_layout.closeDrawers()
-            if(fragments.containsKey(it.itemId))
+            if (fragments.containsKey(it.itemId))
                 select(it.itemId)
-            else{
-                when(it.itemId){
+            else {
+                when (it.itemId) {
                     R.id.nav_search -> SearchActivity.startActivity(context)
                     R.id.nav_setting -> context.startActivity(Intent(context, SettingsActivity::class.java))
                     R.id.nav_night -> switch.isChecked = !switch.isChecked
                     R.id.nav_logout -> onLogout()
                 }
             }
-            true }
+            true
+        }
         select(checkedId)
     }
 
-    fun onSaveInstanceState(outState: Bundle){
+    /**
+     * 保存状态
+     */
+    fun onSaveInstanceState(outState: Bundle) {
         outState.putInt("DrawerCheckedId", checkedId)
         fragments.forEach {
             it.value.onSaveInstanceState(outState)
         }
     }
 
-    fun onRestoreInstanceState(savedInstanceState: Bundle){
+    /**
+     * 恢复状态
+     */
+    fun onRestoreInstanceState(savedInstanceState: Bundle) {
         select(savedInstanceState.getInt("DrawerCheckedId"))
         fragments.forEach {
             it.value.onRestoreInstanceState(savedInstanceState)
         }
     }
 
+    /**
+     * 获取当前fragment
+     */
     fun current(): DrawerFragment? {
         return fragments[checkedId]
     }
 
-  fun select(id: Int){
+    /**
+     * 选中fragment
+     */
+    fun select(id: Int) {
         checkedId = id
         context.supportFragmentManager.beginTransaction()
                 .replace(R.id.content_frame, fragments[id]!!).commit()
         context.nav_view.setCheckedItem(id)
         context.invalidateOptionsMenu()
-      ViewCompat.requestApplyInsets(context.drawer_layout)
+        ViewCompat.requestApplyInsets(context.drawer_layout)
     }
 }

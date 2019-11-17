@@ -1,15 +1,19 @@
 package soko.ekibun.bangumi.ui.main.fragment
 
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.annotation.LayoutRes
-import androidx.fragment.app.Fragment
-import kotlinx.android.synthetic.main.activity_main.*
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import android.view.*
+import kotlinx.android.synthetic.main.activity_main.*
 import soko.ekibun.bangumi.R
 
+/**
+ * 抽屉fragment
+ */
 abstract class DrawerFragment(@LayoutRes private val resId: Int): androidx.fragment.app.Fragment(){
     abstract val titleRes: Int
 
@@ -32,10 +36,16 @@ abstract class DrawerFragment(@LayoutRes private val resId: Int): androidx.fragm
     }
 
     var savedInstanceState:Bundle? = null
+    /**
+     * 恢复状态
+     */
     fun onRestoreInstanceState(savedInstanceState: Bundle){
         this.savedInstanceState = savedInstanceState
     }
 
+    /**
+     * 返回处理
+     */
     open fun processBack(): Boolean{
         return false
     }

@@ -10,6 +10,9 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Rakuen
 import soko.ekibun.bangumi.util.GlideUtil
 
+/**
+ * 超展开列表Adapter
+ */
 class RakuenAdapter(data: MutableList<Rakuen>? = null) :
         BaseQuickAdapter<Rakuen, BaseViewHolder>(R.layout.item_topic, data) {
 

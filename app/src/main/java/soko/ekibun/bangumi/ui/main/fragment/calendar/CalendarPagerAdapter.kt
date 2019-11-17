@@ -19,14 +19,21 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.HashMap
 
+/**
+ * 时间表PagerAdapter
+ */
 class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: androidx.viewpager.widget.ViewPager, private val scrollTrigger: (Boolean)->Unit) : androidx.viewpager.widget.PagerAdapter(){
     val sp:SharedPreferences by lazy { PreferenceManager.getDefaultSharedPreferences(pager.context) }
     var windowInsets: WindowInsets? = null
 
     init{
         pager.addOnPageChangeListener(object: androidx.viewpager.widget.ViewPager.OnPageChangeListener{
-            override fun onPageScrollStateChanged(state: Int) {}
-            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
+            override fun onPageScrollStateChanged(state: Int) { /* no-op */
+            }
+
+            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) { /* no-op */
+            }
+
             override fun onPageSelected(position: Int) {
                 scrollTrigger((items[CalendarAdapter.getCalendarInt(getPostDate(pager.currentItem))]?.second?.tag as? androidx.recyclerview.widget.RecyclerView)?.canScrollVertically(-1) == true)
             } })
@@ -61,6 +68,7 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: an
 
     @SuppressLint("UseSparseArrays")
     private val items = HashMap<Int, Pair<CalendarAdapter, androidx.swiperefreshlayout.widget.SwipeRefreshLayout>>()
+
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
         val item = getItem(CalendarAdapter.getCalendarInt(getPostDate(position)))
         if(raw == null && position == pager.currentItem)
@@ -186,6 +194,9 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: an
         return "${date/100%100}-${date%100}\n${CalendarAdapter.weekList[CalendarAdapter.getWeek(cal)]}(${CalendarAdapter.weekJp[CalendarAdapter.getWeek(cal)]})"
     }
 
+    /**
+     * 获取项对应的时间
+     */
     fun getPostDate(pos: Int): Calendar {
         val cal = CalendarAdapter.getIntCalendar(CalendarAdapter.getNowInt(
                 sp.getBoolean("calendar_use_30h", false)))

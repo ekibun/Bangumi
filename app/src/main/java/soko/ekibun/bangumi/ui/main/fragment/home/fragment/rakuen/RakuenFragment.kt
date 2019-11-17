@@ -1,9 +1,9 @@
 package soko.ekibun.bangumi.ui.main.fragment.home.fragment.rakuen
 
 import android.os.Bundle
-import androidx.appcompat.widget.PopupMenu
 import android.view.LayoutInflater
 import android.view.View
+import androidx.appcompat.widget.PopupMenu
 import kotlinx.android.synthetic.main.fragment_rakuen.*
 import kotlinx.android.synthetic.main.item_rakuen_tab.view.*
 import soko.ekibun.bangumi.R
@@ -11,6 +11,9 @@ import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.HomeTabFragment
 import soko.ekibun.bangumi.ui.web.WebActivity
 
+/**
+ * 超展开
+ */
 class RakuenFragment: HomeTabFragment(R.layout.fragment_rakuen){
     override val titleRes: Int = R.string.rakuen
     override val iconRes: Int = R.drawable.ic_explore

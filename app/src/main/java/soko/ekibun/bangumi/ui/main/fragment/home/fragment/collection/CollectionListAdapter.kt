@@ -10,6 +10,9 @@ import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.ResourceUtil
 
+/**
+ * 收藏列表Adapter
+ */
 class CollectionListAdapter(data: MutableList<Subject>? = null) :
         BaseQuickAdapter<Subject, BaseViewHolder>(R.layout.item_subject, data) {
 

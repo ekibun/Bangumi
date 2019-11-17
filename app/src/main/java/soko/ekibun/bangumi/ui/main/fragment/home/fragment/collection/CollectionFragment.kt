@@ -9,6 +9,9 @@ import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.HomeTabFragment
 import soko.ekibun.bangumi.ui.web.WebActivity
 
+/**
+ * 收藏页
+ */
 class CollectionFragment: HomeTabFragment(R.layout.fragment_collection){
     override val titleRes: Int = R.string.collect
     override val iconRes: Int = R.drawable.ic_heart
@@ -27,6 +30,9 @@ class CollectionFragment: HomeTabFragment(R.layout.fragment_collection){
             WebActivity.startActivityForAuth(activity!!) }
     }
 
+    /**
+     * 重置
+     */
     fun reset() {
         (item_pager?.adapter as? CollectionPagerAdapter)?.reset()
         item_login_info?.visibility = if((activity as? MainActivity)?.user == null) View.VISIBLE else View.GONE

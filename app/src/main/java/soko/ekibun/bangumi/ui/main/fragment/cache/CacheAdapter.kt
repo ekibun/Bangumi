@@ -8,6 +8,9 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.videoplayer.bean.SubjectCache
 
+/**
+ * 缓存列表Adapter
+ */
 class CacheAdapter(data: MutableList<SubjectCache>? = null) :
         BaseQuickAdapter<SubjectCache, BaseViewHolder>
         (R.layout.item_subject, data) {

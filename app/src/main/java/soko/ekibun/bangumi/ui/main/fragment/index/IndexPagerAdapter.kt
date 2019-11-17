@@ -17,7 +17,10 @@ import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import java.util.*
 
-class IndexPagerAdapter(private val fragment: IndexFragment, private val pager: androidx.viewpager.widget.ViewPager, private val scrollTrigger: (Boolean)->Unit): RecyclePagerAdapter<IndexPagerAdapter.IndexPagerViewHolder>() {
+/**
+ * 索引PagerAdapter
+ */
+class IndexPagerAdapter(fragment: IndexFragment, private val pager: androidx.viewpager.widget.ViewPager, private val scrollTrigger: (Boolean) -> Unit) : RecyclePagerAdapter<IndexPagerAdapter.IndexPagerViewHolder>() {
     var windowInsets: WindowInsets? = null
 
     private val indexTypeView = IndexTypeView(fragment.item_type) {
@@ -27,8 +30,11 @@ class IndexPagerAdapter(private val fragment: IndexFragment, private val pager: 
 
     init{
         pager.addOnPageChangeListener(object: androidx.viewpager.widget.ViewPager.OnPageChangeListener{
-            override fun onPageScrollStateChanged(state: Int) {}
-            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
+            override fun onPageScrollStateChanged(state: Int) { /* no-op*/
+            }
+
+            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) { /* no-op*/
+            }
             override fun onPageSelected(position: Int) {
                 scrollTrigger((holders.firstOrNull { it.position ==  pager.currentItem}?.view?.tag as? androidx.recyclerview.widget.RecyclerView)?.canScrollVertically(-1) == true)
             } })
@@ -125,7 +131,9 @@ class IndexPagerAdapter(private val fragment: IndexFragment, private val pager: 
             loadIndex(holder)
     }
 
-
+    /**
+     * 索引ViewHolder
+     */
     class IndexPagerViewHolder(val view: androidx.swiperefreshlayout.widget.SwipeRefreshLayout, val adapter: SubjectAdapter):
             RecyclePagerAdapter.PagerViewHolder({view}()){
         var position = 0

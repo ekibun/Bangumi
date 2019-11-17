@@ -21,14 +21,21 @@ import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 
+/**
+ * 收藏PagerAdapter
+ */
 class CollectionPagerAdapter(private val context: Context, val fragment: CollectionFragment, private val pager: ViewPager, private val scrollTrigger: (Boolean) -> Unit) : androidx.viewpager.widget.PagerAdapter() {
     private var tabList = context.resources.getStringArray(R.array.collection_status_anime)
     private val subjectTypeView = SubjectTypeView(fragment.item_type) { reset() }
 
     init {
         pager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
-            override fun onPageScrollStateChanged(state: Int) {}
-            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
+            override fun onPageScrollStateChanged(state: Int) { /* no-op */
+            }
+
+            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) { /* no-op */
+            }
+
             override fun onPageSelected(position: Int) {
                 if ((items[position]?.second?.tag as? RecyclerView)?.tag == null) {
                     pageIndex[position] = 0
@@ -79,6 +86,9 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
         return item.second
     }
 
+    /**
+     * 重置
+     */
     fun reset() {
         tabList = context.resources.getStringArray(Collection.getStatusNamesRes(subjectTypeView.getType()))
         notifyDataSetChanged()

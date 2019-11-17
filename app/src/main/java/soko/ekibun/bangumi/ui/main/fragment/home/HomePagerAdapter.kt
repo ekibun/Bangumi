@@ -21,8 +21,11 @@ class HomePagerAdapter(private val context: Context, fragmentManager: FragmentMa
     init {
         pager.offscreenPageLimit = 4
         pager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
-            override fun onPageScrollStateChanged(state: Int) {}
-            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
+            override fun onPageScrollStateChanged(state: Int) { /* no-op*/
+            }
+
+            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) { /* no-op*/
+            }
             override fun onPageSelected(position: Int) {
                 fragments.getOrNull(position)?.onSelect()
             }

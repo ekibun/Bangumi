@@ -16,6 +16,9 @@ import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.JsonUtil
 
+/**
+ * 主页Presenter
+ */
 class MainPresenter(private val context: MainActivity) {
     private val themeModel by lazy { ThemeModel(context) }
     private val userView = UserView(context, View.OnClickListener {
@@ -44,6 +47,9 @@ class MainPresenter(private val context: MainActivity) {
         drawerView.switch.isChecked = themeModel.getTheme()
     }
 
+    /**
+     * 返回处理
+     */
     fun processBack(): Boolean {
         if (context.drawer_layout.isDrawerOpen(GravityCompat.START)) {
             context.drawer_layout.closeDrawers()
@@ -59,6 +65,9 @@ class MainPresenter(private val context: MainActivity) {
         return false
     }
 
+    /**
+     * 更新用户信息
+     */
     fun refreshUser() {
         UserInfo.getSelf(
                 reload = {
@@ -85,11 +94,17 @@ class MainPresenter(private val context: MainActivity) {
         userView.setUser(user)
     }
 
+    /**
+     * 保存状态
+     */
     fun onSaveInstanceState(outState: Bundle) {
         drawerView.onSaveInstanceState(outState)
         user?.let { outState.putString("user", JsonUtil.toJson(it)) }
     }
 
+    /**
+     * 恢复状态
+     */
     fun onRestoreInstanceState(savedInstanceState: Bundle) {
         val userString = savedInstanceState.getString("user", "")
         drawerView.onRestoreInstanceState(savedInstanceState)
@@ -97,6 +112,9 @@ class MainPresenter(private val context: MainActivity) {
             updateUser(JsonUtil.toEntity(userString, UserInfo::class.java) ?: return)
     }
 
+    /**
+     * 处理回调
+     */
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode == Activity.RESULT_OK)
             when (requestCode) {

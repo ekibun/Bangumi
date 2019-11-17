@@ -21,7 +21,5 @@ data class Response(
             var url: String? = null,
             var thumbnail: String? = null,
             var delete: String? = null
-    ) {
-
-    }
+    )
 }

@@ -21,6 +21,9 @@ import soko.ekibun.bangumi.ui.view.NotifyActionProvider
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.AppUtil
 
+/**
+ * 主页
+ */
 class MainActivity : BaseActivity() {
     val downloadCacheProvider by lazy{ DownloadCacheProvider(this){
         nav_view.menu.findItem(R.id.nav_download).isVisible = it
@@ -123,6 +126,9 @@ class MainActivity : BaseActivity() {
     }
 
     companion object{
+        /**
+         * 启动
+         */
         fun startActivity(context: Context) {
             val intent = Intent(context, MainActivity::class.java)
             context.startActivity(intent)

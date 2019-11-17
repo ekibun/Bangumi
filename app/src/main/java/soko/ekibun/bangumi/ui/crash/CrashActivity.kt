@@ -13,6 +13,9 @@ import soko.ekibun.bangumi.api.xxxlin.Xxxlin
 import soko.ekibun.bangumi.api.xxxlin.bean.BaseResult
 import soko.ekibun.bangumi.ui.splash.SplashActivity
 
+/**
+ * 错误报告
+ */
 class CrashActivity : AppCompatActivity() {
 
     var uploadCall : Call<BaseResult>? = null
@@ -20,15 +23,15 @@ class CrashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_crash)
 
-        val content = intent.getStringExtra(EXTRA_CRASH)
+        val content = intent.getStringExtra(EXTRA_CRASH) ?: ""
         item_content.text = content
         item_upload.setOnClickListener {
             uploadCall?.cancel()
             uploadCall = Xxxlin.createInstance().crashReport(content)
             uploadCall?.enqueue(ApiHelper.buildCallback({
-                        Snackbar.make(item_upload, if(it.code == 0) getString(R.string.crash_upload_ok) else getString(R.string.crash_upload_failed, it.msg?:""), Snackbar.LENGTH_SHORT).show()
-                        item_upload.setOnClickListener{}
-                    }, {}))
+                Snackbar.make(item_upload, if(it.code == 0) getString(R.string.crash_upload_ok) else getString(R.string.crash_upload_failed, it.msg?:""), Snackbar.LENGTH_SHORT).show()
+                item_upload.setOnClickListener{}
+            }, {}))
         }
         item_restart.setOnClickListener {
             SplashActivity.startActivity(this)
@@ -38,6 +41,9 @@ class CrashActivity : AppCompatActivity() {
 
     companion object {
         private const val EXTRA_CRASH = "extraCrash"
+        /**
+         * 启动activity
+         */
         fun startActivity(context: Context, crash: String){
             val intent = Intent(context.applicationContext, CrashActivity::class.java)
             intent.putExtra(EXTRA_CRASH, crash)

@@ -1,10 +1,14 @@
 package soko.ekibun.bangumi.ui.main.fragment.home.fragment
 
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.annotation.LayoutRes
-import androidx.fragment.app.Fragment
-import android.view.*
 
+/**
+ * 主页fragment
+ */
 abstract class HomeTabFragment(@LayoutRes private val resId: Int): androidx.fragment.app.Fragment(){
     abstract val titleRes: Int
     abstract val iconRes: Int
@@ -13,6 +17,9 @@ abstract class HomeTabFragment(@LayoutRes private val resId: Int): androidx.frag
         return inflater.inflate(resId, container, false)
     }
 
+    /**
+     * 选中
+     */
     abstract fun onSelect()
 
     var savedInstanceState:Bundle? = null

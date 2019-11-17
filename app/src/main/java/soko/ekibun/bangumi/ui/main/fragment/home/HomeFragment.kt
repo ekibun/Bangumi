@@ -3,16 +3,18 @@ package soko.ekibun.bangumi.ui.main.fragment.home
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageView
 import kotlinx.android.synthetic.main.content_home.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
-import android.view.ViewGroup
-import android.widget.ImageView
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.HomeTabFragment
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.collection.CollectionFragment
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.timeline.TimeLineFragment
 
-
+/**
+ * 主页
+ */
 class HomeFragment: DrawerFragment(R.layout.content_home){
     override val titleRes: Int = R.string.home
 
@@ -48,14 +50,23 @@ class HomeFragment: DrawerFragment(R.layout.content_home){
         return true
     }
 
+    /**
+     * 收藏fragment
+     */
     fun collectionFragment(): CollectionFragment?{
         return fragments()?.firstOrNull { it is CollectionFragment } as? CollectionFragment
     }
 
+    /**
+     * 时间线fragment
+     */
     fun timelineFragment(): TimeLineFragment?{
         return fragments()?.firstOrNull { it is TimeLineFragment } as? TimeLineFragment
     }
 
+    /**
+     * fragment列表
+     */
     fun fragments(): List<HomeTabFragment>?{
         return (frame_pager?.adapter as? HomePagerAdapter)?.fragments
     }

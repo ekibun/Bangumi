@@ -5,6 +5,9 @@ import androidx.appcompat.widget.PopupMenu
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 
+/**
+ * 索引类型View
+ */
 class IndexTypeView(view: TextView, onChange:()->Unit){
     companion object {
         val typeList = mapOf(
@@ -55,6 +58,7 @@ class IndexTypeView(view: TextView, onChange:()->Unit){
                 R.id.collection_type_real_en to Pair(Subject.TYPE_REAL, "en"),
                 R.id.collection_type_real_cn to Pair(Subject.TYPE_REAL, "cn"))
     }
+
     var selectedType = R.id.collection_type_anime_all
 
     init{

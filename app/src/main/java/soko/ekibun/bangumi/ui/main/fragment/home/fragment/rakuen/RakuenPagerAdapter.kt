@@ -11,14 +11,21 @@ import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.Rakuen
 import soko.ekibun.bangumi.ui.topic.TopicActivity
 
+/**
+ * 超展开PagerAdapter
+ */
 class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private val pager: androidx.viewpager.widget.ViewPager, private val scrollTrigger: (Boolean) -> Unit) : androidx.viewpager.widget.PagerAdapter() {
     private val tabList = context.resources.getStringArray(R.array.topic_list)
     var selectedFilter = R.id.topic_filter_all
 
     init {
         pager.addOnPageChangeListener(object : androidx.viewpager.widget.ViewPager.OnPageChangeListener {
-            override fun onPageScrollStateChanged(state: Int) {}
-            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
+            override fun onPageScrollStateChanged(state: Int) { /* no-op */
+            }
+
+            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) { /* no-op */
+            }
+
             override fun onPageSelected(position: Int) {
                 loadTopicList(position)
                 scrollTrigger((items[position]?.second?.tag as? androidx.recyclerview.widget.RecyclerView)?.canScrollVertically(-1) == true)
@@ -61,6 +68,9 @@ class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private
         return item.second
     }
 
+    /**
+     * 重置
+     */
     fun reset(position: Int) {
         val item = items[position] ?: return
         topicCall[position]?.cancel()
@@ -71,6 +81,9 @@ class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private
     @SuppressLint("UseSparseArrays")
     private var topicCall = HashMap<Int, Call<List<Rakuen>>>()
 
+    /**
+     * 加载帖子列表
+     */
     fun loadTopicList(position: Int = pager.currentItem) {
         val item = items[position] ?: return
         item.first.isUseEmpty(false)

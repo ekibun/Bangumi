@@ -7,6 +7,9 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
 import java.util.*
 
+/**
+ * 索引
+ */
 class IndexFragment: DrawerFragment(R.layout.content_index){
     override val titleRes: Int = R.string.index
 
@@ -39,6 +42,6 @@ class IndexFragment: DrawerFragment(R.layout.content_index){
         val cal = Calendar.getInstance()
         val year = cal.get(Calendar.YEAR)
         val month = cal.get(Calendar.MONTH)
-       return (year - 1000) * 12 + month
+        return (year - 1000) * 12 + month
     }
 }

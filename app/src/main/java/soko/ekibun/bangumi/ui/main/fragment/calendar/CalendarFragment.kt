@@ -7,6 +7,9 @@ import kotlinx.android.synthetic.main.content_calendar.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
 
+/**
+ * 时间表
+ */
 class CalendarFragment: DrawerFragment(R.layout.content_calendar) {
     override val titleRes: Int = R.string.calendar
 
