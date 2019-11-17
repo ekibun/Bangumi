@@ -12,9 +12,9 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.TimeLine
-import soko.ekibun.bangumi.ui.topic.PostAdapter
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
+import soko.ekibun.bangumi.util.TextUtil
 
 /**
  * 时间线Adapter
@@ -35,7 +35,7 @@ class TimeLineAdapter(data: MutableList<TimeLine>? = null) :
         helper.itemView.item_layout.isClickable = !item.t.sayUrl.isNullOrEmpty()
         //action
         @Suppress("DEPRECATION")
-        helper.itemView.item_action.text = PostAdapter.setTextLinkOpenByWebView(Html.fromHtml(item.t.action)) {
+        helper.itemView.item_action.text = TextUtil.setTextUrlCallback(Html.fromHtml(item.t.action)) {
             WebActivity.launchUrl(helper.itemView.context, Bangumi.parseUrl(it), "")
         }
         helper.itemView.item_action.movementMethod = if (helper.itemView.item_layout.isClickable) null else LinkMovementMethod.getInstance()

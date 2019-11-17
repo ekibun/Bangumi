@@ -21,6 +21,9 @@ import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.collections.set
 
+/**
+ * 帖子Presenter
+ */
 class TopicPresenter(private val context: TopicActivity) {
     private val topicView = TopicView(context)
 
@@ -33,6 +36,9 @@ class TopicPresenter(private val context: TopicActivity) {
     }
 
     var loadMoreFail: Boolean? = null
+    /**
+     * 读取帖子
+     */
     fun getTopic(scrollPost: String = "") {
         loadMoreFail = null
         context.item_swipe.isRefreshing = true

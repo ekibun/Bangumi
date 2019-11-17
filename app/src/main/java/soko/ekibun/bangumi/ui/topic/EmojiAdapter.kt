@@ -7,6 +7,9 @@ import kotlinx.android.synthetic.main.item_emoji.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.util.GlideUtil
 
+/**
+ * 表情Adapter
+ */
 class EmojiAdapter(data: MutableList<Pair<String, String>>? = null) :
         BaseQuickAdapter<Pair<String, String>, BaseViewHolder>(R.layout.item_emoji, data) {
 

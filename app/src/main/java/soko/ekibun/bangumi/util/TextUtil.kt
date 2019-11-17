@@ -1,12 +1,14 @@
 package soko.ekibun.bangumi.util
 
 import android.graphics.Typeface
+import android.text.SpannableStringBuilder
 import android.text.Spanned
+import android.text.TextPaint
 import android.text.TextUtils
 import android.text.style.*
+import android.view.View
 import org.jsoup.Jsoup
 import soko.ekibun.bangumi.api.bangumi.Bangumi
-import soko.ekibun.bangumi.ui.topic.PostAdapter
 import soko.ekibun.bangumi.ui.topic.ReplyDialog
 import kotlin.math.roundToInt
 
@@ -14,6 +16,38 @@ import kotlin.math.roundToInt
  * Created by awarmisland on 2018/9/10.
  */
 object TextUtil {
+    /**
+     * 给链接加上回调
+     */
+    fun setTextUrlCallback(htmlString: Spanned, onClick: (String) -> Unit): Spanned {
+        val objs = (htmlString as? SpannableStringBuilder)?.getSpans(0, htmlString.length, URLSpan::class.java)
+                ?: return htmlString
+        if (objs.isNotEmpty()) for (obj in objs) {
+            val start = htmlString.getSpanStart(obj)
+            val end = htmlString.getSpanEnd(obj)
+            if (obj is URLSpan) {
+                val url = obj.url
+                htmlString.removeSpan(obj)
+                htmlString.setSpan(CustomURLSpan(url, onClick), start, end, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
+            }
+        }
+        return htmlString
+    }
+
+    /**
+     * Url回调Span
+     */
+    class CustomURLSpan(val url: String, val onClick: (String) -> Unit) : ClickableSpan() {
+        override fun onClick(widget: View) {
+            onClick(url)
+        }
+
+        override fun updateDrawState(ds: TextPaint) {
+            ds.color = ds.linkColor
+            ds.isUnderlineText = false
+        }
+    }
+
 
     /**
      * 将html转换为字符串
@@ -82,7 +116,7 @@ object TextUtil {
                     }
                     is UnderlineSpan -> out.append("[u]")
                     is StrikethroughSpan -> out.append("[s]")
-                    is PostAdapter.Companion.CustomURLSpan -> out.append("[url=${characterStyle.url}]")
+                    is CustomURLSpan -> out.append("[url=${characterStyle.url}]")
                     is URLSpan -> out.append("[url=${characterStyle.url}]")
                     is ImageSpan -> {
                         var source = characterStyle.source
@@ -105,7 +139,7 @@ object TextUtil {
                     is HtmlTagHandler.MaskSpan -> out.append("[/mask]")
                     is ForegroundColorSpan -> out.append("[/color]")
                     is RelativeSizeSpan -> out.append("[/size]")
-                    is PostAdapter.Companion.CustomURLSpan -> out.append("[/url]")
+                    is CustomURLSpan -> out.append("[/url]")
                     is URLSpan -> out.append("[/url]")
                     is StrikethroughSpan -> out.append("[/s]")
                     is UnderlineSpan -> out.append("[/u]")

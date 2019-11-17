@@ -16,6 +16,9 @@ import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.ResourceUtil
 
+/**
+ * 帖子View
+ */
 class TopicView(private val context: TopicActivity) {
     val adapter by lazy { PostAdapter() }
 
@@ -81,6 +84,9 @@ class TopicView(private val context: TopicActivity) {
         }
     }
 
+    /**
+     * 处理帖子头部
+     */
     fun processTopicBefore(title: String, links: Map<String, String>, images: Images) {
         context.title_collapse.text = title
         context.title_expand.text = context.title_collapse.text
@@ -111,6 +117,9 @@ class TopicView(private val context: TopicActivity) {
                 ?.into(context.item_cover_blur)
     }
 
+    /**
+     * 处理帖子内容
+     */
     fun processTopic(topic: Topic, scrollPost: String, onItemClick: (View, Int) -> Unit) {
         processTopicBefore(topic.title, topic.links, topic.images)
         adapter.isUseEmpty(true)
@@ -147,7 +156,9 @@ class TopicView(private val context: TopicActivity) {
         }
     }
 
-
+    /**
+     * 更新楼层数据
+     */
     fun setNewData(data: List<TopicPost>) {
         var floor = 0
         var subFloor = 0

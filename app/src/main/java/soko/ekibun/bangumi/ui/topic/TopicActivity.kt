@@ -7,11 +7,13 @@ import android.view.Menu
 import android.view.MenuItem
 import kotlinx.android.synthetic.main.activity_topic.*
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
 import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.view.SwipeBackActivity
 import soko.ekibun.bangumi.util.AppUtil
 
+/**
+ * 帖子Activity
+ */
 class TopicActivity : SwipeBackActivity() {
     private val topicPresenter by lazy{ TopicPresenter(this) }
 
@@ -55,12 +57,13 @@ class TopicActivity : SwipeBackActivity() {
 
     val openUrl: String by lazy{ intent.getStringExtra(EXTRA_TOPIC) }
 
-    class PostList: ArrayList<TopicPost>()
-
     companion object{
         private const val EXTRA_TOPIC = "extraTopic"
         private const val EXTRA_POST = "extraPost"
 
+        /**
+         * 启动Activity
+         */
         fun startActivity(context: Context, topic: String, post: Int = 0) {
             context.startActivity(parseIntent(context, topic, post))
         }

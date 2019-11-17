@@ -18,8 +18,8 @@ import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.model.ThemeModel
-import soko.ekibun.bangumi.ui.topic.PostAdapter
 import soko.ekibun.bangumi.ui.web.WebActivity
+import soko.ekibun.bangumi.util.TextUtil
 
 /**
  * 条目信息对话框
@@ -55,7 +55,7 @@ class InfoboxDialog(context: Context): Dialog(context, R.style.AppTheme_Dialog) 
             txtCat.text = cat
             val txtInfo = TextView(context)
             @Suppress("DEPRECATION")
-            txtInfo.text = PostAdapter.setTextLinkOpenByWebView(Html.fromHtml(subject.infobox?.filter { it.first == cat }?.map{ it.second }?.reduce { acc, s -> "$acc<br>$s" })){
+            txtInfo.text = TextUtil.setTextUrlCallback(Html.fromHtml(subject.infobox?.filter { it.first == cat }?.map { it.second }?.reduce { acc, s -> "$acc<br>$s" })) {
                 WebActivity.launchUrl(context, Bangumi.parseUrl(it), "")
             }
             txtInfo.movementMethod = LinkMovementMethod.getInstance()

@@ -34,7 +34,6 @@ import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.uploadcc.UploadCC
 import soko.ekibun.bangumi.api.uploadcc.bean.Response
 import soko.ekibun.bangumi.model.ThemeModel
-import soko.ekibun.bangumi.ui.topic.PostAdapter.Companion.setTextLinkOpenByWebView
 import soko.ekibun.bangumi.util.*
 import java.lang.ref.WeakReference
 
@@ -131,7 +130,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
             if (bbCode) {
                 contentView.item_input.setText(TextUtil.span2bbcode(contentView.item_input.editableText))
             } else {
-                contentView.item_input.setText(setTextLinkOpenByWebView(Html.fromHtml(parseHtml(TextUtil.bbcode2html(contentView.item_input.editableText.toString())),
+                contentView.item_input.setText(TextUtil.setTextUrlCallback(Html.fromHtml(parseHtml(TextUtil.bbcode2html(contentView.item_input.editableText.toString())),
                         CollapseHtmlHttpImageGetter(contentView.item_input),
                         HtmlTagHandler(contentView.item_input, onClick = onClickImage)), onClickUrl))
                 contentView.item_input.post { contentView.item_input.text = contentView.item_input.text }
@@ -219,7 +218,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
             if (bbCode) {
                 contentView.item_input.setText(draft)
             } else {
-                contentView.item_input.setText(setTextLinkOpenByWebView(Html.fromHtml(parseHtml(TextUtil.bbcode2html(draft!!)),
+                contentView.item_input.setText(TextUtil.setTextUrlCallback(Html.fromHtml(parseHtml(TextUtil.bbcode2html(draft!!)),
                         CollapseHtmlHttpImageGetter(contentView.item_input),
                         HtmlTagHandler(contentView.item_input, onClick = onClickImage)), onClickUrl))
                 contentView.item_input.post { contentView.item_input.text = contentView.item_input.text }
@@ -432,6 +431,9 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
     }
 
     companion object {
+        /**
+         * 转换html
+         */
         fun parseHtml(html: String): String {
             val doc = Jsoup.parse(html.replace(Regex("</?noscript>"), ""), Bangumi.SERVER)
             doc.outputSettings().indentAmount(0).prettyPrint(false)

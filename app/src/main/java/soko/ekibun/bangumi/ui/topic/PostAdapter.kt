@@ -2,12 +2,8 @@ package soko.ekibun.bangumi.ui.topic
 
 import android.annotation.SuppressLint
 import android.text.Html
-import android.text.SpannableStringBuilder
 import android.text.Spanned
-import android.text.TextPaint
 import android.text.method.LinkMovementMethod
-import android.text.style.ClickableSpan
-import android.text.style.URLSpan
 import android.util.Size
 import android.view.Gravity
 import android.view.View
@@ -29,10 +25,14 @@ import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.HtmlHttpImageGetter
 import soko.ekibun.bangumi.util.HtmlTagHandler
+import soko.ekibun.bangumi.util.TextUtil
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
+/**
+ * 回复 Adapter
+ */
 class PostAdapter(data: MutableList<TopicPost>? = null) :
         BaseMultiItemQuickAdapter<TopicPost, BaseViewHolder>(data), FastScrollRecyclerView.SectionedAdapter {
 
@@ -89,30 +89,29 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
             helper.itemView.item_message.let { item_message ->
                 val makeSpan = {
                     @Suppress("DEPRECATION")
-                    setTextLinkOpenByWebView(
-                            Html.fromHtml(parseHtml(item.pst_content), HtmlHttpImageGetter(item_message, drawables, imaageSizes), HtmlTagHandler(item_message) { imageSpan ->
-                                helper.itemView.item_message?.let { itemView ->
-                                    val imageList = drawables.filter { (it.startsWith("http") || !it.contains("smile")) }.toList()
-                                    val index = imageList.indexOfFirst { d -> d == imageSpan.source }
-                                    if (index < 0) return@HtmlTagHandler
-                                    val popWindow = PopupWindow(itemView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, true)
-                                    val viewPager = FixMultiViewPager(itemView.context)
-                                    popWindow.contentView = viewPager
-                                    viewPager.adapter = PhotoPagerAdapter(imageList.map { Bangumi.parseUrl(it) }) {
-                                        popWindow.dismiss()
-                                    }
-                                    viewPager.currentItem = index
-                                    popWindow.isClippingEnabled = false
-                                    popWindow.animationStyle = R.style.AppTheme_FadeInOut
-                                    popWindow.showAtLocation(itemView, Gravity.CENTER, 0, 0)
-                                    popWindow.contentView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                                            or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                                            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                                            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                                            or View.SYSTEM_UI_FLAG_FULLSCREEN)
-                                }
-                            })) {
+                    TextUtil.setTextUrlCallback(Html.fromHtml(parseHtml(item.pst_content), HtmlHttpImageGetter(item_message, drawables, imaageSizes), HtmlTagHandler(item_message) { imageSpan ->
+                        helper.itemView.item_message?.let { itemView ->
+                            val imageList = drawables.filter { (it.startsWith("http") || !it.contains("smile")) }.toList()
+                            val index = imageList.indexOfFirst { d -> d == imageSpan.source }
+                            if (index < 0) return@HtmlTagHandler
+                            val popWindow = PopupWindow(itemView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, true)
+                            val viewPager = FixMultiViewPager(itemView.context)
+                            popWindow.contentView = viewPager
+                            viewPager.adapter = PhotoPagerAdapter(imageList.map { Bangumi.parseUrl(it) }) {
+                                popWindow.dismiss()
+                            }
+                            viewPager.currentItem = index
+                            popWindow.isClippingEnabled = false
+                            popWindow.animationStyle = R.style.AppTheme_FadeInOut
+                            popWindow.showAtLocation(itemView, Gravity.CENTER, 0, 0)
+                            popWindow.contentView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                                    or View.SYSTEM_UI_FLAG_FULLSCREEN)
+                        }
+                    })) {
                         WebActivity.launchUrl(helper.itemView.context, Bangumi.parseUrl(it), "")
                     }
                 }
@@ -138,12 +137,15 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
     }
 
     companion object {
+        /**
+         * 转换Html
+         */
         fun parseHtml(html: String): String {
             val doc = Jsoup.parse(html.replace(Regex("</?noscript>"), ""), Bangumi.SERVER)
             doc.outputSettings().indentAmount(0).prettyPrint(false)
             doc.select("script").remove()
             doc.select("img").forEach {
-                if(!it.hasAttr("src")) it.remove()
+                if (!it.hasAttr("src")) it.remove()
             }
             doc.body().children().forEach {
                 var appendBefore = ""
@@ -177,35 +179,6 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
                 it.html("“${it.html()}”")
             }
             return doc.body().html()
-        }
-
-        fun setTextLinkOpenByWebView(htmlString: Spanned, onClick: (String) -> Unit): Spanned {
-            if (htmlString is SpannableStringBuilder) {
-                val objs = htmlString.getSpans(0, htmlString.length, URLSpan::class.java)
-                if (null != objs && objs.isNotEmpty()) {
-                    for (obj in objs) {
-                        val start = htmlString.getSpanStart(obj)
-                        val end = htmlString.getSpanEnd(obj)
-                        if (obj is URLSpan) {
-                            val url = obj.url
-                            htmlString.removeSpan(obj)
-                            htmlString.setSpan(CustomURLSpan(url, onClick), start, end, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
-                        }
-                    }
-                }
-            }
-            return htmlString
-        }
-
-        class CustomURLSpan(val url: String, val onClick: (String) -> Unit) : ClickableSpan() {
-            override fun onClick(widget: View) {
-                onClick(url)
-            }
-
-            override fun updateDrawState(ds: TextPaint) {
-                ds.color = ds.linkColor
-                ds.isUnderlineText = false
-            }
         }
     }
 }
