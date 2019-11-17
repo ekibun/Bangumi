@@ -68,4 +68,3 @@
 -   [FastScrollRecyclerView](https://github.com/timusus/RecyclerView-FastScroll)
 
 -   [RichEditText](https://github.com/awarmisland/RichEditText)
-

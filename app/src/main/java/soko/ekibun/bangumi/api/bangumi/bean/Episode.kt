@@ -16,19 +16,6 @@ import java.util.*
 
 /**
  * 剧集类
- * @property id 剧集id
- * @property type 剧集类型
- * @property sort 编号
- * @property name 标题
- * @property name_cn 中文标题
- * @property duration 时长
- * @property airdate 放送时间
- * @property comment 吐槽数
- * @property desc 简介
- * @property status 放送状态
- * @property progress 观看进度
- * @property category 音乐的专辑编号
- * @constructor
  */
 data class Episode(
         val id: Int = 0,
@@ -46,6 +33,9 @@ data class Episode(
 ) {
     val url = "${Bangumi.SERVER}/ep/$id"
 
+    /**
+     * 混合数据
+     */
     fun merge(ep: Episode) {
         sort = if (sort == 0f) ep.sort else sort
         name = name ?: ep.name
@@ -59,7 +49,9 @@ data class Episode(
         category = category ?: ep.category
     }
 
-
+    /**
+     * 第*话
+     */
     fun parseSort(context: Context): String{
         return if(type == TYPE_MAIN)
             context.getString(R.string.parse_sort_ep, DecimalFormat("#.##").format(sort))
@@ -67,12 +59,21 @@ data class Episode(
             context.getString(getTypeRes(type)) + " ${DecimalFormat("#.##").format(sort)}"
     }
 
+    /**
+     * 剧集类型
+     */
     @IntDef(TYPE_MAIN, TYPE_SP, TYPE_OP, TYPE_ED, TYPE_PV, TYPE_MAD, TYPE_OTHER, TYPE_MUSIC)
     annotation class EpisodeType
 
+    /**
+     * 剧集状态
+     */
     @StringDef(STATUS_TODAY, STATUS_AIR, STATUS_NA)
     annotation class EpisodeStatus
 
+    /**
+     * 进度状态
+     */
     @StringDef(PROGRESS_WATCH, PROGRESS_QUEUE, PROGRESS_DROP, PROGRESS_REMOVE)
     annotation class ProgressType
 

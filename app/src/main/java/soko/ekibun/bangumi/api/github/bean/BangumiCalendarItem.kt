@@ -2,6 +2,9 @@ package soko.ekibun.bangumi.api.github.bean
 
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 
+/**
+ * 时间表条目项
+ */
 data class BangumiCalendarItem(
         val id: Int?,
         val name: String?,

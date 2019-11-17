@@ -13,6 +13,9 @@ import retrofit2.Response
 import soko.ekibun.bangumi.util.HttpUtil
 import java.io.IOException
 
+/**
+ * API工具库
+ */
 object ApiHelper {
     fun <T> buildCallback(callback: (T) -> Unit, finish: (Throwable?) -> Unit = {}): Callback<T> {
         return object : Callback<T> {
@@ -31,6 +34,9 @@ object ApiHelper {
         }
     }
 
+    /**
+     * Sax事件
+     */
     enum class SaxEventType {
         NOTHING,
         BEGIN,
@@ -42,15 +48,10 @@ object ApiHelper {
         parser.setInput(rsp.body!!.charStream())
 
         var lastData = ""
-        loop@ while (parser.eventType != XmlPullParser.END_DOCUMENT) {
-            when (checkEvent(parser, lastData)) {
-                SaxEventType.NOTHING -> {
-                }
-                SaxEventType.BEGIN -> {
-                    lastData = ""
-                }
-                SaxEventType.END -> break@loop
-            }
+        while (parser.eventType != XmlPullParser.END_DOCUMENT) {
+            val event = checkEvent(parser, lastData)
+            if (event == SaxEventType.BEGIN) lastData = ""
+            else if (event == SaxEventType.END) break
             when (parser.eventType) {
                 XmlPullParser.START_TAG -> {
                     lastData += "<${parser.name} ${(0 until parser.attributeCount).joinToString(" ") { "${parser.getAttributeName(it)}=\"${parser.getAttributeValue(it)}\"" }}>"
@@ -65,6 +66,7 @@ object ApiHelper {
             try {
                 parser.next()
             } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
         return lastData

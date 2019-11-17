@@ -48,7 +48,7 @@ object Bangumi {
     fun getCollectionList(
             @Subject.SubjectType subject_type: String,
             username: String,
-            @Collection.CollectionStatusType collection_status: String,
+            @Collection.CollectionStatus collection_status: String,
             page: Int = 1
     ): Call<List<Subject>> {
         return ApiHelper.buildHttpCall("$SERVER/$subject_type/list/$username/$collection_status?page=$page") {
@@ -81,14 +81,7 @@ object Bangumi {
             page: Int
     ): Call<List<Subject>> {
         CookieManager.getInstance().setCookie(SERVER, "chii_searchDateLine=${System.currentTimeMillis() / 1000 - 10};")
-        return ApiHelper.buildHttpCall("$SERVER/subject_search/${java.net.URLEncoder.encode(keywords, "utf-8")}?cat=${when (type) {
-            Subject.TYPE_BOOK -> 1
-            Subject.TYPE_ANIME -> 2
-            Subject.TYPE_MUSIC -> 3
-            Subject.TYPE_GAME -> 4
-            Subject.TYPE_REAL -> 6
-            else -> 0
-        }}&page=$page") { rsp ->
+        return ApiHelper.buildHttpCall("$SERVER/subject_search/${java.net.URLEncoder.encode(keywords, "utf-8")}?cat=${Subject.parseTypeInt(type)}&page=$page") { rsp ->
             val doc = Jsoup.parse(rsp.body?.string() ?: "")
             if (doc.select("#colunmNotice") == null) throw Exception("search error")
             doc.select(".item").mapNotNull { item ->
@@ -139,8 +132,8 @@ object Bangumi {
             page: Int,
             sub_cat: String
     ): Call<List<Subject>> {
-        return ApiHelper.buildHttpCall("$SERVER/$subject_type/browser${if (sub_cat.isEmpty()) "" else "/$sub_cat"}/airtime/$year-$month?page=$page") {
-            val doc = Jsoup.parse(it.body?.string() ?: "")
+        return ApiHelper.buildHttpCall("$SERVER/$subject_type/browser${if (sub_cat.isEmpty()) "" else "/$sub_cat"}/airtime/$year-$month?page=$page") { rsp ->
+            val doc = Jsoup.parse(rsp.body?.string() ?: "")
             doc.select(".item").mapNotNull {
                 val nameCN = it.selectFirst("h3 a")?.text()
                 Subject(

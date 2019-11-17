@@ -80,7 +80,7 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
     }
 
     fun reset() {
-        tabList = context.resources.getStringArray(Collection.getTypeNamesRes(subjectTypeView.getType()))
+        tabList = context.resources.getStringArray(Collection.getStatusNamesRes(subjectTypeView.getType()))
         notifyDataSetChanged()
 
         items.forEach { (it.value.second.tag as? RecyclerView)?.tag = null }
@@ -107,7 +107,7 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
             item.second.isRefreshing = true
         val useApi = position == 2 && subjectTypeView.selectedType in arrayOf(R.id.collection_type_anime, R.id.collection_type_book, R.id.collection_type_real)
         collectionCalls[position] = if (useApi) Bangumi.getCollectionSax {}
-        else Bangumi.getCollectionList(subjectTypeView.getType(), userName, Collection.getTypeById(position + 1), page + 1)
+        else Bangumi.getCollectionList(subjectTypeView.getType(), userName, Collection.getStatusById(position + 1), page + 1)
         collectionCalls[position]?.enqueue(ApiHelper.buildCallback({ list ->
             item.first.isUseEmpty(true)
             list.filter { !useApi || it.type == subjectTypeView.getType() }.let {

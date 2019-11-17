@@ -40,7 +40,7 @@ class EditSubjectDialog(context: Context) : Dialog(context, R.style.AppTheme_Dia
         val view = LayoutInflater.from(context).inflate(R.layout.dialog_edit_subject, null)
         setContentView(view)
 
-        val collectionStatusNames = context.resources.getStringArray(Collection.getTypeNamesRes(subject.type))
+        val collectionStatusNames = context.resources.getStringArray(Collection.getStatusNamesRes(subject.type))
         view.radio_wish.text = collectionStatusNames[0]
         view.radio_collect.text = collectionStatusNames[1]
         view.radio_do.text = collectionStatusNames[2]
@@ -48,11 +48,11 @@ class EditSubjectDialog(context: Context) : Dialog(context, R.style.AppTheme_Dia
         view.radio_dropped.text = collectionStatusNames[4]
 
         val selectMap = mapOf(
-                Collection.TYPE_WISH to R.id.radio_wish,
-                Collection.TYPE_COLLECT to R.id.radio_collect,
-                Collection.TYPE_DO to R.id.radio_do,
-                Collection.TYPE_ON_HOLD to R.id.radio_hold,
-                Collection.TYPE_DROPPED to R.id.radio_dropped)
+                Collection.STATUS_WISH to R.id.radio_wish,
+                Collection.STATUS_COLLECT to R.id.radio_collect,
+                Collection.STATUS_DO to R.id.radio_do,
+                Collection.STATUS_ON_HOLD to R.id.radio_hold,
+                Collection.STATUS_DROPPED to R.id.radio_dropped)
         view.findViewById<RadioButton>(selectMap[collection.status] ?: R.id.radio_collect)?.isChecked = true
 
         view.item_tags.setText(collection.tag?.joinToString(" "))

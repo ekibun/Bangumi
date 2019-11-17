@@ -106,8 +106,18 @@ data class Subject(
         val url = "${Bangumi.SERVER}/subject/topic/$id"
     }
 
+    /**
+     * 条目类型
+     */
     @StringDef(TYPE_ANY, TYPE_BOOK, TYPE_ANIME, TYPE_MUSIC, TYPE_GAME, TYPE_REAL)
     annotation class SubjectType
+
+    /**
+     * Sax tag
+     */
+    enum class SaxTag {
+        NONE, TYPE, NAME, SUMMARY, IMAGES, INFOBOX, EPISODES, TAGS, COLLECTION, COLLECT, SECTIONS, CHARACTOR, TOPIC, BLOG, LINKED, RECOMMEND
+    }
 
     companion object {
         /**
@@ -151,18 +161,33 @@ data class Subject(
         }
 
         /**
+         * 获取条目类型Int
+         */
+        @SubjectType
+        fun parseTypeInt(type: String?): Int {
+            return when (type) {
+                TYPE_BOOK -> 1
+                TYPE_ANIME -> 2
+                TYPE_MUSIC -> 3
+                TYPE_GAME -> 4
+                TYPE_REAL -> 6
+                else -> 0
+            }
+        }
+
+        /**
          * 获取条目信息
          */
-        fun getDetail(subject: Subject, onUpdate: (Subject, String) -> Unit = { _, _ -> }): Call<Subject> {
+        fun getDetail(subject: Subject, onUpdate: (Subject, SaxTag) -> Unit = { _, _ -> }): Call<Subject> {
             return ApiHelper.buildHttpCall(subject.url) { rsp ->
-                var lastTag = ""
+                var lastTag = SaxTag.NONE
                 var tankobon: List<Subject>? = null
-                val updateSubject = { str: String, newTag: String ->
+                val updateSubject = { str: String, newTag: SaxTag ->
                     val doc = Jsoup.parse(str)
                     doc.outputSettings().prettyPrint(false)
 
                     when (lastTag) {
-                        "type" -> subject.type = when (doc.selectFirst("#navMenuNeue .focus").text()) {
+                        SaxTag.TYPE -> subject.type = when (doc.selectFirst("#navMenuNeue .focus").text()) {
                             "动画" -> TYPE_ANIME
                             "书籍" -> TYPE_BOOK
                             "音乐" -> TYPE_MUSIC
@@ -170,16 +195,16 @@ data class Subject(
                             "三次元" -> TYPE_REAL
                             else -> TYPE_ANY
                         }
-                        "name" -> {
+                        SaxTag.NAME -> {
                             subject.name = doc.selectFirst(".nameSingle> a")?.text() ?: subject.name
                             subject.name_cn = doc.selectFirst(".nameSingle> a")?.attr("title") ?: subject.name_cn
                             subject.category = doc.selectFirst(".nameSingle small")?.text() ?: subject.category
                         }
-                        "summary" -> subject.summary = doc.selectFirst("#subject_summary")?.let { TextUtil.html2text(it.html()) }
+                        SaxTag.SUMMARY -> subject.summary = doc.selectFirst("#subject_summary")?.let { TextUtil.html2text(it.html()) }
                                 ?: subject.summary
-                        "images" -> subject.images = doc.selectFirst(".infobox img.cover")?.let { Images(Bangumi.parseImageUrl(it)) }
+                        SaxTag.IMAGES -> subject.images = doc.selectFirst(".infobox img.cover")?.let { Images(Bangumi.parseImageUrl(it)) }
                                 ?: subject.images
-                        "infobox" -> {
+                        SaxTag.INFOBOX -> {
                             val infobox = doc.select("#infobox li")?.map { li ->
                                 val tip = li.selectFirst("span.tip")?.text() ?: ""
                                 var value = ""
@@ -195,15 +220,15 @@ data class Subject(
                                         ?: "") + 1 else week
                             }
                         }
-                        "eps" -> subject.eps = Episode.parseProgressList(doc)
-                        "tags" -> {
+                        SaxTag.EPISODES -> subject.eps = Episode.parseProgressList(doc)
+                        SaxTag.TAGS -> {
                             subject.tags = doc.select(".subject_tag_section a")?.map {
                                 Pair(it.selectFirst("span")?.text()
                                         ?: "", it.selectFirst("small")?.text()?.toIntOrNull()
                                         ?: 0)
                             }
                         }
-                        "collection" -> {
+                        SaxTag.COLLECTION -> {
                             subject.collection = doc.select("#subjectPanelCollect .tip_i a")?.mapNotNull { Regex("(\\d+)人(.+)").find(it.text())?.groupValues }?.let { list ->
                                 UserCollection(
                                         wish = list.firstOrNull { it[2].contains("想") }?.get(1)?.toIntOrNull() ?: 0,
@@ -214,7 +239,7 @@ data class Subject(
                                 )
                             }
                         }
-                        "collect" -> {
+                        SaxTag.COLLECT -> {
                             subject.rating = UserRating(
                                     rank = doc.selectFirst(".global_score .alarm")?.text()?.trim('#')?.toIntOrNull()
                                             ?: subject.rating?.rank ?: 0,
@@ -262,11 +287,11 @@ data class Subject(
                             subject.vol_status = doc.selectFirst("input[name=watched_vols]")?.attr("value")?.toIntOrNull()
                                     ?: 0
                         }
-                        "sections" -> {
+                        SaxTag.SECTIONS -> {
                             val subtitle = doc.selectFirst(".subtitle")?.text()
                             when {
                                 subtitle == "角色介绍" -> {
-                                    lastTag = "crt"
+                                    lastTag = SaxTag.CHARACTOR
                                     subject.crt = doc.select("li")?.map {
                                         val a = it.selectFirst("a.avatar")
                                         Character(
@@ -287,7 +312,7 @@ data class Subject(
                                     }
                                 }
                                 subtitle == "讨论版" -> {
-                                    lastTag = "topic"
+                                    lastTag = SaxTag.TOPIC
                                     subject.topic = doc.select(".topic_list tr")?.mapNotNull {
                                         val tds = it.select("td")
                                         val td0 = tds?.get(0)?.selectFirst("a")
@@ -303,7 +328,7 @@ data class Subject(
                                     }
                                 }
                                 subtitle == "评论" -> {
-                                    lastTag = "blog"
+                                    lastTag = SaxTag.BLOG
                                     subject.blog = doc.select("div.item")?.map {
                                         Blog(
                                                 id = Regex("""/blog/([0-9]*)""").find(it.selectFirst(".title a")?.attr("href")
@@ -331,7 +356,7 @@ data class Subject(
                                     )
                                 }
                                 subtitle == "关联条目" -> {
-                                    lastTag = "linked"
+                                    lastTag = SaxTag.LINKED
                                     var sub = ""
                                     val linked = doc.select("li")?.mapNotNull {
                                         val newSub = it.selectFirst(".sub").text()
@@ -353,7 +378,7 @@ data class Subject(
                                     subject.linked = linked
                                 }
                                 subtitle?.contains("大概会喜欢") ?: false -> {
-                                    lastTag = "recommend"
+                                    lastTag = SaxTag.RECOMMEND
                                     subject.recommend = doc.select("li")?.map {
                                         val avatar = it.selectFirst(".avatar")
                                         val title = it.selectFirst(".info a")
@@ -384,49 +409,49 @@ data class Subject(
                         }
                         attr("id") == "navMenuNeue" -> {
                             HttpUtil.formhash = attr("value") ?: HttpUtil.formhash
-                            updateSubject(str, "type")
+                            updateSubject(str, SaxTag.TYPE)
                             ApiHelper.SaxEventType.BEGIN
                         }
                         hasClass("nameSingle") -> {
-                            updateSubject(str, "name")
+                            updateSubject(str, SaxTag.NAME)
                             ApiHelper.SaxEventType.BEGIN
                         }
                         attr("id") == "subject_summary" -> {
-                            updateSubject(str, "summary")
+                            updateSubject(str, SaxTag.SUMMARY)
                             ApiHelper.SaxEventType.BEGIN
                         }
                         hasClass("infobox") -> {
-                            updateSubject(str, "images")
+                            updateSubject(str, SaxTag.IMAGES)
                             ApiHelper.SaxEventType.BEGIN
                         }
                         attr("id") == "infobox" -> {
-                            updateSubject(str, "infobox")
+                            updateSubject(str, SaxTag.INFOBOX)
                             ApiHelper.SaxEventType.BEGIN
                         }
                         attr("id") == "subjectPanelCollect" -> {
-                            updateSubject(str, "collection")
+                            updateSubject(str, SaxTag.COLLECTION)
                             ApiHelper.SaxEventType.BEGIN
                         }
                         attr("id") == "panelInterestWrapper" -> {
-                            updateSubject(str, "collect")
+                            updateSubject(str, SaxTag.COLLECT)
                             ApiHelper.SaxEventType.BEGIN
                         }
                         hasClass("line_list_music") || hasClass("prg_list") -> {
-                            updateSubject(str, "eps")
+                            updateSubject(str, SaxTag.EPISODES)
                             ApiHelper.SaxEventType.BEGIN
                         }
                         hasClass("subject_section") -> {
-                            updateSubject(str, "sections")
+                            updateSubject(str, SaxTag.SECTIONS)
                             ApiHelper.SaxEventType.BEGIN
                         }
                         hasClass("subject_tag_section") -> {
-                            updateSubject(str, "tags")
+                            updateSubject(str, SaxTag.TAGS)
                             ApiHelper.SaxEventType.BEGIN
                         }
                         else -> ApiHelper.SaxEventType.NOTHING
                     }
                 }
-                updateSubject(lastData, "")
+                updateSubject(lastData, SaxTag.NONE)
                 subject
             }
         }

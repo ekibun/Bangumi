@@ -26,8 +26,4 @@ data class Images(private val url: String) {
             else -> common
         }
     }
-
-    companion object {
-
-    }
 }

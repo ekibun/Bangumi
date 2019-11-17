@@ -12,6 +12,9 @@ import soko.ekibun.bangumi.util.JsonUtil
 import soko.ekibun.bangumi.util.TextUtil
 import java.util.*
 
+/**
+ * 帖子
+ */
 data class Topic(
         val group: String,
         val title: String,
@@ -25,7 +28,7 @@ data class Topic(
 ) {
     companion object {
         /**
-         * 加载主题（Sax）
+         * 加载帖子（Sax）
          */
         fun getTopicSax(url: String, onBeforePost: (data: String) -> Unit, onNewPost: (post: TopicPost) -> Unit): Call<Topic> {
             return ApiHelper.buildHttpCall(url) { rsp ->
@@ -82,7 +85,7 @@ data class Topic(
         }
 
         /**
-         * 加载主题
+         * 加载帖子
          */
         fun getTopic(url: String): Call<Topic> {
             return ApiHelper.buildHttpCall(url) { rsp ->

@@ -77,11 +77,11 @@ data class VideoSubject(
             subject.summary,
             subject.eps?.map { VideoEpisode(it) },
             when (subject.collect?.status) {
-                Collection.TYPE_WISH -> "想看"
-                Collection.TYPE_COLLECT -> "看过"
-                Collection.TYPE_DO -> "在看"
-                Collection.TYPE_ON_HOLD -> "搁置"
-                Collection.TYPE_DROPPED -> "抛弃"
+                Collection.STATUS_WISH -> "想看"
+                Collection.STATUS_COLLECT -> "看过"
+                Collection.STATUS_DO -> "在看"
+                Collection.STATUS_ON_HOLD -> "搁置"
+                Collection.STATUS_DROPPED -> "抛弃"
                 else -> null
             },
             JsonUtil.toJson(Token(HttpUtil.formhash, subject.collect, subject.type))

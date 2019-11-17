@@ -9,6 +9,9 @@ import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.util.HttpUtil
 
+/**
+ * 帖子回复
+ */
 data class TopicPost(
         var pst_id: String = "",
         var pst_mid: String = "",
@@ -31,6 +34,7 @@ data class TopicPost(
     override fun getItemType(): Int {
         return if(isSub) 1 else 0
     }
+
     override fun getLevel(): Int { return itemType }
 
     companion object {

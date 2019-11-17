@@ -223,7 +223,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
                         Subject.getDetail(subject) { newSubject, tag ->
                             subject = newSubject
                             context.runOnUiThread {
-                                if (tag == "collect") refreshCollection()
+                                if (tag == Subject.SaxTag.COLLECT) refreshCollection()
                                 subjectView.updateSubject(newSubject, tag)
                             }
                         },
@@ -306,8 +306,8 @@ class SubjectPresenter(private val context: SubjectActivity) {
         val body = subject.collect ?: Collection()
         val status = body.status
         context.item_collect_image.setImageDrawable(context.resources.getDrawable(
-                if (status in listOf(Collection.TYPE_WISH, Collection.TYPE_COLLECT, Collection.TYPE_DO, Collection.TYPE_ON_HOLD)) R.drawable.ic_heart else R.drawable.ic_heart_outline, context.theme))
-        context.item_collect_info.text = context.resources.getStringArray(Collection.getTypeNamesRes(subject.type)).getOrNull(body.statusId - 1)
+                if (status in listOf(Collection.STATUS_WISH, Collection.STATUS_COLLECT, Collection.STATUS_DO, Collection.STATUS_ON_HOLD)) R.drawable.ic_heart else R.drawable.ic_heart_outline, context.theme))
+        context.item_collect_info.text = context.resources.getStringArray(Collection.getStatusNamesRes(subject.type)).getOrNull(body.statusId - 1)
                 ?: context.getString(R.string.collect)
 
         subjectView.tagAdapter.hasTag = {
@@ -318,7 +318,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
         context.item_collect.setOnClickListener {
             if (HttpUtil.formhash.isEmpty()) return@setOnClickListener
             val popupMenu = PopupMenu(context, context.item_collect)
-            val statusList = context.resources.getStringArray(Collection.getTypeNamesRes(subject.type))
+            val statusList = context.resources.getStringArray(Collection.getStatusNamesRes(subject.type))
             statusList.forEachIndexed { index, s ->
                 popupMenu.menu.add(Menu.NONE, Menu.FIRST + index, index, s)
             }
@@ -330,7 +330,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
                     return@setOnMenuItemClickListener false
                 }
                 Collection.updateStatus(subject, Collection(
-                        status = Collection.getTypeById(menu.itemId - Menu.FIRST + 1),
+                        status = Collection.getStatusById(menu.itemId - Menu.FIRST + 1),
                         rating = body.rating,
                         comment = body.comment,
                         private = body.private,

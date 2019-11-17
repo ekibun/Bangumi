@@ -19,36 +19,42 @@ import soko.ekibun.bangumi.util.HttpUtil
  * @constructor
  */
 data class Collection(
-        @CollectionStatusType val status: String? = null,
+        @CollectionStatus val status: String? = null,
         val rating : Int = 0,
         val comment : String? = null,
         val private : Int = 0,
         val tag: List<String>? = null,
         var myTag: List<String>? = null
 ) {
-    val statusId = status?.let { arrayOf(TYPE_WISH, TYPE_COLLECT, TYPE_DO, TYPE_ON_HOLD, TYPE_DROPPED).indexOf(it) + 1 }
+    val statusId = status?.let { arrayOf(STATUS_WISH, STATUS_COLLECT, STATUS_DO, STATUS_ON_HOLD, STATUS_DROPPED).indexOf(it) + 1 }
             ?: 0
 
-    @StringDef(TYPE_WISH, TYPE_COLLECT, TYPE_DO, TYPE_ON_HOLD, TYPE_DROPPED)
-    annotation class CollectionStatusType
+    /**
+     * 收藏状态
+     */
+    @StringDef(STATUS_WISH, STATUS_COLLECT, STATUS_DO, STATUS_ON_HOLD, STATUS_DROPPED)
+    annotation class CollectionStatus
 
     companion object {
-        const val TYPE_WISH = "wish"
-        const val TYPE_COLLECT = "collect"
-        const val TYPE_DO = "do"
-        const val TYPE_ON_HOLD = "on_hold"
-        const val TYPE_DROPPED = "dropped"
+        const val STATUS_WISH = "wish"
+        const val STATUS_COLLECT = "collect"
+        const val STATUS_DO = "do"
+        const val STATUS_ON_HOLD = "on_hold"
+        const val STATUS_DROPPED = "dropped"
 
-        @CollectionStatusType
-        fun getTypeById(id: Int): String {
-            return arrayOf(TYPE_WISH, TYPE_COLLECT, TYPE_DO, TYPE_ON_HOLD, TYPE_DROPPED)[id - 1]
+        /**
+         * 由id获取状态类型
+         */
+        @CollectionStatus
+        fun getStatusById(id: Int): String {
+            return arrayOf(STATUS_WISH, STATUS_COLLECT, STATUS_DO, STATUS_ON_HOLD, STATUS_DROPPED)[id - 1]
         }
 
         /**
          * 获取收藏类型字符串数组
          */
         @ArrayRes
-        fun getTypeNamesRes(@Subject.SubjectType type: String): Int {
+        fun getStatusNamesRes(@Subject.SubjectType type: String): Int {
             return when (type) {
                 Subject.TYPE_BOOK -> R.array.collection_status_book
                 Subject.TYPE_MUSIC -> R.array.collection_status_music

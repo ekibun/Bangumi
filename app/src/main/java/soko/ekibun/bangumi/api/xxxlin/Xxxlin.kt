@@ -9,10 +9,15 @@ import retrofit2.http.FormUrlEncoded
 import retrofit2.http.POST
 import soko.ekibun.bangumi.BuildConfig
 import soko.ekibun.bangumi.api.xxxlin.bean.BaseResult
-import soko.ekibun.bangumi.util.HttpUtil
 import java.util.*
 
+/**
+ * 错误报告
+ */
 interface Xxxlin {
+    /**
+     * 错误报告
+     */
     @FormUrlEncoded
     @POST("/api/soko/bangumi/v1/log/add")
     fun crashReport(@Field("content") content: String,
@@ -27,6 +32,9 @@ interface Xxxlin {
 
     companion object {
         private const val SERVER_API = "http://www.Xxxlin.com"
+        /**
+         * 创建retrofit实例
+         */
         fun createInstance(): Xxxlin{
             return Retrofit.Builder().baseUrl(SERVER_API)
                     .addConverterFactory(GsonConverterFactory.create())

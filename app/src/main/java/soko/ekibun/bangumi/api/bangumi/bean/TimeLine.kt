@@ -11,10 +11,16 @@ import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.util.HttpUtil
 import java.util.*
 
+/**
+ * 时间线
+ */
 class TimeLine: SectionEntity<TimeLine.TimeLineItem> {
     constructor(isHeader: Boolean, header: String): super(isHeader, header)
     constructor(t: TimeLineItem): super(t)
 
+    /**
+     * 时间线条目
+     */
     data class TimeLineItem(
             val user: UserInfo,
             val action: String,

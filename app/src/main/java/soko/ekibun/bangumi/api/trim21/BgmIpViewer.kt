@@ -27,6 +27,9 @@ interface BgmIpViewer {
 
     companion object {
         private const val SERVER_API = "https://www.trim21.cn/"
+        /**
+         * 创建retrofit实例
+         */
         fun createInstance(): BgmIpViewer {
             return Retrofit.Builder().baseUrl(SERVER_API)
                     .addConverterFactory(GsonConverterFactory.create())

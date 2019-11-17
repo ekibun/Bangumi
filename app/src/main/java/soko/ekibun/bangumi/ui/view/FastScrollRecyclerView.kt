@@ -14,6 +14,9 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.util.ResourceUtil
 import kotlin.math.roundToInt
 
+/**
+ * FastScrollRecyclerView
+ */
 class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : androidx.recyclerview.widget.RecyclerView(context, attrs, defStyleAttr), RecyclerView.OnItemTouchListener {
 
     private val mScrollbar: FastScroller
@@ -88,7 +91,7 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
     }
 
     override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {
-
+        // no-op
     }
 
     override fun draw(c: Canvas) {
@@ -271,12 +274,28 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
         mScrollbar.setThumbPosition(scrollBarX, scrollBarY.toInt())
     }
 
+    /**
+     * 显示接口
+     */
     interface SectionedAdapter {
+        /**
+         * 返回名称
+         */
         fun getSectionName(position: Int): String
     }
 
+    /**
+     * 测量接口
+     */
     interface MeasurableAdapter {
+        /**
+         * 判断FullSpan
+         */
         fun isFullSpan(position: Int): Boolean
+
+        /**
+         * 项高度
+         */
         fun getItemHeight(position: Int): Int
     }
 }

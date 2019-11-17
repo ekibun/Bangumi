@@ -15,7 +15,6 @@ import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
-import soko.ekibun.bangumi.api.github.bean.BangumiItem
 import soko.ekibun.bangumi.api.github.bean.OnAirInfo
 import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.web.WebActivity
@@ -71,7 +70,7 @@ class EpisodeDialog(context: Context) : Dialog(context, R.style.AppTheme_Dialog)
         view.item_episode_title.setOnClickListener {
             WebActivity.launchUrl(context, "${Bangumi.SERVER}/m/topic/ep/${episode.id}", "")
         }
-        val adapter = SitesAdapter(onAirInfo?.eps?.firstOrNull { it.id == episode.id }?.sites?.map { BangumiItem.SitesBean(it.site, it.title, it.url) }?.toMutableList())
+        val adapter = SitesAdapter(onAirInfo?.eps?.firstOrNull { it.id == episode.id }?.sites?.toMutableList())
         val emptyTextView = TextView(context)
         val dp4 = (context.resources.displayMetrics.density * 4 + 0.5f).toInt()
         emptyTextView.setPadding(dp4, dp4, dp4, dp4)

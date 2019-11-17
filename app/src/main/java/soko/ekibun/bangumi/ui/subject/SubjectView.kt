@@ -31,6 +31,9 @@ import soko.ekibun.bangumi.ui.view.DragPhotoView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.*
 
+/**
+ * 条目view
+ */
 class SubjectView(private val context: SubjectActivity) {
 
     val episodeAdapter = SmallEpisodeAdapter()
@@ -164,6 +167,9 @@ class SubjectView(private val context: SubjectActivity) {
         commentAdapter.setHeaderView(detail)
     }
 
+    /**
+     * 收起剧集列表
+     */
     fun closeEpisodeDetail() {
         val eps = episodeDetailAdapter.data.filter { it.isSelected }
         if (eps.isEmpty())
@@ -175,17 +181,20 @@ class SubjectView(private val context: SubjectActivity) {
         }
     }
 
+    /**
+     * 更新条目
+     */
     @SuppressLint("SetTextI18n")
-    fun updateSubject(subject: Subject, tag: String? = null) {
-        if (context.isDestroyed || tag == "") return
+    fun updateSubject(subject: Subject, tag: Subject.SaxTag? = null) {
+        if (context.isDestroyed || tag == Subject.SaxTag.NONE) return
 
-        if (tag == null || tag == "name") {
+        if (tag == null || tag == Subject.SaxTag.NAME) {
             context.title_collapse.text = subject.displayName
             context.title_expand.text = context.title_collapse.text
             context.title_collapse.setPadding(context.title_collapse.paddingLeft, context.title_collapse.paddingTop, context.item_buttons.width, context.title_collapse.paddingBottom)
             context.item_subject_title.text = subject.name
         }
-        if (tag == null || tag == "infobox" || tag == "name") {
+        if (tag == null || tag == Subject.SaxTag.INFOBOX || tag == Subject.SaxTag.NAME) {
             val infoBoxPreview = ArrayList<String>()
             infoBoxPreview.add(if (subject.category.isNullOrEmpty()) context.getString(Subject.getTypeRes(subject.type)) else subject.category!!)
             infoBoxPreview.add(subject.infobox?.firstOrNull { it.first in arrayOf("发售日期", "发售日", "发行日期") }?.let {
@@ -203,18 +212,18 @@ class SubjectView(private val context: SubjectActivity) {
             context.item_subject_info.text = infoBoxPreview.joinToString(" / ")
         }
 
-        if (tag == null || tag == "summary") {
+        if (tag == null || tag == Subject.SaxTag.SUMMARY) {
             detail.item_detail.text = subject.summary
             detail.item_detail.visibility = if (subject.summary.isNullOrEmpty()) View.GONE else View.VISIBLE
         }
 
-        if (tag == null || tag == "type") {
+        if (tag == null || tag == Subject.SaxTag.TYPE) {
             context.item_play.visibility = if (PlayerBridge.checkActivity(context, subject)) View.VISIBLE else View.GONE
         }
 
-        if (tag == null || tag == "collect") {
+        if (tag == null || tag == Subject.SaxTag.COLLECT) {
             updateEpisodeLabel(subject.eps ?: ArrayList(), subject)
-            detail.item_progress.visibility = if (HttpUtil.formhash.isNotEmpty() && subject.collect?.status == Collection.TYPE_DO && subject.type in listOf(Subject.TYPE_ANIME, Subject.TYPE_REAL, Subject.TYPE_BOOK)) View.VISIBLE else View.GONE
+            detail.item_progress.visibility = if (HttpUtil.formhash.isNotEmpty() && subject.collect?.status == Collection.STATUS_DO && subject.type in listOf(Subject.TYPE_ANIME, Subject.TYPE_REAL, Subject.TYPE_BOOK)) View.VISIBLE else View.GONE
             detail.item_progress_info.text = context.getString(R.string.phrase_progress,
                     (if (subject.vol_count != 0) context.getString(R.string.parse_sort_vol, "${subject.vol_status}${if (subject.vol_count == 0) "" else "/${subject.vol_count}"}") + " " else "") +
                             context.getString(R.string.parse_sort_ep, "${subject.ep_status}${if (subject.eps_count == 0) "" else "/${subject.eps_count}"}"))
@@ -226,7 +235,7 @@ class SubjectView(private val context: SubjectActivity) {
             }
         }
 
-        if (tag == null || tag == "images") {
+        if (tag == null || tag == Subject.SaxTag.IMAGES) {
             GlideUtil.with(context.item_cover)
                     ?.load(subject.images?.getImage(context))
                     ?.apply(RequestOptions.placeholderOf(context.item_cover.drawable))
@@ -276,33 +285,33 @@ class SubjectView(private val context: SubjectActivity) {
                     ?.into(context.item_cover_blur)
         }
 
-        if (tag == null || tag == "eps")
+        if (tag == null || tag == Subject.SaxTag.EPISODES)
             subject.eps?.let {
                 val eps = updateEpisode(it)
                 updateEpisodeLabel(eps, subject)
                 subject.eps = eps
             }
-        if (tag == null || tag == "topic") {
+        if (tag == null || tag == Subject.SaxTag.TOPIC) {
             detail.item_topics.visibility = if (subject.topic?.isNotEmpty() == true) View.VISIBLE else View.GONE
             topicAdapter.setNewData(subject.topic)
         }
-        if (tag == null || tag == "blog") {
+        if (tag == null || tag == Subject.SaxTag.BLOG) {
             detail.item_blogs.visibility = if (subject.blog?.isNotEmpty() == true) View.VISIBLE else View.GONE
             blogAdapter.setNewData(subject.blog)
         }
-        if (tag == null || tag == "crt") {
+        if (tag == null || tag == Subject.SaxTag.CHARACTOR) {
             detail.item_character.visibility = if (subject.crt?.isNotEmpty() == true) View.VISIBLE else View.GONE
             characterAdapter.setNewData(subject.crt)
         }
-        if (tag == null || tag == "linked") {
+        if (tag == null || tag == Subject.SaxTag.LINKED) {
             detail.item_linked.visibility = if (subject.linked?.isNotEmpty() == true) View.VISIBLE else View.GONE
             linkedSubjectsAdapter.setNewData(subject.linked)
         }
-        if (tag == null || tag == "recommend") {
+        if (tag == null || tag == Subject.SaxTag.RECOMMEND) {
             detail.item_commend.visibility = if (subject.recommend?.isNotEmpty() == true) View.VISIBLE else View.GONE
             recommendSubjectsAdapter.setNewData(subject.recommend)
         }
-        if (tag == null || tag == "tags") {
+        if (tag == null || tag == Subject.SaxTag.TAGS) {
             tagAdapter.setNewData(subject.tags?.toMutableList())
             tagAdapter.setOnItemClickListener { _, _, position ->
                 WebActivity.launchUrl(context, "${Bangumi.SERVER}/${subject.type}/tag/${tagAdapter.data[position].first}")
@@ -310,6 +319,9 @@ class SubjectView(private val context: SubjectActivity) {
         }
     }
 
+    /**
+     * 更新集数标签
+     */
     fun updateEpisodeLabel(episodes: List<Episode>, subject: Subject) {
         val mainEps = episodes.filter { it.type == Episode.TYPE_MAIN || it.type == Episode.TYPE_MUSIC }
         val eps = mainEps.filter { it.status in listOf(Episode.STATUS_AIR) }
@@ -319,6 +331,9 @@ class SubjectView(private val context: SubjectActivity) {
     }
 
     private var subjectEpisode: List<Episode> = ArrayList()
+    /**
+     * 更新剧集列表
+     */
     fun updateEpisode(episodes: List<Episode>): List<Episode> {
         if (episodes.none { it.id != 0 }) return subjectEpisode
         episodes.forEach { ep ->

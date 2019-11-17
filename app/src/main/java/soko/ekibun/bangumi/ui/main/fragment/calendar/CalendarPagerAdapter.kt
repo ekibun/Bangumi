@@ -14,7 +14,6 @@ import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.github.GithubRaw
 import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
-import soko.ekibun.bangumi.api.github.bean.OnAir
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import java.text.SimpleDateFormat
 import java.util.*
@@ -78,7 +77,7 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: an
 
         val now = CalendarAdapter.getNowInt(use30h)
         @SuppressLint("UseSparseArrays")
-        val onAir = HashMap<Int, HashMap<String, ArrayList<OnAir>>>()
+        val onAir = HashMap<Int, HashMap<String, ArrayList<CalendarAdapter.OnAir>>>()
         val calWeek = CalendarAdapter.getIntCalendar(now)
         calWeek.add(Calendar.DAY_OF_MONTH, -7)
         val minDate = CalendarAdapter.getCalendarInt(calWeek)
@@ -92,7 +91,7 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: an
                     name_cn = subject.name_cn,
                     images = Images(subject.image ?: ""))
             subject.eps?.forEach {
-                val item=OnAir(it, bangumi, null)
+                val item = CalendarAdapter.OnAir(it, bangumi)
                 val timeInt = (if(!useCN || subject.timeCN.isNullOrEmpty()) subject.timeJP else subject.timeCN)?.toIntOrNull()?:0
                 val zoneOffset = TimeZone.getDefault().rawOffset
                 val hourDif = zoneOffset/1000/3600 - 8
