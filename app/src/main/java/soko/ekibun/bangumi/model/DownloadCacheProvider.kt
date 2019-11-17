@@ -21,8 +21,11 @@ import soko.ekibun.videoplayer.callback.IVideoCacheCallback
  * 离线缓存数据类（aidl）
  */
 class DownloadCacheProvider(val context: AppCompatActivity, val onServiceConnectionChange: (Boolean) -> Unit) : ServiceConnection {
-    var aidl: IDownloadCacheProvider? = null
+    private var aidl: IDownloadCacheProvider? = null
 
+    /**
+     * 绑定服务
+     */
     fun bindService() {
         val aidlIntent = Intent("soko.ekibun.videoplayer.downloadcacheprovider")
         val resloveInfos = context.packageManager.queryIntentServices(aidlIntent, 0)
@@ -31,10 +34,16 @@ class DownloadCacheProvider(val context: AppCompatActivity, val onServiceConnect
         context.bindService(aidlIntent, this, Context.BIND_AUTO_CREATE)
     }
 
+    /**
+     * 解绑服务
+     */
     fun unbindService() {
         if (aidl != null) context.unbindService(this)
     }
 
+    /**
+     * 获取缓存列表
+     */
     fun getCacheList(onFinish: (List<SubjectCache>) -> Unit, onReject: (String) -> Unit) {
         aidl?.getCacheList("bangumi", object : IListSubjectCacheCallback.Stub() {
             override fun onFinish(result: MutableList<SubjectCache>) {
@@ -47,6 +56,9 @@ class DownloadCacheProvider(val context: AppCompatActivity, val onServiceConnect
         }) ?: { onReject("aidl not initialized") }()
     }
 
+    /**
+     * 获取条目缓存列表
+     */
     fun getSubjectCache(subject: Subject, onFinish: (SubjectCache) -> Unit, onReject: (String) -> Unit) {
         aidl?.getSubjectCache(VideoSubject(subject), object : ISubjectCacheCallback.Stub() {
             override fun onFinish(result: SubjectCache) {
@@ -59,6 +71,9 @@ class DownloadCacheProvider(val context: AppCompatActivity, val onServiceConnect
         }) ?: { onReject("aidl not initialized") }()
     }
 
+    /**
+     * 获取剧集缓存列表
+     */
     fun getEpisodeCache(subject: Subject, episode: Episode, onFinish: (VideoCache) -> Unit, onReject: (String) -> Unit) {
         aidl?.getEpisodeCache(VideoSubject(subject), VideoEpisode(episode), object : IVideoCacheCallback.Stub() {
             override fun onFinish(result: VideoCache) {

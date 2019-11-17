@@ -7,6 +7,9 @@ import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.util.CrashHandler
 import soko.ekibun.bangumi.util.HttpUtil
 
+/**
+ * App entry
+ */
 class App : Application() {
     override fun onCreate() {
         super.onCreate()

@@ -12,15 +12,24 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.preference.PreferenceManager
 import soko.ekibun.bangumi.util.ResourceUtil
 
+/**
+ * 主题模块
+ */
 class ThemeModel(context: Context){
     val sp: SharedPreferences by lazy{ PreferenceManager.getDefaultSharedPreferences(context) }
 
+    /**
+     * 保存主题
+     */
     fun saveTheme(night: Boolean) {
         val editor = sp.edit()
         editor.putBoolean(PREF_NIGHT, night)
         editor.apply()
     }
 
+    /**
+     * 获取主题
+     */
     fun getTheme(): Boolean{
         return sp.getBoolean(PREF_NIGHT, false)
     }
@@ -28,6 +37,9 @@ class ThemeModel(context: Context){
     companion object {
         const val PREF_NIGHT="night"
 
+        /**
+         * 应用主题
+         */
         fun setTheme(context: Context, night: Boolean){
             val nightMode = if (night) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
             if (AppCompatDelegate.getDefaultNightMode() != nightMode) {
@@ -39,9 +51,16 @@ class ThemeModel(context: Context){
             //(context.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager).nightMode = if(night) UiModeManager.MODE_NIGHT_YES else UiModeManager.MODE_NIGHT_NO
         }
 
+        /**
+         * 应用导航栏主题
+         */
         fun updateNavigationTheme(activity: Activity) {
             updateNavigationTheme(activity.window, activity, false)
         }
+
+        /**
+         * 应用导航栏主题
+         */
         fun updateNavigationTheme(window: Window, context: Context, dialog: Boolean = true) {
             window.decorView.systemUiVisibility =  View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
                     (if(Build.VERSION.SDK_INT >= 26) View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION else 0) or
