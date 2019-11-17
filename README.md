@@ -28,45 +28,44 @@
 
 半透明导航栏
 
-
 ## 这东西长啥样
 
-| ![](./images/prev1.png) | ![](./images/prev2.png) |  ![](./images/prev3.png) | ![](./images/prev4.png) |
+| ![](./images/prev1.png) | ![](./images/prev2.png) | ![](./images/prev3.png) | ![](./images/prev4.png) |
 | ---- | ---- | ---- | ---- |
 
 ## 感谢以下的开源项目及作者
 
-- [Gson](https://github.com/google/gson)
+-  [Gson](https://github.com/google/gson)
 
-- [Jsoup](https://jsoup.org/)
+-  [Jsoup](https://jsoup.org/)
 
-- [Glide](https://github.com/bumptech/glide)
+-  [Glide](https://github.com/bumptech/glide)
 
-- [GlideWebpDecoder](https://github.com/zjupure/GlideWebpDecoder)
+-  [GlideWebpDecoder](https://github.com/zjupure/GlideWebpDecoder)
 
-- [glide-transformations](https://github.com/wasabeef/glide-transformations)
+-  [glide-transformations](https://github.com/wasabeef/glide-transformations)
 
-- [okhttp](https://github.com/square/okhttp)
+-  [okhttp](https://github.com/square/okhttp)
 
-- [retrofit](https://github.com/square/retrofit)
+-  [retrofit](https://github.com/square/retrofit)
 
-- [base-adapter](https://github.com/hongyangAndroid/baseAdapter)
+-  [base-adapter](https://github.com/hongyangAndroid/baseAdapter)
 
-- [BaseRecyclerViewAdapterHelper](https://github.com/CymChad/BaseRecyclerViewAdapterHelper)
+-  [BaseRecyclerViewAdapterHelper](https://github.com/CymChad/BaseRecyclerViewAdapterHelper)
 
-- [PinnedSectionItemDecoration](https://github.com/oubowu/PinnedSectionItemDecoration)
+-  [PinnedSectionItemDecoration](https://github.com/oubowu/PinnedSectionItemDecoration)
 
-- [android-shape-imageview](https://github.com/siyamed/android-shape-imageview)
+-  [android-shape-imageview](https://github.com/siyamed/android-shape-imageview)
 
-- [flowlayoutmanager](https://github.com/xiaofeng-han/AndroidLibs/tree/master/flowlayoutmanager)
+-  [flowlayoutmanager](https://github.com/xiaofeng-han/AndroidLibs/tree/master/flowlayoutmanager)
 
-- [RecyclerTabLayout](https://github.com/nshmura/RecyclerTabLayout)
+-  [RecyclerTabLayout](https://github.com/nshmura/RecyclerTabLayout)
 
-- [RecyclePagerAdapter](https://github.com/AlexMofer/RecyclePagerAdapter)
+-  [RecyclePagerAdapter](https://github.com/AlexMofer/RecyclePagerAdapter)
 
-- [PhotoView](https://github.com/chrisbanes/PhotoView)
+-  [PhotoView](https://github.com/chrisbanes/PhotoView)
 
-- [FastScrollRecyclerView](https://github.com/timusus/RecyclerView-FastScroll)
+-  [FastScrollRecyclerView](https://github.com/timusus/RecyclerView-FastScroll)
 
-- [RichEditText](https://github.com/awarmisland/RichEditText)
+-  [RichEditText](https://github.com/awarmisland/RichEditText)
 
