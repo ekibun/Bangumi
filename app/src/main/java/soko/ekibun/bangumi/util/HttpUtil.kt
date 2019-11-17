@@ -8,6 +8,9 @@ import okhttp3.RequestBody
 import okhttp3.brotli.BrotliInterceptor
 import okhttp3.internal.http.BridgeInterceptor
 
+/**
+ * Http请求工具类
+ */
 object HttpUtil {
     var ua = ""
     var formhash = ""

@@ -3,6 +3,9 @@ package soko.ekibun.bangumi.ui.view
 import android.view.GestureDetector
 import android.view.MotionEvent
 
+/**
+ * 滑动返回View
+ */
 abstract class SwipeBackActivity: BaseActivity() {
     private val detector by lazy{
         GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
@@ -23,6 +26,10 @@ abstract class SwipeBackActivity: BaseActivity() {
             shouldCancelActivity = true
         return (ev != null && detector.onTouchEvent(ev)) || super.dispatchTouchEvent(ev)
     }
+
+    /**
+     * 返回处理
+     */
     open fun processBack(){
         finish()
         overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right)

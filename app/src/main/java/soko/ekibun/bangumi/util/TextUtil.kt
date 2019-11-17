@@ -120,7 +120,7 @@ object TextUtil {
                     is URLSpan -> out.append("[url=${characterStyle.url}]")
                     is ImageSpan -> {
                         var source = characterStyle.source
-                                ?: (characterStyle.drawable as? HtmlHttpImageGetter.UrlDrawable)?.url
+                                ?: (characterStyle.drawable as? UrlDrawable)?.url
                         if (source != null && source.startsWith("/img/smiles/"))
                             source = ReplyDialog.emojiList.firstOrNull { it.second.contains(source!!) }?.first
                         if (source != null && source.startsWith("("))

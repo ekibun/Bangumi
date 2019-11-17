@@ -22,7 +22,9 @@ import soko.ekibun.bangumi.ui.view.BaseActivity
 import soko.ekibun.bangumi.util.AppUtil
 import java.net.URI
 
-
+/**
+ * 内置浏览器Activity
+ */
 class WebActivity : BaseActivity() {
     private val isAuth by lazy { intent.getBooleanExtra(IS_AUTH, false) }
     private val openUrl by lazy {
@@ -185,12 +187,18 @@ class WebActivity : BaseActivity() {
         const val FILECHOOSER_RESULTCODE = 2
         const val IS_AUTH = "auth"
         const val OPEN_URL = "openUrl"
+        /**
+         * 启动验证
+         */
         fun startActivityForAuth(context: Activity) {
             val intent = Intent(context, WebActivity::class.java)
             intent.putExtra(IS_AUTH, true)
             context.startActivityForResult(intent, REQUEST_AUTH)
         }
 
+        /**
+         * 打开url
+         */
         fun launchUrl(context: Context, page: String?) {
             if (page.isNullOrEmpty()) return
             val intent = Intent(context, WebActivity::class.java)
@@ -198,6 +206,9 @@ class WebActivity : BaseActivity() {
             context.startActivity(intent)
         }
 
+        /**
+         * 打开url
+         */
         fun launchUrl(context: Context, url: String?, openUrl: String) {
             if (jumpUrl(context, url, openUrl)) return
             if (url?.startsWith("http") == false || !isBgmPage(url ?: "")) {
@@ -211,6 +222,9 @@ class WebActivity : BaseActivity() {
             launchUrl(context, url)
         }
 
+        /**
+         * 判断是否是bgm页面
+         */
         fun isBgmPage(url: String): Boolean {
             val host = try {
                 URI.create(url).host
@@ -240,6 +254,9 @@ class WebActivity : BaseActivity() {
         }
 
         private val bgmHosts = arrayOf("bgm.tv", "bangumi.tv", "chii.in", "tinygrail.com")
+        /**
+         * 跳转到对应Activity
+         */
         fun jumpUrl(context: Context, page: String?, openUrl: String): Boolean {
             val url = page?.split("#")?.get(0)
             val rakuen = getRakuen(url)

@@ -7,6 +7,9 @@ import android.text.TextUtils;
 import androidx.annotation.Keep;
 import soko.ekibun.bangumi.util.ResourceUtil;
 
+/**
+ * 快速滚动提示
+ */
 public class FastScrollPopup {
 
     private FastScrollRecyclerView mRecyclerView;

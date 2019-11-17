@@ -12,6 +12,9 @@ import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 
+/**
+ * 资源工具类
+ */
 object ResourceUtil{
 
     /**

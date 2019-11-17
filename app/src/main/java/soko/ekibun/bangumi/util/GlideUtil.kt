@@ -20,12 +20,18 @@ import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
 
+/**
+ * 防止Glide崩溃
+ */
 object GlideUtil {
 
     const val TYPE_RESOURCE = 0
     const val TYPE_PLACEHOLDER = 1
     const val TYPE_ERROR = 2
 
+    /**
+     * Glide进度
+     */
     fun loadWithProgress(url: String, view: View, options: RequestOptions, viewTarget: Boolean = true, uri: Uri? = null, callback: (Int, Drawable?) -> Unit): Target<Drawable>? {
         val request = with(view) ?: return null
         val circularProgressDrawable = options.placeholderDrawable as? CircularProgressDrawable

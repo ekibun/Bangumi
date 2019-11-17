@@ -6,35 +6,29 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.graphics.*
-import android.graphics.drawable.Animatable
 import android.graphics.drawable.Drawable
-import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
 import android.text.Html
 import android.text.style.ImageSpan
-import android.util.Size
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.awarmisland.android.richedittext.view.RichEditText
 import kotlinx.android.synthetic.main.dialog_reply.view.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import org.jsoup.Jsoup
-import retrofit2.Call
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
-import soko.ekibun.bangumi.api.uploadcc.UploadCC
-import soko.ekibun.bangumi.api.uploadcc.bean.Response
 import soko.ekibun.bangumi.model.ThemeModel
-import soko.ekibun.bangumi.util.*
+import soko.ekibun.bangumi.util.CollapseUrlDrawable
+import soko.ekibun.bangumi.util.HtmlTagHandler
+import soko.ekibun.bangumi.util.TextUtil
+import soko.ekibun.bangumi.util.UploadDrawable
 import java.lang.ref.WeakReference
 
 /**
@@ -303,130 +297,6 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
             urlDrawable.url = Bangumi.parseUrl(source)
             urlDrawable.loadImage()
             return urlDrawable
-        }
-    }
-
-    /**
-     * 限制最大高度的 url drawable
-     */
-    open class CollapseUrlDrawable(container: WeakReference<TextView>) : HtmlHttpImageGetter.UrlDrawable(container) {
-
-        override fun update(drawable: Drawable, defSize: Int) {
-            val width = Math.max(textSize, Math.min(drawable.intrinsicWidth.toFloat(), maxWidth))
-            val size = if (defSize > 0) Size(defSize, defSize) else Size(width.toInt(), (drawable.intrinsicHeight * width / drawable.intrinsicWidth).toInt())
-            (this.drawable as? Animatable)?.stop()
-            this.drawable?.callback = null
-            this.drawable = drawable
-            this.drawable?.callback = drawableCallback
-            (drawable as? Animatable)?.start()
-
-            setBounds(0, 0, size.width, Math.min(size.height, 250))
-            drawable.setBounds(0, 0, size.width, size.height)
-            mBuffer = Bitmap.createBitmap(bounds.width(), bounds.height(), Bitmap.Config.ARGB_8888)
-            this.drawable?.setBounds(0, 0, size.width, size.height)
-            updateBuffer()
-
-            container.get()?.let {
-                it.editableText.getSpans(0, it.editableText.length, ImageSpan::class.java).filter { it.drawable == this }.forEach { span ->
-                    val start = it.editableText.getSpanStart(span)
-                    val end = it.editableText.getSpanEnd(span)
-                    val flags = it.editableText.getSpanFlags(span)
-
-                    it.editableText.removeSpan(span)
-                    it.editableText.setSpan(span, start, end, flags)
-                }
-                it.invalidate()
-            }
-        }
-
-        private val gradientPaint by lazy {
-            val paint = Paint()
-            paint.isAntiAlias = true
-            paint.color = 0xFF000000.toInt()
-            paint.shader = LinearGradient(0f, 200f, 0f, 250f, Color.BLACK, Color.TRANSPARENT, Shader.TileMode.CLAMP)
-            paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
-            paint
-        }
-
-        override fun updateBuffer() {
-            val canvas = Canvas(mBuffer)
-            canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
-            drawable?.draw(canvas)
-            if (bounds.height() != drawable?.bounds?.height()) {
-                canvas.drawRect(bounds, gradientPaint)
-            }
-            invalidateSelf()
-        }
-    }
-
-    /**
-     * 上传图片 drawable
-     */
-    class UploadDrawable(
-            private val requestBody: RequestBody,
-            private val fileName: String,
-            container: WeakReference<TextView>,
-            uri: Uri,
-            private val onUploaded: (String) -> Unit
-    ) : CollapseUrlDrawable(container) {
-
-        init {
-            this.uri = uri
-        }
-
-        var uploadCall: Call<Response>? = null
-        override fun loadImage() {
-            if (url != null) {
-                super.loadImage()
-                return
-            }
-            val view = container.get()
-            view?.post {
-                val textSize = view.textSize
-                val circularProgressDrawable = CircularProgressDrawable(view.context)
-                circularProgressDrawable.setColorSchemeColors(ResourceUtil.resolveColorAttr(view.context, android.R.attr.textColorSecondary))
-                circularProgressDrawable.strokeWidth = 5f
-                circularProgressDrawable.centerRadius = textSize / 2 - circularProgressDrawable.strokeWidth - 1f
-                circularProgressDrawable.progressRotation = 0.75f
-                update(circularProgressDrawable, textSize.toInt())
-                circularProgressDrawable.start()
-                val errorDrawable = view.context.getDrawable(R.drawable.ic_broken_image)
-                val callback = object : RetrofitCallback<Response>() {
-                    override fun onSuccess(call: Call<Response>?, response: retrofit2.Response<Response>) {
-                        if (circularProgressDrawable.isRunning) circularProgressDrawable.stop()
-                        val imgUrl = response.body()?.success_image?.firstOrNull()?.url
-                        if (imgUrl != null) {
-                            url = "https://upload.cc/$imgUrl"
-                            onUploaded(url!!)
-                            loadImage()
-                        } else {
-                            error = true
-                            errorDrawable?.let { update(it, textSize.toInt()) }
-                        }
-                    }
-
-                    override fun onFailure(call: Call<Response>, t: Throwable) {
-                        if (circularProgressDrawable.isRunning) circularProgressDrawable.stop()
-                        error = true
-                        errorDrawable?.let { update(it, textSize.toInt()) }
-                    }
-
-                    override fun onLoading(total: Long, progress: Long) {
-                        super.onLoading(total, progress)
-                        view.post {
-                            if (circularProgressDrawable.isRunning) circularProgressDrawable.stop()
-                            circularProgressDrawable.setStartEndTrim(0f, progress * 1f / total)
-                            circularProgressDrawable.progressRotation = 0.75f
-                            circularProgressDrawable.invalidateSelf()
-                        }
-                    }
-                }
-                val fileRequestBody = FileRequestBody(requestBody, callback)
-                val body = MultipartBody.Part.createFormData("uploaded_file[]", fileName, fileRequestBody)
-                uploadCall?.cancel()
-                uploadCall = UploadCC.createInstance().upload(body)
-                uploadCall?.enqueue(callback)
-            }
         }
     }
 

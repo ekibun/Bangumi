@@ -6,15 +6,24 @@ import android.net.Uri
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.videoplayer.bean.VideoSubject
 
+/**
+ * ipc工具类
+ */
 object PlayerBridge {
     const val EXTRA_SUBJECT = "extraSubject"
     const val EXTRA_EPISODE_LIST = "extraEpisodeList"
 
+    /**
+     * 检测ipc
+     */
     fun checkActivity(context: Context, subject: Subject = Subject()): Boolean {
         val intent = parseIntent(subject)
         return context.packageManager.queryIntentActivities(intent, 0).size != 0
     }
 
+    /**
+     * 启动ipc
+     */
     fun startActivity(context: Context, subject: Subject) {
         context.startActivity(parseIntent(subject))
     }

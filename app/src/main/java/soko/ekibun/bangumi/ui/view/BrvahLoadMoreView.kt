@@ -3,6 +3,9 @@ package soko.ekibun.bangumi.ui.view
 import com.chad.library.adapter.base.loadmore.LoadMoreView
 import soko.ekibun.bangumi.R
 
+/**
+ * 加载更多View
+ */
 class BrvahLoadMoreView : LoadMoreView() {
     override fun getLayoutId(): Int {
         return R.layout.brvah_quick_view_load_more

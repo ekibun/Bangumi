@@ -15,7 +15,7 @@ import soko.ekibun.bangumi.util.ResourceUtil
 import kotlin.math.roundToInt
 
 /**
- * FastScrollRecyclerView
+ * 快速滚动RecyclerView
  */
 class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : androidx.recyclerview.widget.RecyclerView(context, attrs, defStyleAttr), RecyclerView.OnItemTouchListener {
 

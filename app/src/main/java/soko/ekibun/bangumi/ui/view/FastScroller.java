@@ -9,7 +9,6 @@ import android.content.res.TypedArray;
 import android.graphics.*;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.view.ViewConfiguration;
 import androidx.annotation.ColorInt;
 import androidx.annotation.IntDef;
 import androidx.annotation.Keep;
@@ -160,8 +159,6 @@ public class FastScroller {
      */
     public void handleTouchEvent(MotionEvent ev, int downX, int downY, int lastY,
                                  OnFastScrollStateChangeListener stateChangeListener) {
-        ViewConfiguration config = ViewConfiguration.get(mRecyclerView.getContext());
-
         int action = ev.getAction();
         int y = (int) ev.getY();
         switch (action) {

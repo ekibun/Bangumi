@@ -3,13 +3,16 @@ package soko.ekibun.bangumi.ui.view
 import android.content.Context
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
-import androidx.appcompat.widget.AppCompatEditText
 import android.util.AttributeSet
 import android.view.KeyEvent
 import android.view.MotionEvent
+import androidx.appcompat.widget.AppCompatEditText
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.util.ResourceUtil
 
+/**
+ * 可清空EditText
+ */
 class CleanableEditText constructor(context: Context, attrs: AttributeSet) : AppCompatEditText(context, attrs) {
     private val clearDrawable: Drawable by lazy{
         ResourceUtil.getDrawable(context, R.drawable.ic_clear)

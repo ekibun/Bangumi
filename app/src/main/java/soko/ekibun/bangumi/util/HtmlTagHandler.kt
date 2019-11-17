@@ -12,6 +12,9 @@ import org.xml.sax.XMLReader
 import java.lang.ref.WeakReference
 import java.util.*
 
+/**
+ * 自定义标签解析
+ */
 class HtmlTagHandler(view: TextView? = null, private var baseSize: Float = 12f, private val onClick: (ImageSpan) -> Unit = {}) : Html.TagHandler {
     private val bgColor = view?.textColors?.defaultColor ?: Color.BLACK
     private val colorInv = view?.let { ResourceUtil.resolveColorAttr(it.context, android.R.attr.textColorPrimaryInverse) }
@@ -41,6 +44,7 @@ class HtmlTagHandler(view: TextView? = null, private var baseSize: Float = 12f, 
     private fun startSize(tag: String, output: Editable, xmlReader: XMLReader) {
         startSizeIndex = output.length
     }
+
     private fun endSize(tag: String, output: Editable, xmlReader: XMLReader) {
         endSizeIndex = output.length
         var size = attributes["size"]?:""
@@ -51,18 +55,23 @@ class HtmlTagHandler(view: TextView? = null, private var baseSize: Float = 12f, 
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
     }
+
     //size
     private var startMaskIndex = 0
     private var endMaskIndex = 0
     private fun startMask(tag: String, output: Editable, xmlReader: XMLReader) {
         startMaskIndex = output.length
     }
+
     private fun endMask(tag: String, output: Editable, xmlReader: XMLReader) {
         endMaskIndex = output.length
         output.setSpan(MaskSpan(bgColor, colorInv, widget), startMaskIndex, endMaskIndex,
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
     }
 
+    /**
+     * 马赛克Span
+     */
     class MaskSpan(private var bgColor: Int, private var colorInv: Int, private val textView: WeakReference<TextView>) : ClickableSpan() {
         private val edit = textView.get() is RichEditText
         override fun onClick(widget: View) {
@@ -71,16 +80,20 @@ class HtmlTagHandler(view: TextView? = null, private var baseSize: Float = 12f, 
             view.tag = if(view.tag == this) null else this
             view.text = view.text
         }
+
         override fun updateDrawState(ds: TextPaint) {
             ds.bgColor = bgColor
             ds.color = if (edit || textView.get()?.tag == this) colorInv else Color.TRANSPARENT
         }
     }
 
+    /**
+     * 可点击图片
+     */
     class ClickableImage(val image: ImageSpan, private val onClick: (ImageSpan) -> Unit) : ClickableSpan() {
         override fun onClick(widget: View) {
             val drawable = image.drawable
-            if(drawable is HtmlHttpImageGetter.UrlDrawable) {
+            if (drawable is UrlDrawable) {
                 if (drawable.error == true) drawable.loadImage()
                 else if (drawable.error == false) onClick(image)
             } else onClick(image)
@@ -106,7 +119,9 @@ class HtmlTagHandler(view: TextView? = null, private var baseSize: Float = 12f, 
             for (i in 0 until len) {
                 attributes[data[i * 5 + 1]] = data[i * 5 + 4]
             }
-        } catch (e: Exception) {}
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
 }

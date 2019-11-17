@@ -2,15 +2,17 @@ package soko.ekibun.bangumi.ui.view
 
 import android.annotation.SuppressLint
 import android.content.Context
-import androidx.core.view.ActionProvider
-import android.view.View
-import android.widget.TextView
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.TextView
+import androidx.core.view.ActionProvider
 import soko.ekibun.bangumi.R
 
-
+/**
+ * 通知提示ActionProvider
+ */
 class NotifyActionProvider(context: Context): ActionProvider(context){
     private var mIvIcon: ImageView? = null
     private var mTvBadge: TextView? = null

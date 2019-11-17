@@ -20,7 +20,13 @@ import java.io.File
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
 
+/**
+ * App工具库
+ */
 object AppUtil {
+    /**
+     * 分享字符串
+     */
     fun shareString(context: Context, str: String){
         val intent = Intent(Intent.ACTION_SEND)
         intent.putExtra(Intent.EXTRA_TEXT, str)
@@ -28,6 +34,9 @@ object AppUtil {
         context.startActivity(Intent.createChooser(intent, context.resources.getString(R.string.share)))
     }
 
+    /**
+     * 分享图片
+     */
     fun shareDrawable(context: Context, drawable: Drawable){
         try {
             val cachePath = File(context.cacheDir, "images")
@@ -60,6 +69,9 @@ object AppUtil {
         }
     }
 
+    /**
+     * 打开浏览器
+     */
     fun openBrowser(context: Context, url: String){
         try{
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
@@ -67,6 +79,9 @@ object AppUtil {
         }catch(e: Exception){ e.printStackTrace() }
     }
 
+    /**
+     * 检测更新
+     */
     fun checkUpdate(activity: Activity, checkIgnore: Boolean = true, onLatest: () -> Unit = {}) {
         when (BuildConfig.FLAVOR) {
             "github" -> {

@@ -1,20 +1,22 @@
 package soko.ekibun.bangumi.ui.view
 
-import android.content.Context
-import android.util.AttributeSet
 import android.animation.Animator
-import android.view.MotionEvent
 import android.animation.ValueAnimator
+import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.ViewConfiguration
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.max
 
-
-class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeSet? = null, defStyle: Int = 0) : BigImageView(context, attr, defStyle) {
+/**
+ * 下拉关闭
+ */
+class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeSet? = null, defStyle: Int = 0) : FitScreenPhotoView(context, attr, defStyle) {
     private val mPaint: Paint = Paint()
 
     private var mDownX: Float = 0.toFloat()
@@ -76,8 +78,12 @@ class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeS
                     isAnimate = false
                     animator.removeAllListeners()
                 }
-                override fun onAnimationCancel(animator: Animator) {}
-                override fun onAnimationRepeat(animator: Animator) {}
+
+                override fun onAnimationCancel(animator: Animator) { /* no-op */
+                }
+
+                override fun onAnimationRepeat(animator: Animator) { /* no-op */
+                }
             })
             return animator
         }

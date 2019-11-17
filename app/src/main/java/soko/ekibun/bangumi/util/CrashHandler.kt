@@ -1,11 +1,14 @@
 package soko.ekibun.bangumi.util
 
-import android.app.*
-import android.os.Build
+import android.app.Application
 import android.util.Log
-import java.io.*
 import soko.ekibun.bangumi.ui.crash.CrashActivity
+import java.io.PrintWriter
+import java.io.StringWriter
 
+/**
+ * 崩溃拦截
+ */
 class CrashHandler(private val application: Application) : Thread.UncaughtExceptionHandler {
     private val mDefaultHandler: Thread.UncaughtExceptionHandler? = Thread.getDefaultUncaughtExceptionHandler()
 
@@ -26,7 +29,7 @@ class CrashHandler(private val application: Application) : Thread.UncaughtExcept
     }
 
     override fun uncaughtException(thread: Thread, exc: Throwable) {
-        Log.w("Crash", exc.message)
+        Log.w("Crash", exc.message ?: "")
         val content = writeCrash(exc)
         if (content.isEmpty() && mDefaultHandler != null) {
             mDefaultHandler.uncaughtException(thread, exc)

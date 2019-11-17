@@ -5,6 +5,9 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import java.lang.reflect.Type
 
+/**
+ * Json工具类
+ */
 object JsonUtil {
     private val GSON = Gson()
     private val JSON_PARSER = JsonParser()

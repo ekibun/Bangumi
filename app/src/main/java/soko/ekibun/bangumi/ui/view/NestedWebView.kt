@@ -9,6 +9,9 @@ import android.view.MotionEvent
 import android.view.ViewGroup
 import android.webkit.*
 
+/**
+ * 多窗口WebView
+ */
 class NestedWebView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = android.R.attr.webViewStyle) : WebView(context, attrs, defStyleAttr) {
 
     var onProgressChanged = { _: WebView, _: Int -> }
@@ -53,6 +56,9 @@ class NestedWebView @JvmOverloads constructor(context: Context, attrs: Attribute
         return super.onTouchEvent(event)
     }
 
+    /**
+     * 关闭窗口
+     */
     fun close(){
         val parentWebView = parentWebView ?: return
         val parent = (parent as? ViewGroup) ?: return
@@ -109,6 +115,7 @@ class NestedWebView @JvmOverloads constructor(context: Context, attrs: Attribute
                 super.onReceivedTitle(view, title)
                 (view as? NestedWebView)?.onReceivedTitle?.invoke(view, title)
             }
+
             override fun onProgressChanged(view: WebView?, newProgress: Int) {
                 (view as? NestedWebView)?.onProgressChanged?.invoke(view, newProgress)
             }

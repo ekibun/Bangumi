@@ -11,12 +11,18 @@ import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.github.chrisbanes.photoview.PhotoView
 
-open class BigImageView @JvmOverloads constructor(context: Context, attr: AttributeSet? = null, defStyle: Int = 0) : PhotoView(context, attr, defStyle) {
+/**
+ * 适应屏幕PhotoView
+ */
+open class FitScreenPhotoView @JvmOverloads constructor(context: Context, attr: AttributeSet? = null, defStyle: Int = 0) : PhotoView(context, attr, defStyle) {
     val isMinScale get() = scale == 1f
 
     val glideTarget = MyViewTarget(this)
 
-    class MyViewTarget(private val view: BigImageView) : CustomTarget<Drawable>(), Transition.ViewAdapter {
+    /**
+     * 自定义ViewTarget
+     */
+    class MyViewTarget(private val view: FitScreenPhotoView) : CustomTarget<Drawable>(), Transition.ViewAdapter {
         override fun getView(): View {
             return view
         }
@@ -91,7 +97,9 @@ open class BigImageView @JvmOverloads constructor(context: Context, attr: Attrib
         }
     }
 
-    //var drawable: Drawable? = null
+    /**
+     * 更新Drawable
+     */
     fun updateDrawable(drawable: Drawable?) {
         setImageDrawable(drawable)
         if (drawable == null) return
