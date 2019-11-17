@@ -4,7 +4,7 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import soko.ekibun.bangumi.api.ApiHelper
-import soko.ekibun.bangumi.api.bangumi.Bangumi
+import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.trim21.BgmIpViewer
 import soko.ekibun.videoplayer.IVideoSubjectProvider
@@ -20,20 +20,20 @@ class VideoSubjectProvider : Service() {
         override fun getSubjectSeason(subject: VideoSubject, callback: IListSubjectCallback) {
             val bgmSubject = subject.toSubject()
             BgmIpViewer.createInstance().subject(bgmSubject.id).enqueue(ApiHelper.buildCallback({
-                callback.onFinish(BgmIpViewer.getSeason(it, bgmSubject).map {
-                    VideoSubject(Subject(it.subject_id, bgmSubject.type, it.name, it.name_cn))
+                callback.onFinish(BgmIpViewer.getSeason(it, bgmSubject).map { node ->
+                    VideoSubject(Subject(node.subject_id, bgmSubject.type, node.name, node.name_cn))
                 })
             }, {}))
         }
 
         override fun refreshSubject(subject: VideoSubject, callback: ISubjectCallback) {
-            Bangumi.getSubject(subject.toSubject()).enqueue(ApiHelper.buildCallback({
+            Subject.getDetail(subject.toSubject()).enqueue(ApiHelper.buildCallback({
                 callback.onFinish(VideoSubject(it))
             }, { it?.let { callback.onReject(it.toString()) } }))
         }
 
         override fun refreshEpisode(subject: VideoSubject, callback: IListEpisodeCallback) {
-            Bangumi.getSubjectEps(subject.toSubject()).enqueue(ApiHelper.buildCallback({ list ->
+            Episode.getSubjectEps(subject.toSubject()).enqueue(ApiHelper.buildCallback({ list ->
                 callback.onFinish(list.map { VideoEpisode(it) })
             }, { it?.let { callback.onReject(it.toString()) } }))
         }

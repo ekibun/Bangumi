@@ -2,7 +2,12 @@ package soko.ekibun.bangumi.api.bangumi.bean
 
 import androidx.annotation.ArrayRes
 import androidx.annotation.StringDef
+import okhttp3.FormBody
+import retrofit2.Call
 import soko.ekibun.bangumi.R
+import soko.ekibun.bangumi.api.ApiHelper
+import soko.ekibun.bangumi.api.bangumi.Bangumi
+import soko.ekibun.bangumi.util.HttpUtil
 
 /**
  * 条目收藏信息
@@ -50,6 +55,35 @@ data class Collection(
                 Subject.TYPE_GAME -> R.array.collection_status_game
                 Subject.TYPE_REAL -> R.array.collection_status_real
                 else -> R.array.collection_status_anime
+            }
+        }
+
+        /**
+         * 更新收藏
+         */
+        fun updateStatus(
+                subject: Subject,
+                newCollection: Collection): Call<Collection> {
+            return ApiHelper.buildHttpCall("${Bangumi.SERVER}/subject/${subject.id}/interest/update?gh=${HttpUtil.formhash}", body = FormBody.Builder()
+                    .add("referer", "ajax")
+                    .add("interest", newCollection.statusId.toString())
+                    .add("rating", newCollection.rating.toString())
+                    .add("tags", if (newCollection.tag?.isNotEmpty() == true) newCollection.tag.reduce { acc, s -> "$acc $s" } else "")
+                    .add("comment", newCollection.comment ?: "")
+                    .add("privacy", newCollection.private.toString())
+                    .add("update", "保存").build()) {
+                newCollection
+            }
+        }
+
+        /**
+         * 删除收藏
+         */
+        fun remove(
+                subject: Subject
+        ): Call<Boolean> {
+            return ApiHelper.buildHttpCall("${Bangumi.SERVER}/subject/${subject.id}/remove?gh=${HttpUtil.formhash}") {
+                it.code == 200
             }
         }
     }

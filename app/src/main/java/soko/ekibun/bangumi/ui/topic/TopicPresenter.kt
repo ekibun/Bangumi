@@ -38,7 +38,7 @@ class TopicPresenter(private val context: TopicActivity) {
         context.item_swipe.isRefreshing = true
 
         if (topicView.adapter.data.isEmpty()) {
-            Bangumi.getTopicSax(context.openUrl, { data ->
+            Topic.getTopicSax(context.openUrl, { data ->
                 val doc = Jsoup.parse(data)
                 context.runOnUiThread {
                     topicView.processTopicBefore(
@@ -72,7 +72,7 @@ class TopicPresenter(private val context: TopicActivity) {
                 }
             })
         } else {
-            Bangumi.getTopic(context.openUrl)
+            Topic.getTopic(context.openUrl)
         }.enqueue(ApiHelper.buildCallback({ topic ->
             processTopic(topic, scrollPost)
         }) {
@@ -99,11 +99,11 @@ class TopicPresenter(private val context: TopicActivity) {
                     AlertDialog.Builder(context).setMessage(R.string.reply_dialog_remove)
                             .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
                                 if (post.floor == 1) {
-                                    Bangumi.removeTopic(topic).enqueue(ApiHelper.buildCallback<Boolean>({
+                                    Topic.remove(topic).enqueue(ApiHelper.buildCallback<Boolean>({
                                         if (it) context.finish()
                                     }) {})
                                 } else {
-                                    Bangumi.removeTopicReply(post).enqueue(ApiHelper.buildCallback<Boolean>({
+                                    TopicPost.remove(post).enqueue(ApiHelper.buildCallback<Boolean>({
                                         val data = ArrayList(topicView.adapter.data)
                                         data.removeAll { topicPost -> topicPost.pst_id == post.pst_id }
                                         topicView.setNewData(data)
@@ -115,7 +115,7 @@ class TopicPresenter(private val context: TopicActivity) {
                 R.id.item_edit -> {
                     buildPopupWindow(context.getString(if (post.floor == 1) R.string.parse_hint_modify_topic else R.string.parse_hint_modify_post, topic.title), html = post.pst_content) { text, send ->
                         if (send) {
-                            Bangumi.editTopicReply(topic, post, text ?: "").enqueue(ApiHelper.buildCallback({
+                            TopicPost.edit(topic, post, text ?: "").enqueue(ApiHelper.buildCallback({
                                 getTopic(post.pst_id)
                             }))
                         }
@@ -145,7 +145,7 @@ class TopicPresenter(private val context: TopicActivity) {
                 ?: context.getString(R.string.parse_hint_reply_topic, topic.title)
         buildPopupWindow(hint, drafts[draftId]) { inputString, send ->
             if (send) {
-                Bangumi.replyTopic(topic, post, inputString ?: "").enqueue(ApiHelper.buildCallback<List<TopicPost>>({
+                Topic.reply(topic, post, inputString ?: "").enqueue(ApiHelper.buildCallback<List<TopicPost>>({
                     topicView.setNewData(it)
                     topicView.adapter.loadMoreEnd()
                 }) {})

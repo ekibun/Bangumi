@@ -4,9 +4,15 @@ import android.content.Context
 import androidx.annotation.IntDef
 import androidx.annotation.StringDef
 import androidx.annotation.StringRes
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
+import retrofit2.Call
 import soko.ekibun.bangumi.R
+import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import java.text.DecimalFormat
+import java.text.SimpleDateFormat
+import java.util.*
 
 /**
  * 剧集类
@@ -106,5 +112,108 @@ data class Episode(
         const val PROGRESS_DROP = "drop"
         const val PROGRESS_REMOVE = "remove"
 
+        /**
+         * 剧集和曲目列表
+         */
+        fun parseLineList(doc: Element): List<Episode> {
+            var cat = "本篇"
+            return doc.select("ul.line_list>li").mapNotNull { li ->
+                if (li.hasClass("cat")) cat = li.text()
+                val h6a = li.selectFirst("h6>a") ?: return@mapNotNull null
+                val values = Regex("^\\D*(\\d+\\.?\\d?)\\.(.*)").find(h6a.text() ?: "")?.groupValues
+                        ?: " ${h6a.text()}".split(" ", limit = 3)
+                val epInfo = li.select("small.grey")?.text()?.split("/")
+                Episode(
+                        id = Regex("""/ep/([0-9]*)""").find(h6a.attr("href") ?: "")?.groupValues?.get(1)?.toIntOrNull()
+                                ?: return@mapNotNull null,
+                        type = if (cat.startsWith("Disc")) TYPE_MUSIC else when (cat) {
+                            "本篇" -> TYPE_MAIN
+                            "特别篇" -> TYPE_SP
+                            "OP" -> TYPE_OP
+                            "ED" -> TYPE_ED
+                            "PV" -> TYPE_PV
+                            "MAD" -> TYPE_MAD
+                            else -> TYPE_OTHER
+                        },
+                        sort = values.getOrNull(1)?.toFloatOrNull() ?: 0f,
+                        name = values.getOrNull(2) ?: h6a.text(),
+                        name_cn = li.selectFirst("h6>span.tip")?.text()?.substringAfter(" "),
+                        duration = epInfo?.firstOrNull { it.trim().startsWith("时长") }?.substringAfter(":"),
+                        airdate = epInfo?.firstOrNull { it.trim().startsWith("首播") }?.substringAfter(":"),
+                        comment = epInfo?.firstOrNull { it.trim().startsWith("讨论") }?.trim()?.substringAfter("+")?.toIntOrNull()
+                                ?: 0,
+                        status = if (cat.startsWith("Disc")) STATUS_AIR else li.selectFirst(".epAirStatus span")?.className(),
+                        progress = li.selectFirst(".listEpPrgManager>span")?.let {
+                            when {
+                                it.hasClass("statusWatched") -> PROGRESS_WATCH
+                                it.hasClass("statusQueue") -> PROGRESS_QUEUE
+                                it.hasClass("statusDrop") -> PROGRESS_DROP
+                                else -> null
+                            }
+                        },
+                        category = if (cat.startsWith("Disc")) cat else null)
+            }
+
+        }
+
+        /**
+         * 主页和概览的剧集信息
+         */
+        fun parseProgressList(item: Element, doc: Element? = null): List<Episode> {
+            if (item.selectFirst("ul.line_list_music") != null) return parseLineList(item)
+            var cat = "本篇"
+            val now = Date().time
+            return item.select("ul.prg_list li").mapNotNull { li ->
+                if (li.hasClass("subtitle")) cat = li.text()
+                val it = li.selectFirst("a") ?: return@mapNotNull null
+                val rel = doc?.selectFirst(it.attr("rel"))
+                val epInfo = rel?.selectFirst(".tip")?.textNodes()?.map { it.text() }
+                val airdate = epInfo?.firstOrNull { it.startsWith("首播") }?.substringAfter(":")
+                Episode(
+                        id = it.id().substringAfter("_").toIntOrNull() ?: return@mapNotNull null,
+                        type = when (cat) {
+                            "本篇" -> TYPE_MAIN
+                            "SP" -> TYPE_SP
+                            "OP" -> TYPE_OP
+                            "ED" -> TYPE_ED
+                            "PV" -> TYPE_PV
+                            "MAD" -> TYPE_MAD
+                            else -> TYPE_OTHER
+                        },
+                        sort = Regex("""\d*(\.\d*)?""").find(it.text())?.groupValues?.getOrNull(0)?.toFloatOrNull()
+                                ?: 0f,
+                        name = it.attr("title")?.substringAfter(" "),
+                        name_cn = epInfo?.firstOrNull { it.startsWith("中文标题") }?.substringAfter(":"),
+                        duration = epInfo?.firstOrNull { it.startsWith("时长") }?.substringAfter(":"),
+                        airdate = airdate,
+                        comment = rel?.selectFirst(".cmt .na")?.text()?.trim('(', ')', '+')?.toIntOrNull() ?: 0,
+                        status = when {
+                            it.hasClass("epBtnToday") -> STATUS_TODAY
+                            it.hasClass("epBtnAir") || it.hasClass("epBtnWatched") || (rel != null && (try {
+                                SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(airdate ?: "")
+                            } catch (e: Exception) {
+                                null
+                            }?.time ?: 0L < now)) -> STATUS_AIR
+                            else -> STATUS_NA
+                        },
+                        progress = when {
+                            it.hasClass("epBtnWatched") -> PROGRESS_WATCH
+                            it.hasClass("epBtnQueue") -> PROGRESS_QUEUE
+                            it.hasClass("epBtnDrop") -> PROGRESS_DROP
+                            else -> null
+                        })
+            }
+        }
+
+        /**
+         * 获取剧集列表
+         */
+        fun getSubjectEps(
+                subject: Subject
+        ): Call<List<Episode>> {
+            return ApiHelper.buildHttpCall("${Bangumi.SERVER}/subject/${subject.id}/ep") {
+                parseLineList(Jsoup.parse(it.body?.string() ?: ""))
+            }
+        }
     }
 }

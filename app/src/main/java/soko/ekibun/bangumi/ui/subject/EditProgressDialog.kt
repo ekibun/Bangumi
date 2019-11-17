@@ -10,7 +10,6 @@ import android.view.WindowManager
 import kotlinx.android.synthetic.main.dialog_edit_progress.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
-import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.model.ThemeModel
 
@@ -43,7 +42,7 @@ class EditProgressDialog(context: Context): Dialog(context, R.style.AppTheme_Dia
         }
         view.item_submit.setOnClickListener {
             dismiss()
-            Bangumi.updateSubjectProgress(subject, view.item_eps.text.toString(), view.item_vol.text.toString()).enqueue(ApiHelper.buildCallback({
+            Subject.updateSubjectProgress(subject, view.item_eps.text.toString(), view.item_vol.text.toString()).enqueue(ApiHelper.buildCallback({
                 if(!it) return@buildCallback
                 subject.ep_status = view.item_eps.text.toString().toIntOrNull()?:0
                 subject.vol_status = view.item_vol.text.toString().toIntOrNull()?:0

@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.dialog_edit_subject.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
-import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.model.ThemeModel
@@ -100,7 +99,7 @@ class EditSubjectDialog(context: Context) : Dialog(context, R.style.AppTheme_Dia
         view.item_remove.setOnClickListener {
             AlertDialog.Builder(context).setTitle(R.string.collection_dialog_remove)
                     .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
-                        Bangumi.removeCollection(subject).enqueue(ApiHelper.buildCallback({
+                        Collection.remove(subject).enqueue(ApiHelper.buildCallback({
                             if (it) subject.collect = Collection()
                             dismiss()
                         }, {}))
@@ -110,7 +109,7 @@ class EditSubjectDialog(context: Context) : Dialog(context, R.style.AppTheme_Dia
             dismiss()
         }
         view.item_submit.setOnClickListener {
-            Bangumi.updateCollectionStatus(subject, Collection(
+            Collection.updateStatus(subject, Collection(
                     status = selectMap.toList().first { it.second == view.item_subject_status.checkedRadioButtonId }.first,
                     rating = view.item_rating.rating.toInt(),
                     comment = view.item_comment.text.toString(),

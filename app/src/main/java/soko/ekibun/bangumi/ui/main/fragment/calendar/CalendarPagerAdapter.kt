@@ -113,7 +113,7 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: an
                 mStrBuilder.setLength(0)
                 val time = mFormatter.format("%02d:%02d", if(use30h) (hour - 6 + 24) % 24 + 6 else (hour+24)%24, minute%60).toString()
                 val cal = Calendar.getInstance()
-                cal.time = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.airdate)
+                cal.time = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.airdate ?: "") ?: cal.time
                 val week = (if((subject.timeJP?.toIntOrNull()?:0)/100 < 5) 1 else 0) + if(!useCN || subject.timeCN.isNullOrEmpty()) 0 else
                     Math.min(if(subject.timeCN.toIntOrNull() ?:0 < subject.timeJP?.toIntOrNull()?:0) 1 else 0, when(((subject.weekDayCN?:0) - (subject.weekDayJP?:0) + 7) % 7){
                         6 -> if((subject.timeJP?.toIntOrNull()?:0)/100 < 5) -1 else 0
@@ -167,7 +167,7 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: an
         }}))
 
         chaseCall?.cancel()
-        chaseCall = Bangumi.getMobileCollection()
+        chaseCall = Bangumi.getCollectionSax()
         chaseCall?.enqueue(ApiHelper.buildCallback({
             chaseList = it
             setOnAirList(raw?:return@buildCallback)

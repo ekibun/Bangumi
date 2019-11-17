@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import retrofit2.Call
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
-import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Rakuen
 import soko.ekibun.bangumi.ui.topic.TopicActivity
 
@@ -76,7 +75,7 @@ class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private
         val item = items[position] ?: return
         item.first.isUseEmpty(false)
         topicCall[position]?.cancel()
-        topicCall[position] = Bangumi.getRakuen(if (position == 1) when (selectedFilter) {
+        topicCall[position] = Rakuen.getList(if (position == 1) when (selectedFilter) {
             R.id.topic_filter_join -> "my_group"
             R.id.topic_filter_post -> "my_group&filter=topic"
             R.id.topic_filter_reply -> "my_group&filter=reply"

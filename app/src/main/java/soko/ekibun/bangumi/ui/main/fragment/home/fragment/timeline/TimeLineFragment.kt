@@ -8,7 +8,7 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_timeline.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
-import soko.ekibun.bangumi.api.bangumi.Bangumi
+import soko.ekibun.bangumi.api.bangumi.bean.TimeLine
 import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.HomeTabFragment
 import soko.ekibun.bangumi.ui.topic.ReplyDialog
@@ -57,7 +57,7 @@ class TimeLineFragment : HomeTabFragment(R.layout.fragment_timeline) {
                 dialog.draft = draft
                 dialog.callback = { string, send ->
                     if (send) {
-                        Bangumi.addTimeLineComment(TextUtil.span2bbcode(string as Spanned)).enqueue(ApiHelper.buildCallback({
+                        TimeLine.addComment(TextUtil.span2bbcode(string as Spanned)).enqueue(ApiHelper.buildCallback({
                             if (it) {
                                 draft = null
                                 if (item_pager?.currentItem ?: 2 !in 0..1) item_pager?.currentItem = 1

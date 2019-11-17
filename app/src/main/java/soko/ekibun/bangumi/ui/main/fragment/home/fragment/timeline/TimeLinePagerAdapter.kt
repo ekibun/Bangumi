@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import retrofit2.Call
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
-import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.TimeLine
 import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
@@ -83,7 +82,7 @@ class TimeLinePagerAdapter(context: Context, val fragment: TimeLineFragment, pri
             item.first.setNewData(null)
         }
         topicCall[position]?.cancel()
-        topicCall[position] = Bangumi.getTimeLine(listOf("all", "say", "subject", "progress", "blog", "mono", "relation", "group", "wiki", "index", "doujin")[position], page + 1,
+        topicCall[position] = TimeLine.getList(listOf("all", "say", "subject", "progress", "blog", "mono", "relation", "group", "wiki", "index", "doujin")[position], page + 1,
                 if (selectedType == R.id.timeline_type_self) (fragment.activity as? MainActivity)?.user else null, selectedType == R.id.timeline_type_all)
         topicCall[position]?.enqueue(ApiHelper.buildCallback({
             item.first.isUseEmpty(true)

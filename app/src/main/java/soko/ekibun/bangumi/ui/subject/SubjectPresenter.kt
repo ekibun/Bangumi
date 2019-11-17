@@ -13,11 +13,8 @@ import kotlinx.android.synthetic.main.subject_detail.view.*
 import retrofit2.Call
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
-import soko.ekibun.bangumi.api.bangumi.Bangumi
+import soko.ekibun.bangumi.api.bangumi.bean.*
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
-import soko.ekibun.bangumi.api.bangumi.bean.Episode
-import soko.ekibun.bangumi.api.bangumi.bean.Images
-import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.github.GithubRaw
 import soko.ekibun.bangumi.api.github.bean.OnAirInfo
 import soko.ekibun.bangumi.api.trim21.BgmIpViewer
@@ -223,7 +220,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
 
         subjectCall = ApiHelper.buildGroupCall(
                 arrayOf(GithubRaw.createInstance().onAirInfo(subject.id / 1000, subject.id),
-                        Bangumi.getSubjectSax(subject) { newSubject, tag ->
+                        Subject.getDetail(subject) { newSubject, tag ->
                             subject = newSubject
                             context.runOnUiThread {
                                 if (tag == "collect") refreshCollection()
@@ -231,7 +228,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
                             }
                         },
                         BgmIpViewer.createInstance().subject(subject.id),
-                        Bangumi.getSubjectEps(subject))
+                        Episode.getSubjectEps(subject))
         ) { _, it ->
             when (it) {
                 is Subject -> {
@@ -270,7 +267,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
         subjectView.detail.load_more_load_fail_view.visibility = View.GONE
         subjectView.detail.load_more_load_end_view.visibility = View.GONE
 
-        Bangumi.getComments(subject, page).enqueue(ApiHelper.buildCallback({
+        Comment.getSubjectComment(subject, page).enqueue(ApiHelper.buildCallback({
             commentPage++
             if (page == 1)
                 subjectView.commentAdapter.setNewData(null)
@@ -298,7 +295,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
         if (context.isFinishing) return
         AlertDialog.Builder(context).setTitle(R.string.collection_dialog_remove)
                 .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
-                    Bangumi.removeCollection(subject).enqueue(ApiHelper.buildCallback({
+                    Collection.remove(subject).enqueue(ApiHelper.buildCallback({
                         if (it) subject.collect = Collection()
                         refreshCollection()
                     }, {}))
@@ -332,7 +329,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
                     removeCollection(subject)
                     return@setOnMenuItemClickListener false
                 }
-                Bangumi.updateCollectionStatus(subject, Collection(
+                Collection.updateStatus(subject, Collection(
                         status = Collection.getTypeById(menu.itemId - Menu.FIRST + 1),
                         rating = body.rating,
                         comment = body.comment,
@@ -358,7 +355,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
     private var epCalls: Call<List<Episode>>? = null
     private fun refreshProgress() {
         epCalls?.cancel()
-        epCalls = Bangumi.getSubjectEps(subject)
+        epCalls = Episode.getSubjectEps(subject)
         epCalls?.enqueue(ApiHelper.buildCallback({
             val eps = subjectView.updateEpisode(it)
             subjectView.updateEpisodeLabel(eps, subject)

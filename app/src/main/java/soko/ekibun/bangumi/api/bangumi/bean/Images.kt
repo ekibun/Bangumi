@@ -1,7 +1,7 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
 import android.content.Context
-import android.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 
 /**
  * bgm.tv图像类
@@ -25,5 +25,9 @@ data class Images(private val url: String) {
             "g" -> grid
             else -> common
         }
+    }
+
+    companion object {
+
     }
 }

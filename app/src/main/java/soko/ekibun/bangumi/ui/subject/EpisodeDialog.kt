@@ -14,6 +14,7 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
+import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.github.bean.BangumiItem
 import soko.ekibun.bangumi.api.github.bean.OnAirInfo
 import soko.ekibun.bangumi.model.ThemeModel
@@ -35,7 +36,7 @@ class EpisodeDialog(context: Context) : Dialog(context, R.style.AppTheme_Dialog)
         fun updateProgress(eps: List<Episode>, newStatus: String, callback: (Boolean) -> Unit) {
             if (newStatus == WATCH_TO) {
                 val epIds = eps.map { it.id.toString() }.reduce { acc, s -> "$acc,$s" }
-                Bangumi.updateProgress(eps.last().id, Episode.PROGRESS_WATCH, epIds).enqueue(
+                Subject.updateProgress(eps.last().id, Episode.PROGRESS_WATCH, epIds).enqueue(
                         ApiHelper.buildCallback({
                             eps.forEach { it.progress = Episode.PROGRESS_WATCH }
                             callback(true)
@@ -43,7 +44,7 @@ class EpisodeDialog(context: Context) : Dialog(context, R.style.AppTheme_Dialog)
                 return
             }
             eps.forEach { episode ->
-                Bangumi.updateProgress(episode.id, newStatus).enqueue(
+                Subject.updateProgress(episode.id, newStatus).enqueue(
                         ApiHelper.buildCallback({
                             episode.progress = if (newStatus == Episode.PROGRESS_REMOVE) null else newStatus
                             callback(true)

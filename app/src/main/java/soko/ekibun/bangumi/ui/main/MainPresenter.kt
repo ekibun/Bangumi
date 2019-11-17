@@ -60,7 +60,7 @@ class MainPresenter(private val context: MainActivity) {
     }
 
     fun refreshUser() {
-        Bangumi.getUserInfo(
+        UserInfo.getSelf(
                 reload = {
                     context.runOnUiThread {
                         drawerView.homeFragment.timelineFragment()?.onSelect()
