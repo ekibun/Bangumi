@@ -9,6 +9,9 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.util.ResourceUtil
 
+/**
+ * 剧集列表Adapter
+ */
 class SmallEpisodeAdapter(data: MutableList<Episode>? = null) :
         BaseQuickAdapter<Episode, BaseViewHolder>
         (R.layout.item_episode_small, data) {

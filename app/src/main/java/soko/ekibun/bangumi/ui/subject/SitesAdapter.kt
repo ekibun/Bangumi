@@ -7,6 +7,9 @@ import kotlinx.android.synthetic.main.item_site.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.github.bean.OnAirInfo
 
+/**
+ * 站点Adapter
+ */
 class SitesAdapter(data: MutableList<OnAirInfo.Site>? = null) :
         BaseQuickAdapter<OnAirInfo.Site, BaseViewHolder>(R.layout.item_site, data) {
 

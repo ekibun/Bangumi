@@ -13,8 +13,14 @@ import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.model.ThemeModel
 
+/**
+ * 进度编辑对话框
+ */
 class EditProgressDialog(context: Context): Dialog(context, R.style.AppTheme_Dialog) {
     companion object {
+        /**
+         * 显示对话框
+         */
         fun showDialog(context: Context, subject: Subject, callback: () -> Unit) {
             val dialog = EditProgressDialog(context)
             dialog.subject = subject

@@ -24,6 +24,9 @@ import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.PlayerBridge
 
+/**
+ * 条目Presenter
+ */
 class SubjectPresenter(private val context: SubjectActivity) {
     val subjectView by lazy { SubjectView(context) }
 
@@ -31,6 +34,9 @@ class SubjectPresenter(private val context: SubjectActivity) {
 
     var commentPage = 1
 
+    /**
+     * 初始化
+     */
     @SuppressLint("SetTextI18n")
     fun init(subject: Subject) {
         this.subject = subject
@@ -214,6 +220,9 @@ class SubjectPresenter(private val context: SubjectActivity) {
 
     private var onAirInfo: OnAirInfo? = null
     private var subjectCall: Call<Unit>? = null
+    /**
+     * 刷新
+     */
     fun refresh() {
         subjectCall?.cancel()
         context.item_swipe.isRefreshing = true

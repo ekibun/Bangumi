@@ -7,6 +7,9 @@ import com.chad.library.adapter.base.BaseViewHolder
 import kotlinx.android.synthetic.main.item_tag.view.*
 import soko.ekibun.bangumi.R
 
+/**
+ * 标签Adapter
+ */
 class TagAdapter(data: MutableList<Pair<String, Int>>? = null, var hasTag: (String) -> Boolean = { false }) :
         BaseQuickAdapter<Pair<String, Int>, BaseViewHolder>(R.layout.item_tag, data) {
 

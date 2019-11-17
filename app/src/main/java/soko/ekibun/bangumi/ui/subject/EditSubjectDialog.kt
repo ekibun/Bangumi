@@ -21,8 +21,14 @@ import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.util.HttpUtil
 
+/**
+ * 收藏对话框
+ */
 class EditSubjectDialog(context: Context) : Dialog(context, R.style.AppTheme_Dialog) {
     companion object {
+        /**
+         * 显示对话框
+         */
         fun showDialog(context: Context, subject: Subject, status: Collection, callback: () -> Unit) {
             val dialog = EditSubjectDialog(context)
             dialog.subject = subject
@@ -88,10 +94,10 @@ class EditSubjectDialog(context: Context) : Dialog(context, R.style.AppTheme_Dia
                 userTagAdapter.notifyDataSetChanged()
             }
 
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) { /* no-op */
             }
 
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) { /* no-op */
             }
         })
 

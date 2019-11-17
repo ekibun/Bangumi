@@ -8,6 +8,9 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Character
 import soko.ekibun.bangumi.util.GlideUtil
 
+/**
+ * 角色Adapter
+ */
 class CharacterAdapter(data: MutableList<Character>? = null) :
         BaseQuickAdapter<Character, BaseViewHolder>(R.layout.item_character, data) {
 

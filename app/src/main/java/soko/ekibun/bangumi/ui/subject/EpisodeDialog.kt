@@ -19,9 +19,15 @@ import soko.ekibun.bangumi.api.github.bean.OnAirInfo
 import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.web.WebActivity
 
+/**
+ * 剧集对话框
+ */
 class EpisodeDialog(context: Context) : Dialog(context, R.style.AppTheme_Dialog) {
     companion object {
         const val WATCH_TO = "watch_to"
+        /**
+         * 显示对话框
+         */
         fun showDialog(context: Context, episode: Episode, eps: List<Episode>, onAirInfo: OnAirInfo?, callback: (eps: List<Episode>, status: String) -> Unit): EpisodeDialog {
             val dialog = EpisodeDialog(context)
             dialog.eps = eps
@@ -32,6 +38,9 @@ class EpisodeDialog(context: Context) : Dialog(context, R.style.AppTheme_Dialog)
             return dialog
         }
 
+        /**
+         * 更新进度
+         */
         fun updateProgress(eps: List<Episode>, newStatus: String, callback: (Boolean) -> Unit) {
             if (newStatus == WATCH_TO) {
                 val epIds = eps.map { it.id.toString() }.reduce { acc, s -> "$acc,$s" }

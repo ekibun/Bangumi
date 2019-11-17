@@ -7,6 +7,9 @@ import kotlinx.android.synthetic.main.item_subject_topic.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 
+/**
+ * 讨论板Adapter
+ */
 class TopicAdapter(data: MutableList<Subject.Topic>? = null) :
         BaseQuickAdapter<Subject.Topic, BaseViewHolder>(R.layout.item_subject_topic, data) {
 

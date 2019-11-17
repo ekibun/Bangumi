@@ -15,6 +15,9 @@ import soko.ekibun.bangumi.ui.view.DragSelectTouchListener
 import soko.ekibun.bangumi.ui.view.FastScrollRecyclerView
 import soko.ekibun.bangumi.util.ResourceUtil
 
+/**
+ * 剧集列表Adapter
+ */
 class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null) :
         BaseSectionQuickAdapter<EpisodeAdapter.SelectableSectionEntity<Episode>, BaseViewHolder>
         (R.layout.item_episode, R.layout.header_episode, data), FastScrollRecyclerView.MeasurableAdapter, FastScrollRecyclerView.SectionedAdapter {
@@ -32,11 +35,16 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
         return if(getItemViewType(position) == SECTION_HEADER_VIEW) headerHeight else itemHeight
     }
 
+    /**
+     * 可选中列表项
+     */
     class SelectableSectionEntity<T>: SectionEntity<T>{
         var isSelected = false
+
         constructor(isHeader: Boolean, header: String): super(isHeader, header)
         constructor(t: T): super(t)
     }
+
     override fun convertHead(helper: BaseViewHolder, item: SelectableSectionEntity<Episode>) {
         //helper.getView<TextView>(R.id.item_header).visibility = if(data.indexOf(item) == 0) View.GONE else View.VISIBLE
         helper.setText(R.id.item_header, item.header)
@@ -85,7 +93,9 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
     var clickListener: (Int)->Boolean = { false }
 
     var updateSelection: ()->Unit = {}
-
+    /**
+     * 关联RecyclerView
+     */
     fun setUpWithRecyclerView(recyclerView: androidx.recyclerview.widget.RecyclerView): DragSelectTouchListener{
         bindToRecyclerView(recyclerView)
 
@@ -93,10 +103,10 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
 
         val touchListener = DragSelectTouchListener()
         recyclerView.addOnItemTouchListener(touchListener)
-        longClickListener = {position ->
-            getItem(position)?.let{model ->
+        longClickListener = { position ->
+            getItem(position)?.let{ model ->
                 if (!model.isHeader) setSelect(position, true) }
-                touchListener.setStartSelectPosition(position)
+            touchListener.setStartSelectPosition(position)
             true }
         clickListener = {position ->
             if(!data.none { it.isSelected }){

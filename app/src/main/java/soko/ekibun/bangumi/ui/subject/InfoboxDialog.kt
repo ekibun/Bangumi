@@ -21,8 +21,14 @@ import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.topic.PostAdapter
 import soko.ekibun.bangumi.ui.web.WebActivity
 
+/**
+ * 条目信息对话框
+ */
 class InfoboxDialog(context: Context): Dialog(context, R.style.AppTheme_Dialog) {
     companion object {
+        /**
+         * 显示对话框
+         */
         fun showDialog(context: Context, subject: Subject){
             if(subject.infobox?.isNotEmpty() != true) return
             val dialog = InfoboxDialog(context)
@@ -33,7 +39,7 @@ class InfoboxDialog(context: Context): Dialog(context, R.style.AppTheme_Dialog) 
 
     var subject: Subject = Subject()
     var callback: ((eps: List<Episode>, status: String)->Unit)? = null
-    @SuppressLint("SetTextI18n")
+    @SuppressLint("SetTextI18n", "InflateParams")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val view = LayoutInflater.from(context).inflate(R.layout.dialog_infobox, null)
@@ -62,13 +68,15 @@ class InfoboxDialog(context: Context): Dialog(context, R.style.AppTheme_Dialog) 
         }
 
         val behavior = BottomSheetBehavior.from(view.bottom_sheet)
-        behavior.setBottomSheetCallback(object: BottomSheetBehavior.BottomSheetCallback(){
+        behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             @SuppressLint("SwitchIntDef")
             override fun onStateChanged(bottomSheet: View, @BottomSheetBehavior.State newState: Int) {
                 if(newState == BottomSheetBehavior.STATE_HIDDEN)dismiss()
                 view.app_bar.visibility = if(newState == BottomSheetBehavior.STATE_EXPANDED) View.VISIBLE else View.INVISIBLE
             }
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {}
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) { /* no-op */
+            }
         })
         behavior.isHideable = true
 

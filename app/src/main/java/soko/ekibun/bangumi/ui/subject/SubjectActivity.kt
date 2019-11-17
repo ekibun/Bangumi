@@ -17,6 +17,9 @@ import soko.ekibun.bangumi.util.JsonUtil
 import soko.ekibun.bangumi.util.PlayerBridge
 import soko.ekibun.videoplayer.bean.VideoSubject
 
+/**
+ * 条目Activity
+ */
 class SubjectActivity : SwipeBackActivity() {
     private val subjectPresenter: SubjectPresenter by lazy { SubjectPresenter(this) }
 
@@ -86,7 +89,9 @@ class SubjectActivity : SwipeBackActivity() {
 
     companion object {
         private const val EXTRA_SUBJECT = "extraSubject"
-
+        /**
+         * 启动Activity
+         */
         fun startActivity(context: Context, subject: Subject) {
             context.startActivity(parseIntent(context, subject))
         }
