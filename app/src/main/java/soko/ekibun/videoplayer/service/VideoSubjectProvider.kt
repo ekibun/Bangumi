@@ -14,6 +14,9 @@ import soko.ekibun.videoplayer.callback.IListEpisodeCallback
 import soko.ekibun.videoplayer.callback.IListSubjectCallback
 import soko.ekibun.videoplayer.callback.ISubjectCallback
 
+/**
+ * 播放器ipc服务
+ */
 class VideoSubjectProvider : Service() {
 
     private var mVideoSubjectProvider = object : IVideoSubjectProvider.Stub() {

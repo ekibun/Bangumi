@@ -3,6 +3,9 @@ package soko.ekibun.videoplayer.bean
 import android.os.Parcel
 import android.os.Parcelable
 
+/**
+ * 条目缓存（ipc）
+ */
 data class SubjectCache(
         val subject: VideoSubject,
         val videoList: List<VideoCache>

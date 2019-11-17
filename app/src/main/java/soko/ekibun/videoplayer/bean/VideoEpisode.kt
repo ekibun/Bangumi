@@ -4,6 +4,9 @@ import android.os.Parcel
 import android.os.Parcelable
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 
+/**
+ * 剧集（ipc）
+ */
 data class VideoEpisode(
         val site: String? = null,
         val id: String? = null,
@@ -19,6 +22,9 @@ data class VideoEpisode(
         var progress: String? = null
 ) : Parcelable {
 
+    /**
+     * 数据转换
+     */
     fun toEpisode(): Episode {
         return Episode(
                 id =id?.toIntOrNull()?:0,

@@ -3,12 +3,15 @@ package soko.ekibun.videoplayer.bean
 import android.os.Parcel
 import android.os.Parcelable
 
+/**
+ * 剧集缓存（ipc）
+ */
 data class VideoCache(
-    val episode: VideoEpisode,
-    val type: String,
-    var contentLength: Long = 0L,
-    var bytesDownloaded: Long = 0L,
-    var percentDownloaded: Float = 0f
+        val episode: VideoEpisode,
+        val type: String,
+        var contentLength: Long = 0L,
+        var bytesDownloaded: Long = 0L,
+        var percentDownloaded: Float = 0f
 ) : Parcelable {
     @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
     constructor(source: Parcel) : this(

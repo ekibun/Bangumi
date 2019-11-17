@@ -10,12 +10,15 @@ import soko.ekibun.bangumi.util.PlayerBridge
 import soko.ekibun.videoplayer.bean.VideoEpisode
 import soko.ekibun.videoplayer.bean.VideoSubject
 
+/**
+ * 对话框窗口（ipc）
+ */
 class DialogActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val videoSubject =  intent.getParcelableExtra<VideoSubject>(PlayerBridge.EXTRA_SUBJECT)
+        val videoSubject = intent.getParcelableExtra<VideoSubject>(PlayerBridge.EXTRA_SUBJECT)!!
         val subject = videoSubject.toSubject()
 
         when(intent?.action){
@@ -28,7 +31,7 @@ class DialogActivity : AppCompatActivity() {
                 }
             }
             "soko.ekibun.videoplayer.updateProgress.bangumi" -> {
-                val eps = intent.getParcelableArrayListExtra<VideoEpisode>(PlayerBridge.EXTRA_EPISODE_LIST).map { it.toEpisode() }
+                val eps = intent.getParcelableArrayListExtra<VideoEpisode>(PlayerBridge.EXTRA_EPISODE_LIST)!!.map { it.toEpisode() }
                 val dialog = EpisodeDialog.showDialog(this, eps.last(), eps, null){ mEps, status ->
                     EpisodeDialog.updateProgress(mEps, status) {
                         val intent = Intent()

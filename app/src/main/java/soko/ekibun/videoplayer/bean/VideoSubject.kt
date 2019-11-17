@@ -8,6 +8,9 @@ import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.JsonUtil
 
+/**
+ * 条目(ipc)
+ */
 data class VideoSubject(
         val site: String? = null,
         val id: String? = null,
@@ -26,12 +29,18 @@ data class VideoSubject(
         var token: String? = null
 ) : Parcelable {
 
+    /**
+     * 附加信息
+     */
     data class Token(
             var formhash: String?,
             var collect: Collection?,
             @Subject.SubjectType var type: String?
     )
 
+    /**
+     * 数据转换
+     */
     fun toSubject(): Subject{
         val data = JsonUtil.toEntity(token?:"", Token::class.java)
         HttpUtil.formhash = data?.formhash ?: HttpUtil.formhash
