@@ -4,6 +4,9 @@ import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
 import soko.ekibun.bangumi.R
 
+/**
+ * 搜索历史Adapter
+ */
 class SearchHistoryAdapter(data: MutableList<String>? = null) :
         BaseQuickAdapter<String, BaseViewHolder>(R.layout.item_search_history, data) {
 

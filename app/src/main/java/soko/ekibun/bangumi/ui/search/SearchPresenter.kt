@@ -20,6 +20,9 @@ import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.web.WebActivity
 
+/**
+ * 搜索Presenter
+ */
 class SearchPresenter(private val context: SearchActivity) {
     val searchHistoryModel by lazy { SearchHistoryModel(context) }
 
@@ -81,8 +84,12 @@ class SearchPresenter(private val context: SearchActivity) {
 
         context.search_swipe.visibility = View.INVISIBLE
         context.search_box.addTextChangedListener(object: TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun afterTextChanged(s: Editable?) {}
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) { /* no-op */
+            }
+
+            override fun afterTextChanged(s: Editable?) { /* no-op */
+            }
+
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
                 lastKey = ""
                 context.search_swipe.visibility = View.INVISIBLE
@@ -100,6 +107,9 @@ class SearchPresenter(private val context: SearchActivity) {
     private var monoCall : Call<List<MonoInfo>>? = null
     private var lastKey = ""
     private var loadCount = 0
+    /**
+     * 搜索
+     */
     fun search(key: String = lastKey, refresh: Boolean = false){
         if(refresh || lastKey != key){
             lastKey = key

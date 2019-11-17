@@ -16,11 +16,13 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.ui.view.SwipeBackActivity
 import soko.ekibun.bangumi.util.AppUtil
 
-
+/**
+ * 设置Activity
+ */
 class SettingsActivity : SwipeBackActivity(), PreferenceFragmentCompat.OnPreferenceStartScreenCallback {
     override fun onPreferenceStartScreen(caller: PreferenceFragmentCompat, pref: PreferenceScreen): Boolean {
         val ft = supportFragmentManager.beginTransaction()
-        val fragment = MyPreferenceFragment()
+        val fragment = SettingsFragment()
         val args = Bundle()
         args.putString(PreferenceFragmentCompat.ARG_PREFERENCE_ROOT, pref.key)
         title = pref.title
@@ -43,7 +45,7 @@ class SettingsActivity : SwipeBackActivity(), PreferenceFragmentCompat.OnPrefere
                 setTitle(R.string.settings)
         }
 
-        supportFragmentManager.beginTransaction().replace(R.id.settings_container, MyPreferenceFragment()).commit()
+        supportFragmentManager.beginTransaction().replace(R.id.settings_container, SettingsFragment()).commit()
     }
 
     override fun processBack() {
@@ -58,7 +60,10 @@ class SettingsActivity : SwipeBackActivity(), PreferenceFragmentCompat.OnPrefere
         return super.onOptionsItemSelected(item)
     }
 
-    class MyPreferenceFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedPreferenceChangeListener {
+    /**
+     * 设置Fragment
+     */
+    class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedPreferenceChangeListener {
         override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
             updatePreference()
         }

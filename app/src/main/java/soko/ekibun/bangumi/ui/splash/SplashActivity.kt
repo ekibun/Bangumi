@@ -2,10 +2,13 @@ package soko.ekibun.bangumi.ui.splash
 
 import android.content.Context
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import soko.ekibun.bangumi.ui.main.MainActivity
 
+/**
+ * 欢迎Activity
+ */
 class SplashActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -15,6 +18,9 @@ class SplashActivity : AppCompatActivity() {
     }
 
     companion object {
+        /**
+         * 启动
+         */
         fun startActivity(context: Context){
             val intent = Intent(context.applicationContext, SplashActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)

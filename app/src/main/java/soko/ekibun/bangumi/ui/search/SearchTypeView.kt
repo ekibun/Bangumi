@@ -6,6 +6,9 @@ import androidx.appcompat.widget.PopupMenu
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 
+/**
+ * 搜索类型
+ */
 class SearchTypeView(view: TextView, onChange:()->Unit){
     val subjectTypeList = mapOf(
             R.id.collection_type_all to Subject.TYPE_ANY,

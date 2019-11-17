@@ -8,6 +8,9 @@ import kotlinx.android.synthetic.main.activity_search.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.ui.view.SwipeBackActivity
 
+/**
+ * 搜索Activity
+ */
 class SearchActivity : SwipeBackActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,6 +42,9 @@ class SearchActivity : SwipeBackActivity() {
     }
 
     companion object{
+        /**
+         * 启动Activity
+         */
         fun startActivity(context: Context) {
             val intent = Intent(context, SearchActivity::class.java)
             context.startActivity(intent)

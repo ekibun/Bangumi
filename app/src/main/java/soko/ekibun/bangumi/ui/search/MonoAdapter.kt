@@ -8,6 +8,9 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.MonoInfo
 import soko.ekibun.bangumi.util.GlideUtil
 
+/**
+ * 人物Adapter
+ */
 class MonoAdapter(data: MutableList<MonoInfo>? = null) :
         BaseQuickAdapter<MonoInfo, BaseViewHolder>(R.layout.item_mono, data) {
 
