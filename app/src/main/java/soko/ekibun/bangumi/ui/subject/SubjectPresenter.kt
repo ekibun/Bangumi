@@ -49,7 +49,9 @@ class SubjectPresenter(private val context: SubjectActivity) {
         subjectView.detail.item_detail.setOnClickListener {
             InfoboxDialog.showDialog(context, subject)
         }
-
+        subjectView.sitesAdapter.setOnItemClickListener { _, _, position ->
+            WebActivity.launchUrl(context, subjectView.sitesAdapter.data[position].url(), "")
+        }
 
         subjectView.commentAdapter.setEnableLoadMore(true)
         subjectView.commentAdapter.setLoadMoreView(BrvahLoadMoreView())
@@ -203,9 +205,9 @@ class SubjectPresenter(private val context: SubjectActivity) {
         }
     }
 
-    @SuppressLint("SetTextI18n")
+    private var episodeDialog: EpisodeDialog? = null
     private fun openEpisode(episode: Episode, eps: List<Episode>) {
-        EpisodeDialog.showDialog(context, episode, eps, onAirInfo) { mEps, status ->
+        episodeDialog = EpisodeDialog.showDialog(context, episode, eps, onAirInfo) { mEps, status ->
             updateProgress(mEps, status)
         }
     }
@@ -247,6 +249,8 @@ class SubjectPresenter(private val context: SubjectActivity) {
                 }
                 is OnAirInfo -> {
                     onAirInfo = it
+                    subjectView.sitesAdapter.setNewData(it.sites)
+                    episodeDialog?.onAirInfoChange?.invoke(it)
                 }
                 is IpView -> {
                     val ret = BgmIpViewer.getSeason(it, subject)

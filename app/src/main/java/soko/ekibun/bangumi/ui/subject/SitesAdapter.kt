@@ -15,7 +15,7 @@ class SitesAdapter(data: MutableList<OnAirInfo.Site>? = null) :
 
     override fun convert(helper: BaseViewHolder, item: OnAirInfo.Site) {
         helper.itemView.item_site.text = item.site
-        helper.itemView.item_site_id.text = item.title
+        helper.itemView.item_site_id.text = item.title()
         helper.itemView.item_site.backgroundTintList = ColorStateList.valueOf(item.color)
     }
 }

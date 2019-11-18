@@ -44,9 +44,10 @@ class SubjectView(private val context: SubjectActivity) {
     val tagAdapter = TagAdapter()
     val topicAdapter = TopicAdapter()
     val blogAdapter = BlogAdapter()
+    val sitesAdapter = SitesAdapter()
     val commentAdapter = CommentAdapter()
     val seasonAdapter = SeasonAdapter()
-    val seasonLayoutManager = LinearLayoutManager(context)
+    val seasonLayoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
 
     val detail = context.subject_detail as LinearLayout
 
@@ -87,8 +88,7 @@ class SubjectView(private val context: SubjectActivity) {
         })
 
         context.season_list.adapter = seasonAdapter
-        seasonLayoutManager.orientation = RecyclerView.HORIZONTAL
-        context.season_list.layoutManager = seasonLayoutManager
+        context.season_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
         context.season_list.isNestedScrollingEnabled = false
 
         context.episode_list.adapter = episodeAdapter
@@ -107,6 +107,7 @@ class SubjectView(private val context: SubjectActivity) {
         context.linked_list.setOnTouchListener(swipeTouchListener)
         context.character_list.setOnTouchListener(swipeTouchListener)
         context.tag_list.setOnTouchListener(swipeTouchListener)
+        context.site_list.setOnTouchListener(swipeTouchListener)
 
         val touchListener = episodeDetailAdapter.setUpWithRecyclerView(context.episode_detail_list)
         touchListener.nestScrollDistance = {
@@ -128,22 +129,15 @@ class SubjectView(private val context: SubjectActivity) {
         }
 
         context.linked_list.adapter = linkedSubjectsAdapter
-        val subjectLayoutManager = LinearLayoutManager(context)
-        subjectLayoutManager.orientation = RecyclerView.HORIZONTAL
-        context.linked_list.layoutManager = subjectLayoutManager
+        context.linked_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
         context.linked_list.isNestedScrollingEnabled = false
 
-
         context.commend_list.adapter = recommendSubjectsAdapter
-        val subjectLayoutManager2 = LinearLayoutManager(context)
-        subjectLayoutManager2.orientation = RecyclerView.HORIZONTAL
-        context.commend_list.layoutManager = subjectLayoutManager2
+        context.commend_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
         context.commend_list.isNestedScrollingEnabled = false
 
         context.character_list.adapter = characterAdapter
-        val characterLayoutManager = LinearLayoutManager(context)
-        characterLayoutManager.orientation = RecyclerView.HORIZONTAL
-        context.character_list.layoutManager = characterLayoutManager
+        context.character_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
         context.character_list.isNestedScrollingEnabled = false
 
         context.topic_list.adapter = topicAdapter
@@ -155,10 +149,12 @@ class SubjectView(private val context: SubjectActivity) {
         context.blog_list.isNestedScrollingEnabled = false
 
         context.tag_list.adapter = tagAdapter
-        val tagLayoutManager = LinearLayoutManager(context)
-        tagLayoutManager.orientation = RecyclerView.HORIZONTAL
-        context.tag_list.layoutManager = tagLayoutManager
+        context.tag_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
         context.tag_list.isNestedScrollingEnabled = false
+
+        context.site_list.adapter = sitesAdapter
+        context.site_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+        context.site_list.isNestedScrollingEnabled = false
 
         context.comment_list.adapter = commentAdapter
         context.comment_list.layoutManager = LinearLayoutManager(context)

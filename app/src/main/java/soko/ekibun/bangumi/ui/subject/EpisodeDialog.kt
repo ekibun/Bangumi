@@ -32,7 +32,7 @@ class EpisodeDialog(context: Context) : Dialog(context, R.style.AppTheme_Dialog)
             val dialog = EpisodeDialog(context)
             dialog.eps = eps
             dialog.episode = episode
-            dialog.onAirInfo = onAirInfo
+            dialog.onAirInfoChange(onAirInfo)
             dialog.callback = callback
             dialog.show()
             return dialog
@@ -63,8 +63,11 @@ class EpisodeDialog(context: Context) : Dialog(context, R.style.AppTheme_Dialog)
 
     var eps: List<Episode> = ArrayList()
     var episode: Episode? = null
-    var onAirInfo: OnAirInfo? = null
     var callback: ((eps: List<Episode>, status: String) -> Unit)? = null
+    val adapter = SitesAdapter()
+    var onAirInfoChange = { info: OnAirInfo? ->
+        adapter.setNewData(info?.eps?.find { it.id == episode?.id }?.sites)
+    }
     @SuppressLint("SetTextI18n", "InflateParams")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,14 +82,13 @@ class EpisodeDialog(context: Context) : Dialog(context, R.style.AppTheme_Dialog)
         view.item_episode_title.setOnClickListener {
             WebActivity.launchUrl(context, "${Bangumi.SERVER}/m/topic/ep/${episode.id}", "")
         }
-        val adapter = SitesAdapter(onAirInfo?.eps?.firstOrNull { it.id == episode.id }?.sites?.toMutableList())
         val emptyTextView = TextView(context)
         val dp4 = (context.resources.displayMetrics.density * 4 + 0.5f).toInt()
         emptyTextView.setPadding(dp4, dp4, dp4, dp4)
         emptyTextView.setText(R.string.hint_no_play_source)
         adapter.emptyView = emptyTextView
         adapter.setOnItemClickListener { _, _, position ->
-            WebActivity.launchUrl(context, adapter.data[position].url, "")
+            WebActivity.launchUrl(context, adapter.data[position].url(), "")
         }
         view.item_site_list.adapter = adapter
         val linearLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(context)

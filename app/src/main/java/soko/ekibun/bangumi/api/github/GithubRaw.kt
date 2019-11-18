@@ -16,7 +16,7 @@ interface GithubRaw{
     /**
      * 时间表
      */
-    @GET("/ekibun/bangumi_calendar/master/calendar.json")
+    @GET("/ekibun/bangumi_onair/master/calendar.json")
     fun bangumiCalendar(): Call<List<BangumiCalendarItem>>
 
     /**

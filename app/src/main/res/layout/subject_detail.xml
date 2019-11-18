@@ -39,6 +39,17 @@
                 tools:orientation="horizontal"
                 tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 tools:listitem="@layout/item_tag"/>
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/site_list"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:paddingTop="4dp"
+                android:clipToPadding="false"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:orientation="horizontal"
+                tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_site"/>
     </LinearLayout>
 
     <LinearLayout
