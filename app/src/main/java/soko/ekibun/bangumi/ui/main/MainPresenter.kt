@@ -109,7 +109,7 @@ class MainPresenter(private val context: MainActivity) {
         val userString = savedInstanceState.getString("user", "")
         drawerView.onRestoreInstanceState(savedInstanceState)
         if (!userString.isNullOrEmpty())
-            updateUser(JsonUtil.toEntity(userString, UserInfo::class.java) ?: return)
+            updateUser(JsonUtil.toEntity<UserInfo>(userString) ?: return)
     }
 
     /**

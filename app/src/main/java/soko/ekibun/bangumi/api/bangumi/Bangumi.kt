@@ -6,8 +6,10 @@ import org.jsoup.nodes.Element
 import org.xmlpull.v1.XmlPullParser
 import retrofit2.Call
 import soko.ekibun.bangumi.api.ApiHelper
-import soko.ekibun.bangumi.api.bangumi.bean.*
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
+import soko.ekibun.bangumi.api.bangumi.bean.Episode
+import soko.ekibun.bangumi.api.bangumi.bean.MonoInfo
+import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.util.HttpUtil
 import java.net.URI
 import java.util.*
@@ -64,7 +66,7 @@ object Bangumi {
                         name = name,
                         name_cn = nameCN,
                         summary = item.selectFirst(".info")?.text(),
-                        images = Images(parseImageUrl(item.selectFirst("img"))),
+                        image = parseImageUrl(item.selectFirst("img")),
                         ep_status = -1
                 )
             }
@@ -92,7 +94,7 @@ object Bangumi {
                         name = item.selectFirst("h3")?.selectFirst("small")?.text() ?: nameCN,
                         name_cn = nameCN,
                         summary = item.selectFirst(".info")?.text(),
-                        images = Images(parseImageUrl(item.selectFirst("img"))),
+                        image = parseImageUrl(item.selectFirst("img")),
                         collect = if (item.selectFirst(".collectBlock")?.text()?.contains("修改") == true) Collection() else null)
             }
         }
@@ -115,7 +117,7 @@ object Bangumi {
                 MonoInfo(
                         name = a?.ownText()?.trim('/', ' '),
                         name_cn = a?.selectFirst("span.tip")?.text(),
-                        images = Images(parseImageUrl(it.selectFirst("img"))),
+                        image = parseImageUrl(it.selectFirst("img")),
                         summary = it.selectFirst(".prsn_info")?.text(),
                         url = parseUrl(a?.attr("href") ?: ""))
             }
@@ -141,7 +143,7 @@ object Bangumi {
                         name = it.selectFirst("h3 small")?.text() ?: nameCN,
                         name_cn = nameCN,
                         summary = it.selectFirst(".info")?.text(),
-                        images = Images(parseImageUrl(it.selectFirst("img"))),
+                        image = parseImageUrl(it.selectFirst("img")),
                         collect = if (it.selectFirst(".collectBlock")?.text()?.contains("修改") == true) Collection() else null)
             }
         }
@@ -162,7 +164,7 @@ object Bangumi {
                         type = Subject.parseType(it.attr("subject_type")?.toIntOrNull()),
                         name = data.attr("data-subject-name"),
                         name_cn = data.attr("data-subject-name-cn"),
-                        images = Images(parseImageUrl(it.selectFirst("img"))),
+                        image = parseImageUrl(it.selectFirst("img")),
                         eps = Episode.parseProgressList(it),
                         eps_count = it.selectFirst(".prgBatchManagerForm .grey")?.text()?.trim(' ', '/')?.toIntOrNull()
                                 ?: it.selectFirst("input[name=watchedeps]")?.parent()?.ownText()?.trim(' ', '/')?.toIntOrNull()

@@ -3,7 +3,6 @@ package soko.ekibun.videoplayer.bean
 import android.os.Parcel
 import android.os.Parcelable
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
-import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.JsonUtil
@@ -42,11 +41,11 @@ data class VideoSubject(
      * 数据转换
      */
     fun toSubject(): Subject{
-        val data = JsonUtil.toEntity(token?:"", Token::class.java)
+        val data = JsonUtil.toEntity<Token>(token ?: "")
         HttpUtil.formhash = data?.formhash ?: HttpUtil.formhash
         return Subject(
                 id = id?.toIntOrNull()?:0,
-                images = Images(image ?: ""),
+                image = image,
                 name = name,
                 type = data?.type ?: Subject.TYPE_ANY,
                 category = type,
@@ -66,7 +65,7 @@ data class VideoSubject(
     constructor(subject: Subject) : this(BANGUMI_SITE,
             subject.id.toString(),
             subject.url,
-            subject.images?.common,
+            subject.image,
             subject.displayName,
             subject.category,
             subject.air_date,

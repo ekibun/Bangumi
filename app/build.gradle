@@ -82,4 +82,5 @@ dependencies {
     implementation 'com.github.chrisbanes:PhotoView:2.1.4'
     implementation 'am.util:viewpager:25.3.0'
     implementation 'com.squareup.retrofit2:converter-scalars:2.1.0'
+    implementation 'com.jakewharton:disklrucache:2.0.2'
 }

@@ -7,6 +7,7 @@ import com.chad.library.adapter.base.BaseViewHolder
 import kotlinx.android.synthetic.main.item_comment.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Comment
+import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.util.GlideUtil
 
 /**
@@ -23,7 +24,7 @@ class CommentAdapter(data: MutableList<Comment>? = null) :
         //helper.itemView.item_rate.visibility = if(item.rate == 0) View.GONE else View.VISIBLE
         helper.itemView.item_rate.rating = item.rate * 0.5f
         GlideUtil.with(helper.itemView.item_avatar)
-                ?.load(item.user?.avatar?.small)
+                ?.load(Images.small(item.user?.avatar))
                 ?.apply(RequestOptions.errorOf(R.drawable.err_404))
                 ?.apply(RequestOptions.circleCropTransform())
                 ?.into(helper.itemView.item_avatar)

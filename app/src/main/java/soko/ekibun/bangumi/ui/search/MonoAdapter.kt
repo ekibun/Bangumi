@@ -5,6 +5,7 @@ import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
 import kotlinx.android.synthetic.main.item_mono.view.*
 import soko.ekibun.bangumi.R
+import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.MonoInfo
 import soko.ekibun.bangumi.util.GlideUtil
 
@@ -19,7 +20,7 @@ class MonoAdapter(data: MutableList<MonoInfo>? = null) :
         helper.setText(R.id.item_name_jp, item.name)
         helper.setText(R.id.item_summary, item.summary)
         GlideUtil.with(helper.itemView.item_cover)
-                ?.load(item.images?.grid)
+                ?.load(Images.grid(item.image))
                 ?.apply(RequestOptions.errorOf(R.drawable.err_404))
                 ?.into(helper.itemView.item_cover)
     }

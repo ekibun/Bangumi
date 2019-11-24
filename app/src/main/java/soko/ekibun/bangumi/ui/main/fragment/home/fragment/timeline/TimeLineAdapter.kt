@@ -11,6 +11,7 @@ import kotlinx.android.synthetic.main.item_timeline.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
+import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.TimeLine
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
@@ -67,7 +68,7 @@ class TimeLineAdapter(data: MutableList<TimeLine>? = null) :
         //time
         helper.itemView.item_time.text = item.t.time
 
-        val userImage = item.t.user.avatar?.getImage(helper.itemView.context)
+        val userImage = Images.getImage(item.t.user.avatar, helper.itemView.context)
         helper.itemView.item_avatar.visibility = if (userImage.isNullOrEmpty() || data.getOrNull(data.indexOfFirst { it === item } - 1)?.t?.user?.username == item.t.user.username) View.INVISIBLE else View.VISIBLE
         helper.itemView.item_avatar.setOnClickListener {
             WebActivity.launchUrl(helper.itemView.context, item.t.user.url, "")

@@ -57,7 +57,7 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
         helper.itemView.item_user.text = if (item.badge.isNullOrEmpty()) item.nickname else "${item.nickname} ${item.pst_content}"
         helper.itemView.item_user_sign.text = if (item.badge.isNullOrEmpty()) if (item.sign.length < 2) "" else item.sign.substring(1, item.sign.length - 1) else item.dateline
         val subFloor = if (item.sub_floor > 0) "-${item.sub_floor}" else ""
-        helper.itemView.item_time.text = "#${item.floor}$subFloor - ${item.dateline}"
+        helper.itemView.item_time.text = (if (item.floor > 0) "#${item.floor}$subFloor - " else "") + item.dateline
         helper.itemView.item_reply.visibility = if (item.relate.toIntOrNull() ?: 0 > 0) View.VISIBLE else View.GONE
         helper.itemView.item_del.visibility = if (item.editable) View.VISIBLE else View.GONE
         helper.itemView.item_edit.visibility = helper.itemView.item_del.visibility
@@ -70,7 +70,7 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
         }
 
         GlideUtil.with(helper.itemView.item_avatar)
-                ?.load(Images(Bangumi.parseUrl(item.avatar)).small)
+                ?.load(Images.small(Bangumi.parseUrl(item.avatar)))
                 ?.apply(RequestOptions.errorOf(R.drawable.err_404))
                 ?.apply(RequestOptions.circleCropTransform())
                 ?.into(helper.itemView.item_avatar)

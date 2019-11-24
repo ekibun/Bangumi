@@ -41,7 +41,15 @@ interface BgmIpViewer {
          * @param it 条目链
          * @param subject 当前条目
          */
-        fun getSeason(it: IpView, subject: Subject): List<IpView.Node>{
+        fun getSeason(it: IpView, subject: Subject): List<Subject> {
+            return getSeasonNode(it, subject).map {
+                Subject(it.subject_id,
+                        name = it.name, name_cn = it.name_cn,
+                        image = it.image)
+            }
+        }
+
+        private fun getSeasonNode(it: IpView, subject: Subject): List<IpView.Node> {
             val ret = ArrayList<IpView.Node>()
 
             val bgmIp = it.nodes?.firstOrNull { it.subject_id == subject.id }?:return ret

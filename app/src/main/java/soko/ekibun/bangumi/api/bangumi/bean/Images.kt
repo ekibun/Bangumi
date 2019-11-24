@@ -7,23 +7,23 @@ import androidx.preference.PreferenceManager
  * bgm.tv图像类
  * @param url 图像url
  */
-data class Images(private val url: String) {
-    val medium: String = url.replace(Regex("/[lcmgs]/"), "/m/")
-    val large: String = medium.replace("/m/", "/l/")
-    val common: String = if (medium.contains(Regex("/(user|crt|icon)/"))) medium else medium.replace("/m/", "/c/")
-    val small: String = medium.replace("/m/", "/s/")
-    val grid: String = if (medium.contains(Regex("/(user|icon)/"))) medium else medium.replace("/m/", "/g/")
+object Images {
+    fun medium(url: String?): String = (url ?: "").replace(Regex("/[lcmgs]/"), "/m/")
+    fun large(url: String?): String = medium(url).replace("/m/", "/l/")
+    fun common(url: String?): String = medium(url).let { medium -> if (medium.contains(Regex("/(user|crt|icon)/"))) medium else medium.replace("/m/", "/c/") }
+    fun small(url: String?): String = medium(url).replace("/m/", "/s/")
+    fun grid(url: String?): String = medium(url).let { medium -> if (medium.contains(Regex("/(user|icon)/"))) medium else medium.replace("/m/", "/g/") }
 
     /**
      * 返回设置的图像清晰度
      */
-    fun getImage(context: Context): String {
+    fun getImage(url: String?, context: Context): String {
         return when (PreferenceManager.getDefaultSharedPreferences(context).getString("image_quality", "c")) {
-            "l" -> large
-            "m" -> medium
-            "s" -> small
-            "g" -> grid
-            else -> common
+            "l" -> large(url)
+            "m" -> medium(url)
+            "s" -> small(url)
+            "g" -> grid(url)
+            else -> common(url)
         }
     }
 }

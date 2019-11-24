@@ -5,6 +5,7 @@ import com.bumptech.glide.request.RequestOptions
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.nav_header.view.*
 import soko.ekibun.bangumi.R
+import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.UserInfo
 import soko.ekibun.bangumi.util.GlideUtil
 
@@ -25,7 +26,7 @@ class UserView(private val context: MainActivity, onUserFigureClickListener: Vie
         context.runOnUiThread {
             if (context.isDestroyed) return@runOnUiThread
             GlideUtil.with(headerView.user_figure)
-                    ?.load(user?.avatar?.large)
+                    ?.load(Images.large(user?.avatar))
                     ?.apply(RequestOptions.placeholderOf(R.drawable.akkarin))
                     ?.apply(RequestOptions.circleCropTransform())
                     ?.into(headerView.user_figure)

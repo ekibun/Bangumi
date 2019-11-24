@@ -34,7 +34,7 @@ class SubjectActivity : SwipeBackActivity() {
         subjectPresenter.init(
                 if (intent.data?.toString()?.startsWith("ekibun://playersubject/bangumi") == true) {
                     intent.getParcelableExtra<VideoSubject>(PlayerBridge.EXTRA_SUBJECT)!!.toSubject()
-                } else JsonUtil.toEntity(intent.getStringExtra(EXTRA_SUBJECT) ?: "", Subject::class.java) ?: {
+                } else JsonUtil.toEntity<Subject>(intent.getStringExtra(EXTRA_SUBJECT) ?: "") ?: {
                     val id = Regex("""/subject/([0-9]+)""").find(intent.data?.toString()
                             ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 0
                     Subject(id)

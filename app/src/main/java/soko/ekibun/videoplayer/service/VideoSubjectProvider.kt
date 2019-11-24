@@ -23,9 +23,7 @@ class VideoSubjectProvider : Service() {
         override fun getSubjectSeason(subject: VideoSubject, callback: IListSubjectCallback) {
             val bgmSubject = subject.toSubject()
             BgmIpViewer.createInstance().subject(bgmSubject.id).enqueue(ApiHelper.buildCallback({
-                callback.onFinish(BgmIpViewer.getSeason(it, bgmSubject).map { node ->
-                    VideoSubject(Subject(node.subject_id, bgmSubject.type, node.name, node.name_cn))
-                })
+                callback.onFinish(BgmIpViewer.getSeason(it, bgmSubject).map { node -> VideoSubject(node) })
             }, {}))
         }
 

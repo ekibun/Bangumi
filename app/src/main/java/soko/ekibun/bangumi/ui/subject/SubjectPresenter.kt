@@ -11,14 +11,19 @@ import kotlinx.android.synthetic.main.brvah_quick_view_load_more.view.*
 import kotlinx.android.synthetic.main.subject_buttons.*
 import kotlinx.android.synthetic.main.subject_detail.view.*
 import retrofit2.Call
+import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
-import soko.ekibun.bangumi.api.bangumi.bean.*
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
+import soko.ekibun.bangumi.api.bangumi.bean.Comment
+import soko.ekibun.bangumi.api.bangumi.bean.Episode
+import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.github.GithubRaw
 import soko.ekibun.bangumi.api.github.bean.OnAirInfo
 import soko.ekibun.bangumi.api.trim21.BgmIpViewer
 import soko.ekibun.bangumi.api.trim21.bean.IpView
+import soko.ekibun.bangumi.model.DataCacheModel
+import soko.ekibun.bangumi.ui.topic.TopicActivity
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.HttpUtil
@@ -30,6 +35,8 @@ import soko.ekibun.bangumi.util.PlayerBridge
 class SubjectPresenter(private val context: SubjectActivity) {
     val subjectView by lazy { SubjectView(context) }
 
+    private val dataCacheModel by lazy { App.get(context).dataCacheModel }
+
     lateinit var subject: Subject
 
     var commentPage = 1
@@ -39,6 +46,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
      */
     @SuppressLint("SetTextI18n")
     fun init(subject: Subject) {
+        DataCacheModel.merge(subject, dataCacheModel.get(subject.getKey()))
         this.subject = subject
         subjectView.updateSubject(subject)
 
@@ -182,11 +190,11 @@ class SubjectPresenter(private val context: SubjectActivity) {
         }
 
         subjectView.topicAdapter.setOnItemClickListener { _, _, position ->
-            WebActivity.launchUrl(context, subjectView.topicAdapter.data[position]?.url, "")
+            TopicActivity.startActivity(context, subjectView.topicAdapter.data[position])
         }
 
         subjectView.blogAdapter.setOnItemClickListener { _, _, position ->
-            WebActivity.launchUrl(context, subjectView.blogAdapter.data[position]?.url, "")
+            TopicActivity.startActivity(context, subjectView.blogAdapter.data[position])
         }
 
         subjectView.commentAdapter.setOnItemClickListener { _, _, position ->
@@ -196,18 +204,13 @@ class SubjectPresenter(private val context: SubjectActivity) {
         subjectView.seasonAdapter.setOnItemClickListener { _, _, position ->
             val item = subjectView.seasonAdapter.data[position]
             if (item.id != subjectView.seasonAdapter.currentId)
-                SubjectActivity.startActivity(context, Subject(
-                        id = item.subject_id,
-                        type = subject.type,
-                        name = item.name,
-                        name_cn = item.name_cn,
-                        images = Images(item.image ?: "")))
+                SubjectActivity.startActivity(context, subjectView.seasonAdapter.data[position])
         }
     }
 
     private var episodeDialog: EpisodeDialog? = null
     private fun openEpisode(episode: Episode, eps: List<Episode>) {
-        episodeDialog = EpisodeDialog.showDialog(context, episode, eps, onAirInfo) { mEps, status ->
+        episodeDialog = EpisodeDialog.showDialog(context, episode, eps, subject.onair) { mEps, status ->
             updateProgress(mEps, status)
         }
     }
@@ -220,7 +223,6 @@ class SubjectPresenter(private val context: SubjectActivity) {
         }
     }
 
-    private var onAirInfo: OnAirInfo? = null
     private var subjectCall: Call<Unit>? = null
     /**
      * 刷新
@@ -243,22 +245,19 @@ class SubjectPresenter(private val context: SubjectActivity) {
         ) { _, it ->
             when (it) {
                 is Subject -> {
-                    subject = it
+                    DataCacheModel.merge(subject, it)
                     refreshCollection()
                     subjectView.updateSubject(it)
                 }
                 is OnAirInfo -> {
-                    onAirInfo = it
-                    subjectView.sitesAdapter.setNewData(it.sites)
+                    subject.onair = it
+                    subjectView.updateSubject(subject, Subject.SaxTag.ONAIR)
                     episodeDialog?.onAirInfoChange?.invoke(it)
                 }
                 is IpView -> {
-                    val ret = BgmIpViewer.getSeason(it, subject)
-                    if (ret.size > 1) {
-                        subjectView.seasonAdapter.setNewData(ret.distinct())
-                        subjectView.seasonAdapter.currentId = subject.id
-                        subjectView.seasonLayoutManager.scrollToPositionWithOffset(subjectView.seasonAdapter.data.indexOfFirst { it.subject_id == subject.id }, 0)
-                    }
+                    val season = BgmIpViewer.getSeason(it, subject)
+                    subject.season = season
+                    subjectView.updateSubject(subject, Subject.SaxTag.SEASON)
                 }
                 is List<*> -> {
                     val eps = subjectView.updateEpisode(it.mapNotNull { it as? Episode })
@@ -266,6 +265,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
                     subject.eps = eps
                 }
             }
+            dataCacheModel.set(subject)
         }
 
         subjectCall?.enqueue(ApiHelper.buildCallback({}, {
@@ -373,6 +373,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
             val eps = subjectView.updateEpisode(it)
             subjectView.updateEpisodeLabel(eps, subject)
             subject.eps = eps
+            dataCacheModel.set(subject)
         }, {}))
     }
 }

@@ -15,7 +15,7 @@ data class UserInfo(
         var id: Int = 0,
         var username: String? = null,
         var nickname: String? = null,
-        var avatar: Images? = null,
+        var avatar: String? = null,
         var sign: String? = null,
         var notify: Pair<Int, Int>? = null
 ) {
@@ -38,7 +38,7 @@ data class UserInfo(
                     id = username?.toIntOrNull() ?: 0,
                     username = username,
                     nickname = user?.text(),
-                    avatar = Images(avatar ?: "")
+                    avatar = avatar
             )
         }
 
@@ -60,7 +60,7 @@ data class UserInfo(
                         id = username?.toIntOrNull() ?: 0,
                         username = username,
                         nickname = doc.selectFirst("input[name=nickname]")?.attr("value"),
-                        avatar = Images(Bangumi.parseImageUrl(user.selectFirst("span.avatarNeue"))),
+                        avatar = Bangumi.parseImageUrl(user.selectFirst("span.avatarNeue")),
                         sign = doc.selectFirst("input[name=sign_input]")?.attr("value"),
                         notify = Pair(
                                 Regex("叮咚叮咚～你有 ([0-9]+) 条新信息!").find(doc.selectFirst("#robot_speech_js")?.text()

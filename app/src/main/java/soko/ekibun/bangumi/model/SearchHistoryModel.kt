@@ -3,7 +3,6 @@ package soko.ekibun.bangumi.model
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
-import com.google.gson.reflect.TypeToken
 import soko.ekibun.bangumi.util.JsonUtil
 
 /**
@@ -42,7 +41,8 @@ class SearchHistoryModel(context: Context){
      * 获取列表
      */
     fun getHistoryList(): List<String> {
-        return JsonUtil.toEntity(sp.getString(PREF_SEARCH_HISTORY, JsonUtil.toJson(ArrayList<String>()))!!, object: TypeToken<List<String>>() {}.type)?:ArrayList()
+        return JsonUtil.toEntity<List<String>>(sp.getString(PREF_SEARCH_HISTORY, JsonUtil.toJson(ArrayList<String>()))
+                ?: "") ?: ArrayList()
     }
 
     companion object {

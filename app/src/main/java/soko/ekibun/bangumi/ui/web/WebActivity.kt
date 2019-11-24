@@ -16,6 +16,7 @@ import kotlinx.android.synthetic.main.appbar_layout.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
+import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.ui.topic.TopicActivity
 import soko.ekibun.bangumi.ui.view.BaseActivity
@@ -263,9 +264,15 @@ class WebActivity : BaseActivity() {
             if (url == null || url.isNullOrEmpty() || rakuen == getRakuen(openUrl)) return false
             if (!isBgmPage(url)) return false
             val post = Regex("""#post_([0-9]+)$""").find(page)?.groupValues?.get(1)?.toIntOrNull() ?: 0
+            //blog
+            val blogId = Regex("""/blog/(\d+)""").find(rakuen ?: "")?.groupValues?.getOrNull(1)?.toIntOrNull() ?: 0
+            if (blogId > 0) {
+                TopicActivity.startActivity(context, Topic("blog", blogId), post)
+            }
             //Topic
-            if (rakuen?.contains("/rakuen/") == true) {
-                TopicActivity.startActivity(context, rakuen, post)
+            val modelId = Regex("""/rakuen/topic/([^/]+)/(\d+)""").find(rakuen ?: "")?.groupValues
+            if (modelId != null) {
+                TopicActivity.startActivity(context, Topic(modelId[1], modelId[2].toInt()), post)
                 return true
             }
             //Subject

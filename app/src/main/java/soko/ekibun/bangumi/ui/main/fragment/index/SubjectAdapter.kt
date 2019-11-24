@@ -6,6 +6,7 @@ import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
 import kotlinx.android.synthetic.main.item_subject.view.*
 import soko.ekibun.bangumi.R
+import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.util.GlideUtil
 
@@ -21,7 +22,7 @@ class SubjectAdapter(data: MutableList<Subject>? = null) :
         helper.setText(R.id.item_summary, item.summary)
         helper.itemView.item_chase.visibility = if (item.collect != null) View.VISIBLE else View.GONE
         GlideUtil.with(helper.itemView.item_cover)
-                ?.load(item.images?.getImage(helper.itemView.context))
+                ?.load(Images.getImage(item.image, helper.itemView.context))
                 ?.apply(RequestOptions.errorOf(R.drawable.err_404))
                 ?.into(helper.itemView.item_cover)
     }

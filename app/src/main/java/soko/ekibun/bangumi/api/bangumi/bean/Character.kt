@@ -15,9 +15,9 @@ class Character(
         val id: Int = 0,
         name: String? = null,
         name_cn: String? = null,
-        images: Images? = null,
+        image: String? = null,
         val role_name: String? = null,
         val comment: Int = 0,
         val collects: Int = 0,
         val actors: List<Person>? = null
-) : MonoInfo(name, name_cn, images, "", "${Bangumi.SERVER}/character/$id")
+) : MonoInfo(name, name_cn, image, "", "${Bangumi.SERVER}/character/$id")

@@ -25,6 +25,7 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
+import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarAdapter
 import soko.ekibun.bangumi.ui.view.DragPhotoView
@@ -47,10 +48,9 @@ class SubjectView(private val context: SubjectActivity) {
     val sitesAdapter = SitesAdapter()
     val commentAdapter = CommentAdapter()
     val seasonAdapter = SeasonAdapter()
-    val seasonLayoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+    private val seasonLayoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
 
     val detail = context.subject_detail as LinearLayout
-
 
     var appBarOffset = -1
     val scroll2Top = {
@@ -88,7 +88,7 @@ class SubjectView(private val context: SubjectActivity) {
         })
 
         context.season_list.adapter = seasonAdapter
-        context.season_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+        context.season_list.layoutManager = seasonLayoutManager
         context.season_list.isNestedScrollingEnabled = false
 
         context.episode_list.adapter = episodeAdapter
@@ -184,6 +184,14 @@ class SubjectView(private val context: SubjectActivity) {
     fun updateSubject(subject: Subject, tag: Subject.SaxTag? = null) {
         if (context.isDestroyed || tag == Subject.SaxTag.NONE) return
 
+        if (tag == null || tag == Subject.SaxTag.ONAIR) sitesAdapter.setNewData(subject.onair?.sites)
+
+        if ((tag == null || tag == Subject.SaxTag.SEASON) && subject.season?.size ?: 0 > 1) {
+            seasonAdapter.setNewData(subject.season)
+            seasonAdapter.currentId = subject.id
+            seasonLayoutManager.scrollToPositionWithOffset(seasonAdapter.data.indexOfFirst { it.id == subject.id }, 0)
+        }
+
         if (tag == null || tag == Subject.SaxTag.NAME) {
             context.title_collapse.text = subject.displayName
             context.title_expand.text = context.title_collapse.text
@@ -233,7 +241,7 @@ class SubjectView(private val context: SubjectActivity) {
 
         if (tag == null || tag == Subject.SaxTag.IMAGES) {
             GlideUtil.with(context.item_cover)
-                    ?.load(subject.images?.getImage(context))
+                    ?.load(Images.getImage(subject.image, context))
                     ?.apply(RequestOptions.placeholderOf(context.item_cover.drawable))
                     ?.apply(RequestOptions.errorOf(R.drawable.err_404))
                     ?.into(context.item_cover)
@@ -241,7 +249,7 @@ class SubjectView(private val context: SubjectActivity) {
                 val popWindow = PopupWindow(it, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, true)
                 val photoView = DragPhotoView(it.context)
                 popWindow.contentView = photoView
-                GlideUtil.with(photoView)?.load(subject.images?.large)
+                GlideUtil.with(photoView)?.load(Images.large(subject.image))
                         ?.apply(RequestOptions.placeholderOf(context.item_cover.drawable))
                         ?.into(photoView.glideTarget)
                 photoView.mTapListener = {
@@ -275,7 +283,7 @@ class SubjectView(private val context: SubjectActivity) {
                         or View.SYSTEM_UI_FLAG_FULLSCREEN)
             }
             GlideUtil.with(context.item_cover_blur)
-                    ?.load(subject.images?.getImage(context))
+                    ?.load(Images.getImage(subject.image, context))
                     ?.apply(RequestOptions.placeholderOf(context.item_cover_blur.drawable))
                     ?.apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)))
                     ?.into(context.item_cover_blur)

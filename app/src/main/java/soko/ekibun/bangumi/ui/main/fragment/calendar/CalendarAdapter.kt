@@ -10,6 +10,7 @@ import com.chad.library.adapter.base.entity.SectionEntity
 import kotlinx.android.synthetic.main.item_calendar.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
+import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.ResourceUtil
@@ -29,7 +30,7 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
         helper.setText(R.id.item_ep_name, item.t.episode?.parseSort(helper.itemView.context) + " " + (if(item.t.episode?.name_cn.isNullOrEmpty()) item.t.episode?.name?:"" else item.t.episode?.name_cn))
         helper.addOnClickListener(R.id.item_layout)
         GlideUtil.with(helper.itemView.item_cover)
-                ?.load(item.t.subject.images?.small)
+                ?.load(Images.small(item.t.subject.image))
                 ?.apply(RequestOptions.errorOf(R.drawable.err_404))
                 ?.into(helper.itemView.item_cover)
         helper.itemView.item_time.text = ""

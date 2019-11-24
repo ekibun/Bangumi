@@ -7,15 +7,17 @@ import android.view.Menu
 import android.view.MenuItem
 import kotlinx.android.synthetic.main.activity_topic.*
 import soko.ekibun.bangumi.R
+import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.view.SwipeBackActivity
 import soko.ekibun.bangumi.util.AppUtil
+import soko.ekibun.bangumi.util.JsonUtil
 
 /**
  * 帖子Activity
  */
 class TopicActivity : SwipeBackActivity() {
-    private val topicPresenter by lazy{ TopicPresenter(this) }
+    val topicPresenter by lazy { TopicPresenter(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,7 +27,8 @@ class TopicActivity : SwipeBackActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         title = ""
 
-        topicPresenter.getTopic(intent.getIntExtra(EXTRA_POST, 0).toString())
+        topicPresenter.init(JsonUtil.toEntity<Topic>(intent.getStringExtra(EXTRA_TOPIC) ?: "")!!,
+                intent.getIntExtra(EXTRA_POST, 0).toString())
 
         val listPaddingBottom = item_list.paddingBottom
         val replyPaddingBottom = item_reply_container.paddingBottom
@@ -49,13 +52,11 @@ class TopicActivity : SwipeBackActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> finish()
-            R.id.action_share -> AppUtil.shareString(this, "${title_expand.text} $openUrl")
+            R.id.action_share -> AppUtil.shareString(this, "${topicPresenter.topic.title} ${topicPresenter.topic.url}")
             R.id.action_refresh -> topicPresenter.getTopic()
         }
         return super.onOptionsItemSelected(item)
     }
-
-    val openUrl: String by lazy{ intent.getStringExtra(EXTRA_TOPIC) }
 
     companion object{
         private const val EXTRA_TOPIC = "extraTopic"
@@ -64,13 +65,13 @@ class TopicActivity : SwipeBackActivity() {
         /**
          * 启动Activity
          */
-        fun startActivity(context: Context, topic: String, post: Int = 0) {
+        fun startActivity(context: Context, topic: Topic, post: Int = 0) {
             context.startActivity(parseIntent(context, topic, post))
         }
 
-        private fun parseIntent(context: Context, topic: String, post: Int): Intent {
+        private fun parseIntent(context: Context, topic: Topic, post: Int): Intent {
             val intent = Intent(context, TopicActivity::class.java)
-            intent.putExtra(EXTRA_TOPIC, topic)
+            intent.putExtra(EXTRA_TOPIC, JsonUtil.toJson(topic))
             intent.putExtra(EXTRA_POST, post)
             return intent
         }

@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import retrofit2.Call
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
-import soko.ekibun.bangumi.api.bangumi.bean.Rakuen
+import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.ui.topic.TopicActivity
 
 /**
@@ -51,7 +51,7 @@ class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private
             adapter.emptyView = LayoutInflater.from(container.context).inflate(R.layout.view_empty, container, false)
             adapter.isUseEmpty(false)
             adapter.setOnItemClickListener { _, v, position ->
-                TopicActivity.startActivity(v.context, adapter.data[position].url)
+                TopicActivity.startActivity(v.context, adapter.data[position])
                 //WebActivity.launchUrl(v.context, adapter.data[position].url)
             }
             recyclerView.adapter = adapter
@@ -79,7 +79,7 @@ class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private
     }
 
     @SuppressLint("UseSparseArrays")
-    private var topicCall = HashMap<Int, Call<List<Rakuen>>>()
+    private var topicCall = HashMap<Int, Call<List<Topic>>>()
 
     /**
      * 加载帖子列表
@@ -88,7 +88,7 @@ class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private
         val item = items[position] ?: return
         item.first.isUseEmpty(false)
         topicCall[position]?.cancel()
-        topicCall[position] = Rakuen.getList(if (position == 1) when (selectedFilter) {
+        topicCall[position] = Topic.getList(if (position == 1) when (selectedFilter) {
             R.id.topic_filter_join -> "my_group"
             R.id.topic_filter_post -> "my_group&filter=topic"
             R.id.topic_filter_reply -> "my_group&filter=reply"

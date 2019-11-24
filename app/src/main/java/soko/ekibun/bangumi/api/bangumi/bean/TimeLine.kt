@@ -33,7 +33,7 @@ class TimeLine: SectionEntity<TimeLine.TimeLineItem> {
             val sayUrl: String?
     ){
         data class ThumbItem(
-                val images: Images,
+                val image: String,
                 val title: String,
                 val url: String
         )
@@ -79,7 +79,7 @@ class TimeLine: SectionEntity<TimeLine.TimeLineItem> {
                                 thumbs = item.select("$cssInfo img").map {
                                     val url = it.parent().attr("href")
                                     TimeLineItem.ThumbItem(
-                                            images = Images(Bangumi.parseImageUrl(it)),
+                                            image = Bangumi.parseImageUrl(it),
                                             title = item.select("a[href=\"$url\"]")?.text() ?: "",
                                             url = url)
                                 },

@@ -10,6 +10,8 @@ import retrofit2.Call
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
+import soko.ekibun.bangumi.api.github.bean.OnAirInfo
+import soko.ekibun.bangumi.model.DataCacheModel
 import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.TextUtil
 import java.util.*
@@ -23,7 +25,7 @@ data class Subject(
         var name: String? = null,
         var name_cn: String? = null,
         var summary: String? = null,
-        var images: Images? = null,
+        var image: String? = null,
         var air_date: String? = null,
         var air_weekday: Int = 0,
         var infobox: List<Pair<String, String>>? = null,
@@ -41,18 +43,19 @@ data class Subject(
         var crt: List<Character>? = null,
         var staff: List<Person>? = null,
         var topic: List<Topic>? = null,
-        var blog: List<Blog>? = null,
+        var blog: List<Topic>? = null,
         //web
         var linked: List<Subject>? = null,
         var recommend: List<Subject>? = null,
         var tags: List<Pair<String, Int>>? = null,
-        var collect: Collection? = null
-) {
-    val url = "${Bangumi.SERVER}/subject/$id"
+        var collect: Collection? = null,
+        // other
+        var season: List<Subject>? = null,
+        var onair: OnAirInfo? = null
+) : DataCacheModel.CacheData {
+    override fun getKey() = "subject_$id"
 
-    /**
-     * 显示用的条目名称
-     */
+    val url = "${Bangumi.SERVER}/subject/$id"
     val displayName get() = TextUtil.html2text((if (name_cn.isNullOrEmpty()) name else name_cn) ?: "")
 
     /**
@@ -79,34 +82,6 @@ data class Subject(
     )
 
     /**
-     * 日志
-     */
-    data class Blog(
-            val id: Int = 0,
-            val title: String? = null,
-            val summary: String? = null,
-            val image: String? = null,
-            val replies: Int = 0,
-            val time: String? = null,
-            val user: UserInfo? = null
-    ) {
-        val url = "${Bangumi.SERVER}/blog/$id"
-    }
-
-    /**
-     * 评论
-     */
-    data class Topic(
-            val id: Int = 0,
-            val title: String = "",
-            val time: String? = null,
-            val replies: Int = 0,
-            val user: UserInfo? = null
-    ) {
-        val url = "${Bangumi.SERVER}/subject/topic/$id"
-    }
-
-    /**
      * 条目类型
      */
     @StringDef(TYPE_ANY, TYPE_BOOK, TYPE_ANIME, TYPE_MUSIC, TYPE_GAME, TYPE_REAL)
@@ -116,7 +91,7 @@ data class Subject(
      * Sax tag
      */
     enum class SaxTag {
-        NONE, TYPE, NAME, SUMMARY, IMAGES, INFOBOX, EPISODES, TAGS, COLLECTION, COLLECT, SECTIONS, CHARACTOR, TOPIC, BLOG, LINKED, RECOMMEND
+        NONE, TYPE, NAME, SUMMARY, IMAGES, INFOBOX, EPISODES, TAGS, COLLECTION, COLLECT, SECTIONS, CHARACTOR, TOPIC, BLOG, LINKED, RECOMMEND, SEASON, ONAIR
     }
 
     companion object {
@@ -202,8 +177,8 @@ data class Subject(
                         }
                         SaxTag.SUMMARY -> subject.summary = doc.selectFirst("#subject_summary")?.let { TextUtil.html2text(it.html()) }
                                 ?: subject.summary
-                        SaxTag.IMAGES -> subject.images = doc.selectFirst(".infobox img.cover")?.let { Images(Bangumi.parseImageUrl(it)) }
-                                ?: subject.images
+                        SaxTag.IMAGES -> subject.image = doc.selectFirst(".infobox img.cover")?.let { Bangumi.parseImageUrl(it) }
+                                ?: subject.image
                         SaxTag.INFOBOX -> {
                             val infobox = doc.select("#infobox li")?.map { li ->
                                 val tip = li.selectFirst("span.tip")?.text() ?: ""
@@ -300,7 +275,7 @@ data class Subject(
                                                 name = a?.text() ?: "",
                                                 name_cn = it.selectFirst(".info .tip")?.text() ?: "",
                                                 role_name = it.selectFirst(".info .badge_job_tip")?.text() ?: "",
-                                                images = Images(Bangumi.parseImageUrl(a.selectFirst("span.avatarNeue"))),
+                                                image = Bangumi.parseImageUrl(a.selectFirst("span.avatarNeue")),
                                                 comment = it.selectFirst("small.fade")?.text()?.trim('(', '+', ')')?.toIntOrNull()
                                                         ?: 0,
                                                 actors = it.select("a[rel=\"v:starring\"]").map { psn ->
@@ -317,11 +292,12 @@ data class Subject(
                                         val tds = it.select("td")
                                         val td0 = tds?.get(0)?.selectFirst("a")
                                         if (td0?.attr("href").isNullOrEmpty()) null else Topic(
+                                                model = "subject",
                                                 id = Regex("""/topic/([0-9]*)""").find(td0?.attr("href")
                                                         ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 0,
                                                 title = td0?.text() ?: "",
                                                 time = tds?.get(3)?.text(),
-                                                replies = Regex("""([0-9]*)""").find(tds?.get(2)?.text()
+                                                replyCount = Regex("""([0-9]*)""").find(tds?.get(2)?.text()
                                                         ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 0,
                                                 user = UserInfo.parse(tds?.get(1)?.selectFirst("a"))
                                         )
@@ -330,16 +306,25 @@ data class Subject(
                                 subtitle == "评论" -> {
                                     lastTag = SaxTag.BLOG
                                     subject.blog = doc.select("div.item")?.map {
-                                        Blog(
+                                        val user = UserInfo.parse(it.selectFirst(".tip_j a"))
+                                        Topic(
+                                                model = "blog",
                                                 id = Regex("""/blog/([0-9]*)""").find(it.selectFirst(".title a")?.attr("href")
                                                         ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 0,
                                                 title = it.selectFirst(".title a")?.text() ?: "",
-                                                summary = it.selectFirst(".content")?.ownText() ?: "",
                                                 image = Bangumi.parseImageUrl(it.selectFirst("img")),
-                                                replies = it.selectFirst("small.orange")?.text()?.trim('(', '+', ')')?.toIntOrNull()
+                                                replyCount = it.selectFirst("small.orange")?.text()?.trim('(', '+', ')')?.toIntOrNull()
                                                         ?: 0,
                                                 time = it.selectFirst("small.time")?.text(),
-                                                user = UserInfo.parse(it.selectFirst(".tip_j a"))
+                                                blog = TopicPost("", "",
+                                                        pst_uid = user.id.toString(),
+                                                        username = user.username ?: "",
+                                                        nickname = user.nickname ?: "",
+                                                        pst_content = it.selectFirst(".content")?.ownText() ?: "",
+                                                        dateline = it.selectFirst("small.time")?.text() ?: "",
+                                                        model = "blog"
+                                                ),
+                                                user = user
                                         )
                                     }
                                 }
@@ -352,7 +337,7 @@ data class Subject(
                                             name = title?.getOrNull(0),
                                             name_cn = title?.getOrNull(1),
                                             category = "单行本",
-                                            images = Images(Bangumi.parseImageUrl(avatar.selectFirst("span.avatarNeue")))
+                                            image = Bangumi.parseImageUrl(avatar.selectFirst("span.avatarNeue"))
                                     )
                                 }
                                 subtitle == "关联条目" -> {
@@ -370,7 +355,7 @@ data class Subject(
                                                     name = title?.text(),
                                                     name_cn = avatar.attr("title"),
                                                     category = sub,
-                                                    images = Images(Bangumi.parseImageUrl(avatar.selectFirst("span.avatarNeue")))
+                                                    image = Bangumi.parseImageUrl(avatar.selectFirst("span.avatarNeue"))
                                             )
                                         else null
                                     }?.toMutableList() ?: ArrayList()
@@ -387,12 +372,14 @@ data class Subject(
                                                         ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 0,
                                                 name = title?.text(),
                                                 name_cn = avatar.attr("title"),
-                                                images = Images(Bangumi.parseImageUrl(avatar.selectFirst("span.avatarNeue")))
+                                                image = Bangumi.parseImageUrl(avatar.selectFirst("span.avatarNeue"))
                                         )
                                     }
                                 }
                             }
 
+                        }
+                        else -> {
                         }
                     }
                     onUpdate(subject, lastTag)

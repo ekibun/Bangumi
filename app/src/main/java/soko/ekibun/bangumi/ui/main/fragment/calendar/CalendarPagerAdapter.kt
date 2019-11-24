@@ -10,7 +10,6 @@ import retrofit2.Call
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
-import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.github.GithubRaw
 import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
@@ -97,7 +96,7 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: an
                     type = Subject.TYPE_ANIME,
                     name = subject.name,
                     name_cn = subject.name_cn,
-                    images = Images(subject.image ?: ""))
+                    image = subject.image)
             subject.eps?.forEach {
                 val item = CalendarAdapter.OnAir(it, bangumi)
                 val timeInt = (if(!useCN || subject.timeCN.isNullOrEmpty()) subject.timeJP else subject.timeCN)?.toIntOrNull()?:0
@@ -143,7 +142,7 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: an
                 var isHeader = true
                 time.second.forEach {
                     it.subject.collect = if (chaseList?.find { c -> c.id == it.subject.id } != null) Collection() else null
-                    if(it.subject.images != null){
+                    if (it.subject.image != null) {
                         if(index == -1 && !CalendarAdapter.pastTime(date.first, time.first, use30h))
                             index = item.first.data.size
                         item.first.addData(CalendarAdapter.CalendarSection(isHeader, it, date.first, time.first))

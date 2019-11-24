@@ -11,5 +11,5 @@ class Person(
         val id: Int = 0,
         name: String? = null,
         name_cn: String? = null,
-        images: Images? = null
-) : MonoInfo(name, name_cn, images, "", "${Bangumi.SERVER}/person/$id")
+        image: String? = null
+) : MonoInfo(name, name_cn, image, "", "${Bangumi.SERVER}/person/$id")

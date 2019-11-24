@@ -5,20 +5,17 @@ import android.text.Html
 import androidx.appcompat.app.AlertDialog
 import androidx.preference.PreferenceManager
 import kotlinx.android.synthetic.main.activity_topic.*
-import org.jsoup.Jsoup
+import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
-import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
+import soko.ekibun.bangumi.model.DataCacheModel
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.HtmlTagHandler
 import soko.ekibun.bangumi.util.TextUtil
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 import kotlin.collections.set
 
 /**
@@ -27,7 +24,21 @@ import kotlin.collections.set
 class TopicPresenter(private val context: TopicActivity) {
     private val topicView = TopicView(context)
 
-    init {
+    val dataCacheModel by lazy { App.get(context).dataCacheModel }
+
+    lateinit var topic: Topic
+
+    /**
+     * 初始化
+     */
+    fun init(topic: Topic, scrollPost: String) {
+        // 读取缓存
+        DataCacheModel.merge(topic, dataCacheModel.get(topic.getKey()))
+        this.topic = topic
+        processTopic(topic, scrollPost, isCache = true)
+
+        getTopic(scrollPost)
+
         context.item_swipe.setOnRefreshListener {
             getTopic()
         }
@@ -35,7 +46,7 @@ class TopicPresenter(private val context: TopicActivity) {
         topicView.adapter.setOnLoadMoreListener({ if (loadMoreFail == true) getTopic() }, context.item_list)
     }
 
-    var loadMoreFail: Boolean? = null
+    private var loadMoreFail: Boolean? = null
     /**
      * 读取帖子
      */
@@ -43,43 +54,26 @@ class TopicPresenter(private val context: TopicActivity) {
         loadMoreFail = null
         context.item_swipe.isRefreshing = true
 
-        if (topicView.adapter.data.isEmpty()) {
-            Topic.getTopicSax(context.openUrl, { data ->
-                val doc = Jsoup.parse(data)
-                context.runOnUiThread {
-                    topicView.processTopicBefore(
-                            title = doc.selectFirst("#pageHeader h1")?.ownText() ?: "",
-                            links = LinkedHashMap<String, String>().let { links ->
-                                doc.selectFirst("#pageHeader")?.select("a")?.filter { !it.text().isNullOrEmpty() }?.forEach {
-                                    links[it.text()] = Bangumi.parseUrl(it.attr("href") ?: "")
-                                }
-                                links
-                            },
-                            images = Images(Bangumi.parseImageUrl(doc.selectFirst("#pageHeader img")))
-                    )
+        Topic.getTopicSax(topic, { data ->
+            context.runOnUiThread {
+                topicView.processTopic(data, scrollPost, true)
+            }
+        }, { post ->
+            context.runOnUiThread {
+                val related = topicView.adapter.data.find { it.floor == post.floor && it.sub_floor == 0 }
+                if (post.sub_floor > related?.subItems?.size ?: 0) {
+                    related?.subItems?.add(post)
+                } else if (post.sub_floor > 0) {
+                    related?.subItems?.set(post.sub_floor - 1, post)
                 }
-            }, {
-                context.runOnUiThread {
-                    val last = topicView.adapter.data.lastOrNull()
-                    val floor = (last?.floor ?: 1) + if (it.isSub) 0 else 1
-                    val subFloor = 1 + if (it.isSub) last?.sub_floor ?: 0 else 0
-                    it.floor = floor
-                    it.sub_floor = subFloor
-                    it.editable = it.is_self
-                    if (it.isSub) topicView.adapter.data.lastOrNull { p -> !p.isSub }?.let { ref ->
-                        ref.editable = false
-                        ref.addSubItem(it)
-                        //topicView.adapter.notifyItemChanged(topicView.adapter.data.indexOf(ref))
-                        topicView.adapter.addData(it)
-                    } else {
-                        it.isExpanded = true
-                        topicView.adapter.addData(it)
-                    }
+                val oldPostIndex = topicView.adapter.data.indexOfFirst { it.floor == post.floor && it.sub_floor == post.sub_floor }
+                if (oldPostIndex >= 0) {
+                    topicView.adapter.setData(oldPostIndex, post)
+                } else {
+                    topicView.adapter.addData(post)
                 }
-            })
-        } else {
-            Topic.getTopic(context.openUrl)
-        }.enqueue(ApiHelper.buildCallback({ topic ->
+            }
+        }).enqueue(ApiHelper.buildCallback({ topic ->
             processTopic(topic, scrollPost)
         }) {
             loadMoreFail = it != null
@@ -88,12 +82,12 @@ class TopicPresenter(private val context: TopicActivity) {
         })
     }
 
-    private fun processTopic(topic: Topic, scrollPost: String) {
+    private fun processTopic(topic: Topic, scrollPost: String, isCache: Boolean = false) {
         context.btn_reply.setOnClickListener {
             if (!topic.lastview.isNullOrEmpty()) showReplyPopupWindow(topic)
-            else if (!topic.errorLink.isNullOrEmpty()) WebActivity.launchUrl(context, topic.errorLink, "")
+            else if (topic.error != null) WebActivity.launchUrl(context, topic.error?.second, "")
         }
-        topicView.processTopic(topic, scrollPost) { v, position ->
+        topicView.processTopic(topic, scrollPost, isCache = isCache) { v, position ->
             val post = topicView.adapter.data[position]
             when (v.id) {
                 R.id.item_avatar ->
@@ -104,7 +98,7 @@ class TopicPresenter(private val context: TopicActivity) {
                 R.id.item_del -> {
                     AlertDialog.Builder(context).setMessage(R.string.reply_dialog_remove)
                             .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
-                                if (post.floor == 1) {
+                                if (post.floor == if (topic.blog == null) 1 else 0) {
                                     Topic.remove(topic).enqueue(ApiHelper.buildCallback<Boolean>({
                                         if (it) context.finish()
                                     }) {})
@@ -112,16 +106,20 @@ class TopicPresenter(private val context: TopicActivity) {
                                     TopicPost.remove(post).enqueue(ApiHelper.buildCallback<Boolean>({
                                         val data = ArrayList(topicView.adapter.data)
                                         data.removeAll { topicPost -> topicPost.pst_id == post.pst_id }
-                                        topicView.setNewData(data)
+                                        topicView.setNewData(data, topic)
                                         topicView.adapter.loadMoreEnd()
                                     }) {})
                                 }
                             }.show()
                 }
                 R.id.item_edit -> {
-                    buildPopupWindow(context.getString(if (post.floor == 1) R.string.parse_hint_modify_topic else R.string.parse_hint_modify_post, topic.title), html = post.pst_content) { text, send ->
+                    buildPopupWindow(context.getString(if (post.floor == if (topic.blog == null) 1 else 0) R.string.parse_hint_modify_topic else R.string.parse_hint_modify_post, topic.title), html = post.pst_content) { text, send ->
                         if (send) {
-                            TopicPost.edit(topic, post, text ?: "").enqueue(ApiHelper.buildCallback({
+                            if (post.floor == if (topic.blog == null) 1 else 0) {
+                                Topic.edit(topic, text ?: "")
+                            } else {
+                                TopicPost.edit(post, text ?: "")
+                            }.enqueue(ApiHelper.buildCallback({
                                 getTopic(post.pst_id)
                             }))
                         }
@@ -152,7 +150,7 @@ class TopicPresenter(private val context: TopicActivity) {
         buildPopupWindow(hint, drafts[draftId]) { inputString, send ->
             if (send) {
                 Topic.reply(topic, post, inputString ?: "").enqueue(ApiHelper.buildCallback<List<TopicPost>>({
-                    topicView.setNewData(it)
+                    topicView.setNewData(it, topic)
                     topicView.adapter.loadMoreEnd()
                 }) {})
             } else {

@@ -37,7 +37,7 @@ data class Comment(
                                     id = username?.toIntOrNull() ?: 0,
                                     username = username,
                                     nickname = user?.text(),
-                                    avatar = Images(Bangumi.parseImageUrl(it.selectFirst(".avatarNeue")))),
+                                    avatar = Bangumi.parseImageUrl(it.selectFirst(".avatarNeue"))),
                             time = it.selectFirst(".grey")?.text()?.replace("@", "")?.trim(),
                             comment = it.selectFirst("p")?.text(),
                             rate = Regex("""stars([0-9]*)""").find(it.selectFirst(".text")?.selectFirst(".starlight")?.outerHtml()

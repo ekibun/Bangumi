@@ -76,33 +76,33 @@ class TopicView(private val context: TopicActivity) {
         })
         context.title_collapse.setOnClickListener {
             if (scroll2Top()) return@setOnClickListener
-            WebActivity.launchUrl(context, context.openUrl)
+            WebActivity.launchUrl(context, context.topicPresenter.topic.url)
         }
         context.title_expand.setOnClickListener {
             if (scroll2Top()) return@setOnClickListener
-            WebActivity.launchUrl(context, context.openUrl)
+            WebActivity.launchUrl(context, context.topicPresenter.topic.url)
         }
     }
 
     /**
-     * 处理帖子头部
+     * 处理帖子内容
      */
-    fun processTopicBefore(title: String, links: Map<String, String>, images: Images) {
-        context.title_collapse.text = title
+    fun processTopic(topic: Topic, scrollPost: String, header: Boolean = false, isCache: Boolean = false, onItemClick: (View, Int) -> Unit = { _, _ -> }) {
+        context.title_collapse.text = topic.title
         context.title_expand.text = context.title_collapse.text
 
-        links.toList().getOrNull(0)?.let { link ->
+        topic.links?.toList()?.getOrNull(0)?.let { link ->
             context.title_slice_0.text = link.first
             context.title_slice_0.setOnClickListener {
                 if (scroll2Top()) return@setOnClickListener
-                WebActivity.launchUrl(context, link.second, context.openUrl)
+                WebActivity.launchUrl(context, link.second, topic.url)
             }
         }
-        links.toList().getOrNull(1)?.let { link ->
+        topic.links?.toList()?.getOrNull(1)?.let { link ->
             context.title_slice_1.text = link.first
             context.title_slice_1.setOnClickListener {
                 if (scroll2Top()) return@setOnClickListener
-                WebActivity.launchUrl(context, link.second, context.openUrl)
+                WebActivity.launchUrl(context, link.second, topic.url)
             }
         }
         context.title_slice_divider.visibility = if (context.title_slice_1.text.isNotEmpty()) View.VISIBLE else View.GONE
@@ -112,19 +112,14 @@ class TopicView(private val context: TopicActivity) {
         }
 
         GlideUtil.with(context.item_cover_blur)
-                ?.load(images.getImage(context))
+                ?.load(Images.getImage(topic.image, context))
                 ?.apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)).placeholder(context.item_cover_blur.drawable))
                 ?.into(context.item_cover_blur)
-    }
 
-    /**
-     * 处理帖子内容
-     */
-    fun processTopic(topic: Topic, scrollPost: String, onItemClick: (View, Int) -> Unit) {
-        processTopicBefore(topic.title, topic.links, topic.images)
-        adapter.isUseEmpty(true)
+        if (header) return
+        adapter.isUseEmpty(!isCache)
         topic.replies.forEach { it.isExpanded = true }
-        setNewData(topic.replies)
+        setNewData(topic.replies, topic, isCache)
         (context.item_list?.layoutManager as? androidx.recyclerview.widget.LinearLayoutManager)?.let { layoutManager ->
             val scrollIndex = adapter.data.indexOfFirst { it.pst_id == scrollPost }
             if (scrollIndex <= 0) return@let
@@ -135,7 +130,7 @@ class TopicView(private val context: TopicActivity) {
         val lastPost = topic.replies.lastOrNull()
         context.btn_reply.text = when {
             !topic.lastview.isNullOrEmpty() -> context.getString(R.string.hint_reply)
-            !topic.error.isNullOrEmpty() -> topic.error
+            topic.error != null -> topic.error?.first
             topic.replies.isEmpty() -> context.getString(R.string.hint_empty_topic)
             !lastPost?.badge.isNullOrEmpty() -> context.getString(R.string.hint_closed_topic)
             else -> context.getString(R.string.hint_login_topic)
@@ -159,12 +154,12 @@ class TopicView(private val context: TopicActivity) {
     /**
      * 更新楼层数据
      */
-    fun setNewData(data: List<TopicPost>) {
+    fun setNewData(data: List<TopicPost>, topic: Topic, isCache: Boolean = false) {
         var floor = 0
         var subFloor = 0
         var referPost: TopicPost? = null
-
-        adapter.setNewData(data.filter {
+        // 楼层排序
+        val replies = data.filter {
             if (it.isSub) {
                 subFloor++
             } else {
@@ -183,7 +178,9 @@ class TopicView(private val context: TopicActivity) {
                 referPost?.addSubItem(it)
                 false
             }
-        })
+        }
+        // 加上blog的正文
+        adapter.setNewData(listOfNotNull(topic.blog).plus(replies))
         var i = 0
         while (i < adapter.data.size) {
             val topicPost = adapter.data[i]
@@ -193,6 +190,8 @@ class TopicView(private val context: TopicActivity) {
             }
             i++
         }
-        //adapter.expandAll()
+        // 缓存
+        topic.replies = data
+        if (!isCache) context.topicPresenter.dataCacheModel.set(topic)
     }
 }

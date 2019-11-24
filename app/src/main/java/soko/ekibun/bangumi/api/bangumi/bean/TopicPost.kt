@@ -47,33 +47,35 @@ data class TopicPost(
             val relate = data.getOrNull(2)?.toIntOrNull() ?: 0
             val post_id = data.getOrNull(3)?.toIntOrNull() ?: 0
             val badge = it.selectFirst(".badgeState")?.text()
+            val floor = Regex("""#(\d+)(-\d+)?""").find(it.selectFirst(".floor-anchor")?.text() ?: "")?.groupValues
             return TopicPost(
                     pst_id = (if (post_id == 0) relate else post_id).toString(),
                     pst_mid = data.getOrNull(1) ?: "",
                     pst_uid = data.getOrNull(5) ?: "",
-                    pst_content = if (!badge.isNullOrEmpty()) it.selectFirst(".inner")?.ownText() ?: ""
-                    else it.selectFirst(".topic_content")?.html()
+                    pst_content = if (!badge.isNullOrEmpty()) it.selectFirst(".inner")?.ownText()
+                            ?: "" else it.selectFirst(".topic_content")?.html()
                             ?: it.selectFirst(".message")?.html()
                             ?: it.selectFirst(".cmt_sub_content")?.html() ?: "",
                     username = UserInfo.getUserName(user.attr("href")) ?: "",
                     nickname = user.text() ?: "",
                     sign = if (!badge.isNullOrEmpty()) "" else it.selectFirst(".inner .tip_j")?.text() ?: "",
                     avatar = Bangumi.parseImageUrl(it.selectFirst("span.avatarNeue")),
-                    dateline = if (!badge.isNullOrEmpty()) it.selectFirst(".inner .tip_j")?.text() ?: ""
-                    else it.selectFirst(".re_info")?.text()?.split("/")?.get(0)?.trim()?.substringAfter(" - ")
+                    dateline = if (!badge.isNullOrEmpty()) it.selectFirst(".inner .tip_j")?.text()
+                            ?: "" else it.selectFirst(".re_info")?.text()?.split("/")?.get(0)?.trim()?.substringAfter(" - ")
                             ?: "",
                     is_self = it.selectFirst(".re_info")?.text()?.contains("/") == true,
                     isSub = it.selectFirst(".re_info a")?.text()?.contains("-") ?: false,
                     editable = it.selectFirst(".re_info")?.text()?.contains("/") == true,
                     relate = relate.toString(),
                     model = Regex("'([^']*)'").find(data.getOrNull(0) ?: "")?.groupValues?.get(1) ?: "",
+                    floor = floor?.getOrNull(1)?.toIntOrNull() ?: 0,
+                    sub_floor = floor?.getOrNull(2)?.trim('-')?.toIntOrNull() ?: 0,
                     badge = badge
             )
         }
 
         /**
          * 删除帖子回复
-         * TODO 时间线
          */
         fun remove(
                 post: TopicPost
@@ -84,6 +86,7 @@ data class TopicPost(
                 "crt" -> "/erase/reply/character/"
                 "ep" -> "/erase/reply/ep/"
                 "subject" -> "/erase/subject/reply/"
+                "blog" -> "/erase/reply/blog/"
                 else -> ""
             } + "${post.pst_id}?gh=${HttpUtil.formhash}&ajax=1") {
                 it.body?.string()?.contains("\"status\":\"ok\"") == true
@@ -92,25 +95,21 @@ data class TopicPost(
 
         /**
          * 编辑帖子回复
-         * TODO 时间线
          */
         fun edit(
-                topic: Topic,
                 post: TopicPost,
                 content: String
         ): Call<Boolean> {
-            return ApiHelper.buildHttpCall(if (post.floor == 1)
-                topic.post.replace("/new_reply", "/edit")
-            else Bangumi.SERVER + when (post.model) {
+            return ApiHelper.buildHttpCall(Bangumi.SERVER + when (post.model) {
                 "group" -> "/group/reply/${post.pst_id}/edit"
                 "prsn" -> "/person/edit_reply/${post.pst_id}"
                 "crt" -> "/character/edit_reply/${post.pst_id}"
                 "ep" -> "/subject/ep/edit_reply/${post.pst_id}"
                 "subject" -> "/subject/reply/${post.pst_id}/edit"
+                "blog" -> "/blog/reply/edit/${post.pst_id}"
                 else -> ""
             }, body = FormBody.Builder()
                     .add("formhash", HttpUtil.formhash)
-                    .add("title", topic.title)
                     .add("submit", "改好了")
                     .add("content", content).build()) {
                 it.code == 200
