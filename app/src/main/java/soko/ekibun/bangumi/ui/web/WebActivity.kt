@@ -268,6 +268,7 @@ class WebActivity : BaseActivity() {
             val blogId = Regex("""/blog/(\d+)""").find(rakuen ?: "")?.groupValues?.getOrNull(1)?.toIntOrNull() ?: 0
             if (blogId > 0) {
                 TopicActivity.startActivity(context, Topic("blog", blogId), post)
+                return true
             }
             //Topic
             val modelId = Regex("""/rakuen/topic/([^/]+)/(\d+)""").find(rakuen ?: "")?.groupValues
