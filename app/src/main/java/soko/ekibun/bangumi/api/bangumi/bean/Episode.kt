@@ -44,7 +44,7 @@ data class Episode(
         airdate = ep.airdate ?: ep.airdate
         comment = if (comment == 0) ep.comment else comment
         desc = desc ?: ep.desc
-        status = status ?: ep.status
+        status = if (status == STATUS_NA) ep.status else status
         progress = progress ?: ep.progress
         category = category ?: ep.category
     }
@@ -149,7 +149,7 @@ data class Episode(
                                 it.hasClass("statusWatched") -> PROGRESS_WATCH
                                 it.hasClass("statusQueue") -> PROGRESS_QUEUE
                                 it.hasClass("statusDrop") -> PROGRESS_DROP
-                                else -> null
+                                else -> PROGRESS_REMOVE
                             }
                         },
                         category = if (cat.startsWith("Disc")) cat else null)
@@ -201,7 +201,7 @@ data class Episode(
                             it.hasClass("epBtnWatched") -> PROGRESS_WATCH
                             it.hasClass("epBtnQueue") -> PROGRESS_QUEUE
                             it.hasClass("epBtnDrop") -> PROGRESS_DROP
-                            else -> null
+                            else -> PROGRESS_REMOVE
                         })
             }
         }

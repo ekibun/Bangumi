@@ -12,7 +12,7 @@ import java.util.*
  * 数据离线缓存
  */
 open class DataCacheModel(context: Context) {
-    val memoryCache = WeakHashMap<String, CacheData>()
+    val memoryCache = WeakHashMap<String, Any>()
     val diskLruCache: DiskLruCache by lazy {
         val cacheDir = getDiskCacheDir(context, "data")
         if (!cacheDir.exists()) cacheDir.mkdirs()
@@ -22,7 +22,7 @@ open class DataCacheModel(context: Context) {
     /**
      * 读取缓存
      */
-    inline fun <reified T : CacheData> get(key: String): T? {
+    inline fun <reified T> get(key: String): T? {
         return (memoryCache[key] as? T) ?: diskLruCache.get(key)?.let { snapshot ->
             try {
                 JsonUtil.toEntity<T>(String(snapshot.getInputStream(0).readBytes()))
@@ -36,23 +36,12 @@ open class DataCacheModel(context: Context) {
     /**
      * 保存缓存
      */
-    inline fun <reified T : CacheData> set(data: T) {
-        val key = data.getKey()
+    inline fun <reified T : Any> set(key: String, data: T) {
         memoryCache[key] = data
         diskLruCache.edit(key)?.let { editor ->
             editor.newOutputStream(0).write(JsonUtil.toJson(data).toByteArray())
             editor.commit()
         }
-    }
-
-    /**
-     * 缓存数据要实现数据混合
-     */
-    interface CacheData {
-        /**
-         * 缓存标签
-         */
-        fun getKey(): String
     }
 
     companion object {
@@ -70,7 +59,7 @@ open class DataCacheModel(context: Context) {
         /**
          * 混合数据
          */
-        inline fun <reified T : CacheData> merge(a: T, b: T?) {
+        inline fun <reified T : Any> merge(a: T, b: T?) {
             if (b == null) return
             T::class.java.declaredFields.forEach { field ->
                 if (field.modifiers != 2) return@forEach

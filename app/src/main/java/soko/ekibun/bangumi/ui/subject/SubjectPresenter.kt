@@ -46,7 +46,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
      */
     @SuppressLint("SetTextI18n")
     fun init(subject: Subject) {
-        DataCacheModel.merge(subject, dataCacheModel.get(subject.getKey()))
+        DataCacheModel.merge(subject, dataCacheModel.get(subject.cacheKey))
         this.subject = subject
         subjectView.updateSubject(subject)
 
@@ -108,33 +108,14 @@ class SubjectPresenter(private val context: SubjectActivity) {
         }
 
         subjectView.episodeAdapter.onItemLongClickListener = BaseQuickAdapter.OnItemLongClickListener { _, _, position ->
-            val eps = subjectView.episodeAdapter.data.subList(0, position + 1)
-            subjectView.episodeAdapter.data[position]?.let { openEpisode(it, eps) }
+            WebActivity.launchUrl(context, subjectView.episodeAdapter.data[position].url, "")
             true
         }
 
         val progressMap = arrayOf(Episode.PROGRESS_WATCH, Episode.PROGRESS_QUEUE, Episode.PROGRESS_DROP, Episode.PROGRESS_REMOVE)
-        subjectView.episodeAdapter.setOnItemClickListener { _, view, position ->
+        subjectView.episodeAdapter.setOnItemClickListener { _, _, position ->
             val eps = subjectView.episodeAdapter.data.subList(0, position + 1)
-            subjectView.episodeAdapter.data[position]?.let {
-                if (eps.last().type != Episode.TYPE_MUSIC) {
-                    val epStatus = context.resources.getStringArray(R.array.episode_status)
-
-                    val popupMenu = PopupMenu(context, view)
-                    epStatus.forEachIndexed { index, s ->
-                        popupMenu.menu.add(Menu.NONE, Menu.FIRST + index, index, s)
-                    }
-                    popupMenu.setOnMenuItemClickListener { menu ->
-                        val index = menu.itemId - Menu.FIRST
-                        updateProgress(if (index == 1) eps else listOf(eps.last()), if (index == 1) EpisodeDialog.WATCH_TO else progressMap[if (index > 1) index - 1 else index])
-                        false
-                    }
-                    popupMenu.show()
-                } else {
-                    openEpisode(it, eps)
-                }
-            }
-            //subjectView.episodeAdapter.data[position]?.let{ WebActivity.launchUrl(context, it.url) }
+            subjectView.episodeAdapter.data[position]?.let { openEpisode(it, eps) }
         }
 
         context.item_edit_ep.setOnClickListener {
@@ -265,7 +246,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
                     subject.eps = eps
                 }
             }
-            dataCacheModel.set(subject)
+            dataCacheModel.set(subject.cacheKey, subject)
         }
 
         subjectCall?.enqueue(ApiHelper.buildCallback({}, {
@@ -373,7 +354,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
             val eps = subjectView.updateEpisode(it)
             subjectView.updateEpisodeLabel(eps, subject)
             subject.eps = eps
-            dataCacheModel.set(subject)
+            dataCacheModel.set(subject.cacheKey, subject)
         }, {}))
     }
 }

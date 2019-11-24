@@ -6,7 +6,6 @@ import org.xmlpull.v1.XmlPullParser
 import retrofit2.Call
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
-import soko.ekibun.bangumi.model.DataCacheModel
 import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.JsonUtil
 import soko.ekibun.bangumi.util.TextUtil
@@ -28,8 +27,8 @@ data class Topic(
         var time: String? = null,
         var blog: TopicPost? = null,
         var user: UserInfo? = null // blog & subject
-) : DataCacheModel.CacheData {
-    override fun getKey() = "topic_${model}_$id"
+) {
+    val cacheKey = "topic_${model}_$id"
 
     val url = "${Bangumi.SERVER}/${when (model) {
         "group" -> "group/topic"

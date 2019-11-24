@@ -26,7 +26,7 @@ class SmallEpisodeAdapter(data: MutableList<Episode>? = null) :
                 })
         helper.itemView.item_title.setTextColor(color)
         helper.itemView.item_desc.setTextColor(color)
-        helper.itemView.item_badge.visibility = if(item.progress != null) View.VISIBLE else View.INVISIBLE
+        helper.itemView.item_badge.visibility = if (item.progress in arrayOf(Episode.PROGRESS_WATCH, Episode.PROGRESS_DROP, Episode.PROGRESS_QUEUE)) View.VISIBLE else View.INVISIBLE
         helper.itemView.item_badge.backgroundTintList = ColorStateList.valueOf(ResourceUtil.resolveColorAttr(helper.itemView.context,
                 when {
                     item.progress in listOf(Episode.PROGRESS_WATCH, Episode.PROGRESS_QUEUE) -> R.attr.colorPrimary

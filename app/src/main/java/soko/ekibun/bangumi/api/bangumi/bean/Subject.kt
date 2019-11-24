@@ -11,7 +11,6 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.github.bean.OnAirInfo
-import soko.ekibun.bangumi.model.DataCacheModel
 import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.TextUtil
 import java.util.*
@@ -52,8 +51,8 @@ data class Subject(
         // other
         var season: List<Subject>? = null,
         var onair: OnAirInfo? = null
-) : DataCacheModel.CacheData {
-    override fun getKey() = "subject_$id"
+) {
+    val cacheKey = "subject_$id"
 
     val url = "${Bangumi.SERVER}/subject/$id"
     val displayName get() = TextUtil.html2text((if (name_cn.isNullOrEmpty()) name else name_cn) ?: "")
@@ -251,7 +250,7 @@ data class Subject(
                                         }
                                                 ?.select("div.inner a")?.map { it.text() }
                                 )
-                            }
+                            } ?: Collection()
                             subject.eps_count = doc.selectFirst("input[name=watchedeps]")?.parent()?.ownText()?.trim(' ', '/')?.toIntOrNull()
                                     ?: 0
                             subject.ep_status = doc.selectFirst("input[name=watchedeps]")?.attr("value")?.toIntOrNull()

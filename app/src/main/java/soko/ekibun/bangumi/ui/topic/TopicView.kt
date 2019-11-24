@@ -192,6 +192,6 @@ class TopicView(private val context: TopicActivity) {
         }
         // 缓存
         topic.replies = data
-        if (!isCache) context.topicPresenter.dataCacheModel.set(topic)
+        if (!isCache) context.topicPresenter.dataCacheModel.set(topic.cacheKey, topic)
     }
 }

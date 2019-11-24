@@ -66,7 +66,7 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
         helper.itemView.item_select.visibility = if(item.isSelected) View.VISIBLE else View.INVISIBLE
         helper.itemView.item_title.setTextColor(color)
         helper.itemView.item_desc.setTextColor(color)
-        helper.itemView.item_badge.visibility = if(item.t.progress != null) View.VISIBLE else View.INVISIBLE
+        helper.itemView.item_badge.visibility = if (item.t.progress in arrayOf(Episode.PROGRESS_WATCH, Episode.PROGRESS_DROP, Episode.PROGRESS_QUEUE)) View.VISIBLE else View.INVISIBLE
         helper.itemView.item_badge.backgroundTintList = ColorStateList.valueOf(
                 ResourceUtil.resolveColorAttr(helper.itemView.context,
                         when {

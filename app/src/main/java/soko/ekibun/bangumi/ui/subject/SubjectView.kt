@@ -365,7 +365,7 @@ class SubjectView(private val context: SubjectActivity) {
 
             var lastView = 0
             episodeAdapter.data.forEachIndexed { index, episode ->
-                if (episode.progress != null)
+                if (episode.progress in arrayOf(Episode.PROGRESS_WATCH, Episode.PROGRESS_DROP, Episode.PROGRESS_QUEUE))
                     lastView = index
             }
             val layoutManager = (detail.episode_list.layoutManager as LinearLayoutManager)

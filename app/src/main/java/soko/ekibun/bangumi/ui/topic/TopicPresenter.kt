@@ -33,7 +33,7 @@ class TopicPresenter(private val context: TopicActivity) {
      */
     fun init(topic: Topic, scrollPost: String) {
         // 读取缓存
-        DataCacheModel.merge(topic, dataCacheModel.get(topic.getKey()))
+        DataCacheModel.merge(topic, dataCacheModel.get(topic.cacheKey))
         this.topic = topic
         processTopic(topic, scrollPost, isCache = true)
 

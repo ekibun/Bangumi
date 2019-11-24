@@ -3,6 +3,7 @@ package soko.ekibun.bangumi.util
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import com.google.gson.reflect.TypeToken
 
 /**
  * Json工具类
@@ -23,7 +24,7 @@ object JsonUtil {
      */
     inline fun <reified T> toEntity(json: String): T? {
         return try {
-            GSON.fromJson(json, T::class.java)
+            GSON.fromJson(json, object : TypeToken<T>() {}.type)
         } catch (e: Exception) {
             e.printStackTrace()
             null

@@ -54,7 +54,7 @@ class EpisodeDialog(context: Context) : Dialog(context, R.style.AppTheme_Dialog)
             eps.forEach { episode ->
                 Subject.updateProgress(episode.id, newStatus).enqueue(
                         ApiHelper.buildCallback({
-                            episode.progress = if (newStatus == Episode.PROGRESS_REMOVE) null else newStatus
+                            episode.progress = newStatus
                             callback(true)
                         }, { if (it != null) callback(false) }))
             }

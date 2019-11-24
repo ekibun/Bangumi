@@ -16,4 +16,5 @@ data class BangumiCalendarItem(
         val timeCN: String?,
         val image: String?,
         val eps: List<Episode>?
-)
+) {
+}
