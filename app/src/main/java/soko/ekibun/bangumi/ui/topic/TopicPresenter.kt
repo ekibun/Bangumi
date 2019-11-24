@@ -104,7 +104,7 @@ class TopicPresenter(private val context: TopicActivity) {
                                     }) {})
                                 } else {
                                     TopicPost.remove(post).enqueue(ApiHelper.buildCallback<Boolean>({
-                                        val data = ArrayList(topicView.adapter.data)
+                                        val data = ArrayList(topic.replies)
                                         data.removeAll { topicPost -> topicPost.pst_id == post.pst_id }
                                         topicView.setNewData(data, topic)
                                         topicView.adapter.loadMoreEnd()
