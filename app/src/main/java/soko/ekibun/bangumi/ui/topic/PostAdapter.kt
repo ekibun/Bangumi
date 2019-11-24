@@ -5,10 +5,7 @@ import android.text.Html
 import android.text.Spanned
 import android.text.method.LinkMovementMethod
 import android.util.Size
-import android.view.Gravity
 import android.view.View
-import android.view.ViewGroup
-import android.widget.PopupWindow
 import android.widget.TextView
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseMultiItemQuickAdapter
@@ -20,7 +17,6 @@ import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
 import soko.ekibun.bangumi.ui.view.FastScrollRecyclerView
-import soko.ekibun.bangumi.ui.view.FixMultiViewPager
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.HtmlHttpImageGetter
@@ -94,22 +90,7 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
                             val imageList = drawables.filter { (it.startsWith("http") || !it.contains("smile")) }.toList()
                             val index = imageList.indexOfFirst { d -> d == imageSpan.source }
                             if (index < 0) return@HtmlTagHandler
-                            val popWindow = PopupWindow(itemView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, true)
-                            val viewPager = FixMultiViewPager(itemView.context)
-                            popWindow.contentView = viewPager
-                            viewPager.adapter = PhotoPagerAdapter(imageList.map { Bangumi.parseUrl(it) }) {
-                                popWindow.dismiss()
-                            }
-                            viewPager.currentItem = index
-                            popWindow.isClippingEnabled = false
-                            popWindow.animationStyle = R.style.AppTheme_FadeInOut
-                            popWindow.showAtLocation(itemView, Gravity.CENTER, 0, 0)
-                            popWindow.contentView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                                    or View.SYSTEM_UI_FLAG_FULLSCREEN)
+                            PhotoPagerAdapter.showWindow(itemView, imageList.map { Bangumi.parseUrl(it) }, index = index)
                         }
                     })) {
                         WebActivity.launchUrl(helper.itemView.context, Bangumi.parseUrl(it), "")

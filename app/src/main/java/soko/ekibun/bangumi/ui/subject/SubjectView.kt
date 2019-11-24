@@ -1,13 +1,9 @@
 package soko.ekibun.bangumi.ui.subject
 
 import android.annotation.SuppressLint
-import android.view.Gravity
 import android.view.View
-import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.LinearLayout
-import android.widget.PopupWindow
-import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -28,9 +24,12 @@ import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarAdapter
-import soko.ekibun.bangumi.ui.view.DragPhotoView
+import soko.ekibun.bangumi.ui.topic.PhotoPagerAdapter
 import soko.ekibun.bangumi.ui.web.WebActivity
-import soko.ekibun.bangumi.util.*
+import soko.ekibun.bangumi.util.GlideUtil
+import soko.ekibun.bangumi.util.HttpUtil
+import soko.ekibun.bangumi.util.PlayerBridge
+import soko.ekibun.bangumi.util.ResourceUtil
 
 /**
  * 条目view
@@ -246,41 +245,7 @@ class SubjectView(private val context: SubjectActivity) {
                     ?.apply(RequestOptions.errorOf(R.drawable.err_404))
                     ?.into(context.item_cover)
             context.item_cover.setOnClickListener {
-                val popWindow = PopupWindow(it, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, true)
-                val photoView = DragPhotoView(it.context)
-                popWindow.contentView = photoView
-                GlideUtil.with(photoView)?.load(Images.large(subject.image))
-                        ?.apply(RequestOptions.placeholderOf(context.item_cover.drawable))
-                        ?.into(photoView.glideTarget)
-                photoView.mTapListener = {
-                    popWindow.dismiss()
-                }
-                photoView.mExitListener = {
-                    popWindow.dismiss()
-                }
-                photoView.mLongClickListener = {
-                    val systemUiVisibility = popWindow.contentView.systemUiVisibility
-                    val dialog = AlertDialog.Builder(context)
-                            .setItems(arrayOf(context.getString(R.string.share)))
-                            { _, _ ->
-                                AppUtil.shareDrawable(context, photoView.drawable ?: return@setItems)
-                            }.setOnDismissListener {
-                                popWindow.contentView.systemUiVisibility = systemUiVisibility
-                            }.create()
-                    dialog.window?.decorView?.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION)
-                    dialog.show()
-                }
-                popWindow.isClippingEnabled = false
-                popWindow.animationStyle = R.style.AppTheme_FadeInOut
-                popWindow.showAtLocation(it, Gravity.CENTER, 0, 0)
-                popWindow.contentView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        or View.SYSTEM_UI_FLAG_FULLSCREEN)
+                PhotoPagerAdapter.showWindow(detail, listOf(Images.large(subject.image)), listOf(context.item_cover.drawable))
             }
             GlideUtil.with(context.item_cover_blur)
                     ?.load(Images.getImage(subject.image, context))

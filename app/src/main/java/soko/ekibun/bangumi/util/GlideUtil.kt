@@ -15,7 +15,6 @@ import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.Headers
 import com.bumptech.glide.request.RequestOptions
-import com.bumptech.glide.request.target.CustomViewTarget
 import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
@@ -32,16 +31,15 @@ object GlideUtil {
     /**
      * Glide进度
      */
-    fun loadWithProgress(url: String, view: View, options: RequestOptions, viewTarget: Boolean = true, uri: Uri? = null, callback: (Int, Drawable?) -> Unit): Target<Drawable>? {
+    fun loadWithProgress(url: String, view: View, options: RequestOptions, circularProgressDrawable: CircularProgressDrawable, uri: Uri? = null, callback: (Int, Drawable?) -> Unit): Target<Drawable>? {
         val request = with(view) ?: return null
-        val circularProgressDrawable = options.placeholderDrawable as? CircularProgressDrawable
-        circularProgressDrawable?.start()
+        circularProgressDrawable.start()
         ProgressAppGlideModule.expect(url, object : ProgressAppGlideModule.UIonProgressListener {
             override fun onProgress(bytesRead: Long, expectedLength: Long) {
-                if (circularProgressDrawable?.isRunning == true) circularProgressDrawable.stop()
-                circularProgressDrawable?.setStartEndTrim(0f, bytesRead * 1f / expectedLength)
-                circularProgressDrawable?.progressRotation = 0.75f
-                circularProgressDrawable?.invalidateSelf()
+                if (circularProgressDrawable.isRunning) circularProgressDrawable.stop()
+                circularProgressDrawable.setStartEndTrim(0f, bytesRead * 1f / expectedLength)
+                circularProgressDrawable.progressRotation = 0.75f
+                circularProgressDrawable.invalidateSelf()
             }
 
             override fun getGranualityPercentage(): Float {
@@ -54,47 +52,23 @@ object GlideUtil {
             } else {
                 it.load(GlideUrl(url, Headers { mapOf("referer" to url, "user-agent" to HttpUtil.ua) }))
             }
-        }.apply(options).into(if (viewTarget) object : CustomViewTarget<View, Drawable>(view) {
-
-            override fun onResourceLoading(placeholder: Drawable?) {
-                callback(TYPE_PLACEHOLDER, placeholder)
-            }
-
-            override fun onResourceCleared(placeholder: Drawable?) {
-                if (circularProgressDrawable?.isRunning == true) circularProgressDrawable.stop()
-                callback(TYPE_PLACEHOLDER, null)
-            }
-
-            override fun onLoadFailed(errorDrawable: Drawable?) {
-                if (circularProgressDrawable?.isRunning == true) circularProgressDrawable.stop()
-                callback(TYPE_ERROR, errorDrawable)
-            }
-
-            override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
-                if (circularProgressDrawable?.isRunning == true) circularProgressDrawable.stop()
-                callback(TYPE_RESOURCE, resource)
-            }
-
-            override fun onDestroy() {
-                ProgressAppGlideModule.forget(url)
-            }
-        } else object : SimpleTarget<Drawable>() {
+        }.apply(options).into(object : SimpleTarget<Drawable>() {
             override fun onLoadStarted(placeholder: Drawable?) {
                 callback(TYPE_PLACEHOLDER, placeholder)
             }
 
             override fun onLoadFailed(errorDrawable: Drawable?) {
-                if (circularProgressDrawable?.isRunning == true) circularProgressDrawable.stop()
+                if (circularProgressDrawable.isRunning) circularProgressDrawable.stop()
                 callback(TYPE_ERROR, errorDrawable)
             }
 
             override fun onLoadCleared(placeholder: Drawable?) {
-                if (circularProgressDrawable?.isRunning == true) circularProgressDrawable.stop()
+                if (circularProgressDrawable.isRunning) circularProgressDrawable.stop()
                 callback(TYPE_PLACEHOLDER, null)
             }
 
             override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
-                if (circularProgressDrawable?.isRunning == true) circularProgressDrawable.stop()
+                if (circularProgressDrawable.isRunning) circularProgressDrawable.stop()
                 callback(TYPE_RESOURCE, resource)
             }
 

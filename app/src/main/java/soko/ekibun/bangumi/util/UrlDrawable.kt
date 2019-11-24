@@ -69,8 +69,7 @@ open class UrlDrawable(val container: WeakReference<TextView>, val updateSize: (
             circularProgressDrawable.strokeWidth = 5f
             circularProgressDrawable.centerRadius = textSize / 2 - circularProgressDrawable.strokeWidth - 1f
             circularProgressDrawable.progressRotation = 0.75f
-            circularProgressDrawable.start()
-            GlideUtil.loadWithProgress(url, view, RequestOptions().placeholder(circularProgressDrawable).error(R.drawable.ic_broken_image), false, uri) { type, drawable ->
+            GlideUtil.loadWithProgress(url, view, RequestOptions().placeholder(circularProgressDrawable).error(R.drawable.ic_broken_image), circularProgressDrawable, uri) { type, drawable ->
                 error = when (type) {
                     GlideUtil.TYPE_RESOURCE -> false
                     GlideUtil.TYPE_ERROR -> true
