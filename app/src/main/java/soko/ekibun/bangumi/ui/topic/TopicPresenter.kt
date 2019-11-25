@@ -72,7 +72,7 @@ class TopicPresenter(private val context: TopicActivity) {
                     post.isExpanded = oldPost?.isExpanded ?: true
                     post.subItems = oldPost?.subItems ?: post.subItems ?: ArrayList()
                     topicView.adapter.setData(oldPostIndex, post)
-                } else if (post.sub_floor == 0) {
+                } else {
                     topicView.adapter.addData(post)
                 }
             }
