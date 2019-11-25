@@ -60,16 +60,19 @@ class TopicPresenter(private val context: TopicActivity) {
             }
         }, { post ->
             context.runOnUiThread {
-                val related = topicView.adapter.data.find { it.floor == post.floor && it.sub_floor == 0 }
+                val related = topicView.adapter.data.find { it.pst_id == post.relate }
                 if (post.sub_floor > related?.subItems?.size ?: 0) {
                     related?.subItems?.add(post)
                 } else if (post.sub_floor > 0) {
                     related?.subItems?.set(post.sub_floor - 1, post)
                 }
-                val oldPostIndex = topicView.adapter.data.indexOfFirst { it.floor == post.floor && it.sub_floor == post.sub_floor }
+                val oldPostIndex = topicView.adapter.data.indexOfFirst { it.pst_id == post.pst_id }
                 if (oldPostIndex >= 0) {
+                    val oldPost = topicView.adapter.data.getOrNull(oldPostIndex)
+                    post.isExpanded = oldPost?.isExpanded ?: true
+                    post.subItems = oldPost?.subItems ?: post.subItems ?: ArrayList()
                     topicView.adapter.setData(oldPostIndex, post)
-                } else {
+                } else if (post.sub_floor == 0) {
                     topicView.adapter.addData(post)
                 }
             }
