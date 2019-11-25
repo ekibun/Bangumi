@@ -68,7 +68,7 @@ data class TopicPost(
                     editable = it.selectFirst(".re_info")?.text()?.contains("/") == true,
                     relate = relate.toString(),
                     model = Regex("'([^']*)'").find(data.getOrNull(0) ?: "")?.groupValues?.get(1) ?: "",
-                    floor = floor?.getOrNull(1)?.toIntOrNull() ?: 0,
+                    floor = floor?.getOrNull(1)?.toIntOrNull() ?: 1,
                     sub_floor = floor?.getOrNull(2)?.trim('-')?.toIntOrNull() ?: 0,
                     badge = badge
             )

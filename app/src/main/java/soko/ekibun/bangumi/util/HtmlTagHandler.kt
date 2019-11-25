@@ -5,6 +5,7 @@ import android.text.*
 import android.text.style.ClickableSpan
 import android.text.style.ImageSpan
 import android.text.style.RelativeSizeSpan
+import android.util.Log
 import android.view.View
 import android.widget.TextView
 import com.awarmisland.android.richedittext.view.RichEditText
@@ -47,11 +48,12 @@ class HtmlTagHandler(view: TextView? = null, private var baseSize: Float = 12f, 
 
     private fun endSize(tag: String, output: Editable, xmlReader: XMLReader) {
         endSizeIndex = output.length
-        var size = attributes["size"]?:""
+        var size = attributes["size"] ?: ""
         size = size.split("px".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0]
         // 设置字体大小
         if (!TextUtils.isEmpty(size)) {
-            output.setSpan(RelativeSizeSpan((size.toFloatOrNull()?:baseSize)/ baseSize), startSizeIndex, endSizeIndex,
+            output.setSpan(RelativeSizeSpan((size.toFloatOrNull()
+                    ?: baseSize) / baseSize), startSizeIndex, endSizeIndex,
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
     }
@@ -76,8 +78,8 @@ class HtmlTagHandler(view: TextView? = null, private var baseSize: Float = 12f, 
         private val edit = textView.get() is RichEditText
         override fun onClick(widget: View) {
             if (edit) return
-            val view = textView.get()?:return
-            view.tag = if(view.tag == this) null else this
+            val view = textView.get() ?: return
+            view.tag = if (view.tag == this) null else this
             view.text = view.text
         }
 
@@ -120,7 +122,7 @@ class HtmlTagHandler(view: TextView? = null, private var baseSize: Float = 12f, 
                 attributes[data[i * 5 + 1]] = data[i * 5 + 4]
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("HtmlTag", e.localizedMessage ?: e.message ?: "")
         }
     }
 
