@@ -21,6 +21,7 @@ import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.ui.topic.TopicActivity
 import soko.ekibun.bangumi.ui.view.BaseActivity
 import soko.ekibun.bangumi.util.AppUtil
+import soko.ekibun.bangumi.util.HttpUtil
 import java.net.URI
 
 /**
@@ -81,6 +82,7 @@ class WebActivity : BaseActivity() {
             item_swipe.isRefreshing = newProgress != 100
             webview_progress.progress = newProgress
         }
+        webview.settings.userAgentString = HttpUtil.ua
 
         if (!isAuth) {
             title = ""
@@ -223,15 +225,17 @@ class WebActivity : BaseActivity() {
             launchUrl(context, url)
         }
 
+        private fun host(url: String) = try {
+            URI.create(url).host
+        } catch (e: Exception) {
+            url
+        }
+
         /**
          * 判断是否是bgm页面
          */
         fun isBgmPage(url: String): Boolean {
-            val host = try {
-                URI.create(url).host
-            } catch (e: Exception) {
-                return false
-            }
+            val host = host(url)
             if (host.isNullOrEmpty()) return false
             bgmHosts.forEach {
                 if (host.contains(it)) return true
@@ -263,6 +267,7 @@ class WebActivity : BaseActivity() {
             val rakuen = getRakuen(url)
             if (url == null || url.isNullOrEmpty() || rakuen == getRakuen(openUrl)) return false
             if (!isBgmPage(url)) return false
+            if (host(url).contains("doujin")) return false // 忽略天窗联盟
             val post = Regex("""#post_([0-9]+)$""").find(page)?.groupValues?.get(1)?.toIntOrNull() ?: 0
             //blog
             val blogId = Regex("""/blog/(\d+)""").find(rakuen ?: "")?.groupValues?.getOrNull(1)?.toIntOrNull() ?: 0

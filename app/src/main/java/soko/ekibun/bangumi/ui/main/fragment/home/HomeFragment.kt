@@ -8,15 +8,14 @@ import android.widget.ImageView
 import kotlinx.android.synthetic.main.content_home.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
-import soko.ekibun.bangumi.ui.main.fragment.home.fragment.HomeTabFragment
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.collection.CollectionFragment
-import soko.ekibun.bangumi.ui.main.fragment.home.fragment.timeline.TimeLineFragment
 
 /**
  * 主页
  */
 class HomeFragment: DrawerFragment(R.layout.content_home){
     override val titleRes: Int = R.string.home
+    private val fragments get() = (frame_pager?.adapter as? HomePagerAdapter)?.fragments
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -51,23 +50,16 @@ class HomeFragment: DrawerFragment(R.layout.content_home){
     }
 
     /**
-     * 收藏fragment
+     * 更新用户收藏
      */
-    fun collectionFragment(): CollectionFragment?{
-        return fragments()?.firstOrNull { it is CollectionFragment } as? CollectionFragment
+    fun updateUserCollection(): Unit? {
+        return (fragments?.firstOrNull { it is CollectionFragment } as? CollectionFragment)?.reset()
     }
 
     /**
-     * 时间线fragment
+     * 用户改变
      */
-    fun timelineFragment(): TimeLineFragment?{
-        return fragments()?.firstOrNull { it is TimeLineFragment } as? TimeLineFragment
-    }
-
-    /**
-     * fragment列表
-     */
-    fun fragments(): List<HomeTabFragment>?{
-        return (frame_pager?.adapter as? HomePagerAdapter)?.fragments
+    fun onUserChange() {
+        fragments?.forEach { it.onUserChange() }
     }
 }

@@ -35,10 +35,16 @@ class CollectionFragment: HomeTabFragment(R.layout.fragment_collection){
      */
     fun reset() {
         (item_pager?.adapter as? CollectionPagerAdapter)?.reset()
-        item_login_info?.visibility = if((activity as? MainActivity)?.user == null) View.VISIBLE else View.GONE
     }
 
     override fun onSelect() {
         //TODO
+    }
+
+    override fun onUserChange() {
+        val hasUser = (activity as? MainActivity)?.user != null
+        item_login_info?.visibility = if (!hasUser) View.VISIBLE else View.GONE
+        item_pager?.visibility = if (hasUser) View.VISIBLE else View.INVISIBLE
+        item_tab_container?.visibility = if (hasUser) View.VISIBLE else View.INVISIBLE
     }
 }

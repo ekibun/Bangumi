@@ -16,8 +16,7 @@ data class UserInfo(
         var username: String? = null,
         var nickname: String? = null,
         var avatar: String? = null,
-        var sign: String? = null,
-        var notify: Pair<Int, Int>? = null
+        var sign: String? = null
 ) {
     val url = "${Bangumi.SERVER}/user/$username"
 
@@ -61,11 +60,7 @@ data class UserInfo(
                         username = username,
                         nickname = doc.selectFirst("input[name=nickname]")?.attr("value"),
                         avatar = Bangumi.parseImageUrl(user.selectFirst("span.avatarNeue")),
-                        sign = doc.selectFirst("input[name=sign_input]")?.attr("value"),
-                        notify = Pair(
-                                Regex("叮咚叮咚～你有 ([0-9]+) 条新信息!").find(doc.selectFirst("#robot_speech_js")?.text()
-                                        ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 0,
-                                doc.selectFirst("#notify_count")?.text()?.toIntOrNull() ?: 0)
+                        sign = doc.selectFirst("input[name=sign_input]")?.attr("value")
                 )
             }
         }

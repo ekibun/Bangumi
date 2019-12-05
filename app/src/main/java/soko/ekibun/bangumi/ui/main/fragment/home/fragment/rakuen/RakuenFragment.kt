@@ -54,4 +54,8 @@ class RakuenFragment: HomeTabFragment(R.layout.fragment_rakuen){
     override fun onSelect() {
         refresh()
     }
+
+    override fun onUserChange() {
+        // TODO
+    }
 }

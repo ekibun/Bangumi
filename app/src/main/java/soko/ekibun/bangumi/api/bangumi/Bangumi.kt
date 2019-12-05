@@ -6,10 +6,8 @@ import org.jsoup.nodes.Element
 import org.xmlpull.v1.XmlPullParser
 import retrofit2.Call
 import soko.ekibun.bangumi.api.ApiHelper
+import soko.ekibun.bangumi.api.bangumi.bean.*
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
-import soko.ekibun.bangumi.api.bangumi.bean.Episode
-import soko.ekibun.bangumi.api.bangumi.bean.MonoInfo
-import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.util.HttpUtil
 import java.net.URI
 import java.util.*
@@ -150,9 +148,10 @@ object Bangumi {
     }
 
     /**
-     * 进度管理
+     * 进度管理 + 用户信息
      */
-    fun getCollectionSax(onNewSubject: (Subject) -> Unit = {}): Call<List<Subject>> {
+    fun getCollectionSax(onUser: (UserInfo) -> Unit = {}, onNotify: (Pair<Int, Int>) -> Unit = {}, onNewSubject: (Subject) -> Unit = {}): Call<List<Subject>> {
+        val cookieManager = CookieManager.getInstance()
         return ApiHelper.buildHttpCall(SERVER) { rsp ->
             val ret = ArrayList<Subject>()
 
@@ -181,12 +180,36 @@ object Bangumi {
             ApiHelper.parseWithSax(rsp) { parser, str ->
                 when {
                     parser.eventType != XmlPullParser.START_TAG -> ApiHelper.SaxEventType.NOTHING
+                    parser.getAttributeValue("", "id")?.contains("columnHomeA") == true -> {
+                        val doc = Jsoup.parse(str)
+                        val user = doc.selectFirst(".idBadgerNeue a.avatar") ?: throw Exception("login failed")
+                        val username = UserInfo.getUserName(user.attr("href"))
+                        rsp.headers("set-cookie").forEach {
+                            cookieManager.setCookie(SERVER, it)
+                        }
+                        HttpUtil.formhash = Regex("""//bgm.tv/logout/([^"]+)""").find(str)?.groupValues?.getOrNull(1)
+                                ?: HttpUtil.formhash
+                        onUser(UserInfo(
+                                id = username?.toIntOrNull() ?: 0,
+                                username = username,
+                                nickname = doc.selectFirst("#header a")?.text(),
+                                avatar = parseImageUrl(user.selectFirst("span.avatarNeue")),
+                                sign = doc.selectFirst("input[name=sign_input]")?.attr("value")))
+                        ApiHelper.SaxEventType.BEGIN
+                    }
                     parser.getAttributeValue("", "id")?.startsWith("subjectPanel_") == true -> {
                         addSubject(str)
                         ApiHelper.SaxEventType.BEGIN
                     }
                     parser.getAttributeValue("", "id")?.contains("columnHomeB") == true -> {
                         addSubject(str)
+                        ApiHelper.SaxEventType.BEGIN
+                    }
+                    parser.getAttributeValue("", "id")?.contains("subject_prg_content") == true -> {
+                        val doc = Jsoup.parse(str.replace("</null>", "</"))
+                        onNotify(Pair(Regex("叮咚叮咚～你有 ([0-9]+) 条新信息!").find(doc.selectFirst("#robot_speech_js")?.text()
+                                ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 0,
+                                doc.selectFirst("#notify_count")?.text()?.toIntOrNull() ?: 0))
                         ApiHelper.SaxEventType.END
                     }
                     else -> ApiHelper.SaxEventType.NOTHING
@@ -199,11 +222,11 @@ object Bangumi {
     /**
      * 注销
      */
-    fun logout(): Call<Int> {
+    fun logout(): Call<Boolean> {
         return ApiHelper.buildHttpCall("$SERVER/logout/${HttpUtil.formhash}") {
             val cookieManager = CookieManager.getInstance()
             it.headers("set-cookie").forEach { cookieManager.setCookie(SERVER, it) }
-            it.code
+            it.code == 200
         }
     }
 }

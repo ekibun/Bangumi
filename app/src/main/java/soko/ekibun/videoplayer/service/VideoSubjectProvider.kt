@@ -29,6 +29,7 @@ class VideoSubjectProvider : Service() {
 
         override fun refreshSubject(subject: VideoSubject, callback: ISubjectCallback) {
             Subject.getDetail(subject.toSubject()).enqueue(ApiHelper.buildCallback({
+                it.eps = null
                 callback.onFinish(VideoSubject(it))
             }, { it?.let { callback.onReject(it.toString()) } }))
         }

@@ -45,7 +45,7 @@ data class TopicPost(
             val user = it.selectFirst(".inner a") ?: return null
             val data = (it.selectFirst(".icons_cmt")?.attr("onclick") ?: "").split(",")
             val relate = data.getOrNull(2)?.toIntOrNull() ?: 0
-            val post_id = data.getOrNull(3)?.toIntOrNull() ?: 0
+            val post_id = it.selectFirst(".re_info a")?.attr("href")?.substringAfter("_")?.toIntOrNull() ?: 0
             val badge = it.selectFirst(".badgeState")?.text()
             val floor = Regex("""#(\d+)(-\d+)?""").find(it.selectFirst(".floor-anchor")?.text() ?: "")?.groupValues
             return TopicPost(

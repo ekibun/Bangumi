@@ -79,6 +79,9 @@ class InfoboxDialog(context: Context): Dialog(context, R.style.AppTheme_Dialog) 
             }
         })
         behavior.isHideable = true
+        view.post {
+            behavior.peekHeight = view.height * 2 / 3
+        }
 
         view.item_outside.setOnClickListener {
             dismiss()

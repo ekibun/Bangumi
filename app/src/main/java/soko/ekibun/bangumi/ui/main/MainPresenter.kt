@@ -7,9 +7,11 @@ import android.util.Log
 import android.view.View
 import androidx.core.view.GravityCompat
 import kotlinx.android.synthetic.main.activity_main.*
+import retrofit2.Call
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
+import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.bangumi.bean.UserInfo
 import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.web.WebActivity
@@ -65,33 +67,16 @@ class MainPresenter(private val context: MainActivity) {
         return false
     }
 
-    /**
-     * 更新用户信息
-     */
-    fun refreshUser() {
-        UserInfo.getSelf(
-                reload = {
-                    context.runOnUiThread {
-                        drawerView.homeFragment.timelineFragment()?.onSelect()
-                    }
-                }
-        ).enqueue(ApiHelper.buildCallback({ user ->
-            updateUser(user)
-            context.notifyMenu?.badge = user.notify?.let { it.first + it.second } ?: 0
-        }, { if ((it as? Exception)?.message == "login failed") updateUser(null) }))
-    }
-
     var user: UserInfo? = null
     private fun updateUser(user: UserInfo?) {
-        Log.v("updateUser", "${this.user}->$user")
-        if (this.user != user || user == null) {
+        context.runOnUiThread {
+            Log.v("updateUser", "${this.user}->$user")
             val lastName = this.user?.username
             this.user = user
-            if (user == null || lastName != user.username)
-                drawerView.homeFragment.collectionFragment()?.reset()
+            if (user == null || lastName != user.username) drawerView.homeFragment.onUserChange()
+            context.nav_view.menu.findItem(R.id.nav_logout).isVisible = user != null
+            userView.setUser(user)
         }
-        context.nav_view.menu.findItem(R.id.nav_logout).isVisible = user != null
-        userView.setUser(user)
     }
 
     /**
@@ -122,5 +107,35 @@ class MainPresenter(private val context: MainActivity) {
                     refreshUser()
                 }
             }
+    }
+
+    /**
+     * 更新用户信息
+     */
+    fun refreshUser() {
+        drawerView.homeFragment.updateUserCollection() ?: updateUserCollection()
+    }
+
+    var collectionList: List<Subject> = ArrayList()
+    private var collectionCall: Call<List<Subject>>? = null
+    var notify: Pair<Int, Int>? = null
+    /**
+     * 获取收藏
+     */
+    fun updateUserCollection(callback: (List<Subject>) -> Unit = {}, onError: (Throwable?) -> Unit = {}) {
+        collectionCall?.cancel()
+        collectionCall = Bangumi.getCollectionSax({ user ->
+            updateUser(user)
+        }, {
+            notify = it
+            context.runOnUiThread { context.notifyMenu?.badge = notify?.let { it.first + it.second } ?: 0 }
+        })
+        collectionCall?.enqueue(ApiHelper.buildCallback({
+            collectionList = it
+            callback(it)
+        }, {
+            onError(it)
+            if ((it as? Exception)?.message == "login failed") (context as? MainActivity)?.mainPresenter?.updateUser(null)
+        }))
     }
 }

@@ -109,16 +109,12 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
         item.first.isUseEmpty(false)
         val page = pageIndex.getOrPut(position) { 0 }
         collectionCalls[position]?.cancel()
-        if (page == 0)
-            item.first.setNewData(null)
-        val user = (fragment.activity as? MainActivity)?.user ?: return
-        val userName = user.username ?: user.id.toString()
-        if (page == 0)
-            item.second.isRefreshing = true
         val useApi = position == 2 && subjectTypeView.selectedType in arrayOf(R.id.collection_type_anime, R.id.collection_type_book, R.id.collection_type_real)
-        collectionCalls[position] = if (useApi) Bangumi.getCollectionSax {}
-        else Bangumi.getCollectionList(subjectTypeView.getType(), userName, Collection.getStatusById(position + 1), page + 1)
-        collectionCalls[position]?.enqueue(ApiHelper.buildCallback({ list ->
+        if (page == 0) {
+            if (!useApi) item.first.setNewData(null)
+            item.second.isRefreshing = true
+        }
+        val callback = { list: List<Subject> ->
             item.first.isUseEmpty(true)
             list.filter { !useApi || it.type == subjectTypeView.getType() }.let {
                 if (!useApi) {
@@ -139,10 +135,18 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
                 item.first.loadMoreComplete()
             (item.second.tag as? RecyclerView)?.tag = true
             pageIndex[position] = (pageIndex[position] ?: 0) + 1
-        }, {
+        }
+        val onError = { it: Throwable? ->
             item.second.isRefreshing = false
             item.first.loadMoreFail()
-        }))
+        }
+        if (useApi) (fragment.activity as? MainActivity)?.mainPresenter?.updateUserCollection(callback, onError)
+        else {
+            collectionCalls[position] = Bangumi.getCollectionList(subjectTypeView.getType(),
+                    (fragment.activity as? MainActivity)?.user?.let { it.username ?: it.id.toString() } ?: return,
+                    Collection.getStatusById(position + 1), page + 1)
+            collectionCalls[position]?.enqueue(ApiHelper.buildCallback(callback, onError))
+        }
     }
 
     override fun getPageTitle(pos: Int): CharSequence {

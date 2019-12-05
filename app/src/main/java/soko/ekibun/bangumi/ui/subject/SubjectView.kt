@@ -44,7 +44,7 @@ class SubjectView(private val context: SubjectActivity) {
     val tagAdapter = TagAdapter()
     val topicAdapter = TopicAdapter()
     val blogAdapter = BlogAdapter()
-    val sitesAdapter = SitesAdapter()
+    val sitesAdapter = SitesAdapter(collapseLabel = true)
     val commentAdapter = CommentAdapter()
     val seasonAdapter = SeasonAdapter()
     private val seasonLayoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)

@@ -22,5 +22,7 @@ abstract class HomeTabFragment(@LayoutRes private val resId: Int): androidx.frag
      */
     abstract fun onSelect()
 
+    abstract fun onUserChange()
+
     var savedInstanceState:Bundle? = null
 }

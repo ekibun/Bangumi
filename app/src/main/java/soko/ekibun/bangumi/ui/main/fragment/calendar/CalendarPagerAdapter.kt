@@ -9,11 +9,11 @@ import androidx.preference.PreferenceManager
 import retrofit2.Call
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.api.ApiHelper
-import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.github.GithubRaw
 import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
+import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import java.text.SimpleDateFormat
 import java.util.*
@@ -165,9 +165,8 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: an
     }
 
     private var raw: List<BangumiCalendarItem>? = null
-    private var chaseList: List<Subject>? = null
+    private val chaseList: List<Subject>? get() = (fragment.activity as? MainActivity)?.mainPresenter?.collectionList
     private var calendarCall: Call<List<BangumiCalendarItem>>? = null
-    private var chaseCall: Call<List<Subject>>? = null
     @SuppressLint("UseSparseArrays")
     private fun loadCalendarList() {
         if (raw == null) {
@@ -187,13 +186,6 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: an
                 it.value.second.isRefreshing = false
             }
         }))
-
-        chaseCall?.cancel()
-        chaseCall = Bangumi.getCollectionSax()
-        chaseCall?.enqueue(ApiHelper.buildCallback({
-            chaseList = it
-            setOnAirList(raw ?: return@buildCallback)
-        }, {}))
     }
 
     override fun getItemPosition(`object`: Any): Int {

@@ -12,7 +12,7 @@ import okhttp3.internal.http.BridgeInterceptor
  * Http请求工具类
  */
 object HttpUtil {
-    var ua = ""
+    val ua = "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Mobile Safari/537.36"
     var formhash = ""
     val httpCookieClient: OkHttpClient by lazy {
         OkHttpClient.Builder()

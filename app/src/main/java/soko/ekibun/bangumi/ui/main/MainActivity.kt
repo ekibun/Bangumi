@@ -28,7 +28,7 @@ class MainActivity : BaseActivity() {
     val downloadCacheProvider by lazy{ DownloadCacheProvider(this){
         nav_view.menu.findItem(R.id.nav_download).isVisible = it
     } }
-    private val mainPresenter by lazy{ MainPresenter(this) }
+    val mainPresenter by lazy { MainPresenter(this) }
     val user get() = mainPresenter.user
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,9 +37,6 @@ class MainActivity : BaseActivity() {
 
         nav_view.menu.findItem(R.id.nav_download).isVisible = false
         downloadCacheProvider.bindService()
-
-        if(savedInstanceState?.containsKey("user") != true)
-            mainPresenter.refreshUser()
 
         val sp = PreferenceManager.getDefaultSharedPreferences(this)
         if (BuildConfig.AUTO_UPDATES && sp.getBoolean("check_update", true)) AppUtil.checkUpdate(this)
@@ -62,8 +59,8 @@ class MainActivity : BaseActivity() {
         val menuItem = menu.findItem(R.id.action_notify)
         notifyMenu = MenuItemCompat.getActionProvider(menuItem) as NotifyActionProvider
         notifyMenu?.onClick = {
-            val inbox = mainPresenter.user?.notify?.first?:0
-            val notify = mainPresenter.user?.notify?.second?:0
+            val inbox = mainPresenter.notify?.first ?: 0
+            val notify = mainPresenter.notify?.second ?: 0
             val popup = PopupMenu(this, menuItem.actionView)
             popup.menuInflater.inflate(R.menu.list_notify, popup.menu)
             popup.menu.findItem(R.id.notify_type_inbox)?.title = "${getString(R.string.notify_inbox)}${if(inbox != 0) " (+$inbox)" else ""}"
@@ -71,13 +68,13 @@ class MainActivity : BaseActivity() {
             popup.setOnMenuItemClickListener{
                 when(it.itemId){
                     R.id.notify_type_inbox -> {
-                        mainPresenter.user?.notify = Pair(0, mainPresenter.user?.notify?.second ?: 0)
-                        notifyMenu?.badge = mainPresenter.user?.notify?.let { it.first + it.second } ?: 0
+                        mainPresenter.notify = Pair(0, mainPresenter.notify?.second ?: 0)
+                        notifyMenu?.badge = mainPresenter.notify?.let { it.first + it.second } ?: 0
                         WebActivity.launchUrl(this, "${Bangumi.SERVER}/pm")
                     }
                     R.id.notify_type_notify -> {
-                        mainPresenter.user?.notify = Pair(mainPresenter.user?.notify?.first ?: 0, 0)
-                        notifyMenu?.badge = mainPresenter.user?.notify?.let { it.first + it.second } ?: 0
+                        mainPresenter.notify = Pair(mainPresenter.notify?.first ?: 0, 0)
+                        notifyMenu?.badge = mainPresenter.notify?.let { it.first + it.second } ?: 0
                         WebActivity.launchUrl(this, "${Bangumi.SERVER}/notify" + if (notify == 0) "/all" else "")
                     }
                 }
