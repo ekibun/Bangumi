@@ -83,4 +83,5 @@ dependencies {
     implementation 'am.util:viewpager:25.3.0'
     implementation 'com.squareup.retrofit2:converter-scalars:2.1.0'
     implementation 'com.jakewharton:disklrucache:2.0.2'
+    implementation 'com.caverock:androidsvg:1.2.1'
 }
