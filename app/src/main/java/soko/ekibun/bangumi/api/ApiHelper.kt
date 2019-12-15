@@ -66,7 +66,7 @@ object ApiHelper {
             try {
                 parser.next()
             } catch (e: Exception) {
-                Log.e("SaxErr", e.localizedMessage ?: e.message ?: "")
+                //Log.e("SaxErr", e.localizedMessage ?: e.message ?: "")
             }
         }
         return lastData

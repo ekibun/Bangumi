@@ -112,6 +112,14 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
         val useApi = position == 2 && subjectTypeView.selectedType in arrayOf(R.id.collection_type_anime, R.id.collection_type_book, R.id.collection_type_real)
         if (page == 0) {
             if (!useApi) item.first.setNewData(null)
+            else (fragment.activity as? MainActivity)?.mainPresenter?.collectionList?.filter { it.type == subjectTypeView.getType() }?.let {
+                item.first.setNewData(it.sortedByDescending {
+                    val eps = it.eps?.filter { it.type == Episode.TYPE_MAIN }
+                    val watchTo = eps?.lastOrNull { it.progress == Episode.PROGRESS_WATCH }
+                    val airTo = eps?.lastOrNull { it.status == Episode.STATUS_AIR }
+                    (if (watchTo != airTo) ":" else "") + (airTo?.airdate ?: "")
+                }.toMutableList())
+            }
             item.second.isRefreshing = true
         }
         val callback = { list: List<Subject> ->

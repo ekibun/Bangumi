@@ -21,7 +21,6 @@ import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.ui.topic.TopicActivity
 import soko.ekibun.bangumi.ui.view.BaseActivity
 import soko.ekibun.bangumi.util.AppUtil
-import soko.ekibun.bangumi.util.HttpUtil
 import java.net.URI
 
 /**
@@ -82,7 +81,6 @@ class WebActivity : BaseActivity() {
             item_swipe.isRefreshing = newProgress != 100
             webview_progress.progress = newProgress
         }
-        webview.settings.userAgentString = HttpUtil.ua
 
         if (!isAuth) {
             title = ""

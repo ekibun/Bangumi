@@ -8,6 +8,7 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.ViewGroup
 import android.webkit.*
+import soko.ekibun.bangumi.util.HttpUtil
 
 /**
  * 多窗口WebView
@@ -24,6 +25,8 @@ class NestedWebView @JvmOverloads constructor(context: Context, attrs: Attribute
     var childWebView: NestedWebView? = null
 
     init {
+        settings.userAgentString = HttpUtil.ua
+
         @SuppressLint("SetJavaScriptEnabled")
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true

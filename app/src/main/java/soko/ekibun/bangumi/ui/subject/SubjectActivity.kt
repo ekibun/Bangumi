@@ -39,7 +39,6 @@ class SubjectActivity : SwipeBackActivity() {
                             ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 0
                     Subject(id)
                 }())
-        subjectPresenter.refresh()
 
         val episodePaddingBottom = episode_detail_list.paddingBottom
         val listPaddingBottom = comment_list.paddingBottom
@@ -59,6 +58,11 @@ class SubjectActivity : SwipeBackActivity() {
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) ThemeModel.updateNavigationTheme(this)
+    }
+
+    override fun onStart() {
+        subjectPresenter.refresh()
+        super.onStart()
     }
 
     override fun processBack() {

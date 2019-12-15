@@ -2,86 +2,120 @@ package soko.ekibun.bangumi.ui.main.fragment.calendar
 
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
+import android.util.SparseArray
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
 import androidx.preference.PreferenceManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import kotlinx.android.synthetic.main.content_calendar.view.*
 import retrofit2.Call
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
-import soko.ekibun.bangumi.api.github.GithubRaw
+import soko.ekibun.bangumi.api.github.Jsdelivr
 import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
 import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
 /**
  * 时间表PagerAdapter
  */
-class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: androidx.viewpager.widget.ViewPager, private val scrollTrigger: (Boolean) -> Unit) : androidx.viewpager.widget.PagerAdapter() {
-    private val sp: SharedPreferences by lazy { PreferenceManager.getDefaultSharedPreferences(pager.context) }
+@SuppressLint("ClickableViewAccessibility")
+class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.widget.PagerAdapter() {
+    private val sp: SharedPreferences by lazy { PreferenceManager.getDefaultSharedPreferences(view.context) }
     var windowInsets: WindowInsets? = null
+    private val items = SparseArray<CalendarAdapter>()
 
-    private val dataCacheModel by lazy { App.get(pager.context).dataCacheModel }
+    private val dataCacheModel by lazy { App.get(view.context).dataCacheModel }
 
     init {
-        pager.addOnPageChangeListener(object : androidx.viewpager.widget.ViewPager.OnPageChangeListener {
+        view.item_pager.offscreenPageLimit = 2
+        view.item_pager.addOnPageChangeListener(object : androidx.viewpager.widget.ViewPager.OnPageChangeListener {
             override fun onPageScrollStateChanged(state: Int) { /* no-op */
             }
 
-            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) { /* no-op */
+            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
+                val max = 1.5f
+                val dim = 1.2f
+                view.item_pager.findViewWithTag<RecyclerView>(position)?.alpha = max - positionOffset * dim
+                view.item_pager.findViewWithTag<RecyclerView>(position + 1)?.alpha = max - (1 - positionOffset) * dim
+                view.item_pager.findViewWithTag<RecyclerView>(position - 1)?.alpha = max - (1 + positionOffset) * dim
+                view.item_pager.findViewWithTag<RecyclerView>(position + 2)?.alpha = max - (2 - positionOffset) * dim
+                view.item_pager.findViewWithTag<RecyclerView>(position - 2)?.alpha = max - (2 + positionOffset) * dim
             }
 
             override fun onPageSelected(position: Int) {
-                scrollTrigger((items[CalendarAdapter.getCalendarInt(getPostDate(pager.currentItem))]?.second?.tag as? androidx.recyclerview.widget.RecyclerView)?.canScrollVertically(-1) == true)
+                updateTabElevation()
             }
         })
+
+        var canScroll = false
+        view.item_pager.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_MOVE -> {
+                    canScroll = true
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    canScroll = false
+                }
+            }
+            false
+        }
+
+        view.item_swipe.setOnRefreshListener {
+            loadCalendarList()
+        }
+        view.item_swipe.setOnChildScrollUpCallback { _, _ ->
+            canScroll || currentView?.canScrollVertically(-1) ?: false
+        }
+        loadCalendarList()
     }
 
-    private fun getItem(position: Int): Pair<CalendarAdapter, androidx.swiperefreshlayout.widget.SwipeRefreshLayout> {
-        return items.getOrPut(position) {
-            val swipeRefreshLayout = androidx.swiperefreshlayout.widget.SwipeRefreshLayout(pager.context)
-            val recyclerView = androidx.recyclerview.widget.RecyclerView(pager.context)
-            recyclerView.overScrollMode = View.OVER_SCROLL_NEVER
-            recyclerView.setPadding(0, 0, 0, windowInsets?.systemWindowInsetBottom ?: 0)
-            recyclerView.clipToPadding = false
-            recyclerView.addOnScrollListener(object : androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
-                override fun onScrolled(recyclerView: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {
-                    scrollTrigger((items[CalendarAdapter.getCalendarInt(getPostDate(pager.currentItem))]?.second?.tag as? androidx.recyclerview.widget.RecyclerView)?.canScrollVertically(-1) == true)
-                }
-            })
+    private fun updateTabElevation() {
+        view.item_tabs.isPressed = currentView?.canScrollVertically(-1) ?: false
+    }
 
+    private fun getItem(position: Int): CalendarAdapter {
+        return items.get(position) ?: {
             val adapter = CalendarAdapter()
             adapter.setOnItemChildClickListener { _, v, pos ->
                 SubjectActivity.startActivity(v.context, adapter.data[pos].t.subject)
             }
-            recyclerView.adapter = adapter
-            recyclerView.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(pager.context)
-            recyclerView.isNestedScrollingEnabled = false
-            swipeRefreshLayout.addView(recyclerView)
-            swipeRefreshLayout.tag = recyclerView
-            swipeRefreshLayout.setOnRefreshListener { loadCalendarList() }
-            Pair(adapter, swipeRefreshLayout)
-        }
+            items.put(position, adapter)
+            adapter
+        }()
     }
 
-    @SuppressLint("UseSparseArrays")
-    private val items = HashMap<Int, Pair<CalendarAdapter, androidx.swiperefreshlayout.widget.SwipeRefreshLayout>>()
-
+    private val currentView: RecyclerView? get() = view.item_pager.findViewWithTag(view.item_pager.currentItem)
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
-        val item = getItem(CalendarAdapter.getCalendarInt(getPostDate(position)))
-        if (raw == null && position == pager.currentItem)
-            loadCalendarList()
-        (item.second.parent as? ViewGroup)?.removeView(item.second)
-        container.addView(item.second)
-        return item.second
+        val adapter = getItem(CalendarAdapter.getCalendarInt(getPostDate(position)))
+        val recyclerView = RecyclerView(view.context)
+        recyclerView.overScrollMode = View.OVER_SCROLL_NEVER
+        recyclerView.setPadding(0, 0, 0, windowInsets?.systemWindowInsetBottom ?: 0)
+        recyclerView.clipToPadding = false
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                updateTabElevation()
+            }
+        })
+
+        recyclerView.adapter = adapter
+        recyclerView.layoutManager = LinearLayoutManager(view.context)
+        recyclerView.isNestedScrollingEnabled = false
+        recyclerView.tag = position
+
+        container.addView(recyclerView)
+        return recyclerView
     }
 
-    private var firstLoad = true
     private fun setOnAirList(it: List<BangumiCalendarItem>) {
         val useCN = sp.getBoolean("calendar_use_cn", false)
         val use30h = sp.getBoolean("calendar_use_30h", false)
@@ -133,7 +167,6 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: an
                         0 -> 0
                         else -> 1
                     })
-                //(((if(!useCN || subject.timeCN.isNullOrEmpty()) subject.weekDayJP else subject.weekDayCN)?:0) - CalendarAdapter.getWeek(cal) + 7) % 7
                 val dayDif = week + dayCarry
                 cal.add(Calendar.DAY_OF_MONTH, dayDif)
                 val date = CalendarAdapter.getCalendarInt(cal)
@@ -144,47 +177,48 @@ class CalendarPagerAdapter(val fragment: CalendarFragment, private val pager: an
         onAir.toList().forEach { date ->
             var index = -1
             val item = getItem(date.first)
-            item.first.setNewData(null)
+            val data = ArrayList<CalendarAdapter.CalendarSection>()
             date.second.toList().sortedBy { it.first }.forEach { time ->
                 var isHeader = true
                 time.second.forEach {
                     it.subject.collect = if (chaseList?.find { c -> c.id == it.subject.id } != null) Collection(Collection.STATUS_DO) else null
                     if (it.subject.image != null) {
                         if (index == -1 && !CalendarAdapter.pastTime(date.first, time.first, use30h))
-                            index = item.first.data.size
-                        item.first.addData(CalendarAdapter.CalendarSection(isHeader, it, date.first, time.first))
+                            index = item.data.size
+                        data.add(CalendarAdapter.CalendarSection(isHeader, it, date.first, time.first))
                         isHeader = false
                     }
                 }
             }
-            if (firstLoad)
-                ((item.second.tag as? androidx.recyclerview.widget.RecyclerView)?.layoutManager as? androidx.recyclerview.widget.LinearLayoutManager)?.scrollToPositionWithOffset(index - 1, 0)
+            item.setNewData(data)
+            if (date.first == now) {
+                ((view.item_pager.findViewWithTag(7) as? RecyclerView)?.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(index - 1, 0)
+                if (view.item_pager.currentItem == 7) view.item_pager.post {
+                    updateTabElevation()
+                }
+            }
         }
-        if (firstLoad)
-            firstLoad = false
     }
 
     private var raw: List<BangumiCalendarItem>? = null
-    private val chaseList: List<Subject>? get() = (fragment.activity as? MainActivity)?.mainPresenter?.collectionList
+    private val chaseList: List<Subject>? get() = (view.context as? MainActivity)?.mainPresenter?.collectionList
     private var calendarCall: Call<List<BangumiCalendarItem>>? = null
     @SuppressLint("UseSparseArrays")
-    private fun loadCalendarList() {
+    fun loadCalendarList() {
         if (raw == null) {
             raw = dataCacheModel.get<List<BangumiCalendarItem>>("calendar")
             raw?.let { setOnAirList(it) }
         }
-        items.forEach { it.value.second.isRefreshing = true }
+        view.item_swipe.isRefreshing = true
 
         calendarCall?.cancel()
-        calendarCall = GithubRaw.createInstance().bangumiCalendar()
+        calendarCall = Jsdelivr.createInstance().bangumiCalendar()
         calendarCall?.enqueue(ApiHelper.buildCallback({
             raw = it
             setOnAirList(it ?: return@buildCallback)
             dataCacheModel.set<List<BangumiCalendarItem>>("calendar", it)
         }, {
-            items.forEach {
-                it.value.second.isRefreshing = false
-            }
+            view.item_swipe.isRefreshing = false
         }))
     }
 

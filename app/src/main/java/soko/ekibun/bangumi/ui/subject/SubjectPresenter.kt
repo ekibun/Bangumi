@@ -18,7 +18,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.bangumi.bean.Comment
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
-import soko.ekibun.bangumi.api.github.GithubRaw
+import soko.ekibun.bangumi.api.github.Jsdelivr
 import soko.ekibun.bangumi.api.github.bean.OnAirInfo
 import soko.ekibun.bangumi.api.trim21.BgmIpViewer
 import soko.ekibun.bangumi.api.trim21.bean.IpView
@@ -213,7 +213,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
         context.item_swipe.isRefreshing = true
 
         subjectCall = ApiHelper.buildGroupCall(
-                arrayOf(GithubRaw.createInstance().onAirInfo(subject.id / 1000, subject.id),
+                arrayOf(Jsdelivr.createInstance().onAirInfo(subject.id / 1000, subject.id),
                         Subject.getDetail(subject) { newSubject, tag ->
                             subject = newSubject
                             context.runOnUiThread {
