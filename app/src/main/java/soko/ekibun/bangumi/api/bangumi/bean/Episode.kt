@@ -11,8 +11,6 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import java.text.DecimalFormat
-import java.text.SimpleDateFormat
-import java.util.*
 
 /**
  * 剧集类
@@ -49,12 +47,7 @@ data class Episode(
         category = category ?: ep.category
     }
 
-    val isAir
-        get() = status == STATUS_AIR || progress == PROGRESS_WATCH || (category?.startsWith("Disc") ?: false) || try {
-            SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(airdate ?: "")!!.time < Date().time
-        } catch (e: Exception) {
-            false
-        }
+    val isAir get() = status == STATUS_AIR || progress == PROGRESS_WATCH || (category?.startsWith("Disc") ?: false)
 
     /**
      * 第*话

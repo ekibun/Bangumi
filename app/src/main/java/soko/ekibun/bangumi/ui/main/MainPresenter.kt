@@ -134,6 +134,11 @@ class MainPresenter(private val context: MainActivity) {
             context.runOnUiThread { context.notifyMenu?.badge = notify?.let { it.first + it.second } ?: 0 }
         })
         collectionCall?.enqueue(ApiHelper.buildCallback({
+            it.forEach { subject ->
+                calendar.find { cal -> cal.id == subject.id }?.eps?.forEach { calEp ->
+                    subject.eps?.find { ep -> ep.id == calEp.id }?.merge(calEp)
+                }
+            }
             collectionList = it
             callback(it)
         }, {
