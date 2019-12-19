@@ -10,6 +10,7 @@
 
     <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/app_bar"
+            android:translationY="-20dp"
             android:layout_height="wrap_content"
             android:background="?android:colorBackground"
             app:layout_behavior="soko.ekibun.bangumi.util.FixAppBarLayoutBehavior"
@@ -19,6 +20,7 @@
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
                 android:id="@+id/toolbar_layout"
+                android:translationY="20dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:minHeight="?attr/actionBarSize"
@@ -99,7 +101,7 @@
                 />
                 <View
                         app:layout_constraintTop_toBottomOf="@+id/title_expand"
-                        android:layout_height="80dp"
+                        android:layout_height="100dp"
                         android:layout_width="match_parent"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
         </com.google.android.material.appbar.CollapsingToolbarLayout>
@@ -185,6 +187,7 @@
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
         <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/comment_list"
+                android:overScrollMode="never"
                 android:clipToPadding="false"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>
@@ -194,7 +197,6 @@
             android:id="@+id/episode_detail_list_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingTop="20dp"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
             android:clickable="true"
             android:focusable="true"

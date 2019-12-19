@@ -18,6 +18,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.ui.main.MainActivity
+import soko.ekibun.bangumi.ui.main.MainPresenter
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 
@@ -27,6 +28,7 @@ import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 class CollectionPagerAdapter(private val context: Context, val fragment: CollectionFragment, private val pager: ViewPager, private val scrollTrigger: (Boolean) -> Unit) : androidx.viewpager.widget.PagerAdapter() {
     private var tabList = context.resources.getStringArray(R.array.collection_status_anime)
     private val subjectTypeView = SubjectTypeView(fragment.item_type) { reset() }
+    private val mainPresenter: MainPresenter? get() = (fragment.activity as? MainActivity)?.mainPresenter
 
     init {
         pager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
@@ -112,11 +114,11 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
         val useApi = position == 2 && subjectTypeView.selectedType in arrayOf(R.id.collection_type_anime, R.id.collection_type_book, R.id.collection_type_real)
         if (page == 0) {
             if (!useApi) item.first.setNewData(null)
-            else (fragment.activity as? MainActivity)?.mainPresenter?.collectionList?.filter { it.type == subjectTypeView.getType() }?.let {
+            else mainPresenter?.collectionList?.filter { it.type == subjectTypeView.getType() }?.let {
                 item.first.setNewData(it.sortedByDescending {
                     val eps = it.eps?.filter { it.type == Episode.TYPE_MAIN }
                     val watchTo = eps?.lastOrNull { it.progress == Episode.PROGRESS_WATCH }
-                    val airTo = eps?.lastOrNull { it.status == Episode.STATUS_AIR }
+                    val airTo = eps?.lastOrNull { it.isAir }
                     (if (watchTo != airTo) ":" else "") + (airTo?.airdate ?: "")
                 }.toMutableList())
             }
@@ -132,7 +134,7 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
                     item.first.setNewData(it.sortedByDescending {
                         val eps = it.eps?.filter { it.type == Episode.TYPE_MAIN }
                         val watchTo = eps?.lastOrNull { it.progress == Episode.PROGRESS_WATCH }
-                        val airTo = eps?.lastOrNull { it.status == Episode.STATUS_AIR }
+                        val airTo = eps?.lastOrNull { it.isAir }
                         (if (watchTo != airTo) ":" else "") + (airTo?.airdate ?: "")
                     }.toMutableList())
                 }
@@ -148,7 +150,7 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
             item.second.isRefreshing = false
             item.first.loadMoreFail()
         }
-        if (useApi) (fragment.activity as? MainActivity)?.mainPresenter?.updateUserCollection(callback, onError)
+        if (useApi) mainPresenter?.updateUserCollection(callback, onError)
         else {
             collectionCalls[position] = Bangumi.getCollectionList(subjectTypeView.getType(),
                     (fragment.activity as? MainActivity)?.user?.let { it.username ?: it.id.toString() } ?: return,

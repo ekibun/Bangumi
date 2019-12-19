@@ -8,11 +8,13 @@ import android.view.View
 import androidx.core.view.GravityCompat
 import kotlinx.android.synthetic.main.activity_main.*
 import retrofit2.Call
+import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.bangumi.bean.UserInfo
+import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
 import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.HttpUtil
@@ -116,6 +118,7 @@ class MainPresenter(private val context: MainActivity) {
         drawerView.homeFragment.updateUserCollection() ?: updateUserCollection()
     }
 
+    var calendar: List<BangumiCalendarItem> = App.get(context).dataCacheModel.get("calendar") ?: ArrayList()
     var collectionList: List<Subject> = ArrayList()
     private var collectionCall: Call<List<Subject>>? = null
     var notify: Pair<Int, Int>? = null

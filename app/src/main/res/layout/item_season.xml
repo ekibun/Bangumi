@@ -16,5 +16,5 @@
             android:gravity="center"
             android:background="@drawable/bangumi_detail_ic_season_middle"
             tools:text="Season Name"
-            android:maxLines="1"/>
+            android:singleLine="true"/>
 </RelativeLayout>

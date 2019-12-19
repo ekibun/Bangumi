@@ -3,6 +3,7 @@ package soko.ekibun.bangumi.api
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.util.Xml
 import okhttp3.Request
 import okhttp3.RequestBody
 import org.xmlpull.v1.XmlPullParser
@@ -44,7 +45,11 @@ object ApiHelper {
     }
 
     fun parseWithSax(rsp: okhttp3.Response, checkEvent: (XmlPullParser, String) -> SaxEventType): String {
-        val parser = XmlPullParserFactory.newInstance().newPullParser()
+        val parser = XmlPullParserFactory.newInstance().apply {
+            this.isValidating = false
+            this.setFeature(Xml.FEATURE_RELAXED, true)
+            this.isNamespaceAware = true
+        }.newPullParser()
         parser.setInput(rsp.body!!.charStream())
 
         var lastData = ""

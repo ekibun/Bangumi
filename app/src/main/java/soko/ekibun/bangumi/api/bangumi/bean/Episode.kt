@@ -41,19 +41,26 @@ data class Episode(
         name = name ?: ep.name
         name_cn = name_cn ?: ep.name_cn
         duration = duration ?: ep.duration
-        airdate = ep.airdate ?: ep.airdate
+        airdate = airdate ?: ep.airdate
         comment = if (comment == 0) ep.comment else comment
         desc = desc ?: ep.desc
-        status = if (status == STATUS_NA) ep.status else status
+        status = status ?: ep.status
         progress = progress ?: ep.progress
         category = category ?: ep.category
     }
 
+    val isAir
+        get() = status == STATUS_AIR || progress == PROGRESS_WATCH || (category?.startsWith("Disc") ?: false) || try {
+            SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(airdate ?: "")!!.time < Date().time
+        } catch (e: Exception) {
+            false
+        }
+
     /**
      * 第*话
      */
-    fun parseSort(context: Context): String{
-        return if(type == TYPE_MAIN)
+    fun parseSort(context: Context): String {
+        return if (type == TYPE_MAIN)
             context.getString(R.string.parse_sort_ep, DecimalFormat("#.##").format(sort))
         else
             context.getString(getTypeRes(type)) + " ${DecimalFormat("#.##").format(sort)}"
@@ -92,7 +99,7 @@ data class Episode(
          */
         @StringRes
         fun getTypeRes(@EpisodeType type: Int): Int {
-            return when(type){
+            return when (type) {
                 TYPE_MAIN -> R.string.episode_type_main
                 TYPE_SP -> R.string.episode_type_sp
                 TYPE_OP -> R.string.episode_type_op
@@ -116,7 +123,7 @@ data class Episode(
         /**
          * 剧集和曲目列表
          */
-        fun parseLineList(doc: Element): List<Episode> {
+        private fun parseLineList(doc: Element): List<Episode> {
             var cat = "本篇"
             return doc.select("ul.line_list>li").mapNotNull { li ->
                 if (li.hasClass("cat")) cat = li.text()
@@ -143,7 +150,7 @@ data class Episode(
                         airdate = epInfo?.firstOrNull { it.trim().startsWith("首播") }?.substringAfter(":"),
                         comment = epInfo?.firstOrNull { it.trim().startsWith("讨论") }?.trim()?.substringAfter("+")?.toIntOrNull()
                                 ?: 0,
-                        status = if (cat.startsWith("Disc")) STATUS_AIR else li.selectFirst(".epAirStatus span")?.className(),
+                        status = li.selectFirst(".epAirStatus span")?.className(),
                         progress = li.selectFirst(".listEpPrgManager>span")?.let {
                             when {
                                 it.hasClass("statusWatched") -> PROGRESS_WATCH
@@ -163,7 +170,6 @@ data class Episode(
         fun parseProgressList(item: Element, doc: Element? = null): List<Episode> {
             if (item.selectFirst("ul.line_list_music") != null) return parseLineList(item)
             var cat = "本篇"
-            val now = Date().time
             return item.select("ul.prg_list li").mapNotNull { li ->
                 if (li.hasClass("subtitle")) cat = li.text()
                 val it = li.selectFirst("a") ?: return@mapNotNull null
@@ -190,12 +196,9 @@ data class Episode(
                         comment = rel?.selectFirst(".cmt .na")?.text()?.trim('(', ')', '+')?.toIntOrNull() ?: 0,
                         status = when {
                             it.hasClass("epBtnToday") -> STATUS_TODAY
-                            it.hasClass("epBtnAir") || it.hasClass("epBtnWatched") || (rel != null && (try {
-                                SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(airdate ?: "")
-                            } catch (e: Exception) {
-                                null
-                            }?.time ?: 0L < now)) -> STATUS_AIR
-                            else -> STATUS_NA
+                            it.hasClass("epBtnAir") -> STATUS_AIR
+                            it.hasClass("epBtnNA") -> STATUS_NA
+                            else -> null
                         },
                         progress = when {
                             it.hasClass("epBtnWatched") -> PROGRESS_WATCH

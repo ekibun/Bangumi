@@ -32,7 +32,11 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
     private var headerHeight: Int = 0
     private var itemHeight: Int = 0
     override fun getItemHeight(position: Int): Int {
-        return if(getItemViewType(position) == SECTION_HEADER_VIEW) headerHeight else itemHeight
+        return when (getItemViewType(position)) {
+            SECTION_HEADER_VIEW -> headerHeight
+            0 -> itemHeight
+            else -> 0
+        }
     }
 
     /**

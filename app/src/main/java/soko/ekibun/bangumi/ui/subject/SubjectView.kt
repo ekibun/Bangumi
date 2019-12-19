@@ -68,6 +68,7 @@ class SubjectView(private val context: SubjectActivity) {
         val dp20 = ResourceUtil.toPixels(context.resources, 20f)
         (context.title_expand.layoutParams as ConstraintLayout.LayoutParams).marginEnd = 3 * marginEnd
 
+        var oldTrans = 0f
         context.app_bar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
             if (appBarOffset == verticalOffset) return@OnOffsetChangedListener
             val ratio = Math.abs(verticalOffset.toFloat() / appBarLayout.totalScrollRange)
@@ -81,9 +82,14 @@ class SubjectView(private val context: SubjectActivity) {
             context.title_expand.alpha = 1 - ratio
             context.item_buttons.translationX = -2.2f * marginEnd * ratio
             context.app_bar.elevation = Math.max(0f, 12 * (ratio - 0.95f) / 0.05f)
-
-            detail.setPadding(0, ((1 - ratio) * dp20).toInt(), 0, 0)
-            context.episode_detail_list_container.setPadding(0, ((1 - ratio) * dp20).toInt(), 0, 0)
+            val transY = (1 - ratio) * dp20
+            if (oldTrans != transY) {
+                oldTrans = transY
+                context.app_bar.translationY = -transY
+                context.toolbar_layout.translationY = transY
+                context.item_swipe.translationY = -transY
+                context.comment_list.translationY = transY
+            }
         })
 
         context.season_list.adapter = seasonAdapter
@@ -114,10 +120,10 @@ class SubjectView(private val context: SubjectActivity) {
         }
         context.episode_detail_list.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         context.episode_detail_list.nestedScrollDistance = {
-            -appBarOffset * (context.app_bar.totalScrollRange + dp20) / context.app_bar.totalScrollRange
+            -appBarOffset // * (context.app_bar.totalScrollRange + dp20) / context.app_bar.totalScrollRange
         }
         context.episode_detail_list.nestedScrollRange = {
-            context.app_bar.totalScrollRange + dp20
+            context.app_bar.totalScrollRange // + dp20
         }
 
         context.item_close.setOnClickListener {
@@ -293,7 +299,7 @@ class SubjectView(private val context: SubjectActivity) {
      */
     fun updateEpisodeLabel(episodes: List<Episode>, subject: Subject) {
         val mainEps = episodes.filter { it.type == Episode.TYPE_MAIN || it.type == Episode.TYPE_MUSIC }
-        val eps = mainEps.filter { it.status in listOf(Episode.STATUS_AIR) }
+        val eps = mainEps.filter { it.isAir }
         detail.episode_detail.text = if (eps.size == mainEps.size && (subject.type == Subject.TYPE_MUSIC || subject.eps_count > 0)) context.getString(R.string.phrase_full_eps, eps.size) else
             eps.lastOrNull()?.parseSort(context)?.let { context.getString(R.string.parse_update_to, it) }
                     ?: context.getString(R.string.hint_air_nothing)
@@ -320,7 +326,7 @@ class SubjectView(private val context: SubjectActivity) {
         maps.forEach {
             episodeDetailAdapter.addData(EpisodeAdapter.SelectableSectionEntity(true, it.key))
             it.value.forEach { ep ->
-                if (ep.status in listOf(Episode.STATUS_AIR))
+                if (ep.isAir)
                     episodeAdapter.addData(ep)
                 episodeDetailAdapter.addData(EpisodeAdapter.SelectableSectionEntity(ep))
             }

@@ -19,6 +19,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.github.Jsdelivr
 import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
 import soko.ekibun.bangumi.ui.main.MainActivity
+import soko.ekibun.bangumi.ui.main.MainPresenter
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import java.text.SimpleDateFormat
 import java.util.*
@@ -37,12 +38,13 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
     private val dataCacheModel by lazy { App.get(view.context).dataCacheModel }
 
     init {
-        view.item_pager.offscreenPageLimit = 2
+        // view.item_pager.offscreenPageLimit = 2
         view.item_pager.addOnPageChangeListener(object : androidx.viewpager.widget.ViewPager.OnPageChangeListener {
             override fun onPageScrollStateChanged(state: Int) { /* no-op */
             }
 
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
+                /*
                 val max = 1.5f
                 val dim = 1.2f
                 view.item_pager.findViewWithTag<RecyclerView>(position)?.alpha = max - positionOffset * dim
@@ -50,6 +52,7 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
                 view.item_pager.findViewWithTag<RecyclerView>(position - 1)?.alpha = max - (1 + positionOffset) * dim
                 view.item_pager.findViewWithTag<RecyclerView>(position + 2)?.alpha = max - (2 - positionOffset) * dim
                 view.item_pager.findViewWithTag<RecyclerView>(position - 2)?.alpha = max - (2 + positionOffset) * dim
+                 */
             }
 
             override fun onPageSelected(position: Int) {
@@ -76,6 +79,7 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
         view.item_swipe.setOnChildScrollUpCallback { _, _ ->
             canScroll || currentView?.canScrollVertically(-1) ?: false
         }
+        mainPresenter?.calendar?.let { setOnAirList(it) }
         loadCalendarList()
     }
 
@@ -181,7 +185,7 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
             date.second.toList().sortedBy { it.first }.forEach { time ->
                 var isHeader = true
                 time.second.forEach {
-                    it.subject.collect = if (chaseList?.find { c -> c.id == it.subject.id } != null) Collection(Collection.STATUS_DO) else null
+                    it.subject.collect = if (mainPresenter?.collectionList?.find { c -> c.id == it.subject.id } != null) Collection(Collection.STATUS_DO) else null
                     if (it.subject.image != null) {
                         if (index == -1 && !CalendarAdapter.pastTime(date.first, time.first, use30h))
                             index = item.data.size
@@ -200,21 +204,16 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
         }
     }
 
-    private var raw: List<BangumiCalendarItem>? = null
-    private val chaseList: List<Subject>? get() = (view.context as? MainActivity)?.mainPresenter?.collectionList
+    private val mainPresenter: MainPresenter? get() = (view.context as? MainActivity)?.mainPresenter
     private var calendarCall: Call<List<BangumiCalendarItem>>? = null
     @SuppressLint("UseSparseArrays")
     fun loadCalendarList() {
-        if (raw == null) {
-            raw = dataCacheModel.get<List<BangumiCalendarItem>>("calendar")
-            raw?.let { setOnAirList(it) }
-        }
         view.item_swipe.isRefreshing = true
 
         calendarCall?.cancel()
         calendarCall = Jsdelivr.createInstance().bangumiCalendar()
         calendarCall?.enqueue(ApiHelper.buildCallback({
-            raw = it
+            mainPresenter?.calendar = it
             setOnAirList(it ?: return@buildCallback)
             dataCacheModel.set<List<BangumiCalendarItem>>("calendar", it)
         }, {

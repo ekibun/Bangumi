@@ -19,7 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ellipsize="end"
-            android:maxLines="1"
+            android:singleLine="true"
             tools:text="第 1 话"
             app:layout_constraintTop_toTopOf="parent"
             android:layout_marginStart="8dp"
@@ -40,13 +40,13 @@
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="8dp"
-            android:maxLines="1"/>
+            android:singleLine="true"/>
     <TextView
             android:id="@+id/item_badge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:ellipsize="end"
-            android:maxLines="1"
+            android:singleLine="true"
             android:background="@drawable/bg_episode_badge"
             android:paddingLeft="6dp"
             android:paddingRight="6dp"

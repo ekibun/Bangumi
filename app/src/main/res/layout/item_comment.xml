@@ -32,7 +32,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:ellipsize="end"
-            android:maxLines="1"
+            android:singleLine="true"
             android:textSize="@dimen/textSizeMedium"
             android:padding="1dp"
             tools:text="User Name"

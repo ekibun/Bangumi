@@ -206,7 +206,7 @@ object Bangumi {
                         ApiHelper.SaxEventType.BEGIN
                     }
                     parser.getAttributeValue("", "id")?.contains("subject_prg_content") == true -> {
-                        val doc = Jsoup.parse(str.replace("</null>", "</"))
+                        val doc = Jsoup.parse(str)
                         onNotify(Pair(Regex("叮咚叮咚～你有 ([0-9]+) 条新信息!").find(doc.selectFirst("#robot_speech_js")?.text()
                                 ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 0,
                                 doc.selectFirst("#notify_count")?.text()?.toIntOrNull() ?: 0))

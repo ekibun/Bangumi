@@ -26,7 +26,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
-                android:maxLines="1"
+                android:singleLine="true"
                 tools:text="第 1 话"
                 app:layout_constraintTop_toTopOf="parent"
                 android:textSize="@dimen/textSizeSmall"/>
@@ -41,14 +41,14 @@
                 tools:text="Episode Name"
                 app:layout_constraintTop_toBottomOf="@+id/item_title"
                 app:layout_constraintBottom_toBottomOf="parent"
-                android:maxLines="1"/>
+                android:singleLine="true"/>
     </LinearLayout>
     <TextView
             android:id="@+id/item_badge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:ellipsize="end"
-            android:maxLines="1"
+            android:singleLine="true"
             android:background="@drawable/bg_episode_badge"
             android:paddingLeft="6dp"
             android:paddingRight="6dp"

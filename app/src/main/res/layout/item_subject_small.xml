@@ -46,7 +46,7 @@
             android:layout_height="wrap_content"
             android:textSize="@dimen/textSizeSmall"
             android:ellipsize="end"
-            android:maxLines="1"
+            android:singleLine="true"
             tools:text="Subject Summary"
             app:layout_constraintLeft_toLeftOf="@+id/item_cover"
             app:layout_constraintRight_toRightOf="@+id/item_cover"
