@@ -162,7 +162,11 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
                 mStrBuilder.setLength(0)
                 val time = mFormatter.format("%02d:%02d", if (use30h) (hour - 6 + 24) % 24 + 6 else (hour + 24) % 24, minute % 60).toString()
                 val cal = Calendar.getInstance()
-                cal.time = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.airdate ?: "") ?: cal.time
+                cal.time = try {
+                    SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.airdate ?: "")
+                } catch (e: Exception) {
+                    null
+                } ?: cal.time
                 val week = (if ((subject.timeJP?.toIntOrNull()
                                 ?: 0) / 100 < 5) 1 else 0) + if (!useCN || subject.timeCN.isNullOrEmpty()) 0 else
                     Math.min(if (subject.timeCN.toIntOrNull() ?: 0 < subject.timeJP?.toIntOrNull() ?: 0) 1 else 0, when (((subject.weekDayCN
