@@ -64,6 +64,9 @@ object TextUtil {
     fun bbcode2html(text: String): String {
         return text.replace("\n", "<br/>").replace(Regex("""\[(/?(b|i|u|mask))]"""), "<$1>")
                 .replace("[s]", "<span style=\"text-decoration:line-through\">")
+                .replace(Regex("""\[url](.*?)\[/url]"""), "<a href=\"$1\"></a>")
+                .replace(Regex("""\[url=(.*?)]"""), "<a href=\"$1\">")
+                .replace(Regex("""\[/url]"""), "</a>")
                 .replace(Regex("""\[img](.*?)\[/img]"""), "<img src=\"$1\"/>")
                 .replace(Regex("""\[color=(.*?)]"""), "<span style=\"color:$1\">")
                 .replace(Regex("""\[size=(.*?)]"""), "<span style=\"font-size:$1px\">")

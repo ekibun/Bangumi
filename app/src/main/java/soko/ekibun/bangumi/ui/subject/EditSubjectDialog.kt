@@ -60,7 +60,7 @@ class EditSubjectDialog(context: Context) : Dialog(context, R.style.AppTheme_Dia
                 Collection.STATUS_ON_HOLD to R.id.radio_hold,
                 Collection.STATUS_DROPPED to R.id.radio_dropped)
         view.findViewById<RadioButton>(selectMap[collection.status] ?: R.id.radio_collect)?.isChecked = true
-
+        view.item_rating.rating = collection.rating.toFloat()
         view.item_tags.setText(collection.tag?.joinToString(" "))
 
         val hasTag = { tag: String ->
@@ -68,9 +68,7 @@ class EditSubjectDialog(context: Context) : Dialog(context, R.style.AppTheme_Dia
         }
         val myTagAdapter = TagAdapter(null, hasTag)
         myTagAdapter.setNewData(collection.myTag?.map { it to 0 }?.toMutableList())
-        val myTagLayoutManager = LinearLayoutManager(context)
-        myTagLayoutManager.orientation = RecyclerView.HORIZONTAL
-        view.item_my_tag_list.layoutManager = myTagLayoutManager
+        view.item_my_tag_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
         view.item_my_tag_list.adapter = myTagAdapter
         myTagAdapter.setOnItemClickListener { _, _, position ->
             val tag = myTagAdapter.data[position].first
@@ -79,9 +77,7 @@ class EditSubjectDialog(context: Context) : Dialog(context, R.style.AppTheme_Dia
         }
         val userTagAdapter = TagAdapter(null, hasTag)
         userTagAdapter.setNewData(subject.tags?.toMutableList())
-        val userTagLayoutManager = LinearLayoutManager(context)
-        userTagLayoutManager.orientation = RecyclerView.HORIZONTAL
-        view.item_user_tag_list.layoutManager = userTagLayoutManager
+        view.item_user_tag_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
         view.item_user_tag_list.adapter = userTagAdapter
         userTagAdapter.setOnItemClickListener { _, _, position ->
             val tag = userTagAdapter.data[position].first
