@@ -62,6 +62,7 @@ class EditSubjectDialog(context: Context) : Dialog(context, R.style.AppTheme_Dia
         view.findViewById<RadioButton>(selectMap[collection.status] ?: R.id.radio_collect)?.isChecked = true
         view.item_rating.rating = collection.rating.toFloat()
         view.item_tags.setText(collection.tag?.joinToString(" "))
+        view.item_comment.setText(collection.comment)
 
         val hasTag = { tag: String ->
             view.item_tags.editableText.split(" ").contains(tag)
