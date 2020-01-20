@@ -13,7 +13,7 @@ import soko.ekibun.bangumi.util.GlideUtil
  * 用户信息View
  */
 class UserView(private val context: MainActivity, onUserFigureClickListener: View.OnClickListener) {
-    private val headerView by lazy { context.nav_view.getHeaderView(0) }
+    val headerView by lazy { context.nav_view.getHeaderView(0) }
 
     init {
         headerView.user_figure.setOnClickListener(onUserFigureClickListener)

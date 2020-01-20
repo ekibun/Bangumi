@@ -19,7 +19,7 @@ class HomeFragment: DrawerFragment(R.layout.content_home){
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val adapter = HomePagerAdapter(activity!!, childFragmentManager, frame_pager)
+        val adapter = HomePagerAdapter(view.context, childFragmentManager, frame_pager)
         frame_pager.adapter = adapter
         frame_tabs.setupWithViewPager(frame_pager)
         for(i in 0 until frame_tabs.tabCount){

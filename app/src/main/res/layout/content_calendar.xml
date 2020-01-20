@@ -23,31 +23,26 @@
                 app:contentInsetStartWithNavigation="0dp"
                 app:popupTheme="@style/AppTheme.PopupOverlay"/>
     </com.google.android.material.appbar.AppBarLayout>
-    <LinearLayout
+    <com.nshmura.recyclertablayout.RecyclerTabLayout
+            android:id="@+id/item_tabs"
+            android:layout_width="match_parent"
+            app:layout_constraintTop_toBottomOf="@+id/app_bar"
+            app:rtl_tabIndicatorHeight="0dp"
+            app:rtl_tabOnScreenLimit="5"
+            android:background="?android:colorBackground"
+            android:stateListAnimator="@animator/elevation"
+            tools:listitem="@layout/item_calendar_tab"
+            android:layout_height="56dp"/>
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/item_swipe"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:orientation="vertical"
-            app:layout_constraintTop_toBottomOf="@+id/app_bar"
+            app:layout_constraintTop_toBottomOf="@+id/item_tabs"
             app:layout_constraintBottom_toBottomOf="parent">
-        <com.nshmura.recyclertablayout.RecyclerTabLayout
-                android:id="@+id/item_tabs"
+        <androidx.viewpager.widget.ViewPager
+                android:id="@+id/item_pager"
                 android:layout_width="match_parent"
-                app:rtl_tabIndicatorHeight="0dp"
-                app:rtl_tabOnScreenLimit="5"
-                android:background="?android:colorBackground"
-                android:stateListAnimator="@animator/elevation"
-                tools:listitem="@layout/item_calendar_tab"
-                android:layout_height="56dp"/>
-        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-                android:id="@+id/item_swipe"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1">
-            <androidx.viewpager.widget.ViewPager
-                    android:id="@+id/item_pager"
-                    android:layout_width="match_parent"
-                    android:clipToPadding="false"
-                    android:layout_height="match_parent"/>
-        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-    </LinearLayout>
+                android:clipToPadding="false"
+                android:layout_height="match_parent"/>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

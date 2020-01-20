@@ -2,6 +2,7 @@ package soko.ekibun.bangumi.ui.main
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.Menu
@@ -39,7 +40,10 @@ class MainActivity : BaseActivity() {
         downloadCacheProvider.bindService()
 
         val sp = PreferenceManager.getDefaultSharedPreferences(this)
-        if (BuildConfig.AUTO_UPDATES && sp.getBoolean("check_update", true)) AppUtil.checkUpdate(this)
+        if (BuildConfig.AUTO_UPDATES && sp.getBoolean("check_update", true))
+            AppUtil.checkUpdate(this)
+
+        mainPresenter.updateConfiguration()
     }
 
     override fun onDestroy() {
@@ -122,7 +126,12 @@ class MainActivity : BaseActivity() {
         mainPresenter.onSaveInstanceState(outState)
     }
 
-    companion object{
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        mainPresenter.updateConfiguration()
+    }
+
+    companion object {
         /**
          * 启动
          */

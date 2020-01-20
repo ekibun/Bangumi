@@ -36,7 +36,7 @@ class IndexPagerAdapter(fragment: IndexFragment, private val pager: androidx.vie
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) { /* no-op*/
             }
             override fun onPageSelected(position: Int) {
-                scrollTrigger((holders.firstOrNull { it.position ==  pager.currentItem}?.view?.tag as? androidx.recyclerview.widget.RecyclerView)?.canScrollVertically(-1) == true)
+                // scrollTrigger((holders.firstOrNull { it.position ==  pager.currentItem}?.view?.tag as? androidx.recyclerview.widget.RecyclerView)?.canScrollVertically(-1) == true)
             } })
     }
 

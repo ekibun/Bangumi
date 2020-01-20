@@ -21,9 +21,13 @@ class IndexFragment: DrawerFragment(R.layout.content_index){
             item_tab_container.isPressed = it
         }
         item_pager?.adapter = adapter
-        item_tabs?.setUpWithViewPager(item_pager)
-
         item_pager?.currentItem = getNowIndex()
+        item_tabs?.post {
+            item_tabs?.setUpWithViewPager(item_pager)
+            item_tabs?.post {
+                item_tabs?.setCurrentItem(getNowIndex(), true)
+            }
+        }
 
         root_layout?.setOnApplyWindowInsetsListener { _, insets ->
             adapter.windowInsets = insets

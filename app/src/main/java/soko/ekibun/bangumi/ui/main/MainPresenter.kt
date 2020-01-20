@@ -2,9 +2,11 @@ package soko.ekibun.bangumi.ui.main
 
 import android.app.Activity
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import androidx.core.view.GravityCompat
 import kotlinx.android.synthetic.main.activity_main.*
 import retrofit2.Call
@@ -79,6 +81,22 @@ class MainPresenter(private val context: MainActivity) {
             context.nav_view.menu.findItem(R.id.nav_logout).isVisible = user != null
             userView.setUser(user)
         }
+    }
+
+    val nav_view by lazy { context.nav_view }
+    val nav_lp by lazy { nav_view.layoutParams }
+
+    fun updateConfiguration() {
+        val lp = nav_lp
+        (nav_view.parent as? ViewGroup)?.removeView(nav_view)
+        if (context.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            context.content_drawer.addView(nav_view, lp)
+        } else {
+            context.drawer_layout.addView(nav_view, lp)
+        }
+        nav_view.visibility = View.VISIBLE
+        context.drawer_layout.closeDrawers()
+        drawerView.current()?.toggle?.isDrawerIndicatorEnabled = context.resources.configuration.orientation != Configuration.ORIENTATION_LANDSCAPE
     }
 
     /**

@@ -18,9 +18,13 @@ class CalendarFragment: DrawerFragment(R.layout.content_calendar) {
 
         val adapter = CalendarPagerAdapter(root_layout)
         item_pager?.adapter = adapter
-        item_tabs?.setUpWithViewPager(item_pager)
-        item_tabs?.setUpWithAdapter(CalendarTabAdapter(item_pager))
         item_pager?.currentItem = 7
+        item_tabs?.post {
+            item_tabs?.setUpWithAdapter(CalendarTabAdapter(item_pager))
+            item_tabs?.post {
+                item_tabs?.setCurrentItem(7, true)
+            }
+        }
 
         root_layout?.setOnApplyWindowInsetsListener { _, insets ->
             adapter.windowInsets = insets
