@@ -112,7 +112,10 @@ class SubjectActivity : SwipeBackActivity() {
             context.startActivity(parseIntent(context, subject))
         }
 
-        private fun parseIntent(context: Context, subject: Subject): Intent {
+        /**
+         * intent
+         */
+        fun parseIntent(context: Context, subject: Subject): Intent {
             val intent = Intent(context, SubjectActivity::class.java)
             intent.putExtra(EXTRA_SUBJECT, JsonUtil.toJson(subject))
             return intent

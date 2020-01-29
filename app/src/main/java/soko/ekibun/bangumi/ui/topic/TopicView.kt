@@ -4,6 +4,7 @@ import android.graphics.Rect
 import android.view.LayoutInflater
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.recyclerview.widget.LinearSmoothScroller
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.appbar.AppBarLayout
 import jp.wasabeef.glide.transformations.BlurTransformation
@@ -15,6 +16,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.ResourceUtil
+
 
 /**
  * 帖子View
@@ -76,18 +78,46 @@ class TopicView(private val context: TopicActivity) {
         })
         context.title_collapse.setOnClickListener {
             if (scroll2Top()) return@setOnClickListener
-            WebActivity.launchUrl(context, context.topicPresenter.topic.url)
+            WebActivity.startActivity(context, context.topicPresenter.topic.url)
         }
         context.title_expand.setOnClickListener {
             if (scroll2Top()) return@setOnClickListener
-            WebActivity.launchUrl(context, context.topicPresenter.topic.url)
+            WebActivity.startActivity(context, context.topicPresenter.topic.url)
+        }
+    }
+
+    fun scrollToPost(scrollPost: String, smooth: Boolean = false) {
+        (context.item_list?.layoutManager as? androidx.recyclerview.widget.LinearLayoutManager)?.let { layoutManager ->
+            val scrollIndex = adapter.data.indexOfFirst { it.pst_id == scrollPost }
+            if (scrollIndex <= 0) return@let
+            if (smooth) {
+                if (scrollIndex + 1 < layoutManager.findFirstVisibleItemPosition())
+                    layoutManager.scrollToPositionWithOffset(scrollIndex, -(context.item_list?.height ?: 0))
+                if (scrollIndex - 1 > layoutManager.findLastVisibleItemPosition())
+                    layoutManager.scrollToPositionWithOffset(scrollIndex, context.item_list?.height ?: 0)
+                context.item_list?.post {
+                    layoutManager.startSmoothScroll(object : LinearSmoothScroller(context) {
+                        init {
+                            targetPosition = scrollIndex
+                        }
+
+                        override fun getVerticalSnapPreference(): Int = SNAP_TO_START
+                    })
+                }
+            } else layoutManager.scrollToPositionWithOffset(scrollIndex, 0)
         }
     }
 
     /**
      * 处理帖子内容
      */
-    fun processTopic(topic: Topic, scrollPost: String, header: Boolean = false, isCache: Boolean = false, onItemClick: (View, Int) -> Unit = { _, _ -> }) {
+    fun processTopic(
+        topic: Topic,
+        scrollPost: String,
+        header: Boolean = false,
+        isCache: Boolean = false,
+        onItemClick: (View, Int) -> Unit = { _, _ -> }
+    ) {
         context.title_collapse.text = topic.title
         context.title_expand.text = context.title_collapse.text
 
@@ -117,11 +147,7 @@ class TopicView(private val context: TopicActivity) {
         adapter.isUseEmpty(!isCache)
         topic.replies.forEach { it.isExpanded = true }
         setNewData(topic.replies, topic, isCache)
-        (context.item_list?.layoutManager as? androidx.recyclerview.widget.LinearLayoutManager)?.let { layoutManager ->
-            val scrollIndex = adapter.data.indexOfFirst { it.pst_id == scrollPost }
-            if (scrollIndex <= 0) return@let
-            layoutManager.scrollToPositionWithOffset(scrollIndex, 0)
-        }
+        scrollToPost(scrollPost)
 
         adapter.loadMoreEnd()
         val lastPost = topic.replies.lastOrNull()

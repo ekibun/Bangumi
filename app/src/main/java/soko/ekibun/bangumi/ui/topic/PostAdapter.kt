@@ -93,7 +93,8 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
                             PhotoPagerAdapter.showWindow(itemView, imageList.map { Bangumi.parseUrl(it) }, index = index)
                         }
                     })) {
-                        WebActivity.launchUrl(helper.itemView.context, Bangumi.parseUrl(it), "")
+                        (helper.itemView.context as? TopicActivity)?.processUrl(Bangumi.parseUrl(it))
+                            ?: WebActivity.launchUrl(helper.itemView.context, Bangumi.parseUrl(it), "")
                     }
                 }
                 item_message.text = if (item.pst_content.length < 10000) makeSpan() else largeContent.getOrPut(item.pst_id, makeSpan)

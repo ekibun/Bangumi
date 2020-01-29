@@ -77,7 +77,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
         }
 
         subjectView.detail.character_detail.setOnClickListener {
-            WebActivity.launchUrl(context, "${subject.url}/characters")
+            WebActivity.startActivity(context, "${subject.url}/characters")
         }
 
         subjectView.detail.item_progress_edit.setOnClickListener {
@@ -88,19 +88,19 @@ class SubjectPresenter(private val context: SubjectActivity) {
 
         context.title_expand.setOnClickListener {
             if (subjectView.scroll2Top()) return@setOnClickListener
-            WebActivity.launchUrl(context, subject.url)
+            WebActivity.startActivity(context, subject.url)
         }
         context.title_collapse.setOnClickListener {
             if (subjectView.scroll2Top()) return@setOnClickListener
-            WebActivity.launchUrl(context, subject.url)
+            WebActivity.startActivity(context, subject.url)
         }
 
         subjectView.detail.topic_detail.setOnClickListener {
-            WebActivity.launchUrl(context, "${subject.url}/board")
+            WebActivity.startActivity(context, "${subject.url}/board")
         }
 
         subjectView.detail.blog_detail.setOnClickListener {
-            WebActivity.launchUrl(context, "${subject.url}/reviews")
+            WebActivity.startActivity(context, "${subject.url}/reviews")
         }
 
         context.item_play.setOnClickListener {
@@ -180,7 +180,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
         }
 
         subjectView.commentAdapter.setOnItemClickListener { _, _, position ->
-            WebActivity.launchUrl(context, subjectView.commentAdapter.data[position].user?.url)
+            WebActivity.startActivity(context, subjectView.commentAdapter.data[position].user?.url)
         }
 
         subjectView.seasonAdapter.setOnItemClickListener { _, _, position ->

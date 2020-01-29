@@ -24,7 +24,7 @@ import kotlin.collections.set
  * 帖子Presenter
  */
 class TopicPresenter(private val context: TopicActivity) {
-    private val topicView = TopicView(context)
+    val topicView = TopicView(context)
 
     val dataCacheModel by lazy { App.get(context).dataCacheModel }
 
@@ -97,7 +97,7 @@ class TopicPresenter(private val context: TopicActivity) {
             val post = topicView.adapter.data[position]
             when (v.id) {
                 R.id.item_avatar ->
-                    WebActivity.launchUrl(v.context, "${Bangumi.SERVER}/user/${post.username}")
+                    WebActivity.startActivity(v.context, "${Bangumi.SERVER}/user/${post.username}")
                 R.id.item_reply -> {
                     showReplyPopupWindow(topic, post)
                 }

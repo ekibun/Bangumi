@@ -46,7 +46,7 @@ class RakuenFragment: HomeTabFragment(R.layout.fragment_rakuen){
 
         item_tabs?.getTabAt(1)?.customView = topicTab
         item_new?.setOnClickListener {
-            WebActivity.launchUrl(view.context, "${Bangumi.SERVER}/rakuen/new_topic")
+            WebActivity.startActivity(view.context, "${Bangumi.SERVER}/rakuen/new_topic")
         }
         refresh = { adapter.loadTopicList() }
     }

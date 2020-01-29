@@ -11,6 +11,7 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.view.SwipeBackActivity
+import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.AppUtil
 import soko.ekibun.bangumi.util.JsonUtil
 
@@ -64,6 +65,17 @@ class TopicActivity : SwipeBackActivity() {
         topicPresenter.updateConfiguration()
     }
 
+    fun processUrl(url: String) {
+        WebActivity.parseUrlIntent(this, url, "")?.let {
+            if (it.hasExtra(EXTRA_TOPIC) && JsonUtil.toEntity<Topic>(
+                    it.getStringExtra(EXTRA_TOPIC) ?: ""
+                )?.id == topicPresenter.topic.id
+            ) {
+                topicPresenter.topicView.scrollToPost(it.getIntExtra(EXTRA_POST, 0).toString(), true)
+            } else startActivity(it)
+        }
+    }
+
     companion object {
         private const val EXTRA_TOPIC = "extraTopic"
         private const val EXTRA_POST = "extraPost"
@@ -75,7 +87,10 @@ class TopicActivity : SwipeBackActivity() {
             context.startActivity(parseIntent(context, topic, post))
         }
 
-        private fun parseIntent(context: Context, topic: Topic, post: Int): Intent {
+        /**
+         * intent
+         */
+        fun parseIntent(context: Context, topic: Topic, post: Int): Intent {
             val intent = Intent(context, TopicActivity::class.java)
             intent.putExtra(EXTRA_TOPIC, JsonUtil.toJson(topic))
             intent.putExtra(EXTRA_POST, post)

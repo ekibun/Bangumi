@@ -289,7 +289,10 @@ class SubjectView(private val context: SubjectActivity) {
         if (tag == null || tag == Subject.SaxTag.TAGS) {
             tagAdapter.setNewData(subject.tags?.toMutableList())
             tagAdapter.setOnItemClickListener { _, _, position ->
-                WebActivity.launchUrl(context, "${Bangumi.SERVER}/${subject.type}/tag/${tagAdapter.data[position].first}")
+                WebActivity.startActivity(
+                    context,
+                    "${Bangumi.SERVER}/${subject.type}/tag/${tagAdapter.data[position].first}"
+                )
             }
         }
     }

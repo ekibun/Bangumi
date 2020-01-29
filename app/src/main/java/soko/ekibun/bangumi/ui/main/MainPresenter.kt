@@ -30,7 +30,7 @@ class MainPresenter(private val context: MainActivity) {
             null -> {
                 WebActivity.startActivityForAuth(context)
             }
-            else -> WebActivity.launchUrl(context, user?.url)
+            else -> WebActivity.startActivity(context, user?.url)
         }
     })
 

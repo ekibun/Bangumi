@@ -74,12 +74,12 @@ class MainActivity : BaseActivity() {
                     R.id.notify_type_inbox -> {
                         mainPresenter.notify = Pair(0, mainPresenter.notify?.second ?: 0)
                         notifyMenu?.badge = mainPresenter.notify?.let { it.first + it.second } ?: 0
-                        WebActivity.launchUrl(this, "${Bangumi.SERVER}/pm")
+                        WebActivity.startActivity(this, "${Bangumi.SERVER}/pm")
                     }
                     R.id.notify_type_notify -> {
                         mainPresenter.notify = Pair(mainPresenter.notify?.first ?: 0, 0)
                         notifyMenu?.badge = mainPresenter.notify?.let { it.first + it.second } ?: 0
-                        WebActivity.launchUrl(this, "${Bangumi.SERVER}/notify" + if (notify == 0) "/all" else "")
+                        WebActivity.startActivity(this, "${Bangumi.SERVER}/notify" + if (notify == 0) "/all" else "")
                     }
                 }
                 true
