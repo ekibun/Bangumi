@@ -17,7 +17,6 @@ import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.bangumi.bean.UserInfo
 import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
-import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.JsonUtil
@@ -26,7 +25,6 @@ import soko.ekibun.bangumi.util.JsonUtil
  * 主页Presenter
  */
 class MainPresenter(private val context: MainActivity) {
-    private val themeModel by lazy { ThemeModel(context) }
     private val userView = UserView(context, View.OnClickListener {
         when (user) {
             null -> {
@@ -44,14 +42,7 @@ class MainPresenter(private val context: MainActivity) {
         }
     }
 
-    private val drawerView = DrawerView(context, { isChecked ->
-        themeModel.saveTheme(isChecked)
-        ThemeModel.setTheme(context, isChecked)
-    }, onLogout)
-
-    init {
-        drawerView.switch.isChecked = themeModel.getTheme()
-    }
+    private val drawerView = DrawerView(context, onLogout)
 
     /**
      * 返回处理
@@ -133,7 +124,7 @@ class MainPresenter(private val context: MainActivity) {
      * 更新用户信息
      */
     fun refreshUser() {
-        drawerView.homeFragment.updateUserCollection() ?: updateUserCollection()
+        drawerView.homeFragment.updateUserCollection()
     }
 
     var calendar: List<BangumiCalendarItem> = App.get(context).dataCacheModel.get("calendar") ?: ArrayList()

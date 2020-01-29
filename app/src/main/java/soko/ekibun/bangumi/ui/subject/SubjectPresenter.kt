@@ -28,6 +28,7 @@ import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.PlayerBridge
+import soko.ekibun.bangumi.util.ResourceUtil
 
 /**
  * 条目Presenter
@@ -213,16 +214,18 @@ class SubjectPresenter(private val context: SubjectActivity) {
         context.item_swipe.isRefreshing = true
 
         subjectCall = ApiHelper.buildGroupCall(
-                arrayOf(Jsdelivr.createInstance().onAirInfo(subject.id / 1000, subject.id),
-                        Subject.getDetail(subject) { newSubject, tag ->
-                            subject = newSubject
-                            context.runOnUiThread {
-                                if (tag == Subject.SaxTag.COLLECT) refreshCollection()
-                                subjectView.updateSubject(newSubject, tag)
-                            }
-                        },
-                        BgmIpViewer.createInstance().subject(subject.id),
-                        Episode.getSubjectEps(subject))
+            arrayOf(
+                Jsdelivr.createInstance().onAirInfo(subject.id / 1000, subject.id),
+                Subject.getDetail(subject) { newSubject, tag ->
+                    subject = newSubject
+                    context.runOnUiThread {
+                        if (tag == Subject.SaxTag.COLLECT) refreshCollection()
+                        subjectView.updateSubject(newSubject, tag)
+                    }
+                },
+                BgmIpViewer.createInstance().subject(subject.id),
+                Episode.getSubjectEps(subject)
+            )
         ) { _, it ->
             when (it) {
                 is Subject -> {
@@ -233,7 +236,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
                 is OnAirInfo -> {
                     subject.onair = it
                     subjectView.updateSubject(subject, Subject.SaxTag.ONAIR)
-                    episodeDialog?.onAirInfoChange?.invoke(it)
+                    episodeDialog?.info = it
                 }
                 is IpView -> {
                     val season = BgmIpViewer.getSeason(it, subject)
@@ -288,20 +291,30 @@ class SubjectPresenter(private val context: SubjectActivity) {
     private fun removeCollection(subject: Subject) {
         if (context.isFinishing) return
         AlertDialog.Builder(context).setTitle(R.string.collection_dialog_remove)
-                .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
-                    Collection.remove(subject).enqueue(ApiHelper.buildCallback({
-                        if (it) subject.collect = Collection()
-                        refreshCollection()
-                    }, {}))
-                }.show()
+            .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
+                Collection.remove(subject).enqueue(ApiHelper.buildCallback({
+                    if (it) subject.collect = Collection()
+                    refreshCollection()
+                }, {}))
+            }.show()
     }
 
     private fun refreshCollection() {
         val body = subject.collect ?: Collection()
         val status = body.status
-        context.item_collect_image.setImageDrawable(context.resources.getDrawable(
-                if (status in listOf(Collection.STATUS_WISH, Collection.STATUS_COLLECT, Collection.STATUS_DO, Collection.STATUS_ON_HOLD)) R.drawable.ic_heart else R.drawable.ic_heart_outline, context.theme))
-        context.item_collect_info.text = context.resources.getStringArray(Collection.getStatusNamesRes(subject.type)).getOrNull(body.statusId - 1)
+        context.item_collect_image.setImageDrawable(
+            context.resources.getDrawable(
+                if (status in listOf(
+                        Collection.STATUS_WISH,
+                        Collection.STATUS_COLLECT,
+                        Collection.STATUS_DO,
+                        Collection.STATUS_ON_HOLD
+                    )
+                ) R.drawable.ic_heart else R.drawable.ic_heart_outline, context.theme
+            )
+        )
+        context.item_collect_info.text =
+            context.resources.getStringArray(Collection.getStatusNamesRes(subject.type)).getOrNull(body.statusId - 1)
                 ?: context.getString(R.string.collect)
 
         subjectView.tagAdapter.hasTag = {
@@ -323,13 +336,15 @@ class SubjectPresenter(private val context: SubjectActivity) {
                     removeCollection(subject)
                     return@setOnMenuItemClickListener false
                 }
-                Collection.updateStatus(subject, Collection(
+                Collection.updateStatus(
+                    subject, Collection(
                         status = Collection.getStatusById(menu.itemId - Menu.FIRST + 1),
                         rating = body.rating,
                         comment = body.comment,
                         private = body.private,
                         tag = body.tag
-                )).enqueue(ApiHelper.buildCallback({
+                    )
+                ).enqueue(ApiHelper.buildCallback({
                     subject.collect = it
                     refreshCollection()
                 }, {}))
@@ -356,5 +371,17 @@ class SubjectPresenter(private val context: SubjectActivity) {
             subject.eps = eps
             dataCacheModel.set(subject.cacheKey, subject)
         }, {}))
+    }
+
+    fun updateConfiguration() {
+        context.root_layout.post {
+            val padding = Math.max(0, (context.comment_list.width - ResourceUtil.toPixels(context.resources, 700f)) / 2)
+            context.comment_list.setPadding(
+                padding,
+                context.comment_list.paddingTop,
+                padding,
+                context.comment_list.paddingBottom
+            )
+        }
     }
 }

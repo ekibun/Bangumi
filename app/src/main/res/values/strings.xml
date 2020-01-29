@@ -208,6 +208,17 @@
     <string name="subject_collection_remove">删除收藏</string>
 
     <!-- 设置 -->
+    <string name="pref_theme">显示设置</string>
+    <string-array name="pref_dark_mode">
+        <item>关闭</item>
+        <item>总是</item>
+        <item>跟随系统</item>
+    </string-array>
+    <string-array name="pref_dark_mode_values">
+        <item>1</item>
+        <item>2</item>
+        <item>-1</item>
+    </string-array>
     <string name="pref_miscellaneous">其他设置</string>
     <string-array name="pref_image_quality">
         <item>清晰</item>
@@ -287,4 +298,6 @@
     <string name="netabare">netabare</string>
     <string name="friend_score">好友评分</string>
 
+    <!-- 对话框 -->
+    <string name="dialog_subject_edit_title">修改收藏</string>
 </resources>

@@ -107,9 +107,6 @@ class TopicView(private val context: TopicActivity) {
         }
         context.title_slice_divider.visibility = if (context.title_slice_1.text.isNotEmpty()) View.VISIBLE else View.GONE
         context.title_slice_1.visibility = context.title_slice_divider.visibility
-        context.title_slice_0.post {
-            context.title_slice_0.maxWidth = context.title_expand.width - if (context.title_slice_divider.visibility == View.VISIBLE) 2 * context.title_slice_divider.width + context.title_slice_1.width else 0
-        }
 
         GlideUtil.with(context.item_cover_blur)
                 ?.load(Images.getImage(topic.image, context))

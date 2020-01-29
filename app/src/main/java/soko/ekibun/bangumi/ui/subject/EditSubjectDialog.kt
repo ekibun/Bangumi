@@ -1,14 +1,10 @@
 package soko.ekibun.bangumi.ui.subject
 
 import android.annotation.SuppressLint
-import android.app.Dialog
 import android.content.Context
-import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.LayoutInflater
 import android.view.View
-import android.view.WindowManager
 import android.widget.RadioButton
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,13 +14,15 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
-import soko.ekibun.bangumi.model.ThemeModel
+import soko.ekibun.bangumi.ui.view.BaseDialog
 import soko.ekibun.bangumi.util.HttpUtil
 
 /**
  * 收藏对话框
  */
-class EditSubjectDialog(context: Context) : Dialog(context, R.style.AppTheme_Dialog) {
+class EditSubjectDialog(context: Context) : BaseDialog(context, R.layout.dialog_edit_subject) {
+    override val title: String = context.getString(R.string.dialog_subject_edit_title)
+
     companion object {
         /**
          * 显示对话框
@@ -40,12 +38,8 @@ class EditSubjectDialog(context: Context) : Dialog(context, R.style.AppTheme_Dia
 
     lateinit var subject: Subject
     lateinit var collection: Collection
-    @SuppressLint("InflateParams", "SetTextI18n")
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        val view = LayoutInflater.from(context).inflate(R.layout.dialog_edit_subject, null)
-        setContentView(view)
-
+    @SuppressLint("SetTextI18n")
+    override fun onViewCreated(view: View) {
         val collectionStatusNames = context.resources.getStringArray(Collection.getStatusNamesRes(subject.type))
         view.radio_wish.text = collectionStatusNames[0]
         view.radio_collect.text = collectionStatusNames[1]
@@ -54,8 +48,8 @@ class EditSubjectDialog(context: Context) : Dialog(context, R.style.AppTheme_Dia
         view.radio_dropped.text = collectionStatusNames[4]
 
         val selectMap = mapOf(
-                Collection.STATUS_WISH to R.id.radio_wish,
-                Collection.STATUS_COLLECT to R.id.radio_collect,
+            Collection.STATUS_WISH to R.id.radio_wish,
+            Collection.STATUS_COLLECT to R.id.radio_collect,
                 Collection.STATUS_DO to R.id.radio_do,
                 Collection.STATUS_ON_HOLD to R.id.radio_hold,
                 Collection.STATUS_DROPPED to R.id.radio_dropped)
@@ -108,9 +102,6 @@ class EditSubjectDialog(context: Context) : Dialog(context, R.style.AppTheme_Dia
                         }, {}))
                     }.show()
         }
-        view.item_outside.setOnClickListener {
-            dismiss()
-        }
         view.item_submit.setOnClickListener {
             Collection.updateStatus(subject, Collection(
                     status = selectMap.toList().first { it.second == view.item_subject_status.checkedRadioButtonId }.first,
@@ -124,20 +115,15 @@ class EditSubjectDialog(context: Context) : Dialog(context, R.style.AppTheme_Dia
             }, {}))
         }
 
-        val paddingBottom = view.item_container.paddingBottom
+        val paddingBottom = view.item_buttons.paddingBottom
         view.setOnApplyWindowInsetsListener { _, insets ->
-            view.item_container.setPadding(view.item_container.paddingLeft, view.item_container.paddingTop, view.item_container.paddingRight, paddingBottom + insets.systemWindowInsetBottom)
+            view.setPadding(
+                view.item_buttons.paddingLeft,
+                view.item_buttons.paddingTop,
+                view.item_buttons.paddingRight,
+                paddingBottom + insets.systemWindowInsetBottom
+            )
             insets.consumeSystemWindowInsets()
         }
-
-        window?.let { ThemeModel.updateNavigationTheme(it, view.context) }
-
-        window?.attributes?.let {
-            it.dimAmount = 0.6f
-            window?.attributes = it
-        }
-        window?.setWindowAnimations(R.style.AnimDialog)
-        window?.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-        window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
     }
 }

@@ -25,9 +25,15 @@ import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 /**
  * 收藏PagerAdapter
  */
-class CollectionPagerAdapter(private val context: Context, val fragment: CollectionFragment, private val pager: ViewPager, private val scrollTrigger: (Boolean) -> Unit) : androidx.viewpager.widget.PagerAdapter() {
-    private var tabList = context.resources.getStringArray(R.array.collection_status_anime)
-    private val subjectTypeView = SubjectTypeView(fragment.item_type) { reset() }
+class CollectionPagerAdapter(
+    private val context: Context,
+    val fragment: CollectionFragment,
+    private val pager: ViewPager,
+    private val scrollTrigger: (Boolean) -> Unit
+) : androidx.viewpager.widget.PagerAdapter() {
+    private val tabList =
+        arrayOf(Subject.TYPE_ANIME, Subject.TYPE_BOOK, Subject.TYPE_MUSIC, Subject.TYPE_GAME, Subject.TYPE_REAL)
+    private val collectionTypeView = CollectTypeView(fragment.item_type) { reset() }
     private val mainPresenter: MainPresenter? get() = (fragment.activity as? MainActivity)?.mainPresenter
 
     init {
@@ -43,13 +49,23 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
                     pageIndex[position] = 0
                     loadCollectionList(position)
                 }
-                scrollTrigger((items[position]?.second?.tag as? RecyclerView)?.canScrollVertically(-1) == true)
+                scrollTrigger(isScrollDown)
             }
         })
     }
 
     @SuppressLint("UseSparseArrays")
     private val items = HashMap<Int, Pair<CollectionListAdapter, SwipeRefreshLayout>>()
+
+    val isScrollDown get() = (items[pager.currentItem]?.second?.tag as? RecyclerView)?.canScrollVertically(-1) == true
+
+    fun useApi(position: Int): Boolean {
+        return collectionTypeView.getType() == Collection.STATUS_DO && tabList[position] in arrayOf(
+            Subject.TYPE_ANIME,
+            Subject.TYPE_BOOK,
+            Subject.TYPE_REAL
+        )
+    }
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
         val item = items.getOrPut(position) {
@@ -58,7 +74,7 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
             recyclerView.overScrollMode = View.OVER_SCROLL_NEVER
             recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                    scrollTrigger((items[pager.currentItem]?.second?.tag as? RecyclerView)?.canScrollVertically(-1) == true)
+                    scrollTrigger(isScrollDown)
                 }
             })
 
@@ -68,7 +84,7 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
             adapter.setEnableLoadMore(true)
             adapter.setLoadMoreView(BrvahLoadMoreView())
             adapter.setOnLoadMoreListener({
-                val useApi = position == 2 && subjectTypeView.selectedType in arrayOf(R.id.collection_type_anime, R.id.collection_type_book, R.id.collection_type_real)
+                val useApi = useApi(position)
                 if (!swipeRefreshLayout.isRefreshing && !useApi) loadCollectionList(position)
             }, recyclerView)
             adapter.setOnItemClickListener { _, v, position ->
@@ -92,7 +108,6 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
      * 重置
      */
     fun reset() {
-        tabList = context.resources.getStringArray(Collection.getStatusNamesRes(subjectTypeView.getType()))
         notifyDataSetChanged()
 
         items.forEach { (it.value.second.tag as? RecyclerView)?.tag = null }
@@ -111,10 +126,10 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
         item.first.isUseEmpty(false)
         val page = pageIndex.getOrPut(position) { 0 }
         collectionCalls[position]?.cancel()
-        val useApi = position == 2 && subjectTypeView.selectedType in arrayOf(R.id.collection_type_anime, R.id.collection_type_book, R.id.collection_type_real)
+        val useApi = useApi(position)
         if (page == 0) {
             if (!useApi) item.first.setNewData(null)
-            else mainPresenter?.collectionList?.filter { it.type == subjectTypeView.getType() }?.let {
+            else mainPresenter?.collectionList?.filter { it.type == tabList[position] }?.let {
                 item.first.setNewData(it.sortedByDescending {
                     val eps = it.eps?.filter { it.type == Episode.TYPE_MAIN }
                     val watchTo = eps?.lastOrNull { it.progress == Episode.PROGRESS_WATCH }
@@ -126,9 +141,9 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
         }
         val callback = { list: List<Subject> ->
             item.first.isUseEmpty(true)
-            list.filter { !useApi || it.type == subjectTypeView.getType() }.let {
+            list.filter { !useApi || it.type == tabList[position] }.let {
                 if (!useApi) {
-                    it.forEach { it.type = subjectTypeView.getType() }
+                    it.forEach { it.type = tabList[position] }
                     item.first.addData(it)
                 } else {
                     item.first.setNewData(it.sortedByDescending {
@@ -152,15 +167,15 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
         }
         if (useApi) mainPresenter?.updateUserCollection(callback, onError)
         else {
-            collectionCalls[position] = Bangumi.getCollectionList(subjectTypeView.getType(),
-                    (fragment.activity as? MainActivity)?.user?.let { it.username ?: it.id.toString() } ?: return,
-                    Collection.getStatusById(position + 1), page + 1)
+            collectionCalls[position] = Bangumi.getCollectionList(tabList[position],
+                (fragment.activity as? MainActivity)?.user?.let { it.username ?: it.id.toString() } ?: return,
+                collectionTypeView.getType(), page + 1)
             collectionCalls[position]?.enqueue(ApiHelper.buildCallback(callback, onError))
         }
     }
 
     override fun getPageTitle(pos: Int): CharSequence {
-        return tabList[pos]
+        return context.getString(Subject.getTypeRes(tabList[pos]))
     }
 
     override fun isViewFromObject(view: View, `object`: Any): Boolean {
@@ -174,5 +189,4 @@ class CollectionPagerAdapter(private val context: Context, val fragment: Collect
     override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
         container.removeView(`object` as View)
     }
-
 }

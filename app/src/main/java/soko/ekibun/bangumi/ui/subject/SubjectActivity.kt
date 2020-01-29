@@ -2,6 +2,7 @@ package soko.ekibun.bangumi.ui.subject
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.Menu
@@ -32,13 +33,17 @@ class SubjectActivity : SwipeBackActivity() {
         title = ""
 
         subjectPresenter.init(
-                if (intent.data?.toString()?.startsWith("ekibun://playersubject/bangumi") == true) {
-                    intent.getParcelableExtra<VideoSubject>(PlayerBridge.EXTRA_SUBJECT)!!.toSubject()
-                } else JsonUtil.toEntity<Subject>(intent.getStringExtra(EXTRA_SUBJECT) ?: "") ?: {
-                    val id = Regex("""/subject/([0-9]+)""").find(intent.data?.toString()
-                            ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 0
-                    Subject(id)
-                }())
+            if (intent.data?.toString()?.startsWith("ekibun://playersubject/bangumi") == true) {
+                intent.getParcelableExtra<VideoSubject>(PlayerBridge.EXTRA_SUBJECT)!!.toSubject()
+            } else JsonUtil.toEntity<Subject>(intent.getStringExtra(EXTRA_SUBJECT) ?: "") ?: {
+                val id = Regex("""/subject/([0-9]+)""").find(
+                    intent.data?.toString()
+                        ?: ""
+                )?.groupValues?.get(1)?.toIntOrNull() ?: 0
+                Subject(id)
+            }()
+        )
+        subjectPresenter.updateConfiguration()
 
         val episodePaddingBottom = episode_detail_list.paddingBottom
         val listPaddingBottom = comment_list.paddingBottom
@@ -72,8 +77,8 @@ class SubjectActivity : SwipeBackActivity() {
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            when {
-                episode_detail_list_container.visibility == View.VISIBLE -> subjectPresenter.subjectView.closeEpisodeDetail()
+            when (episode_detail_list_container.visibility) {
+                View.VISIBLE -> subjectPresenter.subjectView.closeEpisodeDetail()
                 else -> finish()
             }
             return true
@@ -84,12 +89,19 @@ class SubjectActivity : SwipeBackActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> finish()
-            R.id.action_share -> AppUtil.shareString(this, subjectPresenter.subject.displayName + " " + subjectPresenter.subject.url)
+            R.id.action_share -> AppUtil.shareString(
+                this,
+                subjectPresenter.subject.displayName + " " + subjectPresenter.subject.url
+            )
             R.id.action_refresh -> subjectPresenter.refresh()
         }
         return super.onOptionsItemSelected(item)
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        subjectPresenter.updateConfiguration()
+    }
 
     companion object {
         private const val EXTRA_SUBJECT = "extraSubject"

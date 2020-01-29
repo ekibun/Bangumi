@@ -77,7 +77,7 @@
                         android:id="@+id/view_title_collapse"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        tools:text="Subject Title"
+                        app:layout_constraintWidth_max="800dp"
                         app:layout_constraintTop_toTopOf="@+id/view_toolbar"
                         app:layout_constraintBottom_toBottomOf="@+id/view_toolbar"
                         android:layout_marginStart="?attr/actionBarSize"
@@ -85,6 +85,7 @@
                         app:layout_constraintRight_toRightOf="parent"
                         android:ellipsize="end"
                         android:maxLines="1"
+                        android:layout_marginEnd="40dp"
                         android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
                 />
 
@@ -95,8 +96,8 @@
                         app:layout_constraintTop_toTopOf="@+id/view_title_collapse"
                         android:paddingBottom="12dp"
                         app:layout_constraintLeft_toLeftOf="@+id/view_title_collapse"
-                        app:layout_constraintRight_toRightOf="parent"
-                        android:layout_marginEnd="35dp"
+                        app:layout_constraintRight_toRightOf="@+id/view_title_collapse"
+                        tools:text="Subject Title"
                         android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
                 />
                 <View
@@ -107,7 +108,7 @@
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <FrameLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:id="@+id/item_subject"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
@@ -121,8 +122,11 @@
                 layout="@layout/subject_panel"
                 android:background="?android:colorBackground"
                 android:layout_height="wrap_content"
-                android:layout_width="match_parent"/>
-    </FrameLayout>
+                app:layout_constraintWidth_max="800dp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                android:layout_width="0dp"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/toolbar_container"
@@ -149,11 +153,12 @@
                 app:layout_constraintTop_toTopOf="@+id/toolbar"
                 app:layout_constraintBottom_toBottomOf="@+id/toolbar"
                 android:layout_marginStart="?attr/actionBarSize"
+                app:layout_constraintWidth_max="800dp"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
                 android:ellipsize="end"
                 android:maxLines="1"
-                android:layout_marginEnd="36dp"
+                android:layout_marginEnd="40dp"
                 android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
         />
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -13,6 +13,7 @@ import androidx.preference.PreferenceScreen
 import kotlinx.android.synthetic.main.appbar_layout.*
 import soko.ekibun.bangumi.BuildConfig
 import soko.ekibun.bangumi.R
+import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.view.SwipeBackActivity
 import soko.ekibun.bangumi.util.AppUtil
 
@@ -66,6 +67,9 @@ class SettingsActivity : SwipeBackActivity(), PreferenceFragmentCompat.OnPrefere
     class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedPreferenceChangeListener {
         override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
             updatePreference()
+            if (key == "pref_dark_mode") {
+                ThemeModel.setTheme(context ?: return, ThemeModel(context ?: return).getTheme())
+            }
         }
 
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -74,6 +78,7 @@ class SettingsActivity : SwipeBackActivity(), PreferenceFragmentCompat.OnPrefere
         }
 
         private fun updatePreference() {
+            findPreference<ListPreference>("pref_dark_mode")?.let { it.summary = it.entry }
             findPreference<ListPreference>("image_quality")?.let { it.summary = it.entry }
             findPreference<Preference>("check_update")?.isVisible = BuildConfig.AUTO_UPDATES
             findPreference<Preference>("check_update_now")?.summary = "${BuildConfig.VERSION_NAME}-${BuildConfig.VERSION_CODE} (${BuildConfig.FLAVOR})"

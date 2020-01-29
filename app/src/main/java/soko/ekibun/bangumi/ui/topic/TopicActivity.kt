@@ -2,6 +2,7 @@ package soko.ekibun.bangumi.ui.topic
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -58,7 +59,12 @@ class TopicActivity : SwipeBackActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    companion object{
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        topicPresenter.updateConfiguration()
+    }
+
+    companion object {
         private const val EXTRA_TOPIC = "extraTopic"
         private const val EXTRA_POST = "extraPost"
 

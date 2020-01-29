@@ -32,11 +32,6 @@
               android:title="@string/settings"
               app:showAsAction="ifRoom"/>
         <item
-            android:id="@+id/nav_night"
-            android:icon="@drawable/ic_night"
-            android:title="@string/night_mode"
-            app:actionLayout="@layout/switch_item"/>
-        <item
                 android:id="@+id/nav_logout"
                 android:icon="@drawable/ic_exit"
                 android:title="@string/logout"/>

@@ -19,29 +19,19 @@ class ThemeModel(context: Context){
     val sp: SharedPreferences by lazy{ PreferenceManager.getDefaultSharedPreferences(context) }
 
     /**
-     * 保存主题
-     */
-    fun saveTheme(night: Boolean) {
-        val editor = sp.edit()
-        editor.putBoolean(PREF_NIGHT, night)
-        editor.apply()
-    }
-
-    /**
      * 获取主题
      */
-    fun getTheme(): Boolean{
-        return sp.getBoolean(PREF_NIGHT, false)
+    fun getTheme(): Int {
+        return sp.getString(PREF_NIGHT, "")?.toIntOrNull() ?: -1
     }
 
     companion object {
-        const val PREF_NIGHT="night"
+        const val PREF_NIGHT = "pref_dark_mode"
 
         /**
          * 应用主题
          */
-        fun setTheme(context: Context, night: Boolean){
-            val nightMode = if (night) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
+        fun setTheme(context: Context, nightMode: Int) {
             if (AppCompatDelegate.getDefaultNightMode() != nightMode) {
                 AppCompatDelegate.setDefaultNightMode(nightMode)
                 if (context is Activity) {

@@ -42,12 +42,14 @@ data class Collection(
         const val STATUS_ON_HOLD = "on_hold"
         const val STATUS_DROPPED = "dropped"
 
+        val statusArray = arrayOf(STATUS_WISH, STATUS_COLLECT, STATUS_DO, STATUS_ON_HOLD, STATUS_DROPPED)
+
         /**
          * 由id获取状态类型
          */
         @CollectionStatus
         fun getStatusById(id: Int): String {
-            return arrayOf(STATUS_WISH, STATUS_COLLECT, STATUS_DO, STATUS_ON_HOLD, STATUS_DROPPED)[id - 1]
+            return statusArray[id - 1]
         }
 
         /**

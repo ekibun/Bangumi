@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.core.view.ViewCompat
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.switch_item.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
 import soko.ekibun.bangumi.ui.main.fragment.cache.CacheFragment
@@ -17,37 +16,31 @@ import soko.ekibun.bangumi.ui.setting.SettingsActivity
 /**
  * 抽屉
  */
-class DrawerView(private val context: MainActivity, onNightModeChange: (Boolean) -> Unit, onLogout: () -> Unit) {
+class DrawerView(private val context: MainActivity, onLogout: () -> Unit) {
     var checkedId = R.id.nav_home
     val homeFragment = HomeFragment()
     private val fragments: Map<Int, DrawerFragment> = mapOf(
-            R.id.nav_home to homeFragment,
-            R.id.nav_calendar to CalendarFragment(),
-            R.id.nav_index to IndexFragment(),
-            R.id.nav_download to CacheFragment()
+        R.id.nav_home to homeFragment,
+        R.id.nav_calendar to CalendarFragment(),
+        R.id.nav_index to IndexFragment(),
+        R.id.nav_download to CacheFragment()
     )
-    val switch = context.nav_view.menu.findItem(R.id.nav_night).actionView.item_switch!!
 
     init {
-        switch.setOnCheckedChangeListener { _, isChecked ->
-            onNightModeChange(isChecked)
-        }
 
         context.content_frame.setOnApplyWindowInsetsListener { _, insets ->
             context.content_frame.setPadding(0, insets.systemWindowInsetTop, 0, 0)
-            insets.replaceSystemWindowInsets(insets.systemWindowInsetLeft, 0, insets.systemWindowInsetRight, insets.systemWindowInsetBottom)
+            insets.inset(insets.systemWindowInsetLeft, 0, insets.systemWindowInsetRight, insets.systemWindowInsetBottom)
         }
 
         context.nav_view.setNavigationItemSelectedListener {
-            if (it.itemId != R.id.nav_night)
-                context.drawer_layout.closeDrawers()
+            context.drawer_layout.closeDrawers()
             if (fragments.containsKey(it.itemId))
                 select(it.itemId)
             else {
                 when (it.itemId) {
                     R.id.nav_search -> SearchActivity.startActivity(context)
                     R.id.nav_setting -> context.startActivity(Intent(context, SettingsActivity::class.java))
-                    R.id.nav_night -> switch.isChecked = !switch.isChecked
                     R.id.nav_logout -> onLogout()
                 }
             }

@@ -19,15 +19,18 @@ class CollectionFragment: HomeTabFragment(R.layout.fragment_collection){
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        item_pager?.adapter = CollectionPagerAdapter(view.context, this, item_pager){
+        item_pager?.adapter = CollectionPagerAdapter(view.context, this, item_pager) {
             item_tab_container.isPressed = it
         }
         item_tabs?.setupWithViewPager(item_pager)
 
-        item_pager?.currentItem = this.savedInstanceState?.getInt("CollectionPage", 2) ?: 2
-
         item_login?.setOnClickListener {
-            WebActivity.startActivityForAuth(activity!!) }
+            WebActivity.startActivityForAuth(activity!!)
+        }
+
+        item_pager?.post {
+            reset()
+        }
     }
 
     /**
@@ -38,7 +41,7 @@ class CollectionFragment: HomeTabFragment(R.layout.fragment_collection){
     }
 
     override fun onSelect() {
-        //TODO
+        item_tab_container?.isPressed = (item_pager?.adapter as? CollectionPagerAdapter)?.isScrollDown ?: false
     }
 
     override fun onUserChange() {

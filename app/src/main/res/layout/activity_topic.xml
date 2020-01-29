@@ -62,8 +62,12 @@
                 <View
                         android:id="@+id/view_toolbar"
                         android:transitionName="title"
+                        app:layout_constraintTop_toTopOf="parent"
                         android:layout_height="?attr/actionBarSize"
-                        android:layout_width="match_parent"/>
+                        app:layout_constraintWidth_max="800dp"
+                        app:layout_constraintLeft_toLeftOf="parent"
+                        app:layout_constraintRight_toRightOf="parent"
+                        android:layout_width="0dp"/>
                 <TextView
                         android:id="@+id/title_collapse"
                         android:layout_width="0dp"
@@ -71,13 +75,14 @@
                         app:layout_constraintTop_toTopOf="@+id/view_toolbar"
                         app:layout_constraintBottom_toBottomOf="@+id/view_toolbar"
                         android:layout_marginStart="?attr/actionBarSize"
-                        app:layout_constraintLeft_toLeftOf="parent"
-                        app:layout_constraintRight_toRightOf="parent"
+                        app:layout_constraintLeft_toLeftOf="@+id/view_toolbar"
+                        app:layout_constraintRight_toRightOf="@+id/view_toolbar"
                         android:layout_marginEnd="35dp"
                         android:ellipsize="end"
                         android:maxLines="1"
+                        tools:text="title"
                         android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
-                        />
+                />
                 <TextView
                         android:id="@+id/title_expand"
                         android:layout_width="0dp"
@@ -103,6 +108,7 @@
                             android:ellipsize="end"
                             android:maxLines="1"
                             android:maxWidth="200dp"
+                            tools:text="group"
                             android:layout_height="wrap_content"/>
                     <ImageView
                             android:visibility="gone"
@@ -114,12 +120,14 @@
                             android:layout_gravity="center_vertical"
                             android:tint="@android:color/white"
                             android:src="@drawable/ic_chevron_right"
+                            tools:visibility="visible"
                             tools:ignore="ContentDescription"/>
                     <TextView
                             android:id="@+id/title_slice_1"
                             android:layout_width="wrap_content"
                             android:ellipsize="end"
                             android:maxLines="1"
+                            tools:text="group"
                             android:layout_height="wrap_content"/>
                 </LinearLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
@@ -145,10 +153,10 @@
                 app:fastScrollPopupBgColor="?colorAccent"/>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <FrameLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/item_reply_container"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="45dp"
             android:elevation="20dp"
             android:background="?android:colorBackground"
             app:layout_anchor="@id/item_swipe"
@@ -158,8 +166,12 @@
                 android:id="@+id/btn_reply"
                 android:padding="8dp"
                 android:gravity="center_vertical"
-                android:layout_width="match_parent"
-                android:layout_height="45dp"/>
-    </FrameLayout>
+                android:layout_height="match_parent"
+                app:layout_constraintWidth_max="750dp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                tools:text="@string/hint_reply"
+                android:layout_width="0dp"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
