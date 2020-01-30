@@ -17,19 +17,9 @@
             android:paddingBottom="8dp"
             android:gravity="center"
             android:orientation="vertical">
-        <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingLeft="16dp"
-                android:paddingRight="16dp"
-                android:id="@+id/item_detail"
-                tools:text="Subject Summary"
-                android:maxLines="5"
-                android:ellipsize="end"/>
 
         <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/tag_list"
-                android:paddingTop="6dp"
                 android:paddingLeft="8dp"
                 android:paddingRight="8dp"
                 android:clipToPadding="false"
@@ -38,11 +28,21 @@
                 tools:orientation="horizontal"
                 tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 tools:listitem="@layout/item_tag"/>
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="8dp"
+                android:id="@+id/item_detail"
+                tools:text="Subject Summary"
+                android:maxLines="5"
+                android:ellipsize="end"/>
         <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/site_list"
                 android:paddingLeft="8dp"
                 android:paddingRight="8dp"
-                android:paddingTop="4dp"
                 android:clipToPadding="false"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -57,28 +57,66 @@
             android:layout_height="wrap_content"
             android:paddingLeft="2dp"
             android:paddingRight="2dp"
-            android:background="?android:colorBackground">
+            android:background="?android:colorBackground"
+            android:gravity="center"
+            android:orientation="horizontal">
 
         <TextView
-                android:id="@+id/item_progress_info"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:text="看到 第 "
+                android:layout_marginLeft="14dp"
+                android:ellipsize="end"/>
+
+        <LinearLayout
+                android:id="@+id/item_vol"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+            <com.michaelmuenzer.android.scrollablennumberpicker.ScrollableNumberPicker
+                    android:id="@+id/item_vol_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    app:snp_scrollEnabled="true"
+                    app:snp_orientation="horizontal"/>
+
+            <TextView
+                    android:id="@+id/item_vol_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:maxLines="1"
+                    tools:text=" / 25 章  "
+                    android:ellipsize="end"/>
+        </LinearLayout>
+
+        <com.michaelmuenzer.android.scrollablennumberpicker.ScrollableNumberPicker
+                android:id="@+id/item_ep_status"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                app:snp_scrollEnabled="true"
+                app:snp_orientation="horizontal"/>
+
+        <TextView
+                android:id="@+id/item_ep_count"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:maxLines="1"
-                android:padding="14dp"
-                tools:text="看到 第16/25话"
-                android:textColor="?android:textColorPrimary"
-                android:ellipsize="end"/>
+                tools:text=" / 25 话"/>
 
         <TextView
                 android:id="@+id/item_progress_edit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/subject_progress_edit"
+                android:textColor="?colorAccent"
                 android:clickable="true"
                 android:background="?android:attr/selectableItemBackgroundBorderless"
                 android:focusable="true"
-                android:padding="14dp"/>
+                android:padding="14dp"
+        />
     </LinearLayout>
 
     <LinearLayout android:layout_width="match_parent"

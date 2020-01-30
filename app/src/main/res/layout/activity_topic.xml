@@ -156,7 +156,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/item_reply_container"
             android:layout_width="match_parent"
-            android:layout_height="45dp"
+            android:layout_height="wrap_content"
             android:elevation="20dp"
             android:background="?android:colorBackground"
             app:layout_anchor="@id/item_swipe"
@@ -166,7 +166,7 @@
                 android:id="@+id/btn_reply"
                 android:padding="8dp"
                 android:gravity="center_vertical"
-                android:layout_height="match_parent"
+                android:layout_height="48dp"
                 app:layout_constraintWidth_max="750dp"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"

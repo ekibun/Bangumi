@@ -81,10 +81,24 @@ class SubjectPresenter(private val context: SubjectActivity) {
         }
 
         subjectView.detail.item_progress_edit.setOnClickListener {
-            EditProgressDialog.showDialog(context, this.subject) {
-                refresh()
-            }
+            Subject.updateSubjectProgress(
+                subject,
+                watchedeps = subjectView.detail.item_ep_status.value.toString(),
+                watched_vols = subjectView.detail.item_vol_status.value.toString()
+            )
+                .enqueue(ApiHelper.buildCallback({
+                    refresh()
+                }, {}))
         }
+        val updateInt = { _: Int ->
+            subjectView.detail.item_progress_edit.visibility =
+                if (subjectView.detail.item_ep_status.value == this.subject.ep_status
+                    && subjectView.detail.item_vol_status.value == this.subject.vol_status
+                )
+                    View.INVISIBLE else View.VISIBLE
+        }
+        subjectView.detail.item_vol_status.setListener(updateInt)
+        subjectView.detail.item_ep_status.setListener(updateInt)
 
         context.title_expand.setOnClickListener {
             if (subjectView.scroll2Top()) return@setOnClickListener
@@ -108,12 +122,14 @@ class SubjectPresenter(private val context: SubjectActivity) {
                 PlayerBridge.startActivity(context, this.subject)
         }
 
-        subjectView.episodeAdapter.onItemLongClickListener = BaseQuickAdapter.OnItemLongClickListener { _, _, position ->
-            WebActivity.launchUrl(context, subjectView.episodeAdapter.data[position].url, "")
-            true
-        }
+        subjectView.episodeAdapter.onItemLongClickListener =
+            BaseQuickAdapter.OnItemLongClickListener { _, _, position ->
+                WebActivity.launchUrl(context, subjectView.episodeAdapter.data[position].url, "")
+                true
+            }
 
-        val progressMap = arrayOf(Episode.PROGRESS_WATCH, Episode.PROGRESS_QUEUE, Episode.PROGRESS_DROP, Episode.PROGRESS_REMOVE)
+        val progressMap =
+            arrayOf(Episode.PROGRESS_WATCH, Episode.PROGRESS_QUEUE, Episode.PROGRESS_DROP, Episode.PROGRESS_REMOVE)
         subjectView.episodeAdapter.setOnItemClickListener { _, _, position ->
             val eps = subjectView.episodeAdapter.data.subList(0, position + 1)
             subjectView.episodeAdapter.data[position]?.let { openEpisode(it, eps) }
@@ -140,11 +156,13 @@ class SubjectPresenter(private val context: SubjectActivity) {
             val eps = subjectView.episodeDetailAdapter.data.filter { it.isSelected }
             context.item_edit_ep.visibility = if (eps.isEmpty()) View.GONE else View.VISIBLE
             context.item_ep_title.visibility = context.item_edit_ep.visibility
-            context.item_ep_title.text = "${context.getText(R.string.episodes)}${if (eps.isEmpty()) "" else "(${eps.size})"}"
+            context.item_ep_title.text =
+                "${context.getText(R.string.episodes)}${if (eps.isEmpty()) "" else "(${eps.size})"}"
         }
 
         subjectView.episodeDetailAdapter.setOnItemChildLongClickListener { _, _, position ->
-            val eps = subjectView.episodeDetailAdapter.data.subList(0, position + 1).filter { !it.isHeader }.map { it.t }
+            val eps =
+                subjectView.episodeDetailAdapter.data.subList(0, position + 1).filter { !it.isHeader }.map { it.t }
             if (eps.last().type == Episode.TYPE_MUSIC)
                 subjectView.episodeDetailAdapter.data[position]?.t?.let {
                     openEpisode(it, eps)
@@ -154,7 +172,8 @@ class SubjectPresenter(private val context: SubjectActivity) {
         }
 
         subjectView.episodeDetailAdapter.setOnItemChildClickListener { _, _, position ->
-            val eps = subjectView.episodeDetailAdapter.data.subList(0, position + 1).filter { !it.isHeader }.map { it.t }
+            val eps =
+                subjectView.episodeDetailAdapter.data.subList(0, position + 1).filter { !it.isHeader }.map { it.t }
             if (eps.last().type == Episode.TYPE_MUSIC || subjectView.episodeDetailAdapter.clickListener(position))
                 subjectView.episodeDetailAdapter.data[position]?.t?.let { openEpisode(it, eps) }
         }
@@ -381,6 +400,12 @@ class SubjectPresenter(private val context: SubjectActivity) {
                 context.comment_list.paddingTop,
                 padding,
                 context.comment_list.paddingBottom
+            )
+            context.title_collapse.setPadding(
+                context.title_collapse.paddingLeft,
+                context.title_collapse.paddingTop,
+                context.item_buttons.width,
+                context.title_collapse.paddingBottom
             )
         }
     }

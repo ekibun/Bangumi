@@ -200,7 +200,6 @@ class SubjectView(private val context: SubjectActivity) {
         if (tag == null || tag == Subject.SaxTag.NAME) {
             context.title_collapse.text = subject.displayName
             context.title_expand.text = context.title_collapse.text
-            context.title_collapse.setPadding(context.title_collapse.paddingLeft, context.title_collapse.paddingTop, context.item_buttons.width, context.title_collapse.paddingBottom)
             context.item_subject_title.text = subject.name
         }
         if (tag == null || tag == Subject.SaxTag.INFOBOX || tag == Subject.SaxTag.NAME) {
@@ -232,32 +231,52 @@ class SubjectView(private val context: SubjectActivity) {
 
         if (tag == null || tag == Subject.SaxTag.COLLECT) {
             updateEpisodeLabel(subject.eps ?: ArrayList(), subject)
-            detail.item_progress.visibility = if (HttpUtil.formhash.isNotEmpty() && subject.collect?.status == Collection.STATUS_DO && subject.type in listOf(Subject.TYPE_ANIME, Subject.TYPE_REAL, Subject.TYPE_BOOK)) View.VISIBLE else View.GONE
-            detail.item_progress_info.text = context.getString(R.string.phrase_progress,
-                    (if (subject.vol_count != 0) context.getString(R.string.parse_sort_vol, "${subject.vol_status}${if (subject.vol_count == 0) "" else "/${subject.vol_count}"}") + " " else "") +
-                            context.getString(R.string.parse_sort_ep, "${subject.ep_status}${if (subject.eps_count == 0) "" else "/${subject.eps_count}"}"))
+            detail.item_progress.visibility =
+                if (HttpUtil.formhash.isNotEmpty() && subject.collect?.status == Collection.STATUS_DO && subject.type in listOf(
+                        Subject.TYPE_ANIME,
+                        Subject.TYPE_REAL,
+                        Subject.TYPE_BOOK
+                    )
+                ) View.VISIBLE else View.GONE
+            detail.item_vol.visibility = if (subject.vol_count != 0) View.VISIBLE else View.GONE
+            detail.item_vol_count.text =
+                "${if (subject.vol_count <= 0) "" else "/${subject.vol_count}"} ${context.getString(R.string.vol_unit)}"
+            detail.item_vol_status.value = subject.vol_status
+            detail.item_ep_count.text =
+                "${if (subject.eps_count <= 0) "" else "/${subject.eps_count}"} ${context.getString(R.string.ep_unit)}"
+            detail.item_ep_status.value = subject.ep_status
+            detail.item_progress_edit.visibility = View.INVISIBLE
+//            detail.item_progress_info.text = context.getString(R.string.phrase_progress,
+//                    (if (subject.vol_count != 0) context.getString(R.string.parse_sort_vol, "${subject.vol_status}${if (subject.vol_count == 0) "" else "/${subject.vol_count}"}") + " " else "") +
+//                            context.getString(R.string.parse_sort_ep, "${subject.ep_status}${if (subject.eps_count == 0) "" else "/${subject.eps_count}"}"))
             subject.rating?.let {
                 context.detail_score.text = if (it.score == 0f) "-" else String.format("%.1f", it.score)
-                context.detail_friend_score.text = if (it.friend_score == 0f) "-" else String.format("%.1f", it.friend_score)
-                context.detail_score_count.text = "×${if (it.total > 1000) "${it.total / 1000}k" else it.total.toString()}"
+                context.detail_friend_score.text =
+                    if (it.friend_score == 0f) "-" else String.format("%.1f", it.friend_score)
+                context.detail_score_count.text =
+                    "×${if (it.total > 1000) "${it.total / 1000}k" else it.total.toString()}"
                 context.item_friend_score_label.text = context.getString(R.string.friend_score)
             }
         }
 
         if (tag == null || tag == Subject.SaxTag.IMAGES) {
             GlideUtil.with(context.item_cover)
-                    ?.load(Images.getImage(subject.image, context))
-                    ?.apply(RequestOptions.placeholderOf(context.item_cover.drawable))
-                    ?.apply(RequestOptions.errorOf(R.drawable.err_404))
-                    ?.into(context.item_cover)
+                ?.load(Images.getImage(subject.image, context))
+                ?.apply(RequestOptions.placeholderOf(context.item_cover.drawable))
+                ?.apply(RequestOptions.errorOf(R.drawable.err_404))
+                ?.into(context.item_cover)
             context.item_cover.setOnClickListener {
-                PhotoPagerAdapter.showWindow(detail, listOf(Images.large(subject.image)), listOf(context.item_cover.drawable))
+                PhotoPagerAdapter.showWindow(
+                    detail,
+                    listOf(Images.large(subject.image)),
+                    listOf(context.item_cover.drawable)
+                )
             }
             GlideUtil.with(context.item_cover_blur)
-                    ?.load(Images.getImage(subject.image, context))
-                    ?.apply(RequestOptions.placeholderOf(context.item_cover_blur.drawable))
-                    ?.apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)))
-                    ?.into(context.item_cover_blur)
+                ?.load(Images.getImage(subject.image, context))
+                ?.apply(RequestOptions.placeholderOf(context.item_cover_blur.drawable))
+                ?.apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)))
+                ?.into(context.item_cover_blur)
         }
 
         if (tag == null || tag == Subject.SaxTag.EPISODES)
@@ -303,8 +322,12 @@ class SubjectView(private val context: SubjectActivity) {
     fun updateEpisodeLabel(episodes: List<Episode>, subject: Subject) {
         val mainEps = episodes.filter { it.type == Episode.TYPE_MAIN || it.type == Episode.TYPE_MUSIC }
         val eps = mainEps.filter { it.isAir }
-        detail.episode_detail.text = if (eps.size == mainEps.size && (subject.type == Subject.TYPE_MUSIC || subject.eps_count > 0)) context.getString(R.string.phrase_full_eps, eps.size) else
-            eps.lastOrNull()?.parseSort(context)?.let { context.getString(R.string.parse_update_to, it) }
+        detail.episode_detail.text =
+            if (eps.size == mainEps.size && (subject.type == Subject.TYPE_MUSIC || subject.eps_count > 0)) context.getString(
+                R.string.phrase_full_eps,
+                eps.size
+            ) else
+                eps.lastOrNull()?.parseSort(context)?.let { context.getString(R.string.parse_update_to, it) }
                     ?: context.getString(R.string.hint_air_nothing)
     }
 
@@ -355,6 +378,7 @@ class SubjectView(private val context: SubjectActivity) {
 
     private fun showEpisodeDetail(show: Boolean) {
         context.episode_detail_list_container.visibility = if (show) View.VISIBLE else View.INVISIBLE
-        context.episode_detail_list_container.animation = AnimationUtils.loadAnimation(context, if (show) R.anim.move_in else R.anim.move_out)
+        context.episode_detail_list_container.animation =
+            AnimationUtils.loadAnimation(context, if (show) R.anim.move_in else R.anim.move_out)
     }
 }
