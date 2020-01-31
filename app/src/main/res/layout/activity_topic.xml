@@ -8,150 +8,63 @@
         android:layout_height="match_parent"
         android:fitsSystemWindows="true">
 
-    <com.google.android.material.appbar.AppBarLayout
-            android:id="@+id/app_bar"
-            android:layout_height="wrap_content"
+    <ImageView
+            android:id="@+id/item_cover_blur"
             android:layout_width="match_parent"
-            app:layout_behavior="soko.ekibun.bangumi.util.FixAppBarLayoutBehavior"
-            android:fitsSystemWindows="true"
-            android:background="?colorPrimaryBackground"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
-        <com.google.android.material.appbar.CollapsingToolbarLayout
-                android:id="@+id/toolbar_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-                app:contentScrim="?colorPrimaryBackground"
-                app:layout_scrollFlags="scroll|exitUntilCollapsed"
-                app:titleEnabled="false"
-                android:fitsSystemWindows="true">
-            <androidx.constraintlayout.widget.ConstraintLayout
-                    android:fitsSystemWindows="true"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    app:layout_collapseMode="parallax"
-                    app:layout_collapseParallaxMultiplier="0.2">
-                <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        android:id="@+id/item_cover_blur"
-                        android:scaleType="centerCrop"
-                        android:contentDescription="@string/desc_cover"/>
-                <View
-                        android:id="@+id/item_mask"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        android:background="#55000000"/>
-            </androidx.constraintlayout.widget.ConstraintLayout>
-            <androidx.appcompat.widget.Toolbar
-                    android:id="@+id/toolbar"
-                    android:layout_width="match_parent"
-                    android:layout_height="?attr/actionBarSize"
-                    app:popupTheme="@style/AppTheme.PopupOverlay"
-                    app:layout_collapseMode="pin"/>
-            <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/toolbar_container"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:layout_collapseMode="parallax"
-                    app:layout_collapseParallaxMultiplier="1">
-                <View
-                        android:id="@+id/view_toolbar"
-                        android:transitionName="title"
-                        app:layout_constraintTop_toTopOf="parent"
-                        android:layout_height="?attr/actionBarSize"
-                        app:layout_constraintWidth_max="800dp"
-                        app:layout_constraintLeft_toLeftOf="parent"
-                        app:layout_constraintRight_toRightOf="parent"
-                        android:layout_width="0dp"/>
-                <TextView
-                        android:id="@+id/title_collapse"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        app:layout_constraintTop_toTopOf="@+id/view_toolbar"
-                        app:layout_constraintBottom_toBottomOf="@+id/view_toolbar"
-                        android:layout_marginStart="?attr/actionBarSize"
-                        app:layout_constraintLeft_toLeftOf="@+id/view_toolbar"
-                        app:layout_constraintRight_toRightOf="@+id/view_toolbar"
-                        android:layout_marginEnd="35dp"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        tools:text="title"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
-                />
-                <TextView
-                        android:id="@+id/title_expand"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        app:layout_constraintTop_toTopOf="@+id/title_collapse"
-                        app:layout_constraintLeft_toLeftOf="@+id/title_collapse"
-                        app:layout_constraintRight_toRightOf="@+id/title_collapse"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
-                        />
-                <LinearLayout
-                        android:id="@+id/title_slice"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        app:layout_constraintTop_toBottomOf="@+id/title_expand"
-                        app:layout_constraintLeft_toLeftOf="@+id/title_collapse"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        android:layout_marginTop="6dp"
-                        android:layout_marginBottom="12dp">
-                    <TextView
-                            android:id="@+id/title_slice_0"
-                            android:layout_width="wrap_content"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            android:maxWidth="200dp"
-                            tools:text="group"
-                            android:layout_height="wrap_content"/>
-                    <ImageView
-                            android:visibility="gone"
-                            android:id="@+id/title_slice_divider"
-                            android:layout_width="12dp"
-                            android:layout_height="12dp"
-                            android:layout_marginLeft="6dp"
-                            android:layout_marginRight="6dp"
-                            android:layout_gravity="center_vertical"
-                            android:tint="@android:color/white"
-                            android:src="@drawable/ic_chevron_right"
-                            tools:visibility="visible"
-                            tools:ignore="ContentDescription"/>
-                    <TextView
-                            android:id="@+id/title_slice_1"
-                            android:layout_width="wrap_content"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            tools:text="group"
-                            android:layout_height="wrap_content"/>
-                </LinearLayout>
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </com.google.android.material.appbar.CollapsingToolbarLayout>
-    </com.google.android.material.appbar.AppBarLayout>
+            android:layout_height="match_parent"
+            tools:src="@drawable/err_404"
+            android:scaleType="centerCrop"/>
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-            android:id="@+id/item_swipe"
+    <View
+            android:id="@+id/item_mask"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:background="#55000000"/>
+
+    <include
+            android:id="@+id/app_bar"
+            layout="@layout/appbar_collapsible_layout"/>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
-        <soko.ekibun.bangumi.ui.view.FastScrollRecyclerView
-                android:id="@+id/item_list"
-                android:layout_width="match_parent"
+
+        <View
+                android:id="@+id/item_bg"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:paddingBottom="45dp"
-                android:clipToPadding="false"
-                app:fastScrollThumbInactiveColor="?colorPrimaryForeground"
-                app:fastScrollThumbColor="?colorAccent"
-                app:fastScrollPopupTextSize="32sp"
-                app:fastScrollPopupBackgroundSize="48sp"
-                app:fastScrollPopupTextColor="@android:color/white"
-                app:fastScrollPopupBgColor="?colorAccent"/>
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+                app:layout_constraintLeft_toLeftOf="@+id/item_swipe"
+                app:layout_constraintRight_toRightOf="@+id/item_swipe"
+                android:background="@drawable/bg_round_dialog"/>
+
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                android:id="@+id/item_swipe"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintWidth_max="700dp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent">
+
+            <soko.ekibun.bangumi.ui.view.FastScrollRecyclerView
+                    android:id="@+id/item_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingBottom="45dp"
+                    android:clipToPadding="false"
+                    app:fastScrollThumbInactiveColor="?colorPrimaryForeground"
+                    app:fastScrollThumbColor="?colorAccent"
+                    app:fastScrollPopupTextSize="32sp"
+                    app:fastScrollPopupBackgroundSize="48sp"
+                    app:fastScrollPopupTextColor="@android:color/white"
+                    app:fastScrollPopupBgColor="?colorAccent"
+                    tools:listitem="@layout/item_reply"/>
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/item_reply_container"
@@ -168,6 +81,7 @@
                 android:gravity="center_vertical"
                 android:layout_height="48dp"
                 app:layout_constraintWidth_max="750dp"
+                app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
                 tools:text="@string/hint_reply"

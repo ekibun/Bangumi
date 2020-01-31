@@ -166,7 +166,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
         contentView.item_btn_image.setOnClickListener {
             val intent = Intent(Intent.ACTION_GET_CONTENT)
             intent.type = "image/*"
-            startActivityForResult(intent, 1)
+            startActivityForResult(Intent.createChooser(intent, "选择图片"), 1)
         }
         contentView.item_btn_send.setOnClickListener {
             callback(TextUtil.span2bbcode(contentView.item_input.editableText), true)

@@ -1,21 +1,16 @@
 package soko.ekibun.bangumi.ui.subject
 
 import android.annotation.SuppressLint
+import android.view.LayoutInflater
 import android.view.View
-import android.view.animation.AnimationUtils
-import android.widget.LinearLayout
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.appbar.AppBarLayout
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_subject.*
-import kotlinx.android.synthetic.main.subject_buttons.*
-import kotlinx.android.synthetic.main.subject_detail.*
+import kotlinx.android.synthetic.main.dialog_subject.view.*
 import kotlinx.android.synthetic.main.subject_detail.view.*
-import kotlinx.android.synthetic.main.subject_panel.*
 import org.jsoup.Jsoup
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
@@ -25,16 +20,16 @@ import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarAdapter
 import soko.ekibun.bangumi.ui.topic.PhotoPagerAdapter
+import soko.ekibun.bangumi.ui.view.CollapsibleAppBarHelper
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.HttpUtil
-import soko.ekibun.bangumi.util.PlayerBridge
-import soko.ekibun.bangumi.util.ResourceUtil
 
 /**
  * 条目view
  */
 class SubjectView(private val context: SubjectActivity) {
+    val collapsibleAppBarHelper = CollapsibleAppBarHelper(context.app_bar as AppBarLayout)
 
     val episodeAdapter = SmallEpisodeAdapter()
     val episodeDetailAdapter = EpisodeAdapter()
@@ -49,138 +44,131 @@ class SubjectView(private val context: SubjectActivity) {
     val seasonAdapter = SeasonAdapter()
     private val seasonLayoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
 
-    val detail = context.subject_detail as LinearLayout
+    val detail by lazy { LayoutInflater.from(context).inflate(R.layout.dialog_subject, null) }
 
-    var appBarOffset = -1
-    val scroll2Top = {
-        if (appBarOffset != 0 || if (context.episode_detail_list.visibility == View.VISIBLE) context.episode_detail_list.canScrollVertically(-1) else context.comment_list.canScrollVertically(-1)) {
-            context.app_bar.setExpanded(true, true)
-            context.comment_list.stopScroll()
-            (context.comment_list.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(0, 0)
-            context.episode_detail_list.stopScroll()
-            (context.episode_detail_list.layoutManager as StaggeredGridLayoutManager).scrollToPositionWithOffset(0, 0)
+    fun scroll2Top(): Boolean {
+        return if (collapsibleAppBarHelper.appBarOffset != 0 || context.item_list.canScrollVertically(-1)) {
+            collapsibleAppBarHelper.appbar.setExpanded(true, true)
+            context.item_list.stopScroll()
+            (context.item_list.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(0, 0)
             true
         } else false
     }
 
     init {
-        val marginEnd = ResourceUtil.toPixels(context.resources, 12f)
-        val dp20 = ResourceUtil.toPixels(context.resources, 20f)
-        (context.title_expand.layoutParams as ConstraintLayout.LayoutParams).marginEnd = 3 * marginEnd
+//        val marginEnd = ResourceUtil.toPixels(context.resources, 12f)
+//        val dp20 = ResourceUtil.toPixels(context.resources, 20f)
+//        (context.title_expand.layoutParams as ConstraintLayout.LayoutParams).marginEnd = 3 * marginEnd
 
-        var oldTrans = 0f
-        context.app_bar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
-            if (appBarOffset == verticalOffset) return@OnOffsetChangedListener
-            val ratio = Math.abs(verticalOffset.toFloat() / appBarLayout.totalScrollRange)
-            appBarOffset = verticalOffset
-            context.item_scrim.alpha = ratio
-            context.item_subject.alpha = 1 - ratio
-            context.item_subject.translationY = -(4 + ratio * 0.8f) * dp20
+//        var oldTrans = 0f
+//        context.app_bar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
+//            if (appBarOffset == verticalOffset) return@OnOffsetChangedListener
+//            val ratio = Math.abs(verticalOffset.toFloat() / appBarLayout.totalScrollRange)
+//            appBarOffset = verticalOffset
+//            context.item_scrim.alpha = ratio
+//            context.item_subject.alpha = 1 - ratio
+//            context.item_subject.translationY = -(4 + ratio * 0.8f) * dp20
+//
+//            context.item_buttons.translationY = -context.toolbar.height * ratio / 2
+//            context.title_collapse.alpha = 1 - (1 - ratio) * (1 - ratio) * (1 - ratio)
+//            context.title_expand.alpha = 1 - ratio
+//            context.item_buttons.translationX = -2.2f * marginEnd * ratio
+//            context.app_bar.elevation = Math.max(0f, 12 * (ratio - 0.95f) / 0.05f)
+//            val transY = (1 - ratio) * dp20
+//            if (oldTrans != transY) {
+//                oldTrans = transY
+//                context.app_bar.translationY = -transY
+//                context.toolbar_layout.translationY = transY
+//                context.item_swipe.translationY = -transY
+//                context.comment_list.translationY = transY
+//            }
+//        })
 
-            context.item_buttons.translationY = -context.toolbar.height * ratio / 2
-            context.title_collapse.alpha = 1 - (1 - ratio) * (1 - ratio) * (1 - ratio)
-            context.title_expand.alpha = 1 - ratio
-            context.item_buttons.translationX = -2.2f * marginEnd * ratio
-            context.app_bar.elevation = Math.max(0f, 12 * (ratio - 0.95f) / 0.05f)
-            val transY = (1 - ratio) * dp20
-            if (oldTrans != transY) {
-                oldTrans = transY
-                context.app_bar.translationY = -transY
-                context.toolbar_layout.translationY = transY
-                context.item_swipe.translationY = -transY
-                context.comment_list.translationY = transY
-            }
-        })
+        detail.season_list.adapter = seasonAdapter
+        detail.season_list.layoutManager = seasonLayoutManager
+        detail.season_list.isNestedScrollingEnabled = false
 
-        context.season_list.adapter = seasonAdapter
-        context.season_list.layoutManager = seasonLayoutManager
-        context.season_list.isNestedScrollingEnabled = false
-
-        context.episode_list.adapter = episodeAdapter
-        val layoutManager = LinearLayoutManager(context)
-        layoutManager.orientation = RecyclerView.HORIZONTAL
-        context.episode_list.layoutManager = layoutManager
-        context.episode_list.isNestedScrollingEnabled = false
+        detail.episode_list.adapter = episodeAdapter
+        detail.episode_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+        detail.episode_list.isNestedScrollingEnabled = false
         val swipeTouchListener = View.OnTouchListener { v, _ ->
             if ((v as? RecyclerView)?.canScrollHorizontally(1) == true || (v as? RecyclerView)?.canScrollHorizontally(-1) == true)
                 context.shouldCancelActivity = false
             false
         }
-        context.episode_list.setOnTouchListener(swipeTouchListener)
-        context.season_list.setOnTouchListener(swipeTouchListener)
-        context.commend_list.setOnTouchListener(swipeTouchListener)
-        context.linked_list.setOnTouchListener(swipeTouchListener)
-        context.character_list.setOnTouchListener(swipeTouchListener)
-        context.tag_list.setOnTouchListener(swipeTouchListener)
-        context.site_list.setOnTouchListener(swipeTouchListener)
+        detail.episode_list.setOnTouchListener(swipeTouchListener)
+        detail.season_list.setOnTouchListener(swipeTouchListener)
+        detail.commend_list.setOnTouchListener(swipeTouchListener)
+        detail.linked_list.setOnTouchListener(swipeTouchListener)
+        detail.character_list.setOnTouchListener(swipeTouchListener)
+        detail.tag_list.setOnTouchListener(swipeTouchListener)
+        detail.site_list.setOnTouchListener(swipeTouchListener)
 
-        val touchListener = episodeDetailAdapter.setUpWithRecyclerView(context.episode_detail_list)
-        touchListener.nestScrollDistance = {
-            context.app_bar.totalScrollRange + appBarOffset
+//        val touchListener = episodeDetailAdapter.setUpWithRecyclerView(context.episode_detail_list)
+//        touchListener.nestScrollDistance = {
+//            context.app_bar.totalScrollRange + appBarOffset
+//        }
+//        context.episode_detail_list.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+//        context.episode_detail_list.nestedScrollDistance = {
+//            -appBarOffset // * (context.app_bar.totalScrollRange + dp20) / context.app_bar.totalScrollRange
+//        }
+//        context.episode_detail_list.nestedScrollRange = {
+//            context.app_bar.totalScrollRange // + dp20
+//        }
+//
+//        context.item_close.setOnClickListener {
+//            closeEpisodeDetail()
+//        }
+        detail.episode_detail.setOnClickListener {
+            //            showEpisodeDetail(true)
         }
-        context.episode_detail_list.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
-        context.episode_detail_list.nestedScrollDistance = {
-            -appBarOffset // * (context.app_bar.totalScrollRange + dp20) / context.app_bar.totalScrollRange
-        }
-        context.episode_detail_list.nestedScrollRange = {
-            context.app_bar.totalScrollRange // + dp20
-        }
 
-        context.item_close.setOnClickListener {
-            closeEpisodeDetail()
-        }
-        context.episode_detail.setOnClickListener {
-            showEpisodeDetail(true)
-        }
+        detail.linked_list.adapter = linkedSubjectsAdapter
+        detail.linked_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+        detail.linked_list.isNestedScrollingEnabled = false
 
-        context.linked_list.adapter = linkedSubjectsAdapter
-        context.linked_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
-        context.linked_list.isNestedScrollingEnabled = false
+        detail.commend_list.adapter = recommendSubjectsAdapter
+        detail.commend_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+        detail.commend_list.isNestedScrollingEnabled = false
 
-        context.commend_list.adapter = recommendSubjectsAdapter
-        context.commend_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
-        context.commend_list.isNestedScrollingEnabled = false
+        detail.character_list.adapter = characterAdapter
+        detail.character_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+        detail.character_list.isNestedScrollingEnabled = false
 
-        context.character_list.adapter = characterAdapter
-        context.character_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
-        context.character_list.isNestedScrollingEnabled = false
+        detail.topic_list.adapter = topicAdapter
+        detail.topic_list.layoutManager = LinearLayoutManager(context)
+        detail.topic_list.isNestedScrollingEnabled = false
 
-        context.topic_list.adapter = topicAdapter
-        context.topic_list.layoutManager = LinearLayoutManager(context)
-        context.topic_list.isNestedScrollingEnabled = false
+        detail.blog_list.adapter = blogAdapter
+        detail.blog_list.layoutManager = LinearLayoutManager(context)
+        detail.blog_list.isNestedScrollingEnabled = false
 
-        context.blog_list.adapter = blogAdapter
-        context.blog_list.layoutManager = LinearLayoutManager(context)
-        context.blog_list.isNestedScrollingEnabled = false
+        detail.tag_list.adapter = tagAdapter
+        detail.tag_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+        detail.tag_list.isNestedScrollingEnabled = false
 
-        context.tag_list.adapter = tagAdapter
-        context.tag_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
-        context.tag_list.isNestedScrollingEnabled = false
+        detail.site_list.adapter = sitesAdapter
+        detail.site_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+        detail.site_list.isNestedScrollingEnabled = false
 
-        context.site_list.adapter = sitesAdapter
-        context.site_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
-        context.site_list.isNestedScrollingEnabled = false
-
-        context.comment_list.adapter = commentAdapter
-        context.comment_list.layoutManager = LinearLayoutManager(context)
-
-        context.root_layout.removeView(detail)
+        context.item_list.adapter = commentAdapter
+        context.item_list.layoutManager = LinearLayoutManager(context)
         commentAdapter.setHeaderView(detail)
     }
 
-    /**
-     * 收起剧集列表
-     */
-    fun closeEpisodeDetail() {
-        val eps = episodeDetailAdapter.data.filter { it.isSelected }
-        if (eps.isEmpty())
-            showEpisodeDetail(false)
-        else {
-            for (ep in eps) ep.isSelected = false
-            episodeDetailAdapter.updateSelection()
-            episodeDetailAdapter.notifyDataSetChanged()
-        }
-    }
+//    /**
+//     * 收起剧集列表
+//     */
+//    fun closeEpisodeDetail() {
+//        val eps = episodeDetailAdapter.data.filter { it.isSelected }
+//        if (eps.isEmpty())
+//            showEpisodeDetail(false)
+//        else {
+//            for (ep in eps) ep.isSelected = false
+//            episodeDetailAdapter.updateSelection()
+//            episodeDetailAdapter.notifyDataSetChanged()
+//        }
+//    }
 
     /**
      * 更新条目
@@ -198,9 +186,8 @@ class SubjectView(private val context: SubjectActivity) {
         }
 
         if (tag == null || tag == Subject.SaxTag.NAME) {
-            context.title_collapse.text = subject.displayName
-            context.title_expand.text = context.title_collapse.text
-            context.item_subject_title.text = subject.name
+            collapsibleAppBarHelper.setTitle(subject.displayName)
+            detail.item_subject_title.text = subject.name
         }
         if (tag == null || tag == Subject.SaxTag.INFOBOX || tag == Subject.SaxTag.NAME) {
             val infoBoxPreview = ArrayList<String>()
@@ -217,7 +204,7 @@ class SubjectView(private val context: SubjectActivity) {
                 it.first.substringBefore(" ") in arrayOf("导演", "发行", "出版社", "连载杂志", "作曲", "作词", "编曲", "插图", "作画")
             }?.map { "${it.first}：${Jsoup.parse(it.second).body().text()}" } ?: ArrayList())
 
-            context.item_subject_info.text = infoBoxPreview.joinToString(" / ")
+            detail.item_subject_info.text = infoBoxPreview.joinToString(" / ")
         }
 
         if (tag == null || tag == Subject.SaxTag.SUMMARY) {
@@ -226,7 +213,16 @@ class SubjectView(private val context: SubjectActivity) {
         }
 
         if (tag == null || tag == Subject.SaxTag.TYPE) {
-            context.item_play.visibility = if (PlayerBridge.checkActivity(context, subject)) View.VISIBLE else View.GONE
+//            context.item_play.visibility = if (PlayerBridge.checkActivity(context, subject)) View.VISIBLE else View.GONE
+        }
+
+        if (tag == null || tag == Subject.SaxTag.COLLECTION) {
+            detail.item_user_collect.text =
+                "${subject.collection?.wish}人想看/${
+                subject.collection?.collect}人看过/${
+                subject.collection?.doing}人在看/${
+                subject.collection?.on_hold}人搁置/${
+                subject.collection?.dropped}人抛弃"
         }
 
         if (tag == null || tag == Subject.SaxTag.COLLECT) {
@@ -250,26 +246,26 @@ class SubjectView(private val context: SubjectActivity) {
 //                    (if (subject.vol_count != 0) context.getString(R.string.parse_sort_vol, "${subject.vol_status}${if (subject.vol_count == 0) "" else "/${subject.vol_count}"}") + " " else "") +
 //                            context.getString(R.string.parse_sort_ep, "${subject.ep_status}${if (subject.eps_count == 0) "" else "/${subject.eps_count}"}"))
             subject.rating?.let {
-                context.detail_score.text = if (it.score == 0f) "-" else String.format("%.1f", it.score)
-                context.detail_friend_score.text =
+                detail.detail_score.text = if (it.score == 0f) "-" else String.format("%.1f", it.score)
+                detail.detail_friend_score.text =
                     if (it.friend_score == 0f) "-" else String.format("%.1f", it.friend_score)
-                context.detail_score_count.text =
+                detail.detail_score_count.text =
                     "×${if (it.total > 1000) "${it.total / 1000}k" else it.total.toString()}"
-                context.item_friend_score_label.text = context.getString(R.string.friend_score)
+                detail.item_friend_score_label.text = context.getString(R.string.friend_score)
             }
         }
 
         if (tag == null || tag == Subject.SaxTag.IMAGES) {
-            GlideUtil.with(context.item_cover)
+            GlideUtil.with(detail.item_cover)
                 ?.load(Images.getImage(subject.image, context))
-                ?.apply(RequestOptions.placeholderOf(context.item_cover.drawable))
+                ?.apply(RequestOptions.placeholderOf(detail.item_cover.drawable))
                 ?.apply(RequestOptions.errorOf(R.drawable.err_404))
-                ?.into(context.item_cover)
-            context.item_cover.setOnClickListener {
+                ?.into(detail.item_cover)
+            detail.item_cover.setOnClickListener {
                 PhotoPagerAdapter.showWindow(
                     detail,
                     listOf(Images.large(subject.image)),
-                    listOf(context.item_cover.drawable)
+                    listOf(detail.item_cover.drawable)
                 )
             }
             GlideUtil.with(context.item_cover_blur)
@@ -375,10 +371,10 @@ class SubjectView(private val context: SubjectActivity) {
     }
 
     private var scrolled = false
-
-    private fun showEpisodeDetail(show: Boolean) {
-        context.episode_detail_list_container.visibility = if (show) View.VISIBLE else View.INVISIBLE
-        context.episode_detail_list_container.animation =
-            AnimationUtils.loadAnimation(context, if (show) R.anim.move_in else R.anim.move_out)
-    }
+//
+//    private fun showEpisodeDetail(show: Boolean) {
+//        context.episode_detail_list_container.visibility = if (show) View.VISIBLE else View.INVISIBLE
+//        context.episode_detail_list_container.animation =
+//            AnimationUtils.loadAnimation(context, if (show) R.anim.move_in else R.anim.move_out)
+//    }
 }

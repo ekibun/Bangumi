@@ -219,7 +219,7 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
         return ""
     }
 
-    private fun getScrolledPastHeight(): Int {
+    fun getScrolledPastHeight(): Int {
         val layoutManager = layoutManager
         val adapter = adapter
         return if (layoutManager is LinearLayoutManager) {

@@ -8,7 +8,7 @@ import androidx.appcompat.app.AlertDialog
 import com.chad.library.adapter.base.BaseQuickAdapter
 import kotlinx.android.synthetic.main.activity_subject.*
 import kotlinx.android.synthetic.main.brvah_quick_view_load_more.view.*
-import kotlinx.android.synthetic.main.subject_buttons.*
+import kotlinx.android.synthetic.main.dialog_subject.view.*
 import kotlinx.android.synthetic.main.subject_detail.view.*
 import retrofit2.Call
 import soko.ekibun.bangumi.App
@@ -27,8 +27,6 @@ import soko.ekibun.bangumi.ui.topic.TopicActivity
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.HttpUtil
-import soko.ekibun.bangumi.util.PlayerBridge
-import soko.ekibun.bangumi.util.ResourceUtil
 
 /**
  * 条目Presenter
@@ -51,8 +49,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
         this.subject = subject
         subjectView.updateSubject(subject)
 
-        context.item_subject.setOnClickListener {
-            if (subjectView.scroll2Top()) return@setOnClickListener
+        subjectView.detail.item_subject_info.setOnClickListener {
             InfoboxDialog.showDialog(context, subject)
         }
         subjectView.detail.item_detail.setOnClickListener {
@@ -66,7 +63,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
         subjectView.commentAdapter.setLoadMoreView(BrvahLoadMoreView())
         subjectView.commentAdapter.setOnLoadMoreListener({
             loadComment(subject)
-        }, context.comment_list)
+        }, context.item_list)
         loadComment(subject)
         subjectView.detail.load_more_load_fail_view.setOnClickListener {
             loadComment(subject)
@@ -100,12 +97,8 @@ class SubjectPresenter(private val context: SubjectActivity) {
         subjectView.detail.item_vol_status.setListener(updateInt)
         subjectView.detail.item_ep_status.setListener(updateInt)
 
-        context.title_expand.setOnClickListener {
-            if (subjectView.scroll2Top()) return@setOnClickListener
-            WebActivity.startActivity(context, subject.url)
-        }
-        context.title_collapse.setOnClickListener {
-            if (subjectView.scroll2Top()) return@setOnClickListener
+        subjectView.collapsibleAppBarHelper.onTitleClickListener = onTitleClickListener@{
+            if (subjectView.scroll2Top()) return@onTitleClickListener
             WebActivity.startActivity(context, subject.url)
         }
 
@@ -117,10 +110,10 @@ class SubjectPresenter(private val context: SubjectActivity) {
             WebActivity.startActivity(context, "${subject.url}/reviews")
         }
 
-        context.item_play.setOnClickListener {
-            if (PlayerBridge.checkActivity(context, this.subject))
-                PlayerBridge.startActivity(context, this.subject)
-        }
+//        context.item_play.setOnClickListener {
+//            if (PlayerBridge.checkActivity(context, this.subject))
+//                PlayerBridge.startActivity(context, this.subject)
+//        }
 
         subjectView.episodeAdapter.onItemLongClickListener =
             BaseQuickAdapter.OnItemLongClickListener { _, _, position ->
@@ -135,48 +128,48 @@ class SubjectPresenter(private val context: SubjectActivity) {
             subjectView.episodeAdapter.data[position]?.let { openEpisode(it, eps) }
         }
 
-        context.item_edit_ep.setOnClickListener {
-            val eps = subjectView.episodeDetailAdapter.data.filter { it.isSelected }
-            if (eps.isEmpty()) return@setOnClickListener
-            val epStatus = context.resources.getStringArray(R.array.episode_status).toMutableList()
-            epStatus.removeAt(1)
+//        context.item_edit_ep.setOnClickListener {
+//            val eps = subjectView.episodeDetailAdapter.data.filter { it.isSelected }
+//            if (eps.isEmpty()) return@setOnClickListener
+//            val epStatus = context.resources.getStringArray(R.array.episode_status).toMutableList()
+//            epStatus.removeAt(1)
+//
+//            val popupMenu = PopupMenu(context, context.item_edit_ep)
+//            epStatus.forEachIndexed { index, s ->
+//                popupMenu.menu.add(Menu.NONE, Menu.FIRST + index, index, s)
+//            }
+//            popupMenu.setOnMenuItemClickListener { menu ->
+//                val newStatus = progressMap[menu.itemId - Menu.FIRST]
+//                updateProgress(eps.map { it.t }, newStatus)
+//                false
+//            }
+//            popupMenu.show()
+//        }
+//        subjectView.episodeDetailAdapter.updateSelection = {
+//            val eps = subjectView.episodeDetailAdapter.data.filter { it.isSelected }
+//            context.item_edit_ep.visibility = if (eps.isEmpty()) View.GONE else View.VISIBLE
+//            context.item_ep_title.visibility = context.item_edit_ep.visibility
+//            context.item_ep_title.text =
+//                "${context.getText(R.string.episodes)}${if (eps.isEmpty()) "" else "(${eps.size})"}"
+//        }
 
-            val popupMenu = PopupMenu(context, context.item_edit_ep)
-            epStatus.forEachIndexed { index, s ->
-                popupMenu.menu.add(Menu.NONE, Menu.FIRST + index, index, s)
-            }
-            popupMenu.setOnMenuItemClickListener { menu ->
-                val newStatus = progressMap[menu.itemId - Menu.FIRST]
-                updateProgress(eps.map { it.t }, newStatus)
-                false
-            }
-            popupMenu.show()
-        }
-        subjectView.episodeDetailAdapter.updateSelection = {
-            val eps = subjectView.episodeDetailAdapter.data.filter { it.isSelected }
-            context.item_edit_ep.visibility = if (eps.isEmpty()) View.GONE else View.VISIBLE
-            context.item_ep_title.visibility = context.item_edit_ep.visibility
-            context.item_ep_title.text =
-                "${context.getText(R.string.episodes)}${if (eps.isEmpty()) "" else "(${eps.size})"}"
-        }
-
-        subjectView.episodeDetailAdapter.setOnItemChildLongClickListener { _, _, position ->
-            val eps =
-                subjectView.episodeDetailAdapter.data.subList(0, position + 1).filter { !it.isHeader }.map { it.t }
-            if (eps.last().type == Episode.TYPE_MUSIC)
-                subjectView.episodeDetailAdapter.data[position]?.t?.let {
-                    openEpisode(it, eps)
-                    true
-                } ?: false
-            else subjectView.episodeDetailAdapter.longClickListener(position)
-        }
-
-        subjectView.episodeDetailAdapter.setOnItemChildClickListener { _, _, position ->
-            val eps =
-                subjectView.episodeDetailAdapter.data.subList(0, position + 1).filter { !it.isHeader }.map { it.t }
-            if (eps.last().type == Episode.TYPE_MUSIC || subjectView.episodeDetailAdapter.clickListener(position))
-                subjectView.episodeDetailAdapter.data[position]?.t?.let { openEpisode(it, eps) }
-        }
+//        subjectView.episodeDetailAdapter.setOnItemChildLongClickListener { _, _, position ->
+//            val eps =
+//                subjectView.episodeDetailAdapter.data.subList(0, position + 1).filter { !it.isHeader }.map { it.t }
+//            if (eps.last().type == Episode.TYPE_MUSIC)
+//                subjectView.episodeDetailAdapter.data[position]?.t?.let {
+//                    openEpisode(it, eps)
+//                    true
+//                } ?: false
+//            else subjectView.episodeDetailAdapter.longClickListener(position)
+//        }
+//
+//        subjectView.episodeDetailAdapter.setOnItemChildClickListener { _, _, position ->
+//            val eps =
+//                subjectView.episodeDetailAdapter.data.subList(0, position + 1).filter { !it.isHeader }.map { it.t }
+//            if (eps.last().type == Episode.TYPE_MUSIC || subjectView.episodeDetailAdapter.clickListener(position))
+//                subjectView.episodeDetailAdapter.data[position]?.t?.let { openEpisode(it, eps) }
+//        }
 
         subjectView.linkedSubjectsAdapter.setOnItemClickListener { _, _, position ->
             subjectView.linkedSubjectsAdapter.data[position]?.let { SubjectActivity.startActivity(context, it) }
@@ -219,7 +212,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
     private fun updateProgress(eps: List<Episode>, newStatus: String) {
         EpisodeDialog.updateProgress(eps, newStatus) {
             subjectView.episodeAdapter.notifyDataSetChanged()
-            subjectView.episodeDetailAdapter.notifyDataSetChanged()
+//            subjectView.episodeDetailAdapter.notifyDataSetChanged()
             refreshProgress()
         }
     }
@@ -321,7 +314,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
     private fun refreshCollection() {
         val body = subject.collect ?: Collection()
         val status = body.status
-        context.item_collect_image.setImageDrawable(
+        subjectView.detail.item_collect_image.setImageDrawable(
             context.resources.getDrawable(
                 if (status in listOf(
                         Collection.STATUS_WISH,
@@ -332,7 +325,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
                 ) R.drawable.ic_heart else R.drawable.ic_heart_outline, context.theme
             )
         )
-        context.item_collect_info.text =
+        subjectView.detail.item_collect_info.text =
             context.resources.getStringArray(Collection.getStatusNamesRes(subject.type)).getOrNull(body.statusId - 1)
                 ?: context.getString(R.string.collect)
 
@@ -341,9 +334,9 @@ class SubjectPresenter(private val context: SubjectActivity) {
         }
         subjectView.tagAdapter.setNewData(subjectView.tagAdapter.data)
 
-        context.item_collect.setOnClickListener {
+        subjectView.detail.item_collect.setOnClickListener {
             if (HttpUtil.formhash.isEmpty()) return@setOnClickListener
-            val popupMenu = PopupMenu(context, context.item_collect)
+            val popupMenu = PopupMenu(context, subjectView.detail.item_collect)
             val statusList = context.resources.getStringArray(Collection.getStatusNamesRes(subject.type))
             statusList.forEachIndexed { index, s ->
                 popupMenu.menu.add(Menu.NONE, Menu.FIRST + index, index, s)
@@ -372,7 +365,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
             popupMenu.show()
         }
 
-        context.item_collect.setOnLongClickListener {
+        subjectView.detail.item_collect.setOnLongClickListener {
             EditSubjectDialog.showDialog(context, subject, body) {
                 refreshCollection()
             }
@@ -390,23 +383,5 @@ class SubjectPresenter(private val context: SubjectActivity) {
             subject.eps = eps
             dataCacheModel.set(subject.cacheKey, subject)
         }, {}))
-    }
-
-    fun updateConfiguration() {
-        context.root_layout.post {
-            val padding = Math.max(0, (context.comment_list.width - ResourceUtil.toPixels(context.resources, 700f)) / 2)
-            context.comment_list.setPadding(
-                padding,
-                context.comment_list.paddingTop,
-                padding,
-                context.comment_list.paddingBottom
-            )
-            context.title_collapse.setPadding(
-                context.title_collapse.paddingLeft,
-                context.title_collapse.paddingTop,
-                context.item_buttons.width,
-                context.title_collapse.paddingBottom
-            )
-        }
     }
 }

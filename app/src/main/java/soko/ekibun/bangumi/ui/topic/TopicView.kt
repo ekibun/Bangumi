@@ -3,16 +3,19 @@ package soko.ekibun.bangumi.ui.topic
 import android.graphics.Rect
 import android.view.LayoutInflater
 import android.view.View
-import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSmoothScroller
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.appbar.AppBarLayout
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_topic.*
+import kotlinx.android.synthetic.main.appbar_collapsible_layout.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
+import soko.ekibun.bangumi.ui.view.CollapsibleAppBarHelper
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.ResourceUtil
@@ -22,26 +25,38 @@ import soko.ekibun.bangumi.util.ResourceUtil
  * 帖子View
  */
 class TopicView(private val context: TopicActivity) {
+    private val collapsibleAppBarHelper = CollapsibleAppBarHelper(context.app_bar as AppBarLayout)
+
     val adapter by lazy { PostAdapter() }
 
-    private var appBarOffset = 0
     private val scroll2Top = {
-        if (context.item_list.canScrollVertically(-1) || appBarOffset != 0) {
-            context.app_bar.setExpanded(true, true)
+        if (context.item_list.canScrollVertically(-1) || collapsibleAppBarHelper.appBarOffset != 0) {
+            collapsibleAppBarHelper.appbar.setExpanded(true, true)
             context.item_list.stopScroll()
-            (context.item_list.layoutManager as androidx.recyclerview.widget.LinearLayoutManager).scrollToPositionWithOffset(0, 0)
+            (context.item_list.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(0, 0)
             true
         } else false
     }
 
     init {
         context.item_list.adapter = adapter
-        context.item_list.layoutManager = object : androidx.recyclerview.widget.LinearLayoutManager(context) {
-            override fun requestChildRectangleOnScreen(parent: androidx.recyclerview.widget.RecyclerView, child: View, rect: Rect, immediate: Boolean): Boolean {
+        context.item_list.layoutManager = object : LinearLayoutManager(context) {
+            override fun requestChildRectangleOnScreen(
+                parent: RecyclerView,
+                child: View,
+                rect: Rect,
+                immediate: Boolean
+            ): Boolean {
                 return false
             }
 
-            override fun requestChildRectangleOnScreen(parent: androidx.recyclerview.widget.RecyclerView, child: View, rect: Rect, immediate: Boolean, focusedChildVisible: Boolean): Boolean {
+            override fun requestChildRectangleOnScreen(
+                parent: RecyclerView,
+                child: View,
+                rect: Rect,
+                immediate: Boolean,
+                focusedChildVisible: Boolean
+            ): Boolean {
                 return false
             }
         }
@@ -50,30 +65,28 @@ class TopicView(private val context: TopicActivity) {
         adapter.setEnableLoadMore(true)
 
         var canScroll = false
-        context.app_bar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
-            val ratio = Math.abs(verticalOffset.toFloat() / appBarLayout.totalScrollRange)
-            context.title_collapse.alpha = 1 - (1 - ratio) * (1 - ratio) * (1 - ratio)
-            context.title_expand.alpha = 1 - ratio
-            context.title_collapse.translationY = -context.title_slice.height / 2 * ratio
-            context.title_expand.translationY = context.title_collapse.translationY
-            context.title_slice.translationY = (context.title_collapse.height - context.title_expand.height - (context.title_slice.layoutParams as ConstraintLayout.LayoutParams).topMargin - context.title_slice.height / 2) * ratio
-
-            appBarOffset = verticalOffset
-            canScroll = canScroll || appBarOffset != 0
-
+        collapsibleAppBarHelper.appbar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
+            canScroll = canScroll || collapsibleAppBarHelper.appBarOffset != 0
             context.item_list.invalidate()
         })
         context.item_list.nestedScrollRange = {
-            context.app_bar.totalScrollRange
+            collapsibleAppBarHelper.appbar.totalScrollRange
         }
         context.item_list.nestedScrollDistance = {
-            -appBarOffset
+            -collapsibleAppBarHelper.appBarOffset
         }
 
-        context.item_list.addOnScrollListener(object : androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
-            override fun onScrollStateChanged(recyclerView: androidx.recyclerview.widget.RecyclerView, newState: Int) {
-                canScroll = context.item_list.canScrollVertically(-1) || appBarOffset != 0
+        val maxBgOffset = ResourceUtil.toPixels(context.resources, 24f)
+        context.item_list.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                canScroll = context.item_list.canScrollVertically(-1) || collapsibleAppBarHelper.appBarOffset != 0
                 context.item_swipe.setOnChildScrollUpCallback { _, _ -> canScroll }
+            }
+
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                context.item_bg.translationY =
+                    -Math.min(maxBgOffset, context.item_list.getScrolledPastHeight()).toFloat()
             }
         })
         context.title_collapse.setOnClickListener {
@@ -87,7 +100,7 @@ class TopicView(private val context: TopicActivity) {
     }
 
     fun scrollToPost(scrollPost: String, smooth: Boolean = false) {
-        (context.item_list?.layoutManager as? androidx.recyclerview.widget.LinearLayoutManager)?.let { layoutManager ->
+        (context.item_list?.layoutManager as? LinearLayoutManager)?.let { layoutManager ->
             val scrollIndex = adapter.data.indexOfFirst { it.pst_id == scrollPost }
             if (scrollIndex <= 0) return@let
             if (smooth) {
@@ -118,25 +131,19 @@ class TopicView(private val context: TopicActivity) {
         isCache: Boolean = false,
         onItemClick: (View, Int) -> Unit = { _, _ -> }
     ) {
-        context.title_collapse.text = topic.title
-        context.title_expand.text = context.title_collapse.text
-
-        topic.links?.toList()?.getOrNull(0)?.let { link ->
-            context.title_slice_0.text = link.first
+        collapsibleAppBarHelper.setTitle(topic.title ?: "", topic.links?.toList()?.getOrNull(0)?.let { link ->
             context.title_slice_0.setOnClickListener {
                 if (scroll2Top()) return@setOnClickListener
                 WebActivity.launchUrl(context, link.second, topic.url)
             }
-        }
-        topic.links?.toList()?.getOrNull(1)?.let { link ->
-            context.title_slice_1.text = link.first
+            link.first
+        }, topic.links?.toList()?.getOrNull(1)?.let { link ->
             context.title_slice_1.setOnClickListener {
                 if (scroll2Top()) return@setOnClickListener
                 WebActivity.launchUrl(context, link.second, topic.url)
             }
-        }
-        context.title_slice_divider.visibility = if (context.title_slice_1.text.isNotEmpty()) View.VISIBLE else View.GONE
-        context.title_slice_1.visibility = context.title_slice_divider.visibility
+            link.first
+        })
 
         GlideUtil.with(context.item_cover_blur)
                 ?.load(Images.getImage(topic.image, context))

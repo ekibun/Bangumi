@@ -4,4 +4,7 @@
     <dimen name="textSizeSmall">12sp</dimen>
 
     <dimen name="ratingbarSize">50dp</dimen>
+
+    <dimen name="appBarSize">48dp</dimen>
+    <dimen name="textSizeAppBarTitle">18sp</dimen>
 </resources>

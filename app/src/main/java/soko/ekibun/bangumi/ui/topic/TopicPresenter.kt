@@ -2,7 +2,6 @@ package soko.ekibun.bangumi.ui.topic
 
 import android.annotation.SuppressLint
 import android.text.Html
-import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.preference.PreferenceManager
 import kotlinx.android.synthetic.main.activity_topic.*
@@ -16,7 +15,6 @@ import soko.ekibun.bangumi.model.DataCacheModel
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.HtmlTagHandler
-import soko.ekibun.bangumi.util.ResourceUtil
 import soko.ekibun.bangumi.util.TextUtil
 import kotlin.collections.set
 
@@ -59,7 +57,6 @@ class TopicPresenter(private val context: TopicActivity) {
         Topic.getTopicSax(topic, { data ->
             context.runOnUiThread {
                 topicView.processTopic(data, scrollPost, true)
-                updateConfiguration()
             }
         }, { post ->
             context.runOnUiThread {
@@ -133,7 +130,6 @@ class TopicPresenter(private val context: TopicActivity) {
                 }
             }
         }
-        updateConfiguration()
     }
 
     @Suppress("DEPRECATION")
@@ -163,20 +159,6 @@ class TopicPresenter(private val context: TopicActivity) {
             } else {
                 inputString?.let { drafts[draftId] = it }
             }
-        }
-    }
-
-    fun updateConfiguration() {
-        context.root_layout.post {
-            val padding = Math.max(0, (context.item_list.width - ResourceUtil.toPixels(context.resources, 700f)) / 2)
-            context.item_list.setPadding(
-                padding,
-                context.item_list.paddingTop,
-                padding,
-                context.item_list.paddingBottom
-            )
-            context.title_slice_0.maxWidth =
-                context.title_expand.width - if (context.title_slice_divider.visibility == View.VISIBLE) 2 * context.title_slice_divider.width + context.title_slice_1.width else 0
         }
     }
 }

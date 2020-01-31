@@ -30,7 +30,7 @@ class InfoboxDialog(context: Context): Dialog(context, R.style.AppTheme_Dialog) 
          * 显示对话框
          */
         fun showDialog(context: Context, subject: Subject){
-            if(subject.infobox?.isNotEmpty() != true) return
+            // if(subject.infobox?.isNotEmpty() != true) return
             val dialog = InfoboxDialog(context)
             dialog.subject = subject
             dialog.show()
@@ -45,18 +45,19 @@ class InfoboxDialog(context: Context): Dialog(context, R.style.AppTheme_Dialog) 
         val view = LayoutInflater.from(context).inflate(R.layout.dialog_infobox, null)
         setContentView(view)
 
-        view.toolbar.title = subject.name
-        view.toolbar_bottom.title = subject.name
+        view.dialog_title.text = subject.name
+        view.item_detail.text = subject.summary
 
-        subject.infobox?.map{ it.first }?.distinct()?.forEach { cat ->
+        subject.infobox?.map { it.first }?.distinct()?.forEach { cat ->
             val row = TableRow(context)
             val txtCat = TextView(context)
             txtCat.alpha = 0.8f
             txtCat.text = cat
             val txtInfo = TextView(context)
             @Suppress("DEPRECATION")
-            txtInfo.text = TextUtil.setTextUrlCallback(Html.fromHtml(subject.infobox?.filter { it.first == cat }?.map { it.second }?.reduce { acc, s -> "$acc<br>$s" })) {
-                WebActivity.launchUrl(context, Bangumi.parseUrl(it), "")
+            txtInfo.text =
+                TextUtil.setTextUrlCallback(Html.fromHtml(subject.infobox?.filter { it.first == cat }?.map { it.second }?.reduce { acc, s -> "$acc<br>$s" })) {
+                    WebActivity.launchUrl(context, Bangumi.parseUrl(it), "")
             }
             txtInfo.movementMethod = LinkMovementMethod.getInstance()
             val dp = context.resources.displayMetrics.density
@@ -72,7 +73,6 @@ class InfoboxDialog(context: Context): Dialog(context, R.style.AppTheme_Dialog) 
             @SuppressLint("SwitchIntDef")
             override fun onStateChanged(bottomSheet: View, @BottomSheetBehavior.State newState: Int) {
                 if(newState == BottomSheetBehavior.STATE_HIDDEN)dismiss()
-                view.app_bar.visibility = if(newState == BottomSheetBehavior.STATE_EXPANDED) View.VISIBLE else View.INVISIBLE
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) { /* no-op */

@@ -2,11 +2,11 @@ package soko.ekibun.bangumi.ui.topic
 
 import android.content.Context
 import android.content.Intent
-import android.content.res.Configuration
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import kotlinx.android.synthetic.main.activity_topic.*
+import kotlinx.android.synthetic.main.appbar_collapsible_layout.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.model.ThemeModel
@@ -58,11 +58,6 @@ class TopicActivity : SwipeBackActivity() {
             R.id.action_refresh -> topicPresenter.getTopic()
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        topicPresenter.updateConfiguration()
     }
 
     fun processUrl(url: String) {
