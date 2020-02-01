@@ -110,19 +110,12 @@ class SubjectPresenter(private val context: SubjectActivity) {
             WebActivity.startActivity(context, "${subject.url}/reviews")
         }
 
-//        context.item_play.setOnClickListener {
-//            if (PlayerBridge.checkActivity(context, this.subject))
-//                PlayerBridge.startActivity(context, this.subject)
-//        }
-
         subjectView.episodeAdapter.onItemLongClickListener =
             BaseQuickAdapter.OnItemLongClickListener { _, _, position ->
                 WebActivity.launchUrl(context, subjectView.episodeAdapter.data[position].url, "")
                 true
             }
 
-//        val progressMap =
-//            arrayOf(Episode.PROGRESS_WATCH, Episode.PROGRESS_QUEUE, Episode.PROGRESS_DROP, Episode.PROGRESS_REMOVE)
         subjectView.episodeAdapter.setOnItemClickListener { _, _, position ->
             val eps = subjectView.episodeAdapter.data.subList(0, position + 1)
             subjectView.episodeAdapter.data[position]?.let { openEpisode(it, eps) }
@@ -131,49 +124,6 @@ class SubjectPresenter(private val context: SubjectActivity) {
         subjectView.detail.episode_detail.setOnClickListener {
             EpisodeListDialog.showDialog(context, this)
         }
-
-//        context.item_edit_ep.setOnClickListener {
-//            val eps = subjectView.episodeDetailAdapter.data.filter { it.isSelected }
-//            if (eps.isEmpty()) return@setOnClickListener
-//            val epStatus = context.resources.getStringArray(R.array.episode_status).toMutableList()
-//            epStatus.removeAt(1)
-//
-//            val popupMenu = PopupMenu(context, context.item_edit_ep)
-//            epStatus.forEachIndexed { index, s ->
-//                popupMenu.menu.add(Menu.NONE, Menu.FIRST + index, index, s)
-//            }
-//            popupMenu.setOnMenuItemClickListener { menu ->
-//                val newStatus = progressMap[menu.itemId - Menu.FIRST]
-//                updateProgress(eps.map { it.t }, newStatus)
-//                false
-//            }
-//            popupMenu.show()
-//        }
-//        subjectView.episodeDetailAdapter.updateSelection = {
-//            val eps = subjectView.episodeDetailAdapter.data.filter { it.isSelected }
-//            context.item_edit_ep.visibility = if (eps.isEmpty()) View.GONE else View.VISIBLE
-//            context.item_ep_title.visibility = context.item_edit_ep.visibility
-//            context.item_ep_title.text =
-//                "${context.getText(R.string.episodes)}${if (eps.isEmpty()) "" else "(${eps.size})"}"
-//        }
-
-//        subjectView.episodeDetailAdapter.setOnItemChildLongClickListener { _, _, position ->
-//            val eps =
-//                subjectView.episodeDetailAdapter.data.subList(0, position + 1).filter { !it.isHeader }.map { it.t }
-//            if (eps.last().type == Episode.TYPE_MUSIC)
-//                subjectView.episodeDetailAdapter.data[position]?.t?.let {
-//                    openEpisode(it, eps)
-//                    true
-//                } ?: false
-//            else subjectView.episodeDetailAdapter.longClickListener(position)
-//        }
-//
-//        subjectView.episodeDetailAdapter.setOnItemChildClickListener { _, _, position ->
-//            val eps =
-//                subjectView.episodeDetailAdapter.data.subList(0, position + 1).filter { !it.isHeader }.map { it.t }
-//            if (eps.last().type == Episode.TYPE_MUSIC || subjectView.episodeDetailAdapter.clickListener(position))
-//                subjectView.episodeDetailAdapter.data[position]?.t?.let { openEpisode(it, eps) }
-//        }
 
         subjectView.linkedSubjectsAdapter.setOnItemClickListener { _, _, position ->
             subjectView.linkedSubjectsAdapter.data[position]?.let { SubjectActivity.startActivity(context, it) }
@@ -216,7 +166,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
     fun updateProgress(eps: List<Episode>, newStatus: String) {
         EpisodeDialog.updateProgress(eps, newStatus) {
             subjectView.episodeAdapter.notifyDataSetChanged()
-//            subjectView.episodeDetailAdapter.notifyDataSetChanged()
+            subjectView.episodeDetailAdapter.notifyDataSetChanged()
             refreshProgress()
         }
     }
@@ -387,5 +337,14 @@ class SubjectPresenter(private val context: SubjectActivity) {
             subject.eps = eps
             dataCacheModel.set(subject.cacheKey, subject)
         }, {}))
+    }
+
+    fun updateConfiguration() {
+        context.bottom_sheet.post {
+            subjectView.behavior.peekHeight = context.bottom_sheet.height - Math.max(
+                1, // 至少留一个像素保证状态变换
+                context.app_bar.height - context.bottom_sheet.paddingTop - context.bottom_sheet.paddingBottom
+            )
+        }
     }
 }

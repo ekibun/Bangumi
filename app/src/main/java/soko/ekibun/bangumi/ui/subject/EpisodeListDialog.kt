@@ -124,7 +124,7 @@ class EpisodeListDialog(context: Context) : Dialog(context, R.style.AppTheme_Dia
         }
 
         view.btn_dismiss.setOnClickListener {
-            if (adapter.data.filter { it.isSelected }.isEmpty()) dismiss()
+            if (adapter.data.none { it.isSelected }) dismiss()
             else clearSelection()
         }
         view.item_outside.setOnClickListener {

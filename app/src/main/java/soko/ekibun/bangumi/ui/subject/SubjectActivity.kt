@@ -2,11 +2,11 @@ package soko.ekibun.bangumi.ui.subject
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
-import kotlinx.android.synthetic.main.activity_subject.*
 import kotlinx.android.synthetic.main.appbar_collapsible_layout.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
@@ -31,6 +31,8 @@ class SubjectActivity : SwipeBackActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         title = ""
 
+        subjectPresenter.updateConfiguration()
+
         subjectPresenter.init(
             if (intent.data?.toString()?.startsWith("ekibun://playersubject/bangumi") == true) {
                 intent.getParcelableExtra<VideoSubject>(PlayerBridge.EXTRA_SUBJECT)!!.toSubject()
@@ -42,20 +44,6 @@ class SubjectActivity : SwipeBackActivity() {
                 Subject(id)
             }()
         )
-//        subjectPresenter.updateConfiguration()
-
-        // val episodePaddingBottom = episode_detail_list.paddingBottom
-        val listPaddingBottom = item_list.paddingBottom
-        root_layout.setOnApplyWindowInsetsListener { _, insets ->
-            // episode_detail_list.setPadding(episode_detail_list.paddingLeft, episode_detail_list.paddingTop, episode_detail_list.paddingRight, episodePaddingBottom + insets.systemWindowInsetBottom)
-            item_list.setPadding(
-                item_list.paddingLeft,
-                item_list.paddingTop,
-                item_list.paddingRight,
-                listPaddingBottom + insets.systemWindowInsetBottom
-            )
-            insets
-        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -102,10 +90,10 @@ class SubjectActivity : SwipeBackActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-//    override fun onConfigurationChanged(newConfig: Configuration) {
-//        super.onConfigurationChanged(newConfig)
-//        subjectPresenter.updateConfiguration()
-//    }
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        subjectPresenter.updateConfiguration()
+    }
 
     companion object {
         private const val EXTRA_SUBJECT = "extraSubject"

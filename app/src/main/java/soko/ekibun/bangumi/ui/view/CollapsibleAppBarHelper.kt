@@ -11,7 +11,7 @@ class CollapsibleAppBarHelper(val appbar: AppBarLayout) {
     init {
         appbar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { _, verticalOffset ->
             appBarOffset = verticalOffset
-            updateStatus()
+            if (collapsible) updateStatus(Math.abs(appBarOffset.toFloat() / appbar.totalScrollRange))
         })
         appbar.title_collapse.setOnClickListener { onTitleClickListener(ClickEvent.EVENT_TITLE) }
         appbar.title_expand.setOnClickListener { onTitleClickListener(ClickEvent.EVENT_TITLE) }
@@ -19,8 +19,27 @@ class CollapsibleAppBarHelper(val appbar: AppBarLayout) {
         appbar.title_slice_1.setOnClickListener { onTitleClickListener(ClickEvent.EVENT_GROUP) }
     }
 
-    private fun updateStatus() {
-        val ratio = Math.abs(appBarOffset.toFloat() / appbar.totalScrollRange)
+    private var collapsible = true
+    fun appbarCollapsible(enable: Boolean) {
+        collapsible = enable
+        //content.nested_scroll.tag = true
+        if (enable) {
+            //reactive appbar
+            val params = appbar.toolbar_layout.layoutParams as AppBarLayout.LayoutParams
+            params.scrollFlags =
+                AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED
+            appbar.toolbar_layout.layoutParams = params
+        } else {
+            //expand appbar
+            appbar.setExpanded(true)
+            (appbar.toolbar_layout.layoutParams as AppBarLayout.LayoutParams).scrollFlags = 0
+            appbar.toolbar_layout.isTitleEnabled = false
+        }
+    }
+
+    private var mRatio = 0f
+    fun updateStatus(ratio: Float = mRatio) {
+        mRatio = ratio
         appbar.title_collapse.alpha = 1 - (1 - ratio) * (1 - ratio) * (1 - ratio)
         appbar.title_expand.alpha = 1 - ratio
         appbar.title_collapse.translationY =

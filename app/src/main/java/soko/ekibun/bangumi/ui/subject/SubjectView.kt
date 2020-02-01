@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_subject.*
 import kotlinx.android.synthetic.main.dialog_subject.view.*
@@ -44,7 +45,7 @@ class SubjectView(private val context: SubjectActivity) {
     val seasonAdapter = SeasonAdapter()
     private val seasonLayoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
 
-    val detail by lazy { LayoutInflater.from(context).inflate(R.layout.dialog_subject, null) }
+    val detail: View by lazy { LayoutInflater.from(context).inflate(R.layout.dialog_subject, null) }
 
     fun scroll2Top(): Boolean {
         return if (collapsibleAppBarHelper.appBarOffset != 0 || context.item_list.canScrollVertically(-1)) {
@@ -55,34 +56,51 @@ class SubjectView(private val context: SubjectActivity) {
         } else false
     }
 
+    val behavior = BottomSheetBehavior.from(context.bottom_sheet)
     init {
-//        val marginEnd = ResourceUtil.toPixels(context.resources, 12f)
-//        val dp20 = ResourceUtil.toPixels(context.resources, 20f)
-//        (context.title_expand.layoutParams as ConstraintLayout.LayoutParams).marginEnd = 3 * marginEnd
+        collapsibleAppBarHelper.appbarCollapsible(false)
 
-//        var oldTrans = 0f
-//        context.app_bar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
-//            if (appBarOffset == verticalOffset) return@OnOffsetChangedListener
-//            val ratio = Math.abs(verticalOffset.toFloat() / appBarLayout.totalScrollRange)
-//            appBarOffset = verticalOffset
-//            context.item_scrim.alpha = ratio
-//            context.item_subject.alpha = 1 - ratio
-//            context.item_subject.translationY = -(4 + ratio * 0.8f) * dp20
-//
-//            context.item_buttons.translationY = -context.toolbar.height * ratio / 2
-//            context.title_collapse.alpha = 1 - (1 - ratio) * (1 - ratio) * (1 - ratio)
-//            context.title_expand.alpha = 1 - ratio
-//            context.item_buttons.translationX = -2.2f * marginEnd * ratio
-//            context.app_bar.elevation = Math.max(0f, 12 * (ratio - 0.95f) / 0.05f)
-//            val transY = (1 - ratio) * dp20
-//            if (oldTrans != transY) {
-//                oldTrans = transY
-//                context.app_bar.translationY = -transY
-//                context.toolbar_layout.translationY = transY
-//                context.item_swipe.translationY = -transY
-//                context.comment_list.translationY = transY
-//            }
-//        })
+        val listPaddingBottom = context.item_list.paddingBottom
+        val bottomPaddingTop = context.bottom_sheet.paddingTop
+        val progressEnd = context.item_swipe.progressViewEndOffset
+        context.root_layout.setOnApplyWindowInsetsListener { _, insets ->
+            context.item_swipe.setProgressViewEndTarget(false, progressEnd + insets.systemWindowInsetTop)
+            if (context.item_swipe.isRefreshing) {
+                context.item_swipe.isRefreshing = false
+                context.item_swipe.isRefreshing = true
+            }
+            context.bottom_sheet.setPadding(
+                context.bottom_sheet.paddingLeft,
+                bottomPaddingTop + insets.systemWindowInsetTop,
+                context.bottom_sheet.paddingRight,
+                context.bottom_sheet.paddingBottom
+            )
+            // episode_detail_list.setPadding(episode_detail_list.paddingLeft, episode_detail_list.paddingTop, episode_detail_list.paddingRight, episodePaddingBottom + insets.systemWindowInsetBottom)
+            context.item_list.setPadding(
+                context.item_list.paddingLeft,
+                context.item_list.paddingTop,
+                context.item_list.paddingRight,
+                listPaddingBottom + insets.systemWindowInsetBottom
+            )
+            insets
+        }
+
+
+        behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+            @SuppressLint("SwitchIntDef")
+            override fun onStateChanged(bottomSheet: View, @BottomSheetBehavior.State newState: Int) { /* no-op */
+            }
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                collapsibleAppBarHelper.updateStatus(slideOffset)
+            }
+        })
+
+        context.item_swipe.setOnChildScrollUpCallback { _, _ ->
+            behavior.state != BottomSheetBehavior.STATE_COLLAPSED
+        }
+
+        behavior.isHideable = false
 
         detail.season_list.adapter = seasonAdapter
         detail.season_list.layoutManager = seasonLayoutManager
@@ -103,25 +121,6 @@ class SubjectView(private val context: SubjectActivity) {
         detail.character_list.setOnTouchListener(swipeTouchListener)
         detail.tag_list.setOnTouchListener(swipeTouchListener)
         detail.site_list.setOnTouchListener(swipeTouchListener)
-
-//        val touchListener = episodeDetailAdapter.setUpWithRecyclerView(context.episode_detail_list)
-//        touchListener.nestScrollDistance = {
-//            context.app_bar.totalScrollRange + appBarOffset
-//        }
-//        context.episode_detail_list.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
-//        context.episode_detail_list.nestedScrollDistance = {
-//            -appBarOffset // * (context.app_bar.totalScrollRange + dp20) / context.app_bar.totalScrollRange
-//        }
-//        context.episode_detail_list.nestedScrollRange = {
-//            context.app_bar.totalScrollRange // + dp20
-//        }
-//
-//        context.item_close.setOnClickListener {
-//            closeEpisodeDetail()
-//        }
-//        detail.episode_detail.setOnClickListener {
-//            showEpisodeDetail(true)
-//        }
 
         detail.linked_list.adapter = linkedSubjectsAdapter
         detail.linked_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)

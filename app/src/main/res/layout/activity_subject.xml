@@ -1,68 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/root_layout"
-        android:fitsSystemWindows="true"
+        android:id="@+id/item_swipe"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    <ImageView
-            android:id="@+id/item_cover_blur"
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:id="@+id/root_layout"
+            android:fitsSystemWindows="true"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            tools:src="@drawable/err_404"
-            android:scaleType="centerCrop"/>
+            android:layout_height="match_parent">
 
-    <FrameLayout
-            android:id="@+id/item_plugins"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+        <ImageView
+                android:id="@+id/item_cover_blur"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:src="@drawable/err_404"
+                android:scaleType="centerCrop"/>
 
-    <View
-            android:id="@+id/item_mask"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:background="#55000000"/>
-
-    <include
-            android:id="@+id/app_bar"
-            layout="@layout/appbar_collapsible_layout"/>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        <FrameLayout
+                android:id="@+id/item_plugins"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
 
         <View
-                android:layout_width="0dp"
+                android:id="@+id/item_mask"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginTop="40dp"
-                app:layout_constraintLeft_toLeftOf="@+id/item_swipe"
-                app:layout_constraintRight_toRightOf="@+id/item_swipe"
-                android:background="?android:colorBackground"/>
-
-        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-                android:id="@+id/item_swipe"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
+                app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintWidth_max="700dp"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent">
+                android:background="#55000000"/>
+
+        <include
+                android:id="@+id/app_bar"
+                layout="@layout/appbar_collapsible_layout"/>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/bottom_sheet"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layout_behavior="@string/bottom_sheet_behavior"
+                android:translationY="?actionBarSize"
+                android:paddingBottom="?actionBarSize">
+
+            <View
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="40dp"
+                    app:layout_constraintLeft_toLeftOf="@+id/item_list"
+                    app:layout_constraintRight_toRightOf="@+id/item_list"
+                    android:background="?android:colorBackground"/>
 
             <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/item_list"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="match_parent"
+                    android:overScrollMode="never"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintWidth_max="700dp"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
                     tools:listitem="@layout/dialog_subject"
                     tools:itemCount="1"
                     android:clipToPadding="false"/>
-        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
