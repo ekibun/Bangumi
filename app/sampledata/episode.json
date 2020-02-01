@@ -1,0 +1,67 @@
+{
+  "data": [
+    {
+      "type": 0,
+      "header": "本篇",
+      "sort": "第 1 话"
+    },
+    {
+      "type": 0,
+      "header": " ",
+      "sort": "第 1 话"
+    },
+    {
+      "type": 1,
+      "header": " ",
+      "sort": "第 1 话"
+    },
+    {
+      "type": 1,
+      "header": " ",
+      "sort": "第 2 话"
+    },
+    {
+      "type": 1,
+      "header": " ",
+      "sort": "第 3 话"
+    },
+    {
+      "type": 1,
+      "header": " ",
+      "sort": "第 4 话"
+    },
+    {
+      "type": 1,
+      "header": " ",
+      "sort": "第 5 话"
+    },
+    {
+      "type": 0,
+      "header": " ",
+      "sort": "第 6 话"
+    },
+    {
+      "type": 0,
+      "header": "特别篇",
+      "sort": "第 5 话"
+    },
+    {
+      "type": 0,
+      "header": " ",
+      "sort": "第 6 话"
+    },
+    {
+      "type": 1,
+      "header": " ",
+      "sort": "特别篇 1"
+    },
+    {
+      "type": 1,
+      "sort": "特别篇 2"
+    },
+    {
+      "type": 1,
+      "sort": "特别篇 3"
+    }
+  ]
+}

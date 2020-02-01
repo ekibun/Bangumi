@@ -135,8 +135,8 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
         val layoutManager = layoutManager ?: return
         val adapter = adapter ?: return
         val itemCount = ((adapter as? BaseQuickAdapter<*, *>)?.data?.filter { it !is AbstractExpandableItem<*> || it.level == 0 }
-                ?.map { 1 + if (it is AbstractExpandableItem<*> && it.isExpanded) it.subItems?.size ?: 0 else 0 }?.sum()
-                ?: 0) + 1
+            ?.map { 1 + if (it is AbstractExpandableItem<*> && it.isExpanded) it.subItems?.size ?: 0 else 0 }?.sum()
+            ?: adapter.itemCount) + 1
         if (itemHeightCache.size != itemCount)
             itemHeightCache = IntArray(itemCount) { itemHeightCache.getOrNull(it) ?: 200 }
 
@@ -245,7 +245,8 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
         val totalHeight = nestedRange + itemHeightCache.sum()
 
         val scrollRange = height - paddingBottom - nestedRange - scrollTopMargin
-        mScrollbar.mThumbHeight = Math.max(height * scrollRange / totalHeight, mScrollbar.minThumbHeight)
+        mScrollbar.mThumbHeight =
+            if (totalHeight > 0) Math.max(height * scrollRange / totalHeight, mScrollbar.minThumbHeight) else 0
 
         val availableScrollHeight = totalHeight - height + paddingBottom
 

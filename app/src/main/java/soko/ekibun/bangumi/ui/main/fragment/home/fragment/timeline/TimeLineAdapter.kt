@@ -21,8 +21,8 @@ import soko.ekibun.bangumi.util.TextUtil
  * 时间线Adapter
  */
 class TimeLineAdapter(data: MutableList<TimeLine>? = null) :
-        BaseSectionQuickAdapter<TimeLine, BaseViewHolder>
-        (R.layout.item_timeline, R.layout.header_episode, data) {
+    BaseSectionQuickAdapter<TimeLine, BaseViewHolder>
+        (R.layout.item_timeline, R.layout.item_episode_header, data) {
     override fun convertHead(helper: BaseViewHolder, item: TimeLine) {
         helper.setText(R.id.item_header, item.header)
     }
@@ -30,8 +30,12 @@ class TimeLineAdapter(data: MutableList<TimeLine>? = null) :
     override fun convert(helper: BaseViewHolder, item: TimeLine) {
         //say
         helper.itemView.item_layout.setOnClickListener {
-            WebActivity.launchUrl(helper.itemView.context, Bangumi.parseUrl(item.t.sayUrl
-                    ?: return@setOnClickListener), "")
+            WebActivity.launchUrl(
+                helper.itemView.context, Bangumi.parseUrl(
+                    item.t.sayUrl
+                        ?: return@setOnClickListener
+                ), ""
+            )
         }
         helper.itemView.item_layout.isClickable = !item.t.sayUrl.isNullOrEmpty()
         //action

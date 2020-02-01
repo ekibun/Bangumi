@@ -56,7 +56,7 @@ data class Episode(
         return if (type == TYPE_MAIN)
             context.getString(R.string.parse_sort_ep, DecimalFormat("#.##").format(sort))
         else
-            context.getString(getTypeRes(type)) + " ${DecimalFormat("#.##").format(sort)}"
+            (category ?: context.getString(getTypeRes(type))) + " ${DecimalFormat("#.##").format(sort)}"
     }
 
     /**
@@ -100,7 +100,7 @@ data class Episode(
                 TYPE_PV -> R.string.episode_type_pv
                 TYPE_MAD -> R.string.episode_type_mad
                 TYPE_MUSIC -> R.string.episode_type_music
-                else -> R.string.episode_type_main
+                else -> R.string.episode_type_other
             }
         }
 
@@ -122,37 +122,41 @@ data class Episode(
                 if (li.hasClass("cat")) cat = li.text()
                 val h6a = li.selectFirst("h6>a") ?: return@mapNotNull null
                 val values = Regex("^\\D*(\\d+\\.?\\d?)\\.(.*)").find(h6a.text() ?: "")?.groupValues
-                        ?: " ${h6a.text()}".split(" ", limit = 3)
+                    ?: " ${h6a.text()}".split(" ", limit = 3)
                 val epInfo = li.select("small.grey")?.text()?.split("/")
+                val type = if (cat.startsWith("Disc")) TYPE_MUSIC else when (cat) {
+                    "本篇" -> TYPE_MAIN
+                    "特别篇" -> TYPE_SP
+                    "OP" -> TYPE_OP
+                    "ED" -> TYPE_ED
+                    "PV" -> TYPE_PV
+                    "MAD" -> TYPE_MAD
+                    else -> TYPE_OTHER
+                }
                 Episode(
-                        id = Regex("""/ep/([0-9]*)""").find(h6a.attr("href") ?: "")?.groupValues?.get(1)?.toIntOrNull()
-                                ?: return@mapNotNull null,
-                        type = if (cat.startsWith("Disc")) TYPE_MUSIC else when (cat) {
-                            "本篇" -> TYPE_MAIN
-                            "特别篇" -> TYPE_SP
-                            "OP" -> TYPE_OP
-                            "ED" -> TYPE_ED
-                            "PV" -> TYPE_PV
-                            "MAD" -> TYPE_MAD
-                            else -> TYPE_OTHER
-                        },
-                        sort = values.getOrNull(1)?.toFloatOrNull() ?: 0f,
-                        name = values.getOrNull(2) ?: h6a.text(),
-                        name_cn = li.selectFirst("h6>span.tip")?.text()?.substringAfter(" "),
-                        duration = epInfo?.firstOrNull { it.trim().startsWith("时长") }?.substringAfter(":"),
-                        airdate = epInfo?.firstOrNull { it.trim().startsWith("首播") }?.substringAfter(":"),
-                        comment = epInfo?.firstOrNull { it.trim().startsWith("讨论") }?.trim()?.substringAfter("+")?.toIntOrNull()
-                                ?: 0,
-                        status = li.selectFirst(".epAirStatus span")?.className(),
-                        progress = li.selectFirst(".listEpPrgManager>span")?.let {
-                            when {
-                                it.hasClass("statusWatched") -> PROGRESS_WATCH
-                                it.hasClass("statusQueue") -> PROGRESS_QUEUE
-                                it.hasClass("statusDrop") -> PROGRESS_DROP
-                                else -> PROGRESS_REMOVE
-                            }
-                        },
-                        category = if (cat.startsWith("Disc")) cat else null)
+                    id = Regex("""/ep/([0-9]*)""").find(h6a.attr("href") ?: "")?.groupValues?.get(1)?.toIntOrNull()
+                        ?: return@mapNotNull null,
+                    type = type,
+                    sort = values.getOrNull(1)?.toFloatOrNull() ?: 0f,
+                    name = values.getOrNull(2) ?: h6a.text(),
+                    name_cn = li.selectFirst("h6>span.tip")?.text()?.substringAfter(" "),
+                    duration = epInfo?.firstOrNull { it.trim().startsWith("时长") }?.substringAfter(":"),
+                    airdate = epInfo?.firstOrNull { it.trim().startsWith("首播") }?.substringAfter(":"),
+                    comment = epInfo?.firstOrNull {
+                        it.trim().startsWith("讨论")
+                    }?.trim()?.substringAfter("+")?.toIntOrNull()
+                        ?: 0,
+                    status = li.selectFirst(".epAirStatus span")?.className(),
+                    progress = li.selectFirst(".listEpPrgManager>span")?.let {
+                        when {
+                            it.hasClass("statusWatched") -> PROGRESS_WATCH
+                            it.hasClass("statusQueue") -> PROGRESS_QUEUE
+                            it.hasClass("statusDrop") -> PROGRESS_DROP
+                            else -> PROGRESS_REMOVE
+                        }
+                    },
+                    category = if (type in arrayOf(TYPE_MUSIC, TYPE_OTHER)) cat else null
+                )
             }
 
         }

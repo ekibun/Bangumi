@@ -36,7 +36,8 @@
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="8dp"
                 android:id="@+id/item_detail"
-                tools:text="Subject Summary"
+                tools:text="@tools:sample/lorem/random"
+                android:lineSpacingMultiplier="1.2"
                 android:maxLines="5"
                 android:ellipsize="end"/>
         <androidx.recyclerview.widget.RecyclerView
@@ -168,12 +169,14 @@
                 tools:listitem="@layout/item_season"/>
     </LinearLayout>
 
-    <LinearLayout android:layout_width="match_parent"
-                  android:layout_height="wrap_content"
-                  android:id="@+id/item_character"
-                  android:visibility="gone"
-                  tools:visibility="visible"
-                  android:orientation="vertical">
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/item_character"
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:orientation="vertical">
+
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -181,21 +184,26 @@
                 android:paddingLeft="4dp"
                 android:paddingRight="4dp"
                 android:background="?android:colorBackground">
-            <TextView android:layout_width="0dp"
-                      android:layout_weight="1"
-                      android:layout_height="wrap_content"
-                      android:textAppearance="@android:style/TextAppearance.Material.Subhead"
-                      android:padding="12dp"
-                      android:text="@string/character_info"/>
-            <TextView android:layout_width="wrap_content"
-                      android:layout_height="match_parent"
-                      android:padding="12dp"
-                      android:id="@+id/character_detail"
-                      android:text="@string/more"
-                      android:clickable="true"
-                      android:background="?android:attr/selectableItemBackgroundBorderless"
-                      android:focusable="true"/>
+
+            <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@android:style/TextAppearance.Material.Subhead"
+                    android:padding="12dp"
+                    android:text="@string/character_info"/>
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:padding="12dp"
+                    android:id="@+id/character_detail"
+                    android:text="@string/more"
+                    android:clickable="true"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:focusable="true"/>
         </LinearLayout>
+
         <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/character_list"
                 android:layout_width="match_parent"
@@ -269,12 +277,14 @@
                 tools:listitem="@layout/item_subject_small"/>
     </LinearLayout>
 
-    <LinearLayout android:layout_width="match_parent"
-                  android:layout_height="wrap_content"
-                  android:id="@+id/item_blogs"
-                  android:visibility="gone"
-                  tools:visibility="visible"
-                  android:orientation="vertical">
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/item_blogs"
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:orientation="vertical">
+
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -282,21 +292,26 @@
                 android:paddingLeft="4dp"
                 android:paddingRight="4dp"
                 android:background="?android:colorBackground">
-            <TextView android:layout_width="0dp"
-                      android:layout_weight="1"
-                      android:layout_height="wrap_content"
-                      android:textAppearance="@android:style/TextAppearance.Material.Subhead"
-                      android:padding="12dp"
-                      android:text="@string/subject_blog"/>
-            <TextView android:layout_width="wrap_content"
-                      android:layout_height="match_parent"
-                      android:padding="12dp"
-                      android:id="@+id/blog_detail"
-                      android:text="@string/more"
-                      android:clickable="true"
-                      android:background="?android:attr/selectableItemBackgroundBorderless"
-                      android:focusable="true"/>
+
+            <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@android:style/TextAppearance.Material.Subhead"
+                    android:padding="12dp"
+                    android:text="@string/subject_blog"/>
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:padding="12dp"
+                    android:id="@+id/blog_detail"
+                    android:text="@string/more"
+                    android:clickable="true"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:focusable="true"/>
         </LinearLayout>
+
         <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/blog_list"
                 android:layout_width="match_parent"
@@ -306,12 +321,14 @@
                 app:layout_constraintTop_toBottomOf="@+id/item_title"/>
     </LinearLayout>
 
-    <LinearLayout android:layout_width="match_parent"
-                  android:layout_height="wrap_content"
-                  android:id="@+id/item_topics"
-                  android:visibility="gone"
-                  tools:visibility="visible"
-                  android:orientation="vertical">
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/item_topics"
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:orientation="vertical">
+
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -319,21 +336,26 @@
                 android:paddingLeft="4dp"
                 android:paddingRight="4dp"
                 android:background="?android:colorBackground">
-            <TextView android:layout_width="0dp"
-                      android:layout_weight="1"
-                      android:layout_height="wrap_content"
-                      android:textAppearance="@android:style/TextAppearance.Material.Subhead"
-                      android:padding="12dp"
-                      android:text="@string/subject_topics"/>
-            <TextView android:layout_width="wrap_content"
-                      android:layout_height="match_parent"
-                      android:padding="12dp"
-                      android:id="@+id/topic_detail"
-                      android:text="@string/more"
-                      android:clickable="true"
-                      android:background="?android:attr/selectableItemBackgroundBorderless"
-                      android:focusable="true"/>
+
+            <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@android:style/TextAppearance.Material.Subhead"
+                    android:padding="12dp"
+                    android:text="@string/subject_topics"/>
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:padding="12dp"
+                    android:id="@+id/topic_detail"
+                    android:text="@string/more"
+                    android:clickable="true"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:focusable="true"/>
         </LinearLayout>
+
         <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/topic_list"
                 android:layout_width="match_parent"

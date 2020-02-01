@@ -83,14 +83,27 @@ class InfoboxDialog(context: Context): Dialog(context, R.style.AppTheme_Dialog) 
             behavior.peekHeight = view.height * 2 / 3
         }
 
+        view.btn_dismiss.setOnClickListener {
+            dismiss()
+        }
         view.item_outside.setOnClickListener {
             dismiss()
         }
         val paddingTop = view.bottom_sheet.paddingTop
         val paddingBottom = view.bottom_sheet_container.paddingBottom
         view.setOnApplyWindowInsetsListener { _, insets ->
-            view.bottom_sheet.setPadding(view.bottom_sheet.paddingLeft, paddingTop + insets.systemWindowInsetTop, view.bottom_sheet.paddingRight, view.bottom_sheet.paddingBottom)
-            view.bottom_sheet_container.setPadding(view.bottom_sheet_container.paddingLeft, view.bottom_sheet_container.paddingTop, view.bottom_sheet_container.paddingRight, paddingBottom + insets.systemWindowInsetBottom)
+            view.bottom_sheet.setPadding(
+                view.bottom_sheet.paddingLeft,
+                paddingTop + insets.systemWindowInsetTop,
+                view.bottom_sheet.paddingRight,
+                view.bottom_sheet.paddingBottom
+            )
+            view.bottom_sheet_container.setPadding(
+                view.bottom_sheet_container.paddingLeft,
+                view.bottom_sheet_container.paddingTop,
+                view.bottom_sheet_container.paddingRight,
+                paddingBottom + insets.systemWindowInsetBottom
+            )
             insets
         }
 

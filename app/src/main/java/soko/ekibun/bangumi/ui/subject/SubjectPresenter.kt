@@ -121,11 +121,15 @@ class SubjectPresenter(private val context: SubjectActivity) {
                 true
             }
 
-        val progressMap =
-            arrayOf(Episode.PROGRESS_WATCH, Episode.PROGRESS_QUEUE, Episode.PROGRESS_DROP, Episode.PROGRESS_REMOVE)
+//        val progressMap =
+//            arrayOf(Episode.PROGRESS_WATCH, Episode.PROGRESS_QUEUE, Episode.PROGRESS_DROP, Episode.PROGRESS_REMOVE)
         subjectView.episodeAdapter.setOnItemClickListener { _, _, position ->
             val eps = subjectView.episodeAdapter.data.subList(0, position + 1)
             subjectView.episodeAdapter.data[position]?.let { openEpisode(it, eps) }
+        }
+
+        subjectView.detail.episode_detail.setOnClickListener {
+            EpisodeListDialog.showDialog(context, this)
         }
 
 //        context.item_edit_ep.setOnClickListener {
@@ -203,13 +207,13 @@ class SubjectPresenter(private val context: SubjectActivity) {
     }
 
     private var episodeDialog: EpisodeDialog? = null
-    private fun openEpisode(episode: Episode, eps: List<Episode>) {
+    fun openEpisode(episode: Episode, eps: List<Episode>) {
         episodeDialog = EpisodeDialog.showDialog(context, episode, eps, subject.onair) { mEps, status ->
             updateProgress(mEps, status)
         }
     }
 
-    private fun updateProgress(eps: List<Episode>, newStatus: String) {
+    fun updateProgress(eps: List<Episode>, newStatus: String) {
         EpisodeDialog.updateProgress(eps, newStatus) {
             subjectView.episodeAdapter.notifyDataSetChanged()
 //            subjectView.episodeDetailAdapter.notifyDataSetChanged()

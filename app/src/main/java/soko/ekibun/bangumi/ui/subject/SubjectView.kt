@@ -119,9 +119,9 @@ class SubjectView(private val context: SubjectActivity) {
 //        context.item_close.setOnClickListener {
 //            closeEpisodeDetail()
 //        }
-        detail.episode_detail.setOnClickListener {
-            //            showEpisodeDetail(true)
-        }
+//        detail.episode_detail.setOnClickListener {
+//            showEpisodeDetail(true)
+//        }
 
         detail.linked_list.adapter = linkedSubjectsAdapter
         detail.linked_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)

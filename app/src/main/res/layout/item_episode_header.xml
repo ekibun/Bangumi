@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:background="?android:colorBackground">
+
+    <TextView
+            android:id="@+id/item_header"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingStart="12dp"
+            android:paddingTop="2dp"
+            android:paddingEnd="12dp"
+            tools:text="@sample/episode.json/data/header"
+            android:textAppearance="@android:style/TextAppearance.Material.Subhead"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -27,7 +27,7 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:singleLine="true"
-                tools:text="第 1 话"
+                tools:text="@sample/episode.json/data/sort"
                 app:layout_constraintTop_toTopOf="parent"
                 android:textSize="@dimen/textSizeSmall"/>
 

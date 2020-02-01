@@ -29,7 +29,7 @@ abstract class BaseDialog(context: Context, @LayoutRes private val resId: Int) :
         onViewCreated(view)
 
         rootView.setOnApplyWindowInsetsListener { _, insets ->
-            view.onApplyWindowInsets(insets.inset(0, 0, 0, insets.systemWindowInsetBottom))
+            view.dispatchApplyWindowInsets(insets.inset(0, 0, 0, insets.systemWindowInsetBottom))
             insets.consumeSystemWindowInsets()
         }
         rootView.item_outside.setOnClickListener {

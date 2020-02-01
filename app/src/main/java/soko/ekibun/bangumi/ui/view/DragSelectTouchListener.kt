@@ -59,15 +59,17 @@ class DragSelectTouchListener : RecyclerView.OnItemTouchListener {
 
     override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
         if (!isActive || rv.adapter?.itemCount == 0) return false
+
+        recyclerView = rv
+        mTopBound = autoScrollDistance
+        mBottomBound = rv.height - autoScrollDistance - nestScrollDistance()
+
         when (e.actionMasked) {
             MotionEvent.ACTION_POINTER_DOWN,
             MotionEvent.ACTION_DOWN -> {
                 reset()
             }
         }
-        recyclerView = rv
-        mTopBound = -20
-        mBottomBound = rv.height - autoScrollDistance - nestScrollDistance()
         return true
     }
 

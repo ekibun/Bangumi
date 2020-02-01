@@ -19,10 +19,11 @@ import soko.ekibun.bangumi.util.ResourceUtil
  * 剧集列表Adapter
  */
 class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null) :
-        BaseSectionQuickAdapter<EpisodeAdapter.SelectableSectionEntity<Episode>, BaseViewHolder>
-        (R.layout.item_episode, R.layout.header_episode, data), FastScrollRecyclerView.MeasurableAdapter, FastScrollRecyclerView.SectionedAdapter {
+    BaseSectionQuickAdapter<EpisodeAdapter.SelectableSectionEntity<Episode>, BaseViewHolder>
+        (R.layout.item_episode, R.layout.item_episode_header, data), FastScrollRecyclerView.MeasurableAdapter,
+    FastScrollRecyclerView.SectionedAdapter {
     override fun getSectionName(position: Int): String {
-        return (data[position].t?:data[position + 1].t)?.parseSort((recyclerView?:return "").context)?:""
+        return (data[position].t ?: data[position + 1].t)?.parseSort((recyclerView ?: return "").context) ?: ""
     }
 
     override fun isFullSpan(position: Int): Boolean {
@@ -55,7 +56,6 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
         if(headerHeight == 0) {
             helper.itemView.measure(0, 0)
             headerHeight = helper.itemView.measuredHeight + ((helper.itemView.layoutParams as? ViewGroup.MarginLayoutParams)?.let { it.topMargin + it.bottomMargin }?:0)
-            (recyclerView as? FastScrollRecyclerView)?.scrollTopMargin = helper.itemView.measuredHeight
         }
     }
 
