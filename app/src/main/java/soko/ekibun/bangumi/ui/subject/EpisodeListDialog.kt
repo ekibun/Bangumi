@@ -53,23 +53,26 @@ class EpisodeListDialog(context: Context) : Dialog(context, R.style.AppTheme_Dia
                 offset = slideOffset
             }
         })
+
         behavior.isHideable = false
         view.post {
             behavior.peekHeight = view.height * 2 / 3
+            view.bottom_sheet_container.invalidate()
         }
 
+        val nestedScrollRange = {
+            view.bottom_sheet.height - behavior.peekHeight
+        }
         val touchListener = adapter.setUpWithRecyclerView(view.bottom_sheet_container)
         touchListener.nestScrollDistance = {
-            (behavior.peekHeight * (1 - offset) / 2).toInt()
+            (nestedScrollRange() * (1 - offset)).toInt()
         }
         view.bottom_sheet_container.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         view.bottom_sheet_container.scrollTopMargin = ResourceUtil.toPixels(view.context.resources, 36f)
         view.bottom_sheet_container.nestedScrollDistance = {
-            (behavior.peekHeight * offset / 2).toInt()
+            (nestedScrollRange() * offset).toInt()
         }
-        view.bottom_sheet_container.nestedScrollRange = {
-            behavior.peekHeight / 2
-        }
+        view.bottom_sheet_container.nestedScrollRange = nestedScrollRange
 
         val progressMap =
             arrayOf(Episode.PROGRESS_WATCH, Episode.PROGRESS_QUEUE, Episode.PROGRESS_DROP, Episode.PROGRESS_REMOVE)

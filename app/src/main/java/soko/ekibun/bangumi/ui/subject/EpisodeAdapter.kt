@@ -2,7 +2,6 @@ package soko.ekibun.bangumi.ui.subject
 
 import android.content.res.ColorStateList
 import android.view.View
-import android.view.ViewGroup
 import com.chad.library.adapter.base.BaseSectionQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
 import com.chad.library.adapter.base.entity.SectionEntity
@@ -54,8 +53,9 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
         //helper.getView<TextView>(R.id.item_header).visibility = if(data.indexOf(item) == 0) View.GONE else View.VISIBLE
         helper.setText(R.id.item_header, item.header)
         if(headerHeight == 0) {
-            helper.itemView.measure(0, 0)
-            headerHeight = helper.itemView.measuredHeight + ((helper.itemView.layoutParams as? ViewGroup.MarginLayoutParams)?.let { it.topMargin + it.bottomMargin }?:0)
+//            helper.itemView.measure(0, 0)
+//            headerHeight = helper.itemView.measuredHeight + ((helper.itemView.layoutParams as? ViewGroup.MarginLayoutParams)?.let { it.topMargin + it.bottomMargin }?:0)
+            headerHeight = ResourceUtil.toPixels(helper.itemView.context.resources, 36f)
         }
     }
 
@@ -89,7 +89,7 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
 
         if(itemHeight == 0){
             helper.itemView.measure(0, 0)
-            itemHeight=helper.itemView.measuredHeight + ((helper.itemView.layoutParams as? ViewGroup.MarginLayoutParams)?.let { it.topMargin + it.bottomMargin }?:0)
+            itemHeight = helper.itemView.measuredHeight
         }
     }
 

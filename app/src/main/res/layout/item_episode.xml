@@ -6,9 +6,10 @@
         android:id="@+id/item_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginEnd="4dp"
-        android:layout_marginBottom="9dp">
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:paddingBottom="9dp">
+
     <LinearLayout
             android:clickable="true"
             android:backgroundTint="?colorAccent"

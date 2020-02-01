@@ -1,5 +1,6 @@
 package soko.ekibun.bangumi.ui.view
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.util.AttributeSet
@@ -12,12 +13,18 @@ import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.entity.AbstractExpandableItem
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.util.ResourceUtil
+import java.util.*
 import kotlin.math.roundToInt
 
 /**
  * 快速滚动RecyclerView
  */
-class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : androidx.recyclerview.widget.RecyclerView(context, attrs, defStyleAttr), RecyclerView.OnItemTouchListener {
+class FastScrollRecyclerView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) :
+    RecyclerView(context, attrs, defStyleAttr), RecyclerView.OnItemTouchListener {
 
     private val mScrollbar: FastScroller
 
@@ -61,6 +68,10 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
         return handleTouchEvent(ev)
     }
 
+    override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {
+        /* no-op */
+    }
+
     override fun onTouchEvent(rv: RecyclerView, ev: MotionEvent) {
         handleTouchEvent(ev)
     }
@@ -85,13 +96,10 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
                 mLastY = y
                 mScrollbar.handleTouchEvent(ev, mDownX, mDownY, mLastY, mStateChangeListener)
             }
-            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> mScrollbar.handleTouchEvent(ev, mDownX, mDownY, mLastY, mStateChangeListener)
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL ->
+                mScrollbar.handleTouchEvent(ev, mDownX, mDownY, mLastY, mStateChangeListener)
         }
         return mScrollbar.isDragging
-    }
-
-    override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {
-        // no-op
     }
 
     override fun draw(c: Canvas) {
@@ -245,8 +253,7 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
         val totalHeight = nestedRange + itemHeightCache.sum()
 
         val scrollRange = height - paddingBottom - nestedRange - scrollTopMargin
-        mScrollbar.mThumbHeight =
-            if (totalHeight > 0) Math.max(height * scrollRange / totalHeight, mScrollbar.minThumbHeight) else 0
+        mScrollbar.mThumbHeight = Math.max(height * scrollRange / totalHeight, mScrollbar.minThumbHeight)
 
         val availableScrollHeight = totalHeight - height + paddingBottom
 
@@ -264,8 +271,8 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
         // view padding, while the scrollBarY is drawn right up to the background padding (ignoring
         // padding)
         val nestedDistance = nestedScrollDistance()
-        val scrollBarY = (scrolledPastHeight + nestedDistance).toFloat() / availableScrollHeight * availableScrollBarHeight + nestedDistance + scrollTopMargin
-
+        val scrollBarY =
+            (scrolledPastHeight + nestedDistance).toFloat() / availableScrollHeight * availableScrollBarHeight + nestedDistance + scrollTopMargin
         // Calculate the position and size of the scroll bar
         val scrollBarX: Int = if (ResourceUtil.isRtl(resources)) {
             0
@@ -273,6 +280,115 @@ class FastScrollRecyclerView @JvmOverloads constructor(context: Context, attrs: 
             width - mScrollbar.width
         }
         mScrollbar.setThumbPosition(scrollBarX, scrollBarY.toInt())
+    }
+
+    /**
+     * Touch
+     */
+    override fun onInterceptTouchEvent(e: MotionEvent): Boolean {
+        // Clear the active onInterceptTouchListener.  None should be set at this time, and if one
+        // is, it's because some other code didn't follow the standard contract.
+        mInterceptingOnItemTouchListener = null
+        return if (findInterceptingOnItemTouchListener(e)) true else super.onInterceptTouchEvent(e)
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouchEvent(e: MotionEvent): Boolean {
+        return if (dispatchToOnItemTouchListeners(e)) true else super.onTouchEvent(e)
+    }
+
+    /**
+     * Add an [OnItemTouchListener] to intercept touch events before they are dispatched
+     * to child views or this view's standard scrolling behavior.
+     *
+     *
+     * Client code may use listeners to implement item manipulation behavior. Once a listener
+     * returns true from
+     * [OnItemTouchListener.onInterceptTouchEvent] its
+     * [OnItemTouchListener.onTouchEvent] method will be called
+     * for each incoming MotionEvent until the end of the gesture.
+     *
+     * @param listener Listener to add
+     * @see SimpleOnItemTouchListener
+     */
+    override fun addOnItemTouchListener(listener: OnItemTouchListener) {
+        mOnItemTouchListeners.add(listener)
+    }
+
+    /**
+     * Remove an [OnItemTouchListener]. It will no longer be able to intercept touch events.
+     *
+     * @param listener Listener to remove
+     */
+    override fun removeOnItemTouchListener(listener: OnItemTouchListener) {
+        mOnItemTouchListeners.remove(listener)
+        if (mInterceptingOnItemTouchListener === listener) {
+            mInterceptingOnItemTouchListener = null
+        }
+    }
+
+    private val mOnItemTouchListeners = ArrayList<OnItemTouchListener>()
+    private var mInterceptingOnItemTouchListener: OnItemTouchListener? = null
+
+    /**
+     * Dispatches the motion event to the intercepting OnItemTouchListener or provides opportunity
+     * for OnItemTouchListeners to intercept.
+     * @param e The MotionEvent
+     * @return True if handled by an intercepting OnItemTouchListener.
+     */
+    private fun dispatchToOnItemTouchListeners(e: MotionEvent): Boolean { // OnItemTouchListeners should receive calls to their methods in the same pattern that
+        // ViewGroups do. That pattern is a bit confusing, which in turn makes the below code a
+        // bit confusing.  Here are rules for the pattern:
+        //
+        // 1. A single MotionEvent should not be passed to either OnInterceptTouchEvent or
+        // OnTouchEvent twice.
+        // 2. ACTION_DOWN MotionEvents may be passed to both onInterceptTouchEvent and
+        // onTouchEvent.
+        // 3. All other MotionEvents should be passed to either onInterceptTouchEvent or
+        // onTouchEvent, not both.
+        // Side Note: We don't currently perfectly mimic how MotionEvents work in the view system.
+        // If we were to do so, for every MotionEvent, any OnItemTouchListener that is before the
+        // intercepting OnItemTouchEvent should still have a chance to intercept, and if it does,
+        // the previously intercepting OnItemTouchEvent should get an ACTION_CANCEL event.
+        return if (mInterceptingOnItemTouchListener == null) {
+            if (e.action == MotionEvent.ACTION_DOWN) {
+                false
+            } else findInterceptingOnItemTouchListener(e)
+        } else {
+            mInterceptingOnItemTouchListener?.onTouchEvent(this, e)
+            val action = e.action
+            if (action == MotionEvent.ACTION_CANCEL || action == MotionEvent.ACTION_UP) {
+                mInterceptingOnItemTouchListener = null
+            }
+            true
+        }
+    }
+
+    /**
+     * Looks for an OnItemTouchListener that wants to intercept.
+     *
+     *
+     * Calls [OnItemTouchListener.onInterceptTouchEvent] on each
+     * of the registered [OnItemTouchListener]s, passing in the
+     * MotionEvent. If one returns true and the action is not ACTION_CANCEL, saves the intercepting
+     * OnItemTouchListener to be called for future [RecyclerView.onTouchEvent]
+     * and immediately returns true. If none want to intercept or the action is ACTION_CANCEL,
+     * returns false.
+     *
+     * @param e The MotionEvent
+     * @return true if an OnItemTouchListener is saved as intercepting.
+     */
+    private fun findInterceptingOnItemTouchListener(e: MotionEvent): Boolean {
+        val action = e.action
+        val listenerCount = mOnItemTouchListeners.size
+        for (i in 0 until listenerCount) {
+            val listener = mOnItemTouchListeners[i]
+            if (listener.onInterceptTouchEvent(this, e) && action != MotionEvent.ACTION_CANCEL) {
+                mInterceptingOnItemTouchListener = listener
+                return true
+            }
+        }
+        return false
     }
 
     /**
