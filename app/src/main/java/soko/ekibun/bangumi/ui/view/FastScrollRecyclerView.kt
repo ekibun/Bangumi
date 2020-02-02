@@ -192,13 +192,14 @@ class FastScrollRecyclerView @JvmOverloads constructor(
         val availableScrollBarHeight = scrollRange - mScrollbar.mThumbHeight
 
         // Only show the scrollbar if there is height to be scrolled
-        if (availableScrollHeight <= 0) {
+        if (availableScrollHeight <= nestedRange) {
             return ""
         }
 
         val nestedDistance = nestedScrollDistance()
         val scrolledPastHeight = getScrolledPastHeight()
-        val lastScrollBarY = (scrolledPastHeight + nestedDistance).toFloat() / availableScrollHeight * availableScrollBarHeight + nestedDistance + scrollTopMargin
+        val lastScrollBarY =
+            (scrolledPastHeight + nestedDistance).toFloat() / availableScrollHeight * availableScrollBarHeight + nestedDistance + scrollTopMargin
         var dy = (scrollBarY - lastScrollBarY) * availableScrollHeight / availableScrollBarHeight
         startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL)
         val consumed = IntArray(2)
@@ -207,7 +208,13 @@ class FastScrollRecyclerView @JvmOverloads constructor(
         dy -= consumed[1].toFloat()
         val scrollY = Math.min(Math.max(scrolledPastHeight + dy, 0f), availableScrollHeight.toFloat())
         dy -= scrollY - scrolledPastHeight
-        dispatchNestedScroll(consumed[0], consumed[1], 0, Math.max(-nestedDistance + consumed[1], dy.roundToInt()), offsetInWindow)
+        dispatchNestedScroll(
+            consumed[0],
+            consumed[1],
+            0,
+            Math.max(-nestedDistance + consumed[1], dy.roundToInt()),
+            offsetInWindow
+        )
 
         val layoutManager = layoutManager
         val adapter = adapter
@@ -227,7 +234,7 @@ class FastScrollRecyclerView @JvmOverloads constructor(
         return ""
     }
 
-    fun getScrolledPastHeight(): Int {
+    private fun getScrolledPastHeight(): Int {
         val layoutManager = layoutManager
         val adapter = adapter
         return if (layoutManager is LinearLayoutManager) {
@@ -263,7 +270,7 @@ class FastScrollRecyclerView @JvmOverloads constructor(
         val availableScrollBarHeight = scrollRange - mScrollbar.mThumbHeight
 
         // Only show the scrollbar if there is height to be scrolled
-        if (availableScrollHeight <= 0 || (adapter as? BaseQuickAdapter<*, *>)?.data?.let { it.size == 0 } == true) {
+        if (availableScrollHeight <= nestedRange || (adapter as? BaseQuickAdapter<*, *>)?.data?.let { it.size == 0 } == true) {
             mScrollbar.setThumbPosition(-1, -1)
             return
         }

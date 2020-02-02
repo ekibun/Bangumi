@@ -26,7 +26,7 @@ class HomeFragment: DrawerFragment(R.layout.content_home) {
     var checkedPos = 0
     fun select(pos: Int) {
         checkedPos = pos
-        fragmentManager?.beginTransaction()?.replace(R.id.frame_pager, fragments[checkedPos])?.commit()
+        childFragmentManager.beginTransaction().replace(R.id.frame_pager, fragments[checkedPos]).commit()
         for (i in 0 until (frame_tabs?.childCount ?: 0)) {
             (frame_tabs?.getChildAt(i) as? CheckedTextView)?.isChecked = i == checkedPos
         }
