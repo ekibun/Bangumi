@@ -19,16 +19,12 @@
 
     </androidx.preference.PreferenceScreen>
 
-    <androidx.preference.PreferenceScreen
-            app:key="pref_theme"
-            app:title="@string/pref_theme">
-        <androidx.preference.ListPreference
-                app:key="pref_dark_mode"
-                app:title="夜间模式"
-                app:entries="@array/pref_dark_mode"
-                app:entryValues="@array/pref_dark_mode_values"
-                app:defaultValue="-1"/>
-    </androidx.preference.PreferenceScreen>
+    <androidx.preference.ListPreference
+            app:key="pref_dark_mode"
+            app:title="夜间模式"
+            app:entries="@array/pref_dark_mode"
+            app:entryValues="@array/pref_dark_mode_values"
+            app:defaultValue="-1"/>
 
 
     <androidx.preference.PreferenceScreen

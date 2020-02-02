@@ -165,7 +165,9 @@ class CollectionPagerAdapter(
             item.second.isRefreshing = false
             item.first.loadMoreFail()
         }
-        if (useApi) mainPresenter?.updateUserCollection(callback, onError)
+        if (useApi) mainPresenter?.updateUserCollection({
+            if (collectionTypeView.getType() == Collection.STATUS_DO) callback(it)
+        }, onError)
         else {
             collectionCalls[position] = Bangumi.getCollectionList(tabList[position],
                 (fragment.activity as? MainActivity)?.user?.let { it.username ?: it.id.toString() } ?: return,
