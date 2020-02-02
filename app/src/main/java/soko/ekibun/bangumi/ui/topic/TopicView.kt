@@ -85,8 +85,8 @@ class TopicView(private val context: TopicActivity) {
 
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
-                context.item_bg.translationY =
-                    -Math.min(maxBgOffset, context.item_list.getScrolledPastHeight()).toFloat()
+//                context.item_bg.translationY =
+//                    -Math.min(maxBgOffset, context.item_list.getScrolledPastHeight()).toFloat()
             }
         })
         context.title_collapse.setOnClickListener {

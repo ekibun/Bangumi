@@ -13,7 +13,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             tools:src="@drawable/err_404"
-            android:scaleType="centerCrop"/>
+            android:scaleType="centerCrop"
+            tools:ignore="ContentDescription"/>
 
     <View
             android:id="@+id/item_mask"
@@ -31,14 +32,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-        <View
-                android:id="@+id/item_bg"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                app:layout_constraintLeft_toLeftOf="@+id/item_swipe"
-                app:layout_constraintRight_toRightOf="@+id/item_swipe"
-                android:background="@drawable/bg_round_dialog"/>
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
                 android:id="@+id/item_swipe"
@@ -61,6 +54,7 @@
                     app:fastScrollPopupBackgroundSize="48sp"
                     app:fastScrollPopupTextColor="@android:color/white"
                     app:fastScrollPopupBgColor="?colorAccent"
+                    android:background="@drawable/bg_round_dialog"
                     tools:listitem="@layout/item_reply"/>
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

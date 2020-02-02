@@ -18,10 +18,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
 import soko.ekibun.bangumi.ui.view.FastScrollRecyclerView
 import soko.ekibun.bangumi.ui.web.WebActivity
-import soko.ekibun.bangumi.util.GlideUtil
-import soko.ekibun.bangumi.util.HtmlHttpImageGetter
-import soko.ekibun.bangumi.util.HtmlTagHandler
-import soko.ekibun.bangumi.util.TextUtil
+import soko.ekibun.bangumi.util.*
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -50,8 +47,18 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
         helper.addOnClickListener(R.id.item_reply)
         helper.addOnClickListener(R.id.item_edit)
         helper.addOnClickListener(R.id.item_avatar)
-        helper.itemView.item_user.text = if (item.badge.isNullOrEmpty()) item.nickname else "${item.nickname} ${item.pst_content}"
-        helper.itemView.item_user_sign.text = if (item.badge.isNullOrEmpty()) if (item.sign.length < 2) "" else item.sign.substring(1, item.sign.length - 1) else item.dateline
+        if (data.indexOf(item) == 0) helper.setBackgroundRes(R.id.item_layout, R.drawable.bg_round_dialog)
+        else helper.setBackgroundColor(
+            R.id.item_layout,
+            ResourceUtil.resolveColorAttr(helper.itemView.context, android.R.attr.colorBackground)
+        )
+        helper.itemView.item_user.text =
+            if (item.badge.isNullOrEmpty()) item.nickname else "${item.nickname} ${item.pst_content}"
+        helper.itemView.item_user_sign.text =
+            if (item.badge.isNullOrEmpty()) if (item.sign.length < 2) "" else item.sign.substring(
+                1,
+                item.sign.length - 1
+            ) else item.dateline
         val subFloor = if (item.sub_floor > 0) "-${item.sub_floor}" else ""
         helper.itemView.item_time.text = (if (item.floor > 0) "#${item.floor}$subFloor - " else "") + item.dateline
         helper.itemView.item_reply.visibility = if (item.relate.toIntOrNull() ?: 0 > 0) View.VISIBLE else View.GONE
