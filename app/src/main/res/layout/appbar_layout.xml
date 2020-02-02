@@ -5,18 +5,135 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
+        app:layout_behavior="soko.ekibun.bangumi.util.FixAppBarLayoutBehavior"
         android:fitsSystemWindows="true"
-        android:background="?colorPrimaryBackground"
         app:elevation="0dp"
+        android:background="@android:color/transparent"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
-    <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
+    <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:id="@+id/toolbar_layout"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:popupTheme="@style/AppTheme.PopupOverlay"
-            tools:navigationIcon="?attr/homeAsUpIndicator"
-            tools:menu="@menu/action_web"
-            app:contentInsetStart="0dp"
-            app:contentInsetStartWithNavigation="0dp"/>
+            android:layout_height="wrap_content"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            app:contentScrim="@android:color/transparent"
+            app:statusBarScrim="@android:color/transparent"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed"
+            app:titleEnabled="false"
+            android:fitsSystemWindows="true">
+
+        <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?actionBarSize"
+                tools:navigationIcon="?attr/homeAsUpIndicator"
+                tools:menu="@menu/action_subject"
+                app:popupTheme="@style/AppTheme.PopupOverlay"
+                app:contentInsetStartWithNavigation="0dp"
+                app:titleTextColor="@android:color/transparent"
+                app:layout_collapseMode="pin"/>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/toolbar_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_collapseMode="parallax"
+                app:layout_collapseParallaxMultiplier="1">
+            <!-- 辅助定位 -->
+            <View
+                    android:id="@+id/view_toolbar"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_height="?actionBarSize"
+                    android:layout_width="match_parent"/>
+
+            <TextView
+                    android:id="@+id/title_collapse"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toTopOf="@+id/view_toolbar"
+                    app:layout_constraintBottom_toBottomOf="@+id/view_toolbar"
+                    android:textSize="@dimen/textSizeAppBarTitle"
+                    android:textColor="@android:color/white"
+                    android:layout_marginStart="?actionBarSize"
+                    app:layout_constraintWidth_max="700dp"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    android:layout_marginEnd="?actionBarSize"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    tools:text="Title\nLines"/>
+
+            <TextView
+                    android:id="@+id/title_expand"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/textSizeAppBarTitle"
+                    android:textColor="@android:color/white"
+                    app:layout_constraintTop_toTopOf="@+id/title_collapse"
+                    app:layout_constraintLeft_toLeftOf="@+id/title_collapse"
+                    app:layout_constraintRight_toRightOf="@+id/title_collapse"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintVertical_bias="0"
+                    android:layout_marginBottom="12dp"
+                    tools:text="Title\nExpand"/>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/title_sub"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="12dp"
+                    android:visibility="gone"
+                    app:layout_constraintLeft_toLeftOf="@+id/title_expand"
+                    app:layout_constraintTop_toBottomOf="@+id/title_expand"
+                    app:layout_constraintRight_toRightOf="@+id/title_expand"
+                    app:layout_constraintBottom_toBottomOf="parent">
+
+                <TextView
+                        android:id="@+id/title_slice_0"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        tools:text="group"
+                        tools:textColor="?android:textColorSecondaryInverse"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintLeft_toLeftOf="parent"
+                        app:layout_constraintWidth_max="wrap"
+                        app:layout_constraintHorizontal_chainStyle="packed"
+                        app:layout_constraintHorizontal_bias="0"
+                        app:layout_constraintRight_toLeftOf="@+id/title_slice_divider"/>
+
+                <ImageView
+                        android:visibility="gone"
+                        android:id="@+id/title_slice_divider"
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:layout_marginLeft="6dp"
+                        android:layout_marginRight="6dp"
+                        android:layout_gravity="center_vertical"
+                        android:tint="@android:color/white"
+                        android:src="@drawable/ic_chevron_right"
+                        tools:visibility="visible"
+                        app:layout_constraintTop_toTopOf="@+id/title_slice_0"
+                        app:layout_constraintBottom_toBottomOf="@+id/title_slice_0"
+                        app:layout_constraintLeft_toRightOf="@+id/title_slice_0"
+                        app:layout_constraintRight_toLeftOf="@+id/title_slice_1"
+                        tools:ignore="ContentDescription"/>
+
+                <TextView
+                        android:id="@+id/title_slice_1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        tools:text="group"
+                        tools:textColor="?android:textColorSecondaryInverse"
+                        app:layout_constraintTop_toTopOf="@+id/title_slice_0"
+                        app:layout_constraintBottom_toBottomOf="@+id/title_slice_0"
+                        app:layout_constraintLeft_toRightOf="@+id/title_slice_divider"
+                        app:layout_constraintRight_toRightOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.appbar.CollapsingToolbarLayout>
 </com.google.android.material.appbar.AppBarLayout>

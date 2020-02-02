@@ -7,15 +7,19 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
-        tools:context=".ui.web.WebActivity">
+        tools:context=".ui.web.WebActivity"
+        android:background="?colorPrimaryBackground">
 
-    <include layout="@layout/appbar_layout"/>
+    <include
+            android:id="@+id/app_bar"
+            layout="@layout/appbar_layout"/>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/item_swipe"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
+
         <RelativeLayout
                 android:id="@+id/nonVideoLayout"
                 android:layout_width="match_parent"

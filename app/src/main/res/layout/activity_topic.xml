@@ -25,7 +25,7 @@
 
     <include
             android:id="@+id/app_bar"
-            layout="@layout/appbar_collapsible_layout"/>
+            layout="@layout/appbar_layout"/>
 
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"

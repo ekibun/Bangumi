@@ -11,6 +11,7 @@ import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
+import com.google.android.material.appbar.AppBarLayout
 import kotlinx.android.synthetic.main.activity_web.*
 import kotlinx.android.synthetic.main.appbar_layout.*
 import soko.ekibun.bangumi.R
@@ -20,6 +21,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.ui.topic.TopicActivity
 import soko.ekibun.bangumi.ui.view.BaseActivity
+import soko.ekibun.bangumi.ui.view.CollapsibleAppBarHelper
 import soko.ekibun.bangumi.util.AppUtil
 import java.net.URI
 
@@ -55,12 +57,19 @@ class WebActivity : BaseActivity() {
         item_swipe.viewTreeObserver.addOnScrollChangedListener(mOnScrollChangedListener)
     }
 
+    private val collapsibleAppBarHelper by lazy { CollapsibleAppBarHelper(app_bar as AppBarLayout) }
+    override fun setTitle(title: CharSequence?) {
+        collapsibleAppBarHelper.setTitle(title.toString(), supportActionBar?.subtitle?.toString())
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_web)
 
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        collapsibleAppBarHelper.updateStatus(1f)
+        collapsibleAppBarHelper.appbarCollapsible(CollapsibleAppBarHelper.CollapseStatus.COLLAPSED)
 
         val paddingBottom = item_swipe.paddingBottom
         root_layout.setOnApplyWindowInsetsListener { _, insets ->

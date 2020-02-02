@@ -2,33 +2,34 @@ package soko.ekibun.bangumi.ui.search
 
 import android.content.Context
 import android.content.Intent
-import android.os.Bundle
 import android.view.MenuItem
-import kotlinx.android.synthetic.main.activity_search.*
+import android.view.View
+import kotlinx.android.synthetic.main.fragment_search.*
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.ui.view.SwipeBackActivity
+import soko.ekibun.bangumi.ui.view.BaseFragmentActivity
 
 /**
  * 搜索Activity
  */
-class SearchActivity : SwipeBackActivity() {
+class SearchActivity : BaseFragmentActivity(R.layout.fragment_search) {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_search)
-
-        setSupportActionBar(toolbar)
-        supportActionBar?.let{
-            it.setDisplayHomeAsUpEnabled(true)
-            it.setDisplayShowTitleEnabled(false)
-        }
-
+    override fun onViewCreated(view: View) {
         val historyPaddingBottom = search_history.paddingBottom
         val listPaddingBottom = search_list.paddingBottom
-        root_layout.setOnApplyWindowInsetsListener { _, insets ->
-            search_history.setPadding(search_history.paddingLeft, search_history.paddingTop, search_history.paddingRight, historyPaddingBottom + insets.systemWindowInsetBottom)
-            search_list.setPadding(search_list.paddingLeft, search_list.paddingTop, search_list.paddingRight, listPaddingBottom + insets.systemWindowInsetBottom)
-            insets
+        view.setOnApplyWindowInsetsListener { _, insets ->
+            search_history.setPadding(
+                search_history.paddingLeft,
+                search_history.paddingTop,
+                search_history.paddingRight,
+                historyPaddingBottom + insets.systemWindowInsetBottom
+            )
+            search_list.setPadding(
+                search_list.paddingLeft,
+                search_list.paddingTop,
+                search_list.paddingRight,
+                listPaddingBottom + insets.systemWindowInsetBottom
+            )
+            insets.consumeSystemWindowInsets()
         }
 
         SearchPresenter(this)

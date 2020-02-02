@@ -3,7 +3,7 @@ package soko.ekibun.bangumi.ui.view
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.material.appbar.AppBarLayout
-import kotlinx.android.synthetic.main.appbar_collapsible_layout.view.*
+import kotlinx.android.synthetic.main.appbar_layout.view.*
 
 class CollapsibleAppBarHelper(val appbar: AppBarLayout) {
     var appBarOffset = 0
@@ -11,7 +11,7 @@ class CollapsibleAppBarHelper(val appbar: AppBarLayout) {
     init {
         appbar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { _, verticalOffset ->
             appBarOffset = verticalOffset
-            if (collapsible) updateStatus(Math.abs(appBarOffset.toFloat() / appbar.totalScrollRange))
+            if (collapsible == CollapseStatus.AUTO) updateStatus(Math.abs(appBarOffset.toFloat() / appbar.totalScrollRange))
         })
         appbar.title_collapse.setOnClickListener { onTitleClickListener(ClickEvent.EVENT_TITLE) }
         appbar.title_expand.setOnClickListener { onTitleClickListener(ClickEvent.EVENT_TITLE) }
@@ -19,22 +19,37 @@ class CollapsibleAppBarHelper(val appbar: AppBarLayout) {
         appbar.title_slice_1.setOnClickListener { onTitleClickListener(ClickEvent.EVENT_GROUP) }
     }
 
-    private var collapsible = true
-    fun appbarCollapsible(enable: Boolean) {
-        collapsible = enable
+    enum class CollapseStatus {
+        EXPANDED, COLLAPSED, AUTO
+    }
+
+    private var collapsible = CollapseStatus.AUTO
+    fun appbarCollapsible(status: CollapseStatus) {
+        collapsible = status
         //content.nested_scroll.tag = true
-        if (enable) {
-            //reactive appbar
-            val params = appbar.toolbar_layout.layoutParams as AppBarLayout.LayoutParams
-            params.scrollFlags =
-                AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED
-            appbar.toolbar_layout.layoutParams = params
-        } else {
-            //expand appbar
-            appbar.setExpanded(true)
-            (appbar.toolbar_layout.layoutParams as AppBarLayout.LayoutParams).scrollFlags = 0
-            appbar.toolbar_layout.isTitleEnabled = false
+        when (status) {
+            CollapseStatus.EXPANDED -> {
+                appbar.setExpanded(true)
+                (appbar.toolbar_layout.layoutParams as AppBarLayout.LayoutParams).scrollFlags = 0
+                updateStatus(0f)
+            }
+            CollapseStatus.COLLAPSED -> {
+                appbar.setExpanded(false)
+                (appbar.toolbar_layout.layoutParams as AppBarLayout.LayoutParams).scrollFlags = 0
+                updateStatus(1f)
+            }
+            CollapseStatus.AUTO -> {
+                val params = appbar.toolbar_layout.layoutParams as AppBarLayout.LayoutParams
+                params.scrollFlags =
+                    AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED
+                appbar.toolbar_layout.layoutParams = params
+            }
         }
+        setTitle(
+            appbar.title_collapse.text.toString(),
+            appbar.title_slice_0.text.toString(),
+            appbar.title_slice_1.text.toString()
+        )
     }
 
     private var mRatio = 0f
@@ -51,7 +66,7 @@ class CollapsibleAppBarHelper(val appbar: AppBarLayout) {
 
     fun setTitle(title: String, subTitle: String? = null, group: String? = null) {
         appbar.title_collapse.text = title
-        appbar.title_expand.text = title
+        appbar.title_expand.text = if (collapsible == CollapseStatus.COLLAPSED) "" else title
         appbar.title_slice_0.text = subTitle
         appbar.title_slice_1.text = group
         appbar.title_sub.visibility = if (subTitle.isNullOrEmpty() && group.isNullOrEmpty()) View.GONE else View.VISIBLE

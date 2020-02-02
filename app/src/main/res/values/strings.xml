@@ -178,6 +178,7 @@
     <string name="timeline">时间胶囊</string>
 
     <!-- Crash -->
+    <string name="crash">出错了</string>
     <string name="crash_upload_crash">上传崩溃日志</string>
     <string name="crash_restart_app">重新启动应用</string>
     <string name="crash_upload_ok">日志上传成功</string>

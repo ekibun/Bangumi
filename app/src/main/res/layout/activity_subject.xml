@@ -35,14 +35,15 @@
 
         <include
                 android:id="@+id/app_bar"
-                layout="@layout/appbar_collapsible_layout"/>
+                layout="@layout/appbar_layout"/>
 
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/bottom_sheet"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 app:layout_behavior="@string/bottom_sheet_behavior"
-                tools:layout_behavior=""
+                tools:layout_behavior="@string/appbar_scrolling_view_behavior"
+                tools:translationY="0dp"
                 android:translationY="?actionBarSize"
                 android:paddingBottom="?actionBarSize">
 

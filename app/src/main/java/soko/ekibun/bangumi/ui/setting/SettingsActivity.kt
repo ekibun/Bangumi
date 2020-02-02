@@ -5,22 +5,22 @@ package soko.ekibun.bangumi.ui.setting
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.MenuItem
+import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceScreen
-import kotlinx.android.synthetic.main.appbar_layout.*
 import soko.ekibun.bangumi.BuildConfig
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.model.ThemeModel
-import soko.ekibun.bangumi.ui.view.SwipeBackActivity
+import soko.ekibun.bangumi.ui.view.BaseFragmentActivity
 import soko.ekibun.bangumi.util.AppUtil
 
 /**
  * 设置Activity
  */
-class SettingsActivity : SwipeBackActivity(), PreferenceFragmentCompat.OnPreferenceStartScreenCallback {
+class SettingsActivity : BaseFragmentActivity(), PreferenceFragmentCompat.OnPreferenceStartScreenCallback {
     override fun onPreferenceStartScreen(caller: PreferenceFragmentCompat, pref: PreferenceScreen): Boolean {
         val ft = supportFragmentManager.beginTransaction()
         val fragment = SettingsFragment()
@@ -28,25 +28,18 @@ class SettingsActivity : SwipeBackActivity(), PreferenceFragmentCompat.OnPrefere
         args.putString(PreferenceFragmentCompat.ARG_PREFERENCE_ROOT, pref.key)
         title = pref.title
         fragment.arguments = args
-        ft.replace(R.id.settings_container, fragment, pref.key)
+        ft.replace(R.id.layout_content, fragment, pref.key)
         ft.addToBackStack(pref.key)
         ft.commit()
         return true
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_settings)
-
-        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
+    override fun onViewCreated(view: View) {
         supportFragmentManager.addOnBackStackChangedListener {
             if (supportFragmentManager.backStackEntryCount == 0)
                 setTitle(R.string.settings)
         }
-
-        supportFragmentManager.beginTransaction().replace(R.id.settings_container, SettingsFragment()).commit()
+        supportFragmentManager.beginTransaction().replace(R.id.layout_content, SettingsFragment()).commit()
     }
 
     override fun processBack() {

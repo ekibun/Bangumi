@@ -24,7 +24,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:drawableTop="@drawable/ic_timeline"
+                android:drawableTop="@drawable/ic_timelapse"
                 android:background="?selectableItemBackgroundBorderless"
                 tools:drawableTint="@color/color_checkable"
                 android:textColor="@color/color_checkable"

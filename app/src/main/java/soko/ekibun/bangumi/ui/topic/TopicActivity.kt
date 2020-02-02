@@ -6,7 +6,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import kotlinx.android.synthetic.main.activity_topic.*
-import kotlinx.android.synthetic.main.appbar_collapsible_layout.*
+import kotlinx.android.synthetic.main.appbar_layout.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.model.ThemeModel
@@ -27,7 +27,6 @@ class TopicActivity : SwipeBackActivity() {
 
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        title = ""
 
         topicPresenter.init(JsonUtil.toEntity<Topic>(intent.getStringExtra(EXTRA_TOPIC) ?: "")!!,
                 intent.getIntExtra(EXTRA_POST, 0).toString())

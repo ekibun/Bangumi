@@ -142,6 +142,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".ui.search.SearchActivity"
+                  android:label="@string/search"
                   android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation">
         </activity>
         <activity
@@ -169,10 +170,13 @@
                         android:scheme="ekibun"/>
             </intent-filter>
         </activity>
-        <activity android:name=".ui.topic.TopicActivity"
-                  android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation">
+        <activity
+                android:name=".ui.topic.TopicActivity"
+                android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation">
         </activity>
-        <activity android:name=".ui.crash.CrashActivity">
+        <activity
+                android:label="@string/crash"
+                android:name=".ui.crash.CrashActivity">
         </activity>
     </application>
 

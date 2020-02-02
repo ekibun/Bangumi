@@ -68,9 +68,9 @@ class SubjectView(private val context: SubjectActivity) {
     val behavior = BottomSheetBehavior.from(context.bottom_sheet)
 
     init {
-        collapsibleAppBarHelper.appbarCollapsible(false)
+        collapsibleAppBarHelper.appbarCollapsible(CollapsibleAppBarHelper.CollapseStatus.EXPANDED)
 
-        context.bottom_sheet.addOnLayoutChangeListener { view, l, t, r, b, _, _, _, _ ->
+        context.window.decorView.viewTreeObserver.addOnGlobalLayoutListener {
             minPeakHeight = minPeakHeight
         }
 

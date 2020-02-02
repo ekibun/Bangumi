@@ -7,7 +7,7 @@ import android.os.Bundle
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
-import kotlinx.android.synthetic.main.appbar_collapsible_layout.*
+import kotlinx.android.synthetic.main.appbar_layout.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.model.ThemeModel
@@ -29,7 +29,6 @@ class SubjectActivity : SwipeBackActivity() {
 
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        title = ""
 
         subjectPresenter.init(
             if (intent.data?.toString()?.startsWith("ekibun://playersubject/bangumi") == true) {
