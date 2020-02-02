@@ -14,15 +14,19 @@ import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 /**
  * 时间线PagerAdapter
  */
-class TimeLinePagerAdapter(context: Context, val fragment: TimeLineFragment, private val pager: androidx.viewpager.widget.ViewPager, private val scrollTrigger: (Boolean)->Unit) : androidx.viewpager.widget.PagerAdapter(){
+class TimeLinePagerAdapter(
+    context: Context,
+    val fragment: TimeLineFragment,
+    private val pager: androidx.viewpager.widget.ViewPager
+) : androidx.viewpager.widget.PagerAdapter() {
     private val tabList = context.resources.getStringArray(R.array.timeline_list)
     private var topicCall = HashMap<Int, Call<List<TimeLine>>>()
     val pageIndex = HashMap<Int, Int>()
 
     var selectedType = R.id.timeline_type_friend
 
-    init{
-        pager.addOnPageChangeListener(object: androidx.viewpager.widget.ViewPager.OnPageChangeListener{
+    init {
+        pager.addOnPageChangeListener(object : androidx.viewpager.widget.ViewPager.OnPageChangeListener {
             override fun onPageScrollStateChanged(state: Int) {}
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
             override fun onPageSelected(position: Int) {
@@ -30,7 +34,6 @@ class TimeLinePagerAdapter(context: Context, val fragment: TimeLineFragment, pri
                     pageIndex[position] = 0
                     loadTopicList(position)
                 }
-                scrollTrigger((items[position]?.second?.tag as? androidx.recyclerview.widget.RecyclerView)?.canScrollVertically(-1) == true)
             } })
     }
 
@@ -46,11 +49,6 @@ class TimeLinePagerAdapter(context: Context, val fragment: TimeLineFragment, pri
             val swipeRefreshLayout = androidx.swiperefreshlayout.widget.SwipeRefreshLayout(container.context)
             val recyclerView = androidx.recyclerview.widget.RecyclerView(container.context)
             recyclerView.overScrollMode = View.OVER_SCROLL_NEVER
-            recyclerView.addOnScrollListener(object: androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
-                override fun onScrolled(recyclerView: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {
-                    scrollTrigger((items[pager.currentItem]?.second?.tag as? androidx.recyclerview.widget.RecyclerView)?.canScrollVertically(-1) == true)
-                }
-            })
 
             val adapter = TimeLineAdapter()
             adapter.emptyView = LayoutInflater.from(container.context).inflate(R.layout.view_empty, container, false)

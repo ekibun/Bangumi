@@ -47,7 +47,7 @@ class CacheFragment: DrawerFragment(R.layout.content_cache) {
                 adapter.setNewData(null) })
         }
 
-        root_layout?.setOnApplyWindowInsetsListener { _, insets ->
+        view.setOnApplyWindowInsetsListener { _, insets ->
             item_list?.dispatchApplyWindowInsets(insets)
             insets
         }

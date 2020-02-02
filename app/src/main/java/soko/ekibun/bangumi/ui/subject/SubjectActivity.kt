@@ -31,8 +31,6 @@ class SubjectActivity : SwipeBackActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         title = ""
 
-        subjectPresenter.updateConfiguration()
-
         subjectPresenter.init(
             if (intent.data?.toString()?.startsWith("ekibun://playersubject/bangumi") == true) {
                 intent.getParcelableExtra<VideoSubject>(PlayerBridge.EXTRA_SUBJECT)!!.toSubject()
@@ -92,7 +90,6 @@ class SubjectActivity : SwipeBackActivity() {
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        subjectPresenter.updateConfiguration()
     }
 
     companion object {

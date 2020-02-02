@@ -56,9 +56,23 @@ class SubjectView(private val context: SubjectActivity) {
         } else false
     }
 
+    var minPeakHeight = 1
+        set(value) {
+            field = value
+            behavior.peekHeight = context.bottom_sheet.height - Math.max(
+                value, // 至少留一个像素保证状态变换
+                context.app_bar.height - context.bottom_sheet.paddingTop - context.bottom_sheet.paddingBottom
+            )
+        }
+
     val behavior = BottomSheetBehavior.from(context.bottom_sheet)
+
     init {
         collapsibleAppBarHelper.appbarCollapsible(false)
+
+        context.bottom_sheet.addOnLayoutChangeListener { view, l, t, r, b, _, _, _, _ ->
+            minPeakHeight = minPeakHeight
+        }
 
         val listPaddingBottom = context.item_list.paddingBottom
         val bottomPaddingTop = context.bottom_sheet.paddingTop

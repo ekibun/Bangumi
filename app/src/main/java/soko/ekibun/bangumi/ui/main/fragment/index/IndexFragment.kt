@@ -16,10 +16,7 @@ class IndexFragment: DrawerFragment(R.layout.content_index){
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val adapter = IndexPagerAdapter(this, item_pager) {
-            app_bar.isPressed = it
-            item_tab_container.isPressed = it
-        }
+        val adapter = IndexPagerAdapter(this, item_pager)
         item_pager?.adapter = adapter
         item_pager?.currentItem = getNowIndex()
         item_tabs?.post {

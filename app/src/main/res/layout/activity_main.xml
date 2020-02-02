@@ -12,17 +12,49 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal"
-            android:fitsSystemWindows="true">
+            android:fitsSystemWindows="true"
+            android:baselineAligned="false">
+
         <FrameLayout
                 android:id="@+id/content_drawer"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"/>
-        <FrameLayout
-                android:id="@+id/content_frame"
-                android:layout_width="0dp"
-                android:layout_weight="1"
+
+        <LinearLayout
+                android:id="@+id/root_layout"
+                android:fitsSystemWindows="true"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:fitsSystemWindows="true"/>
+                android:orientation="vertical"
+                android:background="?colorPrimaryBackground">
+
+            <com.google.android.material.appbar.AppBarLayout
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:id="@+id/app_bar"
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    android:background="?colorPrimaryBackground"
+                    android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+                    app:elevation="0dp">
+
+                <androidx.appcompat.widget.Toolbar
+                        android:id="@+id/toolbar"
+                        android:layout_width="match_parent"
+                        android:layout_height="?attr/actionBarSize"
+                        app:contentInsetStart="0dp"
+                        app:contentInsetStartWithNavigation="0dp"
+                        app:menu="@menu/action_main"
+                        app:popupTheme="@style/AppTheme.PopupOverlay"/>
+            </com.google.android.material.appbar.AppBarLayout>
+
+            <FrameLayout
+                    android:id="@+id/content_frame"
+                    android:fitsSystemWindows="true"
+                    android:layout_width="match_parent"
+                    android:layout_weight="1"
+                    android:layout_height="0dp"
+                    android:background="@drawable/bg_round_dialog"/>
+        </LinearLayout>
     </LinearLayout>
 
     <com.google.android.material.navigation.NavigationView

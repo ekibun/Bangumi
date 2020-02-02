@@ -3,5 +3,5 @@
     <!-- 未选中-->
     <item android:color="?android:textColorSecondary" android:state_checked="false" />
     <!--选中-->
-    <item android:color="@android:color/white" android:state_checked="true" />
+    <item android:color="?colorAccent" android:state_checked="true"/>
 </selector>

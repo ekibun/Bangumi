@@ -10,18 +10,20 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:background="?android:colorBackground"
-            android:stateListAnimator="@animator/elevation">
-    <TextView android:id="@+id/item_type"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:padding="8dp"
-              android:layout_marginLeft="8dp"
-              android:layout_marginRight="8dp"
-              android:backgroundTint="@color/colorTransGrey"
-              android:background="@drawable/bg_round_rect"/>
-    <com.google.android.material.tabs.TabLayout
-            android:id="@+id/item_tabs"
+            app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+                android:id="@+id/item_type"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:backgroundTint="@color/colorTransGrey"
+                android:background="@drawable/bg_round_rect"/>
+
+        <com.google.android.material.tabs.TabLayout
+                android:id="@+id/item_tabs"
             app:tabGravity="fill"
             app:tabMode="scrollable"
             app:tabMaxWidth="0dp"

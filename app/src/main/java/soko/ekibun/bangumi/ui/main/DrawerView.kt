@@ -1,7 +1,9 @@
 package soko.ekibun.bangumi.ui.main
 
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.ViewCompat
 import kotlinx.android.synthetic.main.activity_main.*
 import soko.ekibun.bangumi.R
@@ -26,11 +28,24 @@ class DrawerView(private val context: MainActivity, onLogout: () -> Unit) {
         R.id.nav_download to CacheFragment()
     )
 
+    val toggle = {
+        context.setSupportActionBar(context.toolbar)
+        val toggle = ActionBarDrawerToggle(
+            context, context.drawer_layout, context.toolbar,
+            R.string.navigation_drawer_open, R.string.navigation_drawer_close
+        )
+        context.drawer_layout.addDrawerListener(toggle)
+        toggle.isDrawerIndicatorEnabled =
+            context.resources.configuration.orientation != Configuration.ORIENTATION_LANDSCAPE
+        toggle.syncState()
+        toggle
+    }()
+
     init {
 
         context.content_frame.setOnApplyWindowInsetsListener { _, insets ->
             context.content_frame.setPadding(0, insets.systemWindowInsetTop, 0, 0)
-            insets.inset(insets.systemWindowInsetLeft, 0, insets.systemWindowInsetRight, insets.systemWindowInsetBottom)
+            insets
         }
 
         context.nav_view.setNavigationItemSelectedListener {

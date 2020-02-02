@@ -1,51 +1,55 @@
 package soko.ekibun.bangumi.ui.main.fragment.home
 
-import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.View
-import android.view.ViewGroup
-import android.widget.ImageView
+import android.widget.CheckedTextView
 import kotlinx.android.synthetic.main.content_home.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
+import soko.ekibun.bangumi.ui.main.fragment.home.fragment.HomeTabFragment
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.collection.CollectionFragment
+import soko.ekibun.bangumi.ui.main.fragment.home.fragment.rakuen.RakuenFragment
+import soko.ekibun.bangumi.ui.main.fragment.home.fragment.timeline.TimeLineFragment
 
 /**
  * 主页
  */
-class HomeFragment: DrawerFragment(R.layout.content_home){
+class HomeFragment: DrawerFragment(R.layout.content_home) {
     override val titleRes: Int = R.string.home
-    private val fragments get() = (frame_pager?.adapter as? HomePagerAdapter)?.fragments
+    private val collectionFragment = CollectionFragment()
+    private val fragments: List<HomeTabFragment> = listOf(
+        TimeLineFragment(),
+        collectionFragment,
+        RakuenFragment()
+    )
+
+    var checkedPos = 0
+    fun select(pos: Int) {
+        checkedPos = pos
+        fragmentManager?.beginTransaction()?.replace(R.id.frame_pager, fragments[checkedPos])?.commit()
+        for (i in 0 until (frame_tabs?.childCount ?: 0)) {
+            (frame_tabs?.getChildAt(i) as? CheckedTextView)?.isChecked = i == checkedPos
+        }
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val adapter = HomePagerAdapter(view.context, childFragmentManager, frame_pager)
-        frame_pager.adapter = adapter
-        frame_tabs.setupWithViewPager(frame_pager)
-        for(i in 0 until frame_tabs.tabCount){
-            frame_tabs.getTabAt(i)?.icon =  view.context.getDrawable(adapter.getItem(i).iconRes)
-        }
-        frame_pager?.currentItem = 1
-        changeIconImgBottomMargin(frame_tabs, 0, frame_tabs.tabTextColors)
-    }
-
-    private fun changeIconImgBottomMargin(parent: ViewGroup, px: Int, colors: ColorStateList?) {
-        for (i in 0 until parent.childCount) {
-            val child = parent.getChildAt(i)
-            if (child is ViewGroup) {
-                changeIconImgBottomMargin(child, px, colors)
-            } else if (child is ImageView) {
-                val lp = child.getLayoutParams() as ViewGroup.MarginLayoutParams
-                lp.bottomMargin = 0
-                child.imageTintList = colors
-                child.requestLayout()
+        for (i in 0 until (frame_tabs?.childCount ?: 0)) {
+            (frame_tabs?.getChildAt(i) as? CheckedTextView)?.let { tv ->
+                tv.setOnClickListener {
+                    select(i)
+                }
+                tv.compoundDrawables.forEach {
+                    it?.setTintList(tv.textColors)
+                }
             }
         }
+        select(1)
     }
 
-    override fun processBack(): Boolean{
-        if(frame_pager == null || frame_pager?.currentItem == 1) return false
-        frame_pager?.currentItem = 1
+    override fun processBack(): Boolean {
+        if (frame_pager == null || checkedPos == 1) return false
+        select(1)
         return true
     }
 
@@ -53,13 +57,13 @@ class HomeFragment: DrawerFragment(R.layout.content_home){
      * 更新用户收藏
      */
     fun updateUserCollection(): Unit? {
-        return (fragments?.firstOrNull { it is CollectionFragment } as? CollectionFragment)?.reset()
+        return collectionFragment.reset()
     }
 
     /**
      * 用户改变
      */
     fun onUserChange() {
-        fragments?.forEach { it.onUserChange() }
+        fragments.forEach { it.onUserChange() }
     }
 }

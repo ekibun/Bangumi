@@ -338,13 +338,4 @@ class SubjectPresenter(private val context: SubjectActivity) {
             dataCacheModel.set(subject.cacheKey, subject)
         }, {}))
     }
-
-    fun updateConfiguration() {
-        context.bottom_sheet.post {
-            subjectView.behavior.peekHeight = context.bottom_sheet.height - Math.max(
-                1, // 至少留一个像素保证状态变换
-                context.app_bar.height - context.bottom_sheet.paddingTop - context.bottom_sheet.paddingBottom
-            )
-        }
-    }
 }

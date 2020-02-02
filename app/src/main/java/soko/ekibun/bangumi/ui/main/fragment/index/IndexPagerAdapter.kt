@@ -20,7 +20,8 @@ import java.util.*
 /**
  * 索引PagerAdapter
  */
-class IndexPagerAdapter(fragment: IndexFragment, private val pager: androidx.viewpager.widget.ViewPager, private val scrollTrigger: (Boolean) -> Unit) : RecyclePagerAdapter<IndexPagerAdapter.IndexPagerViewHolder>() {
+class IndexPagerAdapter(fragment: IndexFragment, private val pager: androidx.viewpager.widget.ViewPager) :
+    RecyclePagerAdapter<IndexPagerAdapter.IndexPagerViewHolder>() {
     var windowInsets: WindowInsets? = null
 
     private val indexTypeView = IndexTypeView(fragment.item_type) {
@@ -28,21 +29,9 @@ class IndexPagerAdapter(fragment: IndexFragment, private val pager: androidx.vie
         pager.adapter?.notifyDataSetChanged()
     }
 
-    init{
-        pager.addOnPageChangeListener(object: androidx.viewpager.widget.ViewPager.OnPageChangeListener{
-            override fun onPageScrollStateChanged(state: Int) { /* no-op*/
-            }
-
-            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) { /* no-op*/
-            }
-            override fun onPageSelected(position: Int) {
-                // scrollTrigger((holders.firstOrNull { it.position ==  pager.currentItem}?.view?.tag as? androidx.recyclerview.widget.RecyclerView)?.canScrollVertically(-1) == true)
-            } })
-    }
-
-    override fun getPageTitle(pos: Int): CharSequence{
+    override fun getPageTitle(pos: Int): CharSequence {
         //TODO
-        return "${pos/12 + 1000}\n${pos%12+1}月"
+        return "${pos / 12 + 1000}\n${pos % 12 + 1}月"
     }
 
     private val pageIndex = SparseIntArray()
@@ -91,12 +80,6 @@ class IndexPagerAdapter(fragment: IndexFragment, private val pager: androidx.vie
         recyclerView.clipToPadding = false
         val adapter = SubjectAdapter()
         val viewHolder = IndexPagerViewHolder(swipeRefreshLayout, adapter)
-        recyclerView.addOnScrollListener(object: androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {
-                if(viewHolder.position == pager.currentItem)
-                scrollTrigger(recyclerView.canScrollVertically(-1))
-            }
-        })
 
         adapter.emptyView = LayoutInflater.from(parent.context).inflate(R.layout.view_empty, parent, false)
         adapter.isUseEmpty(false)

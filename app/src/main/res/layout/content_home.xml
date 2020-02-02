@@ -1,53 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
         android:orientation="vertical">
-    <com.google.android.material.appbar.AppBarLayout
-            android:id="@+id/app_bar"
-            android:layout_height="wrap_content"
-            android:layout_width="match_parent"
-            android:background="?colorPrimaryBackground"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            app:elevation="0dp">
-        <androidx.appcompat.widget.Toolbar
-                android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                app:contentInsetStart="0dp"
-                app:contentInsetStartWithNavigation="0dp"
-                app:popupTheme="@style/AppTheme.PopupOverlay">
-            <ImageView android:layout_width="match_parent"
-                       android:layout_height="match_parent"
-                       android:paddingTop="8dp"
-                       android:paddingBottom="8dp"
-                       android:translationX="-10dp"
-                       app:srcCompat="@drawable/ic_logo"
-                       android:tint="@android:color/white"
-                       android:adjustViewBounds="false"
-                       tools:ignore="ContentDescription" android:scaleType="fitStart"/>
-        </androidx.appcompat.widget.Toolbar>
-    </com.google.android.material.appbar.AppBarLayout>
-    <androidx.viewpager.widget.ViewPager
+    <FrameLayout
             android:id="@+id/frame_pager"
             android:layout_weight="1"
             android:layout_width="match_parent"
             android:layout_height="0dp"/>
-    <com.google.android.material.tabs.TabLayout
+
+    <LinearLayout
             android:id="@+id/frame_tabs"
-            app:tabGravity="fill"
-            app:tabMode="fixed"
-            app:tabMaxWidth="0dp"
             android:elevation="20dp"
             android:background="?android:colorBackground"
-            app:tabTextAppearance="@style/IconTabTextAppearance"
-            app:tabSelectedTextColor="?colorAccent"
-            app:tabIndicatorColor="@android:color/transparent"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            />
+            android:orientation="horizontal">
+
+        <CheckedTextView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:drawableTop="@drawable/ic_timeline"
+                android:background="?selectableItemBackgroundBorderless"
+                tools:drawableTint="@color/color_checkable"
+                android:textColor="@color/color_checkable"
+                android:textAlignment="center"
+                android:text="@string/timeline"/>
+
+        <CheckedTextView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:drawableTop="@drawable/ic_heart"
+                android:background="?selectableItemBackgroundBorderless"
+                tools:drawableTint="@color/color_checkable"
+                android:textColor="@color/color_checkable"
+                tools:checked="true"
+                android:textAlignment="center"
+                android:text="@string/collect"/>
+
+        <CheckedTextView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:drawableTop="@drawable/ic_explore"
+                android:background="?selectableItemBackgroundBorderless"
+                tools:drawableTint="@color/color_checkable"
+                android:textColor="@color/color_checkable"
+                android:textAlignment="center"
+                android:text="@string/rakuen"/>
+    </LinearLayout>
 </LinearLayout>

@@ -38,27 +38,6 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
     private val dataCacheModel by lazy { App.get(view.context).dataCacheModel }
 
     init {
-        // view.item_pager.offscreenPageLimit = 2
-        view.item_pager.addOnPageChangeListener(object : androidx.viewpager.widget.ViewPager.OnPageChangeListener {
-            override fun onPageScrollStateChanged(state: Int) { /* no-op */
-            }
-
-            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
-                /*
-                val max = 1.5f
-                val dim = 1.2f
-                view.item_pager.findViewWithTag<RecyclerView>(position)?.alpha = max - positionOffset * dim
-                view.item_pager.findViewWithTag<RecyclerView>(position + 1)?.alpha = max - (1 - positionOffset) * dim
-                view.item_pager.findViewWithTag<RecyclerView>(position - 1)?.alpha = max - (1 + positionOffset) * dim
-                view.item_pager.findViewWithTag<RecyclerView>(position + 2)?.alpha = max - (2 - positionOffset) * dim
-                view.item_pager.findViewWithTag<RecyclerView>(position - 2)?.alpha = max - (2 + positionOffset) * dim
-                 */
-            }
-
-            override fun onPageSelected(position: Int) {
-                updateTabElevation()
-            }
-        })
 
         var canScroll = false
         view.item_pager.setOnTouchListener { _, event ->
@@ -83,10 +62,6 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
         loadCalendarList()
     }
 
-    private fun updateTabElevation() {
-        view.item_tabs.isPressed = currentView?.canScrollVertically(-1) ?: false
-    }
-
     private fun getItem(position: Int): CalendarAdapter {
         return items.get(position) ?: {
             val adapter = CalendarAdapter()
@@ -105,11 +80,6 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
         recyclerView.overScrollMode = View.OVER_SCROLL_NEVER
         recyclerView.setPadding(0, 0, 0, windowInsets?.systemWindowInsetBottom ?: 0)
         recyclerView.clipToPadding = false
-        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                updateTabElevation()
-            }
-        })
 
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(view.context)
@@ -201,9 +171,6 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
             item.setNewData(data)
             if (date.first == now) {
                 ((view.item_pager.findViewWithTag(7) as? RecyclerView)?.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(index - 1, 0)
-                if (view.item_pager.currentItem == 7) view.item_pager.post {
-                    updateTabElevation()
-                }
             }
         }
     }

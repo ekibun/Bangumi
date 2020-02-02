@@ -11,8 +11,6 @@
             app:tabMaxWidth="0dp"
             android:layout_width="match_parent"
             app:tabSelectedTextColor="?colorAccent"
-            android:background="?android:colorBackground"
-            android:stateListAnimator="@animator/elevation"
             app:layout_constraintTop_toTopOf="parent"
             app:tabPaddingStart="0dp"
             app:tabPaddingEnd="0dp"

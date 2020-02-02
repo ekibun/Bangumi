@@ -14,7 +14,11 @@ import soko.ekibun.bangumi.ui.topic.TopicActivity
 /**
  * 超展开PagerAdapter
  */
-class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private val pager: androidx.viewpager.widget.ViewPager, private val scrollTrigger: (Boolean) -> Unit) : androidx.viewpager.widget.PagerAdapter() {
+class RakuenPagerAdapter(
+    context: Context,
+    val fragment: RakuenFragment,
+    private val pager: androidx.viewpager.widget.ViewPager
+) : androidx.viewpager.widget.PagerAdapter() {
     private val tabList = context.resources.getStringArray(R.array.topic_list)
     var selectedFilter = R.id.topic_filter_all
 
@@ -28,7 +32,6 @@ class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private
 
             override fun onPageSelected(position: Int) {
                 loadTopicList(position)
-                scrollTrigger((items[position]?.second?.tag as? androidx.recyclerview.widget.RecyclerView)?.canScrollVertically(-1) == true)
             }
         })
     }
@@ -41,11 +44,6 @@ class RakuenPagerAdapter(context: Context, val fragment: RakuenFragment, private
             val swipeRefreshLayout = androidx.swiperefreshlayout.widget.SwipeRefreshLayout(container.context)
             val recyclerView = androidx.recyclerview.widget.RecyclerView(container.context)
             recyclerView.overScrollMode = View.OVER_SCROLL_NEVER
-            recyclerView.addOnScrollListener(object : androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
-                override fun onScrolled(recyclerView: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {
-                    scrollTrigger((items[pager.currentItem]?.second?.tag as? androidx.recyclerview.widget.RecyclerView)?.canScrollVertically(-1) == true)
-                }
-            })
 
             val adapter = RakuenAdapter()
             adapter.emptyView = LayoutInflater.from(container.context).inflate(R.layout.view_empty, container, false)

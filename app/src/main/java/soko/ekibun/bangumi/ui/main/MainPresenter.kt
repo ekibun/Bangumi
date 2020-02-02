@@ -87,7 +87,8 @@ class MainPresenter(private val context: MainActivity) {
         }
         nav_view.visibility = View.VISIBLE
         context.drawer_layout.closeDrawers()
-        drawerView.current()?.toggle?.isDrawerIndicatorEnabled = context.resources.configuration.orientation != Configuration.ORIENTATION_LANDSCAPE
+        drawerView.toggle.isDrawerIndicatorEnabled =
+            context.resources.configuration.orientation != Configuration.ORIENTATION_LANDSCAPE
     }
 
     /**

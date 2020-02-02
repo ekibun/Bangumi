@@ -28,8 +28,7 @@ import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 class CollectionPagerAdapter(
     private val context: Context,
     val fragment: CollectionFragment,
-    private val pager: ViewPager,
-    private val scrollTrigger: (Boolean) -> Unit
+    private val pager: ViewPager
 ) : androidx.viewpager.widget.PagerAdapter() {
     private val tabList =
         arrayOf(Subject.TYPE_ANIME, Subject.TYPE_BOOK, Subject.TYPE_MUSIC, Subject.TYPE_GAME, Subject.TYPE_REAL)
@@ -49,7 +48,6 @@ class CollectionPagerAdapter(
                     pageIndex[position] = 0
                     loadCollectionList(position)
                 }
-                scrollTrigger(isScrollDown)
             }
         })
     }
@@ -71,12 +69,6 @@ class CollectionPagerAdapter(
         val item = items.getOrPut(position) {
             val swipeRefreshLayout = SwipeRefreshLayout(container.context)
             val recyclerView = RecyclerView(container.context)
-            recyclerView.overScrollMode = View.OVER_SCROLL_NEVER
-            recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                    scrollTrigger(isScrollDown)
-                }
-            })
 
             val adapter = CollectionListAdapter()
             adapter.emptyView = LayoutInflater.from(container.context).inflate(R.layout.view_empty, container, false)
@@ -167,7 +159,9 @@ class CollectionPagerAdapter(
         }
         if (useApi) mainPresenter?.updateUserCollection({
             if (collectionTypeView.getType() == Collection.STATUS_DO) callback(it)
-        }, onError)
+        }, {
+            if (collectionTypeView.getType() == Collection.STATUS_DO) onError(it)
+        })
         else {
             collectionCalls[position] = Bangumi.getCollectionList(tabList[position],
                 (fragment.activity as? MainActivity)?.user?.let { it.username ?: it.id.toString() } ?: return,
