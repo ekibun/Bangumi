@@ -151,7 +151,6 @@
 
     <include
             layout="@layout/subject_detail"
-            android:id="@+id/subject_detail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@+id/item_user_collect"/>

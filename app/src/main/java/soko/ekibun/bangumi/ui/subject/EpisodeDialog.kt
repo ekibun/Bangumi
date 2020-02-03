@@ -2,9 +2,11 @@ package soko.ekibun.bangumi.ui.subject
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.android.synthetic.main.base_dialog.view.*
 import kotlinx.android.synthetic.main.dialog_epsode.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
@@ -18,7 +20,7 @@ import soko.ekibun.bangumi.ui.web.WebActivity
 /**
  * 剧集对话框
  */
-class EpisodeDialog(context: Context) : BaseDialog(context, R.layout.dialog_epsode) {
+class EpisodeDialog(context: Context) : BaseDialog(context, R.layout.base_dialog) {
     companion object {
         const val WATCH_TO = "watch_to"
         /**
@@ -74,12 +76,13 @@ class EpisodeDialog(context: Context) : BaseDialog(context, R.layout.dialog_epso
             adapter.setNewData(value?.eps?.find { it.id == episode?.id }?.sites)
         }
     override val title: String get() = episode?.parseSort(context) + " " + if (episode?.name_cn.isNullOrEmpty()) episode?.name else episode?.name_cn
-    override fun onTitleClick() {
-        WebActivity.launchUrl(context, "${Bangumi.SERVER}/m/topic/ep/${episode?.id}", "")
-    }
 
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View) {
+        view.dialog_title.setOnClickListener {
+            WebActivity.launchUrl(context, "${Bangumi.SERVER}/m/topic/ep/${episode?.id}", "")
+        }
+        LayoutInflater.from(context).inflate(R.layout.dialog_epsode, view.layout_content)
         val episode = episode ?: return
         view.item_episode_desc.text = (if (episode.name_cn.isNullOrEmpty()) "" else episode.name + "\n") +
                 (if (episode.airdate.isNullOrEmpty()) "" else context.getString(

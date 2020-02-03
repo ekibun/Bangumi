@@ -17,7 +17,6 @@
             tools:ignore="ContentDescription"/>
 
     <View
-            android:id="@+id/item_mask"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_constraintTop_toTopOf="parent"

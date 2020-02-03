@@ -4,11 +4,13 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.RadioButton
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.android.synthetic.main.base_dialog.view.*
 import kotlinx.android.synthetic.main.dialog_edit_subject.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
@@ -20,7 +22,7 @@ import soko.ekibun.bangumi.util.HttpUtil
 /**
  * 收藏对话框
  */
-class EditSubjectDialog(context: Context) : BaseDialog(context, R.layout.dialog_edit_subject) {
+class EditSubjectDialog(context: Context) : BaseDialog(context, R.layout.base_dialog) {
     override val title: String = context.getString(R.string.dialog_subject_edit_title)
 
     companion object {
@@ -40,6 +42,7 @@ class EditSubjectDialog(context: Context) : BaseDialog(context, R.layout.dialog_
     lateinit var collection: Collection
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View) {
+        LayoutInflater.from(context).inflate(R.layout.dialog_edit_subject, view.layout_content)
         val collectionStatusNames = context.resources.getStringArray(Collection.getStatusNamesRes(subject.type))
         view.radio_wish.text = collectionStatusNames[0]
         view.radio_collect.text = collectionStatusNames[1]

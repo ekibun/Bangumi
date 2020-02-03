@@ -18,18 +18,19 @@ import soko.ekibun.bangumi.util.JsonUtil
 /**
  * 帖子Activity
  */
-class TopicActivity : SwipeBackActivity() {
+class TopicActivity : SwipeBackActivity(R.layout.activity_topic) {
     val topicPresenter by lazy { TopicPresenter(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_topic)
 
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        topicPresenter.init(JsonUtil.toEntity<Topic>(intent.getStringExtra(EXTRA_TOPIC) ?: "")!!,
-                intent.getIntExtra(EXTRA_POST, 0).toString())
+        topicPresenter.init(
+            JsonUtil.toEntity<Topic>(intent.getStringExtra(EXTRA_TOPIC) ?: "")!!,
+            intent.getIntExtra(EXTRA_POST, 0).toString()
+        )
 
         val listPaddingBottom = item_list.paddingBottom
         val replyPaddingBottom = item_reply_container.paddingBottom

@@ -6,8 +6,8 @@ import android.view.MotionEvent
 /**
  * 滑动返回View
  */
-abstract class SwipeBackActivity: BaseActivity() {
-    private val detector by lazy{
+abstract class SwipeBackActivity(resId: Int) : BaseActivity(resId) {
+    private val detector by lazy {
         GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
             override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
                 val f2 = e2.x - e1.x

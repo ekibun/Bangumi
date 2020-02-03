@@ -28,7 +28,7 @@ import java.net.URI
 /**
  * 内置浏览器Activity
  */
-class WebActivity : BaseActivity() {
+class WebActivity : BaseActivity(R.layout.activity_web) {
     private val isAuth by lazy { intent.getBooleanExtra(IS_AUTH, false) }
     private val openUrl by lazy {
         (intent.getStringExtra(OPEN_URL) ?: {
@@ -64,7 +64,6 @@ class WebActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_web)
 
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)

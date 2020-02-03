@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import androidx.annotation.LayoutRes
 import kotlinx.android.synthetic.main.base_dialog.view.*
 import soko.ekibun.bangumi.R
@@ -19,29 +20,22 @@ abstract class BaseDialog(context: Context, @LayoutRes private val resId: Int) :
     Dialog(context, R.style.AppTheme_Dialog) {
     abstract val title: String
     abstract fun onViewCreated(view: View)
-    open fun onTitleClick() {}
     @SuppressLint("InflateParams")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val rootView = LayoutInflater.from(context).inflate(R.layout.base_dialog, null)
-        val view = LayoutInflater.from(context).inflate(resId, rootView.layout_content)
-        setContentView(rootView)
+        val view = LayoutInflater.from(context).inflate(resId, null)
+        setContentView(view)
         onViewCreated(view)
 
-        rootView.setOnApplyWindowInsetsListener { _, insets ->
-            view.dispatchApplyWindowInsets(insets)
-            insets.consumeSystemWindowInsets()
+        view.item_outside.setOnClickListener {
+            if (!(context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
+                    .hideSoftInputFromWindow(view.windowToken, 0)
+            ) dismiss()
         }
-        rootView.item_outside.setOnClickListener {
+        view.btn_dismiss?.setOnClickListener {
             dismiss()
         }
-        rootView.btn_dismiss.setOnClickListener {
-            dismiss()
-        }
-        rootView.dialog_title.text = title
-        rootView.dialog_title.setOnClickListener {
-            onTitleClick()
-        }
+        view.dialog_title?.text = title
 
         window?.let { ThemeModel.updateNavigationTheme(it, context) }
 

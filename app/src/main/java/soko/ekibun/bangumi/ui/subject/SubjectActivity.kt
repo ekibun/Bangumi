@@ -14,33 +14,28 @@ import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.view.SwipeBackActivity
 import soko.ekibun.bangumi.util.AppUtil
 import soko.ekibun.bangumi.util.JsonUtil
-import soko.ekibun.bangumi.util.PlayerBridge
-import soko.ekibun.videoplayer.bean.VideoSubject
 
 /**
  * 条目Activity
  */
-class SubjectActivity : SwipeBackActivity() {
-    private val subjectPresenter: SubjectPresenter by lazy { SubjectPresenter(this) }
+class SubjectActivity : SwipeBackActivity(R.layout.activity_subject) {
+    private val subjectPresenter: SubjectPresenter by lazy {
+        SubjectPresenter(this, JsonUtil.toEntity<Subject>(intent.getStringExtra(EXTRA_SUBJECT) ?: "") ?: {
+            val id = Regex("""/subject/([0-9]+)""").find(
+                intent.data?.toString()
+                    ?: ""
+            )?.groupValues?.get(1)?.toIntOrNull() ?: 0
+            Subject(id)
+        }())
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_subject)
 
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        subjectPresenter.init(
-            if (intent.data?.toString()?.startsWith("ekibun://playersubject/bangumi") == true) {
-                intent.getParcelableExtra<VideoSubject>(PlayerBridge.EXTRA_SUBJECT)!!.toSubject()
-            } else JsonUtil.toEntity<Subject>(intent.getStringExtra(EXTRA_SUBJECT) ?: "") ?: {
-                val id = Regex("""/subject/([0-9]+)""").find(
-                    intent.data?.toString()
-                        ?: ""
-                )?.groupValues?.get(1)?.toIntOrNull() ?: 0
-                Subject(id)
-            }()
-        )
+        subjectPresenter.refresh()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -51,11 +46,6 @@ class SubjectActivity : SwipeBackActivity() {
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) ThemeModel.updateNavigationTheme(this)
-    }
-
-    override fun onStart() {
-        subjectPresenter.refresh()
-        super.onStart()
     }
 
 //    override fun processBack() {

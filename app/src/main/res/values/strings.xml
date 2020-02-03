@@ -171,7 +171,6 @@
     <string name="cache">离线缓存</string>
     <string name="search">搜索</string>
     <string name="settings">设置</string>
-    <string name="night_mode">夜间模式</string>
     <string name="logout">注销</string>
 
     <string name="rakuen">超展开</string>
@@ -197,19 +196,15 @@
     <string name="subject_linked">关联条目</string>
     <string name="subject_commend">相似推荐</string>
     <string name="subject_comment">吐槽</string>
-    <string name="subject_tag">标签</string>
     <string name="subject_topics">讨论版</string>
     <string name="subject_blog">评论</string>
     <string name="character_info">角色介绍</string>
 
-    <string name="subject_dialog_update_progress">更新</string>
-    <string name="subject_dialog_add_tag">添加标签</string>
     <string name="subject_dialog_remove_tag">删除标签</string>
     <string name="subject_collection_private">仅自己可见</string>
     <string name="subject_collection_remove">删除收藏</string>
 
     <!-- 设置 -->
-    <string name="pref_theme">显示设置</string>
     <string-array name="pref_dark_mode">
         <item>关闭</item>
         <item>总是</item>
@@ -268,7 +263,6 @@
     <string name="phrase_progress">看到 %1$s</string>
     <string name="parse_sort_ep">第 %1$s 话</string>
     <string name="parse_sort_vol">第 %1$s 章</string>
-    <string name="parse_cache_eps">已缓存 %1$d 话</string>
     <string name="parse_watch_to">看到%1$s</string>
     <string name="hint_watch_nothing">尚未观看</string>
     <string name="hint_air_nothing">尚未开播</string>
@@ -279,9 +273,7 @@
     <string name="phrase_duration">时长：%1$s</string>
     <string name="phrase_comment">讨论（+%1$d）</string>
 
-    <string name="rate_count">%1$d人评分</string>
     <string name="phrase_reply">%1$d 回复</string>
-    <string name="phrase_collection_count">%1$d人想看/%2$d人看过/%3$d人在看/%4$d人搁置/%5$d人抛弃</string>
 
     <!-- 超展开 -->
     <string name="parse_hint_reply_topic">回复 %1$s</string>
@@ -296,7 +288,6 @@
     <string name="joined_group">已加入小组</string>
     <string name="self_post">我发表的</string>
     <string name="self_reply">我回复的</string>
-    <string name="netabare">netabare</string>
     <string name="friend_score">好友评分</string>
 
     <!-- 对话框 -->

@@ -1,6 +1,5 @@
 package soko.ekibun.bangumi.ui.subject
 
-import android.annotation.SuppressLint
 import android.view.Menu
 import android.view.View
 import android.widget.PopupMenu
@@ -31,22 +30,18 @@ import soko.ekibun.bangumi.util.HttpUtil
 /**
  * 条目Presenter
  */
-class SubjectPresenter(private val context: SubjectActivity) {
+class SubjectPresenter(private val context: SubjectActivity, var subject: Subject) {
     val subjectView by lazy { SubjectView(context) }
 
     private val dataCacheModel by lazy { App.get(context).dataCacheModel }
-
-    lateinit var subject: Subject
 
     var commentPage = 1
 
     /**
      * 初始化
      */
-    @SuppressLint("SetTextI18n")
-    fun init(subject: Subject) {
+    init {
         DataCacheModel.merge(subject, dataCacheModel.get(subject.cacheKey))
-        this.subject = subject
         subjectView.updateSubject(subject)
 
         subjectView.detail.item_subject_info.setOnClickListener {
@@ -172,6 +167,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
     }
 
     private var subjectCall: Call<Unit>? = null
+    var subjectRefreshListener = { _: Any? -> }
     /**
      * 刷新
      */
@@ -215,6 +211,7 @@ class SubjectPresenter(private val context: SubjectActivity) {
                     subject.eps = eps
                 }
             }
+            subjectRefreshListener(it)
             dataCacheModel.set(subject.cacheKey, subject)
         }
 

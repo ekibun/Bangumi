@@ -23,7 +23,6 @@
             android:background="?android:colorBackground">
 
         <RelativeLayout
-                android:id="@+id/nonVideoLayout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:windowSoftInputMode="adjustResize">

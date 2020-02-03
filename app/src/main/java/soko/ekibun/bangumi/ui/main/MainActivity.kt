@@ -15,7 +15,6 @@ import kotlinx.android.synthetic.main.activity_main.*
 import soko.ekibun.bangumi.BuildConfig
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
-import soko.ekibun.bangumi.model.DownloadCacheProvider
 import soko.ekibun.bangumi.ui.search.SearchActivity
 import soko.ekibun.bangumi.ui.view.BaseActivity
 import soko.ekibun.bangumi.ui.view.NotifyActionProvider
@@ -25,30 +24,20 @@ import soko.ekibun.bangumi.util.AppUtil
 /**
  * 主页
  */
-class MainActivity : BaseActivity() {
-    val downloadCacheProvider by lazy{ DownloadCacheProvider(this){
-        nav_view.menu.findItem(R.id.nav_download).isVisible = it
-    } }
+class MainActivity : BaseActivity(R.layout.activity_main) {
     val mainPresenter by lazy { MainPresenter(this) }
     val user get() = mainPresenter.user
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
         nav_view.menu.findItem(R.id.nav_download).isVisible = false
-        downloadCacheProvider.bindService()
 
         val sp = PreferenceManager.getDefaultSharedPreferences(this)
         if (BuildConfig.AUTO_UPDATES && sp.getBoolean("check_update", true))
             AppUtil.checkUpdate(this)
 
         mainPresenter.updateConfiguration()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        downloadCacheProvider.unbindService()
     }
 
     override fun onStart() {

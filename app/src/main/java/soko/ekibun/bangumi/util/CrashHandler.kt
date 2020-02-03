@@ -29,7 +29,7 @@ class CrashHandler(private val application: Application) : Thread.UncaughtExcept
     }
 
     override fun uncaughtException(thread: Thread, exc: Throwable) {
-        Log.w("Crash", exc.message ?: "")
+        Log.e("crash", Log.getStackTraceString(exc))
         val content = writeCrash(exc)
         if (content.isEmpty() && mDefaultHandler != null) {
             mDefaultHandler.uncaughtException(thread, exc)

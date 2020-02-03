@@ -34,7 +34,6 @@
                 app:layout_collapseMode="pin"/>
 
         <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/toolbar_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:layout_collapseMode="parallax"

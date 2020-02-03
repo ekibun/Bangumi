@@ -22,15 +22,17 @@
                 android:title="@string/cache"/>
     </group>
 
-    <group android:id="@+id/group_settings">
-        <item android:id="@+id/nav_search"
-              android:icon="@drawable/ic_search"
-              android:title="@string/search"
-              app:showAsAction="ifRoom"/>
-        <item android:id="@+id/nav_setting"
-              android:icon="@drawable/ic_settings"
-              android:title="@string/settings"
-              app:showAsAction="ifRoom"/>
+    <group>
+        <item
+                android:id="@+id/nav_search"
+                android:icon="@drawable/ic_search"
+                android:title="@string/search"
+                app:showAsAction="ifRoom"/>
+        <item
+                android:id="@+id/nav_setting"
+                android:icon="@drawable/ic_settings"
+                android:title="@string/settings"
+                app:showAsAction="ifRoom"/>
         <item
                 android:id="@+id/nav_logout"
                 android:icon="@drawable/ic_exit"
