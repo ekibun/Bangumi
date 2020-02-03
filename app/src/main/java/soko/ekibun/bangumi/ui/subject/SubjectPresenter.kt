@@ -112,12 +112,11 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
             }
 
         subjectView.episodeAdapter.setOnItemClickListener { _, _, position ->
-            val eps = subjectView.episodeAdapter.data.subList(0, position + 1)
-            subjectView.episodeAdapter.data[position]?.let { openEpisode(it, eps) }
+            showEpisodeDialog(subjectView.episodeAdapter.data[position].id)
         }
 
         subjectView.detail.episode_detail.setOnClickListener {
-            EpisodeListDialog.showDialog(context, this)
+            showEpisodeListDialog()
         }
 
         subjectView.linkedSubjectsAdapter.setOnItemClickListener { _, _, position ->
@@ -151,8 +150,16 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
         }
     }
 
+    fun showEpisodeListDialog() {
+        EpisodeListDialog.showDialog(context, this)
+    }
+
     private var episodeDialog: EpisodeDialog? = null
-    fun openEpisode(episode: Episode, eps: List<Episode>) {
+    fun showEpisodeDialog(id: Int) {
+        val eps = subjectView.episodeAdapter.data
+        val episodeIndex = eps.indexOfFirst { it.id == id }
+        val episode = eps.getOrNull(episodeIndex) ?: return
+        subject.eps?.subList(0, episodeIndex + 1)
         episodeDialog = EpisodeDialog.showDialog(context, episode, eps, subject.onair) { mEps, status ->
             updateProgress(mEps, status)
         }

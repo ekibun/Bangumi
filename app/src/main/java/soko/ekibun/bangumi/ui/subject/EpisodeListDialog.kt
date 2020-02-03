@@ -97,21 +97,17 @@ class EpisodeListDialog(context: Context) : BaseDialog(context, R.layout.dialog_
         }
 
         adapter.setOnItemChildLongClickListener { _, _, position ->
-            val eps =
-                adapter.data.subList(0, position + 1).filter { !it.isHeader }.map { it.t }
-            if (eps.last().type == Episode.TYPE_MUSIC)
-                adapter.data[position]?.t?.let {
-                    presenter.openEpisode(it, eps)
-                    true
-                } ?: false
-            else adapter.longClickListener(position)
+            val ep = adapter.data[position]?.t
+            if (ep?.type == Episode.TYPE_MUSIC) {
+                presenter.showEpisodeDialog(ep.id)
+                true
+            } else adapter.longClickListener(position)
         }
 
         adapter.setOnItemChildClickListener { _, _, position ->
-            val eps =
-                adapter.data.subList(0, position + 1).filter { !it.isHeader }.map { it.t }
-            if (eps.last().type == Episode.TYPE_MUSIC || adapter.clickListener(position))
-                adapter.data[position]?.t?.let { presenter.openEpisode(it, eps) }
+            val ep = adapter.data[position]?.t
+            if (ep?.type == Episode.TYPE_MUSIC || adapter.clickListener(position))
+                ep?.let { presenter.showEpisodeDialog(it.id) }
         }
 
         val clearSelection = {

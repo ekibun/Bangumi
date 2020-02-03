@@ -2,7 +2,6 @@ package soko.ekibun.bangumi.ui.subject
 
 import android.content.Context
 import android.content.Intent
-import android.content.res.Configuration
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.Menu
@@ -75,10 +74,6 @@ class SubjectActivity : SwipeBackActivity(R.layout.activity_subject) {
             R.id.action_refresh -> subjectPresenter.refresh()
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
     }
 
     companion object {
