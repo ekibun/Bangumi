@@ -11,7 +11,7 @@ import kotlinx.android.synthetic.main.base_activity.*
 import soko.ekibun.bangumi.R
 
 abstract class BaseFragmentActivity(@LayoutRes private val resId: Int? = null) :
-    SwipeBackActivity(R.layout.base_activity) {
+    BaseActivity(R.layout.base_activity) {
     val collapsibleAppBarHelper by lazy { CollapsibleAppBarHelper(app_bar as AppBarLayout) }
     abstract fun onViewCreated(view: View)
 

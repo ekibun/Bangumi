@@ -15,8 +15,8 @@ import soko.ekibun.bangumi.util.ResourceUtil
 /**
  * 主题模块
  */
-class ThemeModel(context: Context){
-    val sp: SharedPreferences by lazy{ PreferenceManager.getDefaultSharedPreferences(context) }
+class ThemeModel(context: Context) {
+    val sp: SharedPreferences by lazy { PreferenceManager.getDefaultSharedPreferences(context) }
 
     /**
      * 获取主题
@@ -61,6 +61,15 @@ class ThemeModel(context: Context){
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
             val color = ResourceUtil.resolveColorAttr(context, android.R.attr.colorBackground)
             window.navigationBarColor = Color.argb(200, Color.red(color), Color.green(color), Color.blue(color))
+        }
+
+        fun fullScreen(window: Window) {
+            window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                    or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
         }
     }
 }

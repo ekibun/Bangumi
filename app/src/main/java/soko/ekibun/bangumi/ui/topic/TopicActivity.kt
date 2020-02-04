@@ -10,7 +10,7 @@ import kotlinx.android.synthetic.main.appbar_layout.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.model.ThemeModel
-import soko.ekibun.bangumi.ui.view.SwipeBackActivity
+import soko.ekibun.bangumi.ui.view.BaseActivity
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.AppUtil
 import soko.ekibun.bangumi.util.JsonUtil
@@ -18,7 +18,7 @@ import soko.ekibun.bangumi.util.JsonUtil
 /**
  * 帖子Activity
  */
-class TopicActivity : SwipeBackActivity(R.layout.activity_topic) {
+class TopicActivity : BaseActivity(R.layout.activity_topic) {
     val topicPresenter by lazy { TopicPresenter(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {

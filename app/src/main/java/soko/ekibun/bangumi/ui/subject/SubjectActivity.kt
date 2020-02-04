@@ -10,14 +10,14 @@ import kotlinx.android.synthetic.main.appbar_layout.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.model.ThemeModel
-import soko.ekibun.bangumi.ui.view.SwipeBackActivity
+import soko.ekibun.bangumi.ui.view.BaseActivity
 import soko.ekibun.bangumi.util.AppUtil
 import soko.ekibun.bangumi.util.JsonUtil
 
 /**
  * 条目Activity
  */
-class SubjectActivity : SwipeBackActivity(R.layout.activity_subject) {
+class SubjectActivity : BaseActivity(R.layout.activity_subject) {
     private val subjectPresenter: SubjectPresenter by lazy {
         SubjectPresenter(this, JsonUtil.toEntity<Subject>(intent.getStringExtra(EXTRA_SUBJECT) ?: "") ?: {
             val id = Regex("""/subject/([0-9]+)""").find(

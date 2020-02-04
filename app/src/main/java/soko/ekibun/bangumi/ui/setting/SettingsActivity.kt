@@ -42,14 +42,9 @@ class SettingsActivity : BaseFragmentActivity(), PreferenceFragmentCompat.OnPref
         supportFragmentManager.beginTransaction().replace(R.id.layout_content, SettingsFragment()).commit()
     }
 
-    override fun processBack() {
-        if (!supportFragmentManager.popBackStackImmediate())
-            super.processBack()
-    }
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            android.R.id.home -> processBack()
+            android.R.id.home -> if (!supportFragmentManager.popBackStackImmediate()) finish()
         }
         return super.onOptionsItemSelected(item)
     }
@@ -74,7 +69,8 @@ class SettingsActivity : BaseFragmentActivity(), PreferenceFragmentCompat.OnPref
             findPreference<ListPreference>("pref_dark_mode")?.let { it.summary = it.entry }
             findPreference<ListPreference>("image_quality")?.let { it.summary = it.entry }
             findPreference<Preference>("check_update")?.isVisible = BuildConfig.AUTO_UPDATES
-            findPreference<Preference>("check_update_now")?.summary = "${BuildConfig.VERSION_NAME}-${BuildConfig.VERSION_CODE} (${BuildConfig.FLAVOR})"
+            findPreference<Preference>("check_update_now")?.summary =
+                "${BuildConfig.VERSION_NAME}-${BuildConfig.VERSION_CODE} (${BuildConfig.FLAVOR})"
         }
 
         override fun onResume() {
@@ -93,7 +89,7 @@ class SettingsActivity : BaseFragmentActivity(), PreferenceFragmentCompat.OnPref
             if (preference?.key == "check_update_now") activity?.let {
                 AppUtil.checkUpdate(it, false) {
                     AlertDialog.Builder(it).setTitle("当前已是最新版")
-                            .setPositiveButton(R.string.ok) { _, _ -> }.show()
+                        .setPositiveButton(R.string.ok) { _, _ -> }.show()
                 }
             }
             return super.onPreferenceTreeClick(preference)

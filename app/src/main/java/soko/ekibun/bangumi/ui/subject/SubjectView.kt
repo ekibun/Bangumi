@@ -1,6 +1,7 @@
 package soko.ekibun.bangumi.ui.subject
 
 import android.annotation.SuppressLint
+import android.content.res.Configuration
 import android.view.LayoutInflater
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -9,7 +10,10 @@ import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import jp.wasabeef.glide.transformations.BlurTransformation
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_subject.*
+import kotlinx.android.synthetic.main.activity_subject.app_bar
+import kotlinx.android.synthetic.main.activity_subject.root_layout
 import kotlinx.android.synthetic.main.dialog_subject.view.*
 import kotlinx.android.synthetic.main.subject_detail.view.*
 import org.jsoup.Jsoup
@@ -19,6 +23,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
+import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarAdapter
 import soko.ekibun.bangumi.ui.topic.PhotoPagerAdapter
 import soko.ekibun.bangumi.ui.view.CollapsibleAppBarHelper
@@ -47,22 +52,51 @@ class SubjectView(private val context: SubjectActivity) {
 
     val detail: View by lazy { LayoutInflater.from(context).inflate(R.layout.dialog_subject, null) }
 
+    val isScrollDown
+        get() = behavior.isHideable || context.item_list.canScrollVertically(-1) || (behavior.state != BottomSheetBehavior.STATE_COLLAPSED &&
+                context.app_bar.height != context.bottom_sheet.paddingTop + context.bottom_sheet.paddingBottom)
+
+    var onStateChangedListener = { state: Int -> }
+
     fun scroll2Top(): Boolean {
-        return if (collapsibleAppBarHelper.appBarOffset != 0 || context.item_list.canScrollVertically(-1)) {
-            collapsibleAppBarHelper.appbar.setExpanded(true, true)
+        return if (isScrollDown) {
+            behavior.state = BottomSheetBehavior.STATE_COLLAPSED
             context.item_list.stopScroll()
             (context.item_list.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(0, 0)
             true
         } else false
     }
 
-    var minPeakHeight = 1
+    var peakRatio = 0f
         set(value) {
             field = value
-            behavior.peekHeight = context.bottom_sheet.height - Math.max(
-                value, // 至少留一个像素保证状态变换
-                context.app_bar.height - context.bottom_sheet.paddingTop - context.bottom_sheet.paddingBottom
-            )
+            behavior.peekHeight =
+                context.bottom_sheet.height - Math.max(
+                    if (context.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) 0 else (context.bottom_sheet.height * value).toInt(),
+                    context.app_bar.height - context.bottom_sheet.paddingTop - context.bottom_sheet.paddingBottom
+                )
+        }
+
+    var peakMargin = 0f
+        set(value) {
+            field = value
+            context.bottom_sheet.let {
+                it.setPadding(
+                    it.paddingLeft, it.paddingTop, it.paddingRight,
+                    insertTop +
+                            Math.max(
+                                context.toolbar.height,
+                                if (context.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) 0 else (it.width * value).toInt()
+                            )
+                )
+                it.translationY = it.paddingBottom.toFloat()
+                it.requestLayout()
+            }
+        }
+    var insertTop = 0
+        set(value) {
+            field = value
+            peakMargin = peakMargin
         }
 
     val behavior = BottomSheetBehavior.from(context.bottom_sheet)
@@ -71,24 +105,19 @@ class SubjectView(private val context: SubjectActivity) {
         collapsibleAppBarHelper.appbarCollapsible(CollapsibleAppBarHelper.CollapseStatus.EXPANDED)
 
         context.window.decorView.viewTreeObserver.addOnGlobalLayoutListener {
-            minPeakHeight = minPeakHeight
+            peakRatio = peakRatio
+            peakMargin = peakMargin
         }
 
         val listPaddingBottom = context.item_list.paddingBottom
-        val bottomPaddingTop = context.bottom_sheet.paddingTop
         val progressEnd = context.item_swipe.progressViewEndOffset
         context.root_layout.setOnApplyWindowInsetsListener { _, insets ->
+            insertTop = insets.systemWindowInsetTop
             context.item_swipe.setProgressViewEndTarget(false, progressEnd + insets.systemWindowInsetTop)
             if (context.item_swipe.isRefreshing) {
                 context.item_swipe.isRefreshing = false
                 context.item_swipe.isRefreshing = true
             }
-            context.bottom_sheet.setPadding(
-                context.bottom_sheet.paddingLeft,
-                bottomPaddingTop + insets.systemWindowInsetTop,
-                context.bottom_sheet.paddingRight,
-                context.bottom_sheet.paddingBottom
-            )
             // episode_detail_list.setPadding(episode_detail_list.paddingLeft, episode_detail_list.paddingTop, episode_detail_list.paddingRight, episodePaddingBottom + insets.systemWindowInsetBottom)
             context.item_list.setPadding(
                 context.item_list.paddingLeft,
@@ -103,6 +132,9 @@ class SubjectView(private val context: SubjectActivity) {
         behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             @SuppressLint("SwitchIntDef")
             override fun onStateChanged(bottomSheet: View, @BottomSheetBehavior.State newState: Int) { /* no-op */
+                if (newState == BottomSheetBehavior.STATE_HIDDEN) ThemeModel.fullScreen(context.window)
+                else ThemeModel.updateNavigationTheme(context)
+                onStateChangedListener(newState)
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
@@ -110,8 +142,12 @@ class SubjectView(private val context: SubjectActivity) {
             }
         })
 
+        context.item_mask.setOnClickListener {
+            if (behavior.isHideable) behavior.state = BottomSheetBehavior.STATE_HIDDEN
+        }
+
         context.item_swipe.setOnChildScrollUpCallback { _, _ ->
-            behavior.state != BottomSheetBehavior.STATE_COLLAPSED
+            isScrollDown
         }
 
         behavior.isHideable = false
@@ -123,18 +159,6 @@ class SubjectView(private val context: SubjectActivity) {
         detail.episode_list.adapter = episodeAdapter
         detail.episode_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
         detail.episode_list.isNestedScrollingEnabled = false
-        val swipeTouchListener = View.OnTouchListener { v, _ ->
-            if ((v as? RecyclerView)?.canScrollHorizontally(1) == true || (v as? RecyclerView)?.canScrollHorizontally(-1) == true)
-                context.shouldCancelActivity = false
-            false
-        }
-        detail.episode_list.setOnTouchListener(swipeTouchListener)
-        detail.season_list.setOnTouchListener(swipeTouchListener)
-        detail.commend_list.setOnTouchListener(swipeTouchListener)
-        detail.linked_list.setOnTouchListener(swipeTouchListener)
-        detail.character_list.setOnTouchListener(swipeTouchListener)
-        detail.tag_list.setOnTouchListener(swipeTouchListener)
-        detail.site_list.setOnTouchListener(swipeTouchListener)
 
         detail.linked_list.adapter = linkedSubjectsAdapter
         detail.linked_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
