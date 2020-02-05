@@ -2,7 +2,6 @@ package soko.ekibun.bangumi.ui.search
 
 import android.content.Context
 import android.content.Intent
-import android.view.MenuItem
 import android.view.View
 import kotlinx.android.synthetic.main.fragment_search.*
 import soko.ekibun.bangumi.R
@@ -33,13 +32,6 @@ class SearchActivity : BaseFragmentActivity(R.layout.fragment_search) {
         }
 
         SearchPresenter(this)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> finish()
-        }
-        return super.onOptionsItemSelected(item)
     }
 
     companion object{

@@ -4,7 +4,6 @@ package soko.ekibun.bangumi.ui.setting
 
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.preference.ListPreference
@@ -42,11 +41,8 @@ class SettingsActivity : BaseFragmentActivity(), PreferenceFragmentCompat.OnPref
         supportFragmentManager.beginTransaction().replace(R.id.layout_content, SettingsFragment()).commit()
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> if (!supportFragmentManager.popBackStackImmediate()) finish()
-        }
-        return super.onOptionsItemSelected(item)
+    init {
+        onBackListener = { supportFragmentManager.popBackStackImmediate() }
     }
 
     /**

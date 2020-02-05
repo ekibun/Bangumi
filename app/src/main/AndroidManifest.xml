@@ -27,32 +27,6 @@
                     android:name="android.support.PARENT_ACTIVITY"
                     android:value="soko.ekibun.bangumi.ui.main.MainActivity"/>
         </activity>
-        <activity
-                android:name="soko.ekibun.videoplayer.service.DialogActivity"
-                android:theme="@style/AppTheme.Transparent">
-            <intent-filter>
-                <action android:name="soko.ekibun.videoplayer.updateCollection.bangumi"/>
-
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="soko.ekibun.videoplayer.updateProgress.bangumi"/>
-
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-        </activity>
-
-        <service
-                android:name="soko.ekibun.videoplayer.service.VideoSubjectProvider"
-                android:enabled="true"
-                android:exported="true"
-                tools:ignore="ExportedService">
-            <intent-filter>
-                <action android:name="soko.ekibun.videoplayer.subjectprovider.bangumi"/>
-
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-        </service>
 
         <provider
                 android:name="androidx.core.content.FileProvider"
@@ -147,6 +121,7 @@
         </activity>
         <activity
                 android:name=".ui.subject.SubjectActivity"
+                android:supportsPictureInPicture="true"
                 android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>

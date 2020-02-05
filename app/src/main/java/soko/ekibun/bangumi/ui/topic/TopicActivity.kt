@@ -53,7 +53,6 @@ class TopicActivity : BaseActivity(R.layout.activity_topic) {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            android.R.id.home -> finish()
             R.id.action_share -> AppUtil.shareString(this, "${topicPresenter.topic.title} ${topicPresenter.topic.url}")
             R.id.action_refresh -> topicPresenter.getTopic()
         }
