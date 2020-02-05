@@ -16,7 +16,7 @@ open class DataCacheModel(context: Context) {
     val diskLruCache: DiskLruCache by lazy {
         val cacheDir = getDiskCacheDir(context, "data")
         if (!cacheDir.exists()) cacheDir.mkdirs()
-        DiskLruCache.open(cacheDir, 1, 1, 10 * 1024 * 1024)
+        DiskLruCache.open(cacheDir, 2, 1, 10 * 1024 * 1024)
     }
 
     /**

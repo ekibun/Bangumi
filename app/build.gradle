@@ -31,8 +31,7 @@ android {
     }
     buildTypes {
         release {
-            shrinkResources true
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -76,7 +75,6 @@ dependencies {
     implementation 'jp.wasabeef:glide-transformations:4.0.1'
     implementation 'com.oushangfeng:PinnedSectionItemDecoration:1.3.2'
     implementation 'com.github.siyamed:android-shape-imageview:0.9.3'
-    implementation 'androidx.browser:browser:1.2.0'
     implementation 'com.zhy:base-adapter:3.0.3'
     implementation 'com.nshmura:recyclertablayout:1.5.0'
     implementation 'com.github.chrisbanes:PhotoView:2.1.4'
