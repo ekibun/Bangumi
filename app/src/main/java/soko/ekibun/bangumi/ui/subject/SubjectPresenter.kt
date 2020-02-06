@@ -340,6 +340,7 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
             subjectView.updateEpisodeLabel(eps, subject)
             subject.eps = eps
             dataCacheModel.set(subject.cacheKey, subject)
+            subjectRefreshListener(eps)
         }, {}))
     }
 }

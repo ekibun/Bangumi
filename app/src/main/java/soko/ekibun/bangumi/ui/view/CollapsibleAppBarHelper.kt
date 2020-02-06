@@ -64,14 +64,15 @@ class CollapsibleAppBarHelper(val appbar: AppBarLayout) {
                 (appbar.title_sub.layoutParams as ConstraintLayout.LayoutParams).topMargin - appbar.title_sub.height / 2) * ratio
     }
 
-    fun setTitle(title: String, subTitle: String? = null, group: String? = null) {
-        appbar.title_collapse.text = title
-        appbar.title_expand.text = if (collapsible == CollapseStatus.COLLAPSED) "" else title
+    fun setTitle(title: String? = null, subTitle: String? = null, group: String? = null) {
+        appbar.title_collapse.text = title ?: appbar.title_collapse.text
+        appbar.title_expand.text = if (collapsible == CollapseStatus.COLLAPSED) "" else appbar.title_collapse.text
         appbar.title_slice_0.text = subTitle
         appbar.title_slice_1.text = group
         appbar.title_sub.visibility = if (subTitle.isNullOrEmpty() && group.isNullOrEmpty()) View.GONE else View.VISIBLE
         appbar.title_slice_divider.visibility = if (group.isNullOrEmpty()) View.INVISIBLE else View.VISIBLE
         appbar.title_slice_1.visibility = appbar.title_slice_divider.visibility
+        appbar.title_slice_0.requestLayout()
         updateStatus()
     }
 

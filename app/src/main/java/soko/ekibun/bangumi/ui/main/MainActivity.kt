@@ -11,7 +11,6 @@ import android.widget.Toast
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.MenuItemCompat
 import androidx.preference.PreferenceManager
-import kotlinx.android.synthetic.main.activity_main.*
 import soko.ekibun.bangumi.BuildConfig
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
@@ -30,8 +29,6 @@ class MainActivity : BaseActivity(R.layout.activity_main) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        nav_view.menu.findItem(R.id.nav_download).isVisible = false
 
         val sp = PreferenceManager.getDefaultSharedPreferences(this)
         if (BuildConfig.AUTO_UPDATES && sp.getBoolean("check_update", true))

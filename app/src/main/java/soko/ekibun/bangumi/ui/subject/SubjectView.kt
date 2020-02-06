@@ -249,10 +249,6 @@ class SubjectView(private val context: SubjectActivity) {
             detail.item_detail.visibility = if (subject.summary.isNullOrEmpty()) View.GONE else View.VISIBLE
         }
 
-        if (tag == null || tag == Subject.SaxTag.TYPE) {
-//            context.item_play.visibility = if (PlayerBridge.checkActivity(context, subject)) View.VISIBLE else View.GONE
-        }
-
         if (tag == null || tag == Subject.SaxTag.COLLECTION) {
             detail.item_user_collect.text =
                 "${subject.collection?.wish}人想看/${
@@ -260,6 +256,7 @@ class SubjectView(private val context: SubjectActivity) {
                 subject.collection?.doing}人在看/${
                 subject.collection?.on_hold}人搁置/${
                 subject.collection?.dropped}人抛弃"
+            detail.item_user_collect.visibility = if (subject.collection == null) View.INVISIBLE else View.VISIBLE
         }
 
         if (tag == null || tag == Subject.SaxTag.COLLECT) {
