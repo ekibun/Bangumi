@@ -52,9 +52,9 @@ data class Subject(
         var season: List<Subject>? = null,
         var onair: OnAirInfo? = null
 ) {
-    val cacheKey = "subject_$id"
+    val cacheKey get() = "subject_$id"
 
-    val url = "${Bangumi.SERVER}/subject/$id"
+    val url get() = "${Bangumi.SERVER}/subject/$id"
     val displayName get() = TextUtil.html2text((if (name_cn.isNullOrEmpty()) name else name_cn) ?: "")
 
     /**
