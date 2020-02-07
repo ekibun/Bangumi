@@ -19,6 +19,11 @@
             android:supportsRtl="true"
             android:theme="@style/AppTheme"
             tools:ignore="AllowBackup,GoogleAppIndexingWarning,UnusedAttribute">
+        <service
+                android:name=".RemoteService"
+                android:exported="false">
+        </service>
+
         <activity
                 android:name=".ui.setting.SettingsActivity"
                 android:label="@string/settings"
@@ -115,14 +120,15 @@
                         android:scheme="https"/>
             </intent-filter>
         </activity>
-        <activity android:name=".ui.search.SearchActivity"
-                  android:label="@string/search"
-                  android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation">
+        <activity
+                android:name=".ui.search.SearchActivity"
+                android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+                android:label="@string/search">
         </activity>
         <activity
                 android:name=".ui.subject.SubjectActivity"
-                android:supportsPictureInPicture="true"
-                android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation">
+                android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+                android:supportsPictureInPicture="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
 
@@ -150,8 +156,8 @@
                 android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation">
         </activity>
         <activity
-                android:label="@string/crash"
-                android:name=".ui.crash.CrashActivity">
+                android:name=".ui.crash.CrashActivity"
+                android:label="@string/crash">
         </activity>
     </application>
 

@@ -42,7 +42,7 @@ class MainPresenter(private val context: MainActivity) {
         }
     }
 
-    private val drawerView = DrawerView(context, onLogout)
+    val drawerView = DrawerView(context, onLogout)
 
     /**
      * 返回处理

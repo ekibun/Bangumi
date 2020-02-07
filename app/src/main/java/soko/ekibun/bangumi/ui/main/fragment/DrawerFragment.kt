@@ -16,12 +16,6 @@ abstract class DrawerFragment(@LayoutRes private val resId: Int): androidx.fragm
         return inflater.inflate(resId, container, false)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        activity?.setTitle(titleRes)
-    }
-
     var savedInstanceState:Bundle? = null
     /**
      * 恢复状态

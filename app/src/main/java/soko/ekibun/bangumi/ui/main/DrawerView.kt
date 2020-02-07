@@ -3,6 +3,7 @@ package soko.ekibun.bangumi.ui.main
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
+import android.view.MenuItem
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.ViewCompat
 import kotlinx.android.synthetic.main.activity_main.*
@@ -39,6 +40,20 @@ class DrawerView(private val context: MainActivity, onLogout: () -> Unit) {
         toggle
     }()
 
+    var navigationItemSelectedListener = { it: MenuItem ->
+        context.drawer_layout.closeDrawers()
+        if (fragments.containsKey(it.itemId))
+            select(it.itemId)
+        else {
+            when (it.itemId) {
+                R.id.nav_search -> SearchActivity.startActivity(context)
+                R.id.nav_setting -> context.startActivity(Intent(context, SettingsActivity::class.java))
+                R.id.nav_logout -> onLogout()
+            }
+        }
+        true
+    }
+
     init {
 
         context.content_frame.setOnApplyWindowInsetsListener { _, insets ->
@@ -47,17 +62,7 @@ class DrawerView(private val context: MainActivity, onLogout: () -> Unit) {
         }
 
         context.nav_view.setNavigationItemSelectedListener {
-            context.drawer_layout.closeDrawers()
-            if (fragments.containsKey(it.itemId))
-                select(it.itemId)
-            else {
-                when (it.itemId) {
-                    R.id.nav_search -> SearchActivity.startActivity(context)
-                    R.id.nav_setting -> context.startActivity(Intent(context, SettingsActivity::class.java))
-                    R.id.nav_logout -> onLogout()
-                }
-            }
-            true
+            navigationItemSelectedListener(it)
         }
         select(checkedId)
     }
@@ -95,9 +100,9 @@ class DrawerView(private val context: MainActivity, onLogout: () -> Unit) {
     fun select(id: Int) {
         checkedId = id
         context.supportFragmentManager.beginTransaction()
-                .replace(R.id.content_frame, fragments[id]!!).commit()
+            .replace(R.id.content_frame, fragments[id]!!).commit()
+        context.setTitle(fragments[id]!!.titleRes)
         context.nav_view.setCheckedItem(id)
-        context.invalidateOptionsMenu()
         ViewCompat.requestApplyInsets(context.drawer_layout)
     }
 }
