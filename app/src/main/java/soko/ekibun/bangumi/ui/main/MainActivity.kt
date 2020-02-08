@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
-import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -53,10 +52,12 @@ class MainActivity : BaseActivity(R.layout.activity_main) {
             val notify = mainPresenter.notify?.second ?: 0
             val popup = PopupMenu(this, menuItem.actionView)
             popup.menuInflater.inflate(R.menu.list_notify, popup.menu)
-            popup.menu.findItem(R.id.notify_type_inbox)?.title = "${getString(R.string.notify_inbox)}${if(inbox != 0) " (+$inbox)" else ""}"
-            popup.menu.findItem(R.id.notify_type_notify)?.title = "${getString(R.string.notify_notify)}${if(notify != 0) " (+$notify)" else ""}"
-            popup.setOnMenuItemClickListener{
-                when(it.itemId){
+            popup.menu.findItem(R.id.notify_type_inbox)?.title =
+                "${getString(R.string.notify_inbox)}${if (inbox != 0) " (+$inbox)" else ""}"
+            popup.menu.findItem(R.id.notify_type_notify)?.title =
+                "${getString(R.string.notify_notify)}${if (notify != 0) " (+$notify)" else ""}"
+            popup.setOnMenuItemClickListener {
+                when (it.itemId) {
                     R.id.notify_type_inbox -> {
                         mainPresenter.notify = Pair(0, mainPresenter.notify?.second ?: 0)
                         notifyMenu?.badge = mainPresenter.notify?.let { it.first + it.second } ?: 0
@@ -76,18 +77,21 @@ class MainActivity : BaseActivity(R.layout.activity_main) {
         return true
     }
 
-    var exitTime = 0L
-    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK){
-            if(mainPresenter.processBack()){
-                return true
-            }else if((System.currentTimeMillis()-exitTime) > 2000){
-                Toast.makeText(applicationContext, R.string.hint_back_to_close, Toast.LENGTH_SHORT).show()
-                exitTime = System.currentTimeMillis()
-                return true
+    init {
+        var exitTime = 0L
+        onBackListener = {
+            when {
+                mainPresenter.processBack() -> {
+                    true
+                }
+                (System.currentTimeMillis() - exitTime) > 2000 -> {
+                    Toast.makeText(applicationContext, R.string.hint_back_to_close, Toast.LENGTH_SHORT).show()
+                    exitTime = System.currentTimeMillis()
+                    true
+                }
+                else -> false
             }
         }
-        return super.onKeyDown(keyCode, event)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
