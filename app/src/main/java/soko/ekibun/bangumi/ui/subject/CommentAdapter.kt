@@ -24,9 +24,8 @@ class CommentAdapter(data: MutableList<Comment>? = null) :
         //helper.itemView.item_rate.visibility = if(item.rate == 0) View.GONE else View.VISIBLE
         helper.itemView.item_rate.rating = item.rate * 0.5f
         GlideUtil.with(helper.itemView.item_avatar)
-                ?.load(Images.small(item.user?.avatar))
-                ?.apply(RequestOptions.errorOf(R.drawable.err_404))
-                ?.apply(RequestOptions.circleCropTransform())
+            ?.load(Images.small(item.user?.avatar))
+            ?.apply(RequestOptions.circleCropTransform().error(R.drawable.err_404).placeholder(R.drawable.placeholder_round))
                 ?.into(helper.itemView.item_avatar)
     }
 }

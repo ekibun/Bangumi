@@ -20,8 +20,8 @@ class MonoAdapter(data: MutableList<MonoInfo>? = null) :
         helper.setText(R.id.item_name_jp, item.name)
         helper.setText(R.id.item_summary, item.summary)
         GlideUtil.with(helper.itemView.item_cover)
-                ?.load(Images.grid(item.image))
-                ?.apply(RequestOptions.errorOf(R.drawable.err_404))
+            ?.load(Images.grid(item.image))
+            ?.apply(RequestOptions.errorOf(R.drawable.err_404).placeholder(R.drawable.placeholder))
                 ?.into(helper.itemView.item_cover)
     }
 }

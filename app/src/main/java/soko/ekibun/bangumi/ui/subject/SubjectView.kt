@@ -292,8 +292,7 @@ class SubjectView(private val context: SubjectActivity) {
         if (tag == null || tag == Subject.SaxTag.IMAGES) {
             GlideUtil.with(detail.item_cover)
                 ?.load(Images.getImage(subject.image, context))
-                ?.apply(RequestOptions.placeholderOf(detail.item_cover.drawable))
-                ?.apply(RequestOptions.errorOf(R.drawable.err_404))
+                ?.apply(RequestOptions.errorOf(R.drawable.err_404).placeholder(detail.item_cover.drawable))
                 ?.into(detail.item_cover)
             detail.item_cover.setOnClickListener {
                 PhotoPagerAdapter.showWindow(
@@ -304,8 +303,14 @@ class SubjectView(private val context: SubjectActivity) {
             }
             GlideUtil.with(context.item_cover_blur)
                 ?.load(Images.getImage(subject.image, context))
-                ?.apply(RequestOptions.placeholderOf(context.item_cover_blur.drawable))
-                ?.apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)))
+                ?.apply(
+                    RequestOptions.bitmapTransform(
+                        BlurTransformation(
+                            25,
+                            8
+                        )
+                    ).placeholder(context.item_cover_blur.drawable)
+                )
                 ?.into(context.item_cover_blur)
         }
 

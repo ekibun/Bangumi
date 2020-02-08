@@ -73,9 +73,8 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
         }
 
         GlideUtil.with(helper.itemView.item_avatar)
-                ?.load(Images.small(Bangumi.parseUrl(item.avatar)))
-                ?.apply(RequestOptions.errorOf(R.drawable.err_404))
-                ?.apply(RequestOptions.circleCropTransform())
+            ?.load(Images.small(Bangumi.parseUrl(item.avatar)))
+            ?.apply(RequestOptions.circleCropTransform().error(R.drawable.err_404).placeholder(R.drawable.placeholder_round))
                 ?.into(helper.itemView.item_avatar)
 
         helper.itemView.item_message.visibility = if (item.badge.isNullOrEmpty()) View.VISIBLE else View.GONE

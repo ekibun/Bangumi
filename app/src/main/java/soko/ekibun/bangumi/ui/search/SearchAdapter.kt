@@ -22,8 +22,8 @@ class SearchAdapter(data: MutableList<Subject>? = null) :
         helper.setText(R.id.item_summary, helper.itemView.context.getString(Subject.getTypeRes(item.type)))
         helper.itemView.item_chase.visibility = if (item.collect != null) View.VISIBLE else View.GONE
         GlideUtil.with(helper.itemView.item_cover)
-                ?.load(Images.getImage(item.image, helper.itemView.context))
-                ?.apply(RequestOptions.errorOf(R.drawable.err_404))
+            ?.load(Images.getImage(item.image, helper.itemView.context))
+            ?.apply(RequestOptions.errorOf(R.drawable.err_404).placeholder(R.drawable.placeholder))
                 ?.into(helper.itemView.item_cover)
     }
 }

@@ -26,9 +26,8 @@ class UserView(private val context: MainActivity, onUserFigureClickListener: Vie
         context.runOnUiThread {
             if (context.isDestroyed) return@runOnUiThread
             GlideUtil.with(headerView.user_figure)
-                    ?.load(Images.large(user?.avatar))
-                    ?.apply(RequestOptions.placeholderOf(R.drawable.akkarin))
-                    ?.apply(RequestOptions.circleCropTransform())
+                ?.load(Images.large(user?.avatar))
+                ?.apply(RequestOptions.circleCropTransform().error(R.drawable.akkarin).placeholder(R.drawable.placeholder_round))
                     ?.into(headerView.user_figure)
             //val token = UserModel(context).getToken()
             headerView.user_id.text = if (user?.username == null) "" else "@${user.username}"

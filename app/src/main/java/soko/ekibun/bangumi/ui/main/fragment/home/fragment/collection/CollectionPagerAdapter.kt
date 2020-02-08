@@ -100,8 +100,6 @@ class CollectionPagerAdapter(
      * 重置
      */
     fun reset() {
-        notifyDataSetChanged()
-
         items.forEach { (it.value.second.tag as? RecyclerView)?.tag = null }
         pageIndex.clear()
         loadCollectionList()

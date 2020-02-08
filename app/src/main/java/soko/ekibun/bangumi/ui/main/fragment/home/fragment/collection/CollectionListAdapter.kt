@@ -51,8 +51,8 @@ class CollectionListAdapter(data: MutableList<Subject>? = null) :
             }
         })
         GlideUtil.with(helper.itemView.item_cover)
-                ?.load(Images.getImage(item.image, helper.itemView.context))
-                ?.apply(RequestOptions.errorOf(R.drawable.err_404))
+            ?.load(Images.getImage(item.image, helper.itemView.context))
+            ?.apply(RequestOptions.errorOf(R.drawable.err_404).placeholder(R.drawable.placeholder))
                 ?.into(helper.itemView.item_cover)
     }
 }

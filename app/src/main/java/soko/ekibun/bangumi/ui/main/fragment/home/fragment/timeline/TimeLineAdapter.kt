@@ -73,15 +73,16 @@ class TimeLineAdapter(data: MutableList<TimeLine>? = null) :
         helper.itemView.item_time.text = item.t.time
 
         val userImage = Images.getImage(item.t.user.avatar, helper.itemView.context)
-        helper.itemView.item_avatar.visibility = if (userImage.isNullOrEmpty() || data.getOrNull(data.indexOfFirst { it === item } - 1)?.t?.user?.username == item.t.user.username) View.INVISIBLE else View.VISIBLE
+        helper.itemView.item_avatar.visibility =
+            if (userImage.isEmpty() || data.getOrNull(data.indexOfFirst { it === item } - 1)?.t?.user?.username == item.t.user.username) View.INVISIBLE else View.VISIBLE
         helper.itemView.item_avatar.setOnClickListener {
             WebActivity.launchUrl(helper.itemView.context, item.t.user.url, "")
         }
-        if (!userImage.isNullOrEmpty())
+        if (userImage.isNotEmpty())
             GlideUtil.with(helper.itemView.item_avatar)
-                    ?.load(userImage)
-                    ?.apply(RequestOptions.circleCropTransform().error(R.drawable.err_404))
-                    ?.into(helper.itemView.item_avatar)
+                ?.load(userImage)
+                ?.apply(RequestOptions.circleCropTransform().error(R.drawable.err_404).placeholder(R.drawable.placeholder_round))
+                ?.into(helper.itemView.item_avatar)
     }
 
 }

@@ -24,9 +24,8 @@ class BlogAdapter(data: MutableList<Topic>? = null) :
         helper.itemView.item_summary.text = item.blog?.pst_content
         helper.itemView.item_comment.text = helper.itemView.context.getString(R.string.phrase_reply, item.replyCount)
         GlideUtil.with(helper.itemView.item_avatar)
-                ?.load(Images.getImage(item.image, helper.itemView.context))
-                ?.apply(RequestOptions.errorOf(R.drawable.err_404))
-                ?.apply(RequestOptions.circleCropTransform())
+            ?.load(Images.getImage(item.image, helper.itemView.context))
+            ?.apply(RequestOptions.circleCropTransform().error(R.drawable.err_404).placeholder(R.drawable.placeholder_round))
                 ?.into(helper.itemView.item_avatar)
     }
 }

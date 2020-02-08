@@ -27,8 +27,8 @@ class RakuenAdapter(data: MutableList<Topic>? = null) :
             helper.itemView.item_group.text = it.key
         }
         GlideUtil.with(helper.itemView.item_avatar)
-                ?.load(Images.small(item.image))
-                ?.apply(RequestOptions.circleCropTransform().error(R.drawable.err_404))
+            ?.load(Images.small(item.image))
+            ?.apply(RequestOptions.circleCropTransform().error(R.drawable.err_404).placeholder(R.drawable.placeholder_round))
                 ?.into(helper.itemView.item_avatar)
     }
 }

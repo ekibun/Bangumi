@@ -20,8 +20,8 @@ class CharacterAdapter(data: MutableList<Character>? = null) :
         helper.setText(R.id.item_cv, if (item.actors?.isNotEmpty() == true) item.actors.map { if (it.name_cn.isNullOrEmpty()) it.name else it.name_cn }.reduce { acc, s -> "$acc/$s" } else "")
         helper.setText(R.id.item_role, item.role_name)
         GlideUtil.with(helper.itemView.item_avatar)
-                ?.load(Images.grid(item.image))
-                ?.apply(RequestOptions.errorOf(R.drawable.err_404))
+            ?.load(Images.grid(item.image))
+            ?.apply(RequestOptions.circleCropTransform().error(R.drawable.err_404).placeholder(R.drawable.placeholder_round))
                 ?.apply(RequestOptions.circleCropTransform())
                 ?.into(helper.itemView.item_avatar)
     }
