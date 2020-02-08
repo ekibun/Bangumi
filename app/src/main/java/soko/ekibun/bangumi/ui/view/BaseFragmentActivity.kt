@@ -26,7 +26,12 @@ abstract class BaseFragmentActivity(@LayoutRes private val resId: Int? = null) :
         title = title
 
         root_layout.setOnApplyWindowInsetsListener { _, insets ->
-            view.dispatchApplyWindowInsets(insets.inset(0, insets.systemWindowInsetTop, 0, 0))
+            view.dispatchApplyWindowInsets(
+                insets.replaceSystemWindowInsets(
+                    insets.systemWindowInsetLeft, 0,
+                    insets.systemWindowInsetRight, insets.systemWindowInsetBottom
+                )
+            )
             insets
         }
     }

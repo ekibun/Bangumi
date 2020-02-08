@@ -21,16 +21,35 @@ class CollectionListAdapter(data: MutableList<Subject>? = null) :
         helper.setText(R.id.item_title, item.displayName)
         helper.setText(R.id.item_name_jp, item.name)
         helper.setText(R.id.item_summary, when {
-            item.ep_status == -1 -> item.summary
+            item.ep_status == -1 -> {
+                helper.itemView.item_summary.setTextColor(
+                    ResourceUtil.resolveColorAttr(
+                        helper.itemView.context,
+                        android.R.attr.textColorSecondary
+                    )
+                )
+                item.summary
+            }
             item.type == Subject.TYPE_BOOK -> {
                 val context = helper.itemView.context
-                helper.itemView.item_summary.setTextColor(ResourceUtil.resolveColorAttr(helper.itemView.context,
+                helper.itemView.item_summary.setTextColor(
+                    ResourceUtil.resolveColorAttr(
+                        helper.itemView.context,
                         if (item.vol_count != 0 && (item.vol_count <= 0 || item.vol_status != item.vol_count) || item.eps_count == 0 || item.ep_status != item.eps_count) R.attr.colorPrimary
                         else android.R.attr.textColorSecondary
-                ))
-                context.getString(R.string.phrase_progress,
-                        (if (item.vol_count != 0) context.getString(R.string.parse_sort_vol, "${item.vol_status}${if (item.vol_count <= 0) "" else "/${item.vol_count}"}") + " " else "") +
-                                context.getString(R.string.parse_sort_ep, "${item.ep_status}${if (item.eps_count <= 0) "" else "/${item.eps_count}"}"))
+                    )
+                )
+                context.getString(
+                    R.string.phrase_progress,
+                    (if (item.vol_count != 0) context.getString(
+                        R.string.parse_sort_vol,
+                        "${item.vol_status}${if (item.vol_count <= 0) "" else "/${item.vol_count}"}"
+                    ) + " " else "") +
+                            context.getString(
+                                R.string.parse_sort_ep,
+                                "${item.ep_status}${if (item.eps_count <= 0) "" else "/${item.eps_count}"}"
+                            )
+                )
             }
             else -> {
                 val eps = (item.eps as? List<*>)?.mapNotNull { it as? Episode }?.filter { it.type == Episode.TYPE_MAIN }
