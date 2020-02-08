@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.preference.PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<androidx.preference.PreferenceScreen
+        xmlns:app="http://schemas.android.com/apk/res-auto">
     <androidx.preference.PreferenceScreen
+            app:iconSpaceReserved="false"
             app:key="pref_calendar"
             app:title="@string/calendar">
 
         <androidx.preference.SwitchPreference
+                app:iconSpaceReserved="false"
                 app:key="calendar_use_cn"
                 app:title="使用大陆放送时间"
                 app:summaryOn="使用大陆放送时间推测番组放送时间"
@@ -12,6 +15,7 @@
                 app:defaultValue="false"/>
 
         <androidx.preference.SwitchPreference
+                app:iconSpaceReserved="false"
                 app:key="calendar_use_30h"
                 app:title="修仙模式"
                 app:summary="开启后深夜0点-6点的动画将在前一天展示"
@@ -20,6 +24,7 @@
     </androidx.preference.PreferenceScreen>
 
     <androidx.preference.ListPreference
+            app:iconSpaceReserved="false"
             app:key="pref_dark_mode"
             app:title="夜间模式"
             app:entries="@array/pref_dark_mode"
@@ -28,10 +33,12 @@
 
 
     <androidx.preference.PreferenceScreen
+            app:iconSpaceReserved="false"
             app:key="pref_miscellaneous"
             app:title="@string/pref_miscellaneous">
 
         <androidx.preference.ListPreference
+                app:iconSpaceReserved="false"
                 app:key="image_quality"
                 app:title="图片质量"
                 app:entries="@array/pref_image_quality"
@@ -39,18 +46,21 @@
                 app:defaultValue="c"/>
 
         <androidx.preference.SwitchPreference
+                app:iconSpaceReserved="false"
                 app:key="use_bbcode"
                 app:title="使用bbcode"
                 app:summary="回复时默认使用bbcode而不是富文本编辑器"
                 app:defaultValue="false"/>
 
         <androidx.preference.SwitchPreference
+                app:iconSpaceReserved="false"
                 app:key="check_update"
                 app:title="启动时检查更新"
                 app:summary="启动应用时检查更新"
                 app:defaultValue="true"/>
 
         <androidx.preference.Preference
+                app:iconSpaceReserved="false"
                 app:key="check_update_now"
                 app:title="检查更新"/>
 

@@ -4,7 +4,10 @@ package soko.ekibun.bangumi.ui.setting
 
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import android.widget.RelativeLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.preference.ListPreference
 import androidx.preference.Preference
@@ -49,6 +52,13 @@ class SettingsActivity : BaseFragmentActivity(), PreferenceFragmentCompat.OnPref
      * 设置Fragment
      */
     class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedPreferenceChangeListener {
+        override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+            val view = super.onCreateView(inflater, container, savedInstanceState)
+            val relativeLayout = RelativeLayout(layoutInflater.context)
+            relativeLayout.addView(view, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            return relativeLayout
+        }
+
         override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
             updatePreference()
             if (key == "pref_dark_mode") {
