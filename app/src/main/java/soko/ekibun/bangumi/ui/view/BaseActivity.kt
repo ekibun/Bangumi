@@ -39,6 +39,19 @@ abstract class BaseActivity(@LayoutRes private val resId: Int) : AppCompatActivi
         onDestroyListener()
     }
 
+
+    var onPauseListener = {}
+    override fun onPause() {
+        super.onPause()
+        onPauseListener()
+    }
+
+    var onResumeListener = {}
+    override fun onResume() {
+        super.onResume()
+        onResumeListener()
+    }
+
     var onActivityResultListener = { requestCode: Int, resultCode: Int, data: Intent? -> }
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -65,5 +78,13 @@ abstract class BaseActivity(@LayoutRes private val resId: Int) : AppCompatActivi
             return true
         }
         return super.onKeyDown(keyCode, event)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        try {
+            super.onRestoreInstanceState(savedInstanceState)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }

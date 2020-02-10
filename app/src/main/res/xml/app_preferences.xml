@@ -45,6 +45,14 @@
                 app:entryValues="@array/pref_image_quality_values"
                 app:defaultValue="c"/>
 
+        <androidx.preference.ListPreference
+                app:iconSpaceReserved="false"
+                app:key="image_uploader"
+                app:title="图床"
+                app:entries="@array/pref_image_uploader"
+                app:entryValues="@array/pref_image_uploader"
+                app:defaultValue="sm.ms"/>
+
         <androidx.preference.SwitchPreference
                 app:iconSpaceReserved="false"
                 app:key="use_bbcode"

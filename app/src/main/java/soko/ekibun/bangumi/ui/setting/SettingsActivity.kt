@@ -72,6 +72,7 @@ class SettingsActivity : BaseFragmentActivity(), PreferenceFragmentCompat.OnPref
         }
 
         private fun updatePreference() {
+            findPreference<ListPreference>("image_uploader")?.let { it.summary = it.entry }
             findPreference<ListPreference>("pref_dark_mode")?.let { it.summary = it.entry }
             findPreference<ListPreference>("image_quality")?.let { it.summary = it.entry }
             findPreference<Preference>("check_update")?.isVisible = BuildConfig.AUTO_UPDATES

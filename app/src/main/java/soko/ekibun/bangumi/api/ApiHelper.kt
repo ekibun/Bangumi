@@ -35,6 +35,46 @@ object ApiHelper {
         }
     }
 
+    fun <T, U> convertCall(src: Call<T>, converter: (T) -> U): Call<U> {
+        return object : Call<U> {
+            override fun execute(): Response<U> {
+                val t = src.execute()
+                return if (t.isSuccessful) {
+                    Response.success(converter(t.body()!!))
+                } else
+                    Response.error(t.code(), t.errorBody()!!)
+            }
+
+            override fun enqueue(callback: Callback<U>) {
+                src.enqueue(buildCallback({
+                    callback.onResponse(clone(), Response.success(converter(it)!!))
+                }, {
+                    if (it != null) callback.onFailure(clone(), it)
+                }))
+            }
+
+            override fun isExecuted(): Boolean {
+                return src.isExecuted
+            }
+
+            override fun clone(): Call<U> {
+                return this
+            }
+
+            override fun isCanceled(): Boolean {
+                return src.isCanceled
+            }
+
+            override fun cancel() {
+                src.cancel()
+            }
+
+            override fun request(): Request? {
+                return src.request()
+            }
+        }
+    }
+
     /**
      * Sax事件
      */
@@ -59,7 +99,11 @@ object ApiHelper {
             else if (event == SaxEventType.END) break
             when (parser.eventType) {
                 XmlPullParser.START_TAG -> {
-                    lastData += "<${parser.name} ${(0 until parser.attributeCount).joinToString(" ") { "${parser.getAttributeName(it)}=\"${parser.getAttributeValue(it)}\"" }}>"
+                    lastData += "<${parser.name} ${(0 until parser.attributeCount).joinToString(" ") {
+                        "${parser.getAttributeName(
+                            it
+                        )}=\"${parser.getAttributeValue(it)}\""
+                    }}>"
                 }
                 XmlPullParser.END_TAG -> {
                     if (parser.name != "br") lastData += "</${parser.name}>"
@@ -77,7 +121,13 @@ object ApiHelper {
         return lastData
     }
 
-    fun <T> buildHttpCall(url: String, header: Map<String, String> = HashMap(), body: RequestBody? = null, useCookie: Boolean = true, converter: (okhttp3.Response) -> T): Call<T> {
+    fun <T> buildHttpCall(
+        url: String,
+        header: Map<String, String> = HashMap(),
+        body: RequestBody? = null,
+        useCookie: Boolean = true,
+        converter: (okhttp3.Response) -> T
+    ): Call<T> {
         val uiHandler = Handler(Looper.getMainLooper())
         return object : Call<T> {
             private val retrofitCall = this

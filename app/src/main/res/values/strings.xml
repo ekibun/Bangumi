@@ -228,6 +228,10 @@
         <item>m</item>
         <item>s</item>
     </string-array>
+    <string-array name="pref_image_uploader">
+        <item>upload.cc</item>
+        <item>sm.ms</item>
+    </string-array>
 
     <!-- 回复对话框 -->
     <string name="desc_emoji">表情</string>
