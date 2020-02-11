@@ -8,7 +8,7 @@ import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import okhttp3.RequestBody
 import retrofit2.Call
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.smms.SmMs
+import soko.ekibun.bangumi.api.sda1.Sda1
 import soko.ekibun.bangumi.api.uploadcc.UploadCC
 import java.lang.ref.WeakReference
 
@@ -84,10 +84,10 @@ class UploadDrawable(
             uploadCall?.cancel()
             uploadCall = when (PreferenceManager.getDefaultSharedPreferences(view.context).getString(
                 "image_uploader",
-                "sm.ms"
+                "p.sda1.dev"
             )) {
                 "upload.cc" -> UploadCC.uploadImage(fileRequestBody, fileName)
-                else -> SmMs.uploadImage(fileRequestBody, fileName)
+                else -> Sda1.uploadImage(fileRequestBody, fileName)
             }
             uploadCall?.enqueue(callback)
         }

@@ -51,7 +51,7 @@
                 app:title="图床"
                 app:entries="@array/pref_image_uploader"
                 app:entryValues="@array/pref_image_uploader"
-                app:defaultValue="sm.ms"/>
+                app:defaultValue="p.sda1.dev"/>
 
         <androidx.preference.SwitchPreference
                 app:iconSpaceReserved="false"

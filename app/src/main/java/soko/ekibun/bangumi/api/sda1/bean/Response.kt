@@ -1,4 +1,4 @@
-package soko.ekibun.bangumi.api.smms.bean
+package soko.ekibun.bangumi.api.sda1.bean
 
 data class Response(
     var success: Boolean = false,
@@ -7,6 +7,7 @@ data class Response(
 ) {
 
     data class DataBean(
-        var url: String? = null
+        var url: String? = null,
+        var delete_url: String? = null
     )
 }
