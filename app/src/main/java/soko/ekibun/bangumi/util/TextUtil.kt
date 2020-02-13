@@ -21,7 +21,7 @@ object TextUtil {
      */
     fun setTextUrlCallback(htmlString: Spanned, onClick: (String) -> Unit): Spanned {
         val objs = (htmlString as? SpannableStringBuilder)?.getSpans(0, htmlString.length, URLSpan::class.java)
-                ?: return htmlString
+            ?: return htmlString
         if (objs.isNotEmpty()) for (obj in objs) {
             val start = htmlString.getSpanStart(obj)
             val end = htmlString.getSpanEnd(obj)
@@ -62,21 +62,22 @@ object TextUtil {
      * 将bbcode转换为html
      */
     fun bbcode2html(text: String): String {
-        return text.replace("\n", "<br/>").replace(Regex("""\[(/?(b|i|u|mask))]"""), "<$1>")
-                .replace("[s]", "<span style=\"text-decoration:line-through\">")
-                .replace(Regex("""\[url](.*?)\[/url]"""), "<a href=\"$1\"></a>")
-                .replace(Regex("""\[url=(.*?)]"""), "<a href=\"$1\">")
-                .replace(Regex("""\[/url]"""), "</a>")
-                .replace(Regex("""\[img](.*?)\[/img]"""), "<img src=\"$1\"/>")
-                .replace(Regex("""\[color=(.*?)]"""), "<span style=\"color:$1\">")
-                .replace(Regex("""\[size=(.*?)]"""), "<span style=\"font-size:$1px\">")
-                .replace(Regex("""\[(/color|/s|/size)]"""), "</span>").let {
-                    var ret = it
-                    ReplyDialog.emojiList.forEach {
-                        ret = ret.replace(it.first, "<img src=\"${it.second.replace(Bangumi.SERVER, "")}\"/>")
-                    }
-                    ret
+        return TextUtils.htmlEncode(text)
+            .replace("\n", "<br/>").replace(Regex("""\[(/?(b|i|u|mask))]"""), "<$1>")
+            .replace("[s]", "<span style=\"text-decoration:line-through\">")
+            .replace(Regex("""\[url](.*?)\[/url]"""), "<a href=\"$1\"></a>")
+            .replace(Regex("""\[url=(.*?)]"""), "<a href=\"$1\">")
+            .replace(Regex("""\[/url]"""), "</a>")
+            .replace(Regex("""\[img](.*?)\[/img]"""), "<img src=\"$1\"/>")
+            .replace(Regex("""\[color=(.*?)]"""), "<span style=\"color:$1\">")
+            .replace(Regex("""\[size=(.*?)]"""), "<span style=\"font-size:$1px\">")
+            .replace(Regex("""\[(/color|/s|/size)]"""), "</span>").let {
+                var ret = it
+                ReplyDialog.emojiList.forEach {
+                    ret = ret.replace(it.first, "<img src=\"${it.second.replace(Bangumi.SERVER, "")}\"/>")
                 }
+                ret
+            }
     }
 
     /**
@@ -123,7 +124,7 @@ object TextUtil {
                     is URLSpan -> out.append("[url=${characterStyle.url}]")
                     is ImageSpan -> {
                         var source = characterStyle.source
-                                ?: (characterStyle.drawable as? UrlDrawable)?.url
+                            ?: (characterStyle.drawable as? UrlDrawable)?.url
                         if (source != null && source.startsWith("/img/smiles/"))
                             source = ReplyDialog.emojiList.firstOrNull { it.second.contains(source!!) }?.first
                         if (source != null && source.startsWith("("))
@@ -132,7 +133,12 @@ object TextUtil {
                         i = next // Don't output the dummy character underlying the image.
                     }
                     is RelativeSizeSpan -> out.append("[size=${(characterStyle.sizeChange * 12).roundToInt()}]")
-                    is ForegroundColorSpan -> out.append(String.format("[color=#%06X]", 0xFFFFFF and characterStyle.foregroundColor))
+                    is ForegroundColorSpan -> out.append(
+                        String.format(
+                            "[color=#%06X]",
+                            0xFFFFFF and characterStyle.foregroundColor
+                        )
+                    )
                     is HtmlTagHandler.MaskSpan -> out.append("[mask]")
                 }
             }

@@ -156,11 +156,15 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
 
     private var episodeDialog: EpisodeDialog? = null
     fun showEpisodeDialog(id: Int) {
-        val eps = subjectView.episodeAdapter.data
+        val eps = subject.eps ?: return
         val episodeIndex = eps.indexOfFirst { it.id == id }
         val episode = eps.getOrNull(episodeIndex) ?: return
-        subject.eps?.subList(0, episodeIndex + 1)
-        episodeDialog = EpisodeDialog.showDialog(context, episode, eps, subject.onair) { mEps, status ->
+        episodeDialog = EpisodeDialog.showDialog(
+            context,
+            episode,
+            eps.subList(0, episodeIndex + 1).filter { it.progress != Episode.PROGRESS_DROP },
+            subject.onair
+        ) { mEps, status ->
             updateProgress(mEps, status)
         }
     }

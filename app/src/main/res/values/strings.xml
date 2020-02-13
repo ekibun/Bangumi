@@ -168,7 +168,6 @@
     <string name="home">主页</string>
     <string name="calendar">时间表</string>
     <string name="index">索引</string>
-    <string name="cache">离线缓存</string>
     <string name="search">搜索</string>
     <string name="settings">设置</string>
     <string name="logout">注销</string>

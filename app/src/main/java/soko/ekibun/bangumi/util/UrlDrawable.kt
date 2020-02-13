@@ -66,7 +66,7 @@ open class UrlDrawable(val container: WeakReference<TextView>, val updateSize: (
             val textSize = view.textSize
             val circularProgressDrawable = CircularProgressDrawable(view.context)
             circularProgressDrawable.setColorSchemeColors(ResourceUtil.resolveColorAttr(view.context, android.R.attr.textColorSecondary))
-            circularProgressDrawable.strokeWidth = 5f
+            circularProgressDrawable.strokeWidth = textSize / 8f
             circularProgressDrawable.centerRadius = textSize / 2 - circularProgressDrawable.strokeWidth - 1f
             circularProgressDrawable.progressRotation = 0.75f
             GlideUtil.loadWithProgress(url, view, RequestOptions().placeholder(circularProgressDrawable).error(R.drawable.ic_broken_image), circularProgressDrawable, uri) { type, drawable ->

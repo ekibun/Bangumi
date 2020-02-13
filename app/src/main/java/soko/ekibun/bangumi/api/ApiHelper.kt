@@ -2,6 +2,7 @@ package soko.ekibun.bangumi.api
 
 import android.os.Handler
 import android.os.Looper
+import android.text.TextUtils
 import android.util.Log
 import android.util.Xml
 import okhttp3.Request
@@ -109,7 +110,7 @@ object ApiHelper {
                     if (parser.name != "br") lastData += "</${parser.name}>"
                 }
                 XmlPullParser.TEXT -> {
-                    lastData += parser.text
+                    lastData += TextUtils.htmlEncode(parser.text)
                 }
             }
             try {
