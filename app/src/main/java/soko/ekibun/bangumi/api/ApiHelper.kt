@@ -4,6 +4,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.util.Xml
+import android.widget.Toast
 import okhttp3.Request
 import okhttp3.RequestBody
 import org.xmlpull.v1.XmlPullParser
@@ -11,6 +12,7 @@ import org.xmlpull.v1.XmlPullParserFactory
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.util.HttpUtil
 import java.io.IOException
 import java.io.Reader
@@ -23,8 +25,11 @@ object ApiHelper {
         return object : Callback<T> {
             override fun onFailure(call: Call<T>, t: Throwable) {
                 Log.e("errUrl", call.request().url.toString())
-                if (!t.toString().contains("Canceled")) finish(t)
-                t.printStackTrace()
+                if (!t.toString().contains("Canceled")) {
+                    App.appContext?.let { Toast.makeText(it, t.message, Toast.LENGTH_SHORT).show() }
+                    finish(t)
+                    Log.e("call", Log.getStackTraceString(t))
+                }
             }
 
             override fun onResponse(call: Call<T>, response: Response<T>) {
@@ -93,6 +98,7 @@ object ApiHelper {
         }.newPullParser()
         val stream = rsp.body!!.charStream()
 
+        val charList = StringBuilder()
         var htmlString = ""
         parser.setInput(object : Reader() {
             override fun close() {
@@ -100,10 +106,9 @@ object ApiHelper {
             }
 
             override fun read(p0: CharArray, p1: Int, p2: Int): Int {
-                val charArray = CharArray(p1 + p2)
-                val ret = stream.read(charArray, 0, p1 + p2)
-                if (ret > 0) htmlString += String(charArray, 0, ret)
-                charArray.copyInto(p0, 0, p1, p2)
+                val ret = stream.read(p0, p1, p2)
+                if (ret > 0) charList.append(p0, p1, ret)
+                htmlString = charList.toString()
                 return if (ret >= p1) ret - p1 else ret
             }
         })

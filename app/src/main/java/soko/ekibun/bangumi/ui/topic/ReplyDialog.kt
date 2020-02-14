@@ -13,10 +13,12 @@ import android.text.style.ImageSpan
 import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.view.forEach
 import androidx.fragment.app.FragmentManager
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.GridLayoutManager
@@ -28,10 +30,7 @@ import org.jsoup.Jsoup
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.ui.view.BaseDialog
-import soko.ekibun.bangumi.util.CollapseUrlDrawable
-import soko.ekibun.bangumi.util.HtmlTagHandler
-import soko.ekibun.bangumi.util.TextUtil
-import soko.ekibun.bangumi.util.UploadDrawable
+import soko.ekibun.bangumi.util.*
 import java.lang.ref.WeakReference
 
 /**
@@ -59,6 +58,9 @@ class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
         var currentFontStyle = editText.fontStyle
         val updateCheck = {
             currentFontStyle = editText.fontStyle
+            popup.menu.forEach {
+                it.isCheckable = !bbCode
+            }
             popup.menu.findItem(R.id.format_bold)?.isChecked = currentFontStyle?.isBold ?: false
             popup.menu.findItem(R.id.format_italic)?.isChecked = currentFontStyle?.isItalic ?: false
             popup.menu.findItem(R.id.format_strike)?.isChecked = currentFontStyle?.isStrike ?: false
@@ -120,6 +122,19 @@ class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
     override val title = ""
     override fun onViewCreated(view: View) {
         bbCode = PreferenceManager.getDefaultSharedPreferences(view.context).getBoolean("use_bbcode", false)
+
+        view.item_expand.setOnClickListener {
+            it.rotation = -it.rotation
+            val isExpand = it.rotation > 0
+            view.item_content.layoutParams = view.item_content.layoutParams.also { lp ->
+                lp.height = if (isExpand) ViewGroup.LayoutParams.MATCH_PARENT else ViewGroup.LayoutParams.WRAP_CONTENT
+            }
+            view.item_input.maxHeight =
+                if (it.rotation > 0) Int.MAX_VALUE else ResourceUtil.toPixels(view.context.resources, 200f)
+            view.item_input.layoutParams = view.item_input.layoutParams.also { lp ->
+                lp.height = if (isExpand) 0 else ViewGroup.LayoutParams.WRAP_CONTENT
+            }
+        }
 
         view.item_bbcode.isSelected = bbCode
         view.item_bbcode.setOnClickListener {
@@ -192,6 +207,7 @@ class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
         }
 
         view.setOnApplyWindowInsetsListener { _, insets ->
+            view.setPadding(0, insets.systemWindowInsetTop, 0, 0)
             insetsBottom = insets.systemWindowInsetBottom
             updateEmojiList()
             if (insetsBottom > 200) {

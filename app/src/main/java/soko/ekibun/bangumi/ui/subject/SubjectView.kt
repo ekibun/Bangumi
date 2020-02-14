@@ -2,6 +2,7 @@ package soko.ekibun.bangumi.ui.subject
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
+import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -34,6 +35,7 @@ import soko.ekibun.bangumi.util.HttpUtil
 /**
  * 条目view
  */
+@SuppressLint("InflateParams")
 class SubjectView(private val context: SubjectActivity) {
     val collapsibleAppBarHelper = CollapsibleAppBarHelper(context.app_bar as AppBarLayout)
 
@@ -67,12 +69,16 @@ class SubjectView(private val context: SubjectActivity) {
         } else false
     }
 
+    private val isLandscape
+        get() = context.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+                && !(Build.VERSION.SDK_INT > 24 && context.isInMultiWindowMode)
+
     var peakRatio = 0f
         set(value) {
             field = value
             behavior.peekHeight =
                 context.bottom_sheet.height - Math.max(
-                    if (context.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) 0 else (context.bottom_sheet.height * value).toInt(),
+                    if (isLandscape) 0 else (context.bottom_sheet.height * value).toInt(),
                     context.app_bar.height - context.bottom_sheet.paddingTop - context.bottom_sheet.paddingBottom
                 )
         }
@@ -111,8 +117,11 @@ class SubjectView(private val context: SubjectActivity) {
 
         val listPaddingBottom = context.item_list.paddingBottom
         val progressEnd = context.item_swipe.progressViewEndOffset
+        var lastInsertBottom = 0
         context.root_layout.setOnApplyWindowInsetsListener { _, insets ->
             insertTop = insets.systemWindowInsetTop
+            if (insets.systemWindowInsetBottom < lastInsertBottom) context.currentFocus?.clearFocus()
+            lastInsertBottom = insets.systemWindowInsetBottom
             context.item_swipe.setProgressViewEndTarget(false, progressEnd + insets.systemWindowInsetTop)
             if (context.item_swipe.isRefreshing) {
                 context.item_swipe.isRefreshing = false

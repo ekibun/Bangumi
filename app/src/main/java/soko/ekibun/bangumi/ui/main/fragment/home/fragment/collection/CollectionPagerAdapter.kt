@@ -153,7 +153,7 @@ class CollectionPagerAdapter(
         }
         val onError = { it: Throwable? ->
             item.second.isRefreshing = false
-            item.first.loadMoreFail()
+            if (it != null) item.first.loadMoreFail()
         }
         if (useApi) mainPresenter?.updateUserCollection({
             if (collectionTypeView.getType() == Collection.STATUS_DO) callback(it)

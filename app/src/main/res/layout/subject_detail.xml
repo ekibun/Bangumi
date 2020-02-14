@@ -77,12 +77,10 @@
                 android:gravity="center"
                 android:orientation="horizontal">
 
-            <com.michaelmuenzer.android.scrollablennumberpicker.ScrollableNumberPicker
+            <soko.ekibun.bangumi.ui.view.NumberPicker
                     android:id="@+id/item_vol_status"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    app:snp_scrollEnabled="true"
-                    app:snp_orientation="horizontal"/>
+                    android:layout_height="match_parent"/>
 
             <TextView
                     android:id="@+id/item_vol_count"
@@ -93,12 +91,10 @@
                     android:ellipsize="end"/>
         </LinearLayout>
 
-        <com.michaelmuenzer.android.scrollablennumberpicker.ScrollableNumberPicker
+        <soko.ekibun.bangumi.ui.view.NumberPicker
                 android:id="@+id/item_ep_status"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                app:snp_scrollEnabled="true"
-                app:snp_orientation="horizontal"/>
+                android:layout_height="match_parent"/>
 
         <TextView
                 android:id="@+id/item_ep_count"

@@ -3,6 +3,7 @@ package soko.ekibun.bangumi.ui.main
 import android.app.Activity
 import android.content.Intent
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -80,15 +81,16 @@ class MainPresenter(private val context: MainActivity) {
     fun updateConfiguration() {
         val lp = nav_lp
         (nav_view.parent as? ViewGroup)?.removeView(nav_view)
-        if (context.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+        val isLandscape = context.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+                && !(Build.VERSION.SDK_INT > 24 && context.isInMultiWindowMode)
+        if (isLandscape) {
             context.content_drawer.addView(nav_view, lp)
         } else {
             context.drawer_layout.addView(nav_view, lp)
         }
         nav_view.visibility = View.VISIBLE
         context.drawer_layout.closeDrawers()
-        drawerView.toggle.isDrawerIndicatorEnabled =
-            context.resources.configuration.orientation != Configuration.ORIENTATION_LANDSCAPE
+        drawerView.toggle.isDrawerIndicatorEnabled = !isLandscape
     }
 
     /**
@@ -142,18 +144,19 @@ class MainPresenter(private val context: MainActivity) {
         }, {
             notify = it
             context.runOnUiThread { context.notifyMenu?.badge = notify?.let { it.first + it.second } ?: 0 }
-        })
-        collectionCall?.enqueue(ApiHelper.buildCallback({
+        }, {
             it.forEach { subject ->
                 calendar.find { cal -> cal.id == subject.id }?.eps?.forEach { calEp ->
                     subject.eps?.find { ep -> ep.id == calEp.id }?.merge(calEp)
                 }
             }
             collectionList = it
-            callback(it)
-        }, {
+            context.runOnUiThread { callback(it) }
+        })
+        collectionCall?.enqueue(ApiHelper.buildCallback({}, {
             onError(it)
-            if ((it as? Exception)?.message == "login failed") (context as? MainActivity)?.mainPresenter?.updateUser(null)
+            if ((it as? Exception)?.message == "login failed")
+                (context as? MainActivity)?.mainPresenter?.updateUser(null)
         }))
     }
 }

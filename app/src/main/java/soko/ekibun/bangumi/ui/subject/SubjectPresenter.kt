@@ -89,8 +89,8 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
                 )
                     View.INVISIBLE else View.VISIBLE
         }
-        subjectView.detail.item_vol_status.setListener(updateInt)
-        subjectView.detail.item_ep_status.setListener(updateInt)
+        subjectView.detail.item_vol_status.setValueChangedListener(updateInt)
+        subjectView.detail.item_ep_status.setValueChangedListener(updateInt)
 
         subjectView.collapsibleAppBarHelper.onTitleClickListener = onTitleClickListener@{
             if (subjectView.scroll2Top()) return@onTitleClickListener

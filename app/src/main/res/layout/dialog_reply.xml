@@ -2,69 +2,87 @@
 <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-    <View android:id="@+id/item_lock" android:layout_width="match_parent" android:layout_height="0dp"
-          android:layout_weight="1"/>
-    <LinearLayout
+
+    <View
+            android:id="@+id/item_lock"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/item_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:elevation="20dp"
             android:background="@drawable/bg_round_dialog">
-        <LinearLayout android:layout_width="match_parent"
-                      android:layout_height="wrap_content"
-                      android:orientation="horizontal">
-            <TextView
-                    android:id="@+id/item_hint"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginStart="16dp"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_gravity="center"
-                    tools:text="回复：2333"
-                    android:singleLine="true"/>
 
-            <ImageButton
-                    android:id="@+id/item_bbcode"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:padding="4dp"
-                    android:tint="@color/color_selectable"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:tintMode="src_in"
-                    android:background="?android:attr/selectableItemBackgroundBorderless"
-                    app:srcCompat="@drawable/ic_code"
-                    tools:activate="true"
-                    tools:ignore="ContentDescription"/>
-        </LinearLayout>
+        <TextView
+                android:id="@+id/item_hint"
+                android:layout_marginTop="4dp"
+                android:layout_marginStart="16dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_gravity="center"
+                app:layout_constraintTop_toTopOf="@+id/item_expand"
+                app:layout_constraintBottom_toBottomOf="@+id/item_expand"
+                app:layout_constraintEnd_toStartOf="@+id/item_expand"
+                app:layout_constraintStart_toStartOf="parent"
+                tools:text="回复：2333"
+                android:singleLine="true"/>
+
+        <ImageButton
+                android:id="@+id/item_expand"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="4dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:tintMode="src_in"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                app:srcCompat="@drawable/ic_chevron_right"
+                android:tint="?android:textColorSecondary"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:rotation="-90"
+                tools:activate="true"
+                tools:ignore="ContentDescription"/>
 
 
         <com.awarmisland.android.richedittext.view.RichEditText
                 android:id="@+id/item_input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:maxHeight="200dp"
                 android:background="@null"
-                android:paddingLeft="12dp"
-                android:paddingRight="12dp"
-                android:paddingTop="12dp"
-                android:paddingBottom="18dp"
+                android:padding="12dp"
                 android:textSize="@dimen/textSizeMedium"
+                android:gravity="top"
                 android:textIsSelectable="true"
                 android:focusable="true"
-                android:maxHeight="300dp"
                 android:focusableInTouchMode="true"
                 android:inputType="textMultiLine"
+                app:layout_constraintTop_toBottomOf="@+id/item_expand"
+                app:layout_constraintBottom_toTopOf="@+id/item_buttons"
                 tools:ignore="LabelFor">
+
             <requestFocus/>
         </com.awarmisland.android.richedittext.view.RichEditText>
 
         <LinearLayout
+                android:id="@+id/item_buttons"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toTopOf="@+id/item_nav"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:paddingBottom="6dp">
+
             <ImageButton
                     android:id="@+id/item_btn_emoji"
                     android:layout_width="wrap_content"
@@ -75,6 +93,7 @@
                     android:layout_height="wrap_content"
                     app:srcCompat="@drawable/ic_emoji_keyboard"
                     android:contentDescription="@string/desc_emoji"/>
+
             <ImageButton
                     android:id="@+id/item_btn_image"
                     android:layout_width="wrap_content"
@@ -85,6 +104,7 @@
                     android:layout_height="wrap_content"
                     app:srcCompat="@drawable/ic_image"
                     android:contentDescription="@string/desc_image"/>
+
             <ImageButton
                     android:id="@+id/item_btn_format"
                     android:layout_width="wrap_content"
@@ -95,9 +115,24 @@
                     android:layout_height="wrap_content"
                     app:srcCompat="@drawable/ic_format"
                     android:contentDescription="@string/desc_format"/>
-            <View android:layout_weight="1"
-                  android:layout_height="match_parent"
-                  android:layout_width="0dp"/>
+
+            <ImageButton
+                    android:id="@+id/item_bbcode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="6dp"
+                    android:tint="@color/color_selectable"
+                    android:tintMode="src_in"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    app:srcCompat="@drawable/ic_code"
+                    tools:activate="true"
+                    tools:ignore="ContentDescription"/>
+
+            <View
+                    android:layout_weight="1"
+                    android:layout_height="match_parent"
+                    android:layout_width="0dp"/>
+
             <ImageButton
                     android:id="@+id/item_btn_send"
                     android:layout_width="wrap_content"
@@ -107,13 +142,18 @@
                     app:srcCompat="@drawable/ic_send"
                     android:contentDescription="@string/desc_send"/>
         </LinearLayout>
+
         <FrameLayout
+                android:id="@+id/item_nav"
+                app:layout_constraintBottom_toBottomOf="parent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
+
             <View
                     android:id="@+id/item_nav_padding"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"/>
+
             <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/item_emoji_list"
                     android:paddingStart="8dp"
@@ -122,5 +162,5 @@
                     android:layout_width="match_parent"
                     android:layout_height="0dp"/>
         </FrameLayout>
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>

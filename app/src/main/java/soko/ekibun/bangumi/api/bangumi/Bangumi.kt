@@ -150,7 +150,11 @@ object Bangumi {
     /**
      * 进度管理 + 用户信息
      */
-    fun getCollectionSax(onUser: (UserInfo) -> Unit = {}, onNotify: (Pair<Int, Int>) -> Unit = {}, onNewSubject: (Subject) -> Unit = {}): Call<List<Subject>> {
+    fun getCollectionSax(
+        onUser: (UserInfo) -> Unit = {},
+        onNotify: (Pair<Int, Int>) -> Unit = {},
+        onSubjectLoaded: (List<Subject>) -> Unit = {}
+    ): Call<List<Subject>> {
         val cookieManager = CookieManager.getInstance()
         return ApiHelper.buildHttpCall(SERVER) { rsp ->
             val ret = ArrayList<Subject>()
@@ -159,8 +163,8 @@ object Bangumi {
                 val it = Jsoup.parse(str).selectFirst(".infoWrapper") ?: return@addSubject
                 val data = it.selectFirst(".headerInner a.textTip") ?: return@addSubject
                 val subject = Subject(
-                        id = data.attr("data-subject-id")?.toIntOrNull() ?: return@addSubject,
-                        type = Subject.parseType(it.attr("subject_type")?.toIntOrNull()),
+                    id = data.attr("data-subject-id")?.toIntOrNull() ?: return@addSubject,
+                    type = Subject.parseType(it.attr("subject_type")?.toIntOrNull()),
                         name = data.attr("data-subject-name"),
                         name_cn = data.attr("data-subject-name-cn"),
                         image = parseImageUrl(it.selectFirst("img")),
@@ -173,9 +177,7 @@ object Bangumi {
                         } ?: 0,
                         ep_status = it.selectFirst("input[name=watchedeps]")?.attr("value")?.toIntOrNull() ?: 0,
                         vol_status = it.selectFirst("input[name=watched_vols]")?.attr("value")?.toIntOrNull() ?: 0)
-
                 ret += subject
-                onNewSubject(subject)
             }
             ApiHelper.parseWithSax(rsp) { parser, str ->
                 when {
@@ -203,6 +205,7 @@ object Bangumi {
                     }
                     parser.getAttributeValue("", "id")?.contains("columnHomeB") == true -> {
                         addSubject(str)
+                        onSubjectLoaded(ret)
                         ApiHelper.SaxEventType.BEGIN
                     }
                     parser.getAttributeValue("", "id")?.contains("subject_prg_content") == true -> {

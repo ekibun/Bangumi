@@ -22,9 +22,12 @@ class App : Application() {
         Thread.setDefaultUncaughtExceptionHandler(CrashHandler(this))
 
         pluginInstance = PluginsModel.createPluginInstance(this)
+        appContext = this
     }
 
     companion object {
+        var appContext: App? = null
+
         fun get(context: Context): App {
             return context.applicationContext as App
         }

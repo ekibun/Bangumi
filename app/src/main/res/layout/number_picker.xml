@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+    <ImageButton
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:textColor="@android:color/black"
+            android:background="?selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_chevron_left"
+            android:tintMode="src_in"
+            android:tint="?android:textColorSecondary"
+            android:id="@+id/decrement"/>
+
+    <EditText
+            android:layout_width="wrap_content"
+            android:background="@null"
+            android:layout_height="match_parent"
+            tools:text="1"
+            android:padding="4dp"
+            android:inputType="number"
+            android:id="@+id/number_display"
+            android:gravity="center"
+            />
+
+    <ImageButton
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:textColor="@android:color/black"
+            android:background="?selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_chevron_right"
+            android:tintMode="src_in"
+            android:tint="?android:textColorSecondary"
+            android:id="@+id/increment"/>
+</LinearLayout>
