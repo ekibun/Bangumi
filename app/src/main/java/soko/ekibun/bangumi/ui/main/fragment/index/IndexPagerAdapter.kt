@@ -15,6 +15,7 @@ import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
+import soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
 import java.util.*
 
 /**
@@ -73,7 +74,7 @@ class IndexPagerAdapter(fragment: IndexFragment, private val pager: androidx.vie
 
     private val holders = ArrayList<IndexPagerViewHolder>()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): IndexPagerViewHolder {
-        val swipeRefreshLayout = androidx.swiperefreshlayout.widget.SwipeRefreshLayout(parent.context)
+        val swipeRefreshLayout = FixSwipeRefreshLayout(parent.context)
         val recyclerView = androidx.recyclerview.widget.RecyclerView(parent.context)
         recyclerView.overScrollMode = View.OVER_SCROLL_NEVER
         recyclerView.setPadding(0, 0, 0, windowInsets?.systemWindowInsetBottom ?: 0)
@@ -117,8 +118,8 @@ class IndexPagerAdapter(fragment: IndexFragment, private val pager: androidx.vie
     /**
      * 索引ViewHolder
      */
-    class IndexPagerViewHolder(val view: androidx.swiperefreshlayout.widget.SwipeRefreshLayout, val adapter: SubjectAdapter):
-            RecyclePagerAdapter.PagerViewHolder({view}()){
+    class IndexPagerViewHolder(val view: FixSwipeRefreshLayout, val adapter: SubjectAdapter) :
+        RecyclePagerAdapter.PagerViewHolder({ view }()) {
         var position = 0
     }
 }

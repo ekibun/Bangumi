@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import androidx.viewpager.widget.ViewPager
 import kotlinx.android.synthetic.main.fragment_collection.*
 import retrofit2.Call
@@ -21,6 +20,7 @@ import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.main.MainPresenter
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
+import soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
 
 /**
  * 收藏PagerAdapter
@@ -53,7 +53,7 @@ class CollectionPagerAdapter(
     }
 
     @SuppressLint("UseSparseArrays")
-    private val items = HashMap<Int, Pair<CollectionListAdapter, SwipeRefreshLayout>>()
+    private val items = HashMap<Int, Pair<CollectionListAdapter, FixSwipeRefreshLayout>>()
 
     val isScrollDown get() = (items[pager.currentItem]?.second?.tag as? RecyclerView)?.canScrollVertically(-1) == true
 
@@ -67,7 +67,7 @@ class CollectionPagerAdapter(
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
         val item = items.getOrPut(position) {
-            val swipeRefreshLayout = SwipeRefreshLayout(container.context)
+            val swipeRefreshLayout = FixSwipeRefreshLayout(container.context)
             val recyclerView = RecyclerView(container.context)
 
             val adapter = CollectionListAdapter()

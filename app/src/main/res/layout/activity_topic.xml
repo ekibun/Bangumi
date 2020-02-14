@@ -32,7 +32,7 @@
             android:layout_height="match_parent"
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        <soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
                 android:id="@+id/item_swipe"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -55,7 +55,7 @@
                     app:fastScrollPopupBgColor="?colorAccent"
                     android:background="@drawable/bg_round_dialog"
                     tools:listitem="@layout/item_reply"/>
-        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        </soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

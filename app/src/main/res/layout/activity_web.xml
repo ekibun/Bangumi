@@ -14,27 +14,23 @@
             android:id="@+id/app_bar"
             layout="@layout/appbar_layout"/>
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-            android:id="@+id/item_swipe"
+    <RelativeLayout
+            android:id="@+id/webview_container"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fitsSystemWindows="true"
             android:background="?android:colorBackground">
 
-        <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:windowSoftInputMode="adjustResize">
-
-            <soko.ekibun.bangumi.ui.view.NestedWebView
-                    android:id="@+id/webview"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:windowSoftInputMode="adjustResize"
-                    app:layout_constraintDimensionRatio="1"/>
-        </RelativeLayout>
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        <soko.ekibun.bangumi.ui.view.NestedWebView
+                android:id="@+id/webview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"/>
+    </RelativeLayout>
 
     <ProgressBar
             android:id="@+id/webview_progress"

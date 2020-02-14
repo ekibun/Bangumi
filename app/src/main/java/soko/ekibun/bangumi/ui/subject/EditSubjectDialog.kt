@@ -1,13 +1,13 @@
 package soko.ekibun.bangumi.ui.subject
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.RadioButton
 import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.base_dialog.view.*
@@ -22,28 +22,29 @@ import soko.ekibun.bangumi.util.HttpUtil
 /**
  * 收藏对话框
  */
-class EditSubjectDialog(context: Context) : BaseDialog(context, R.layout.base_dialog) {
-    override val title: String = context.getString(R.string.dialog_subject_edit_title)
+class EditSubjectDialog : BaseDialog(R.layout.base_dialog) {
+    override val title: String get() = context!!.getString(R.string.dialog_subject_edit_title)
 
     companion object {
         /**
          * 显示对话框
          */
-        fun showDialog(context: Context, subject: Subject, status: Collection, callback: () -> Unit) {
-            val dialog = EditSubjectDialog(context)
+        fun showDialog(fragmentManager: FragmentManager, subject: Subject, status: Collection, callback: () -> Unit) {
+            val dialog = EditSubjectDialog()
             dialog.subject = subject
             dialog.collection = status
-            dialog.setOnDismissListener { callback() }
-            dialog.show()
+            dialog.callback = callback
+            dialog.show(fragmentManager, "collect")
         }
     }
 
     lateinit var subject: Subject
     lateinit var collection: Collection
+    lateinit var callback: () -> Unit
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View) {
         LayoutInflater.from(context).inflate(R.layout.dialog_edit_subject, view.layout_content)
-        val collectionStatusNames = context.resources.getStringArray(Collection.getStatusNamesRes(subject.type))
+        val collectionStatusNames = view.context.resources.getStringArray(Collection.getStatusNamesRes(subject.type))
         view.radio_wish.text = collectionStatusNames[0]
         view.radio_collect.text = collectionStatusNames[1]
         view.radio_do.text = collectionStatusNames[2]
@@ -97,7 +98,7 @@ class EditSubjectDialog(context: Context) : BaseDialog(context, R.layout.base_di
 
         view.item_remove.visibility = if (HttpUtil.formhash.isEmpty()) View.INVISIBLE else View.VISIBLE
         view.item_remove.setOnClickListener {
-            AlertDialog.Builder(context).setTitle(R.string.collection_dialog_remove)
+            AlertDialog.Builder(view.context).setTitle(R.string.collection_dialog_remove)
                     .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
                         Collection.remove(subject).enqueue(ApiHelper.buildCallback({
                             if (it) subject.collect = Collection()
@@ -114,6 +115,7 @@ class EditSubjectDialog(context: Context) : BaseDialog(context, R.layout.base_di
                     tag = view.item_tags.editableText.split(" ")
             )).enqueue(ApiHelper.buildCallback({
                 subject.collect = it
+                callback()
                 dismiss()
             }, {}))
         }

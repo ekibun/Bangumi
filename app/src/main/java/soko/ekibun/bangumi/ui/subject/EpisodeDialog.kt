@@ -1,10 +1,10 @@
 package soko.ekibun.bangumi.ui.subject
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.TextView
+import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.base_dialog.view.*
 import kotlinx.android.synthetic.main.dialog_epsode.view.*
@@ -20,25 +20,25 @@ import soko.ekibun.bangumi.ui.web.WebActivity
 /**
  * 剧集对话框
  */
-class EpisodeDialog(context: Context) : BaseDialog(context, R.layout.base_dialog) {
+class EpisodeDialog : BaseDialog(R.layout.base_dialog) {
     companion object {
         const val WATCH_TO = "watch_to"
         /**
          * 显示对话框
          */
         fun showDialog(
-            context: Context,
+            fragmentManager: FragmentManager,
             episode: Episode,
             eps: List<Episode>,
             onAirInfo: OnAirInfo?,
             callback: (eps: List<Episode>, status: String) -> Unit
         ): EpisodeDialog {
-            val dialog = EpisodeDialog(context)
+            val dialog = EpisodeDialog()
             dialog.eps = eps
             dialog.episode = episode
             dialog.info = onAirInfo
             dialog.callback = callback
-            dialog.show()
+            dialog.show(fragmentManager, "episode")
             return dialog
         }
 
@@ -75,32 +75,32 @@ class EpisodeDialog(context: Context) : BaseDialog(context, R.layout.base_dialog
             field = value
             adapter.setNewData(value?.eps?.find { it.id == episode?.id }?.sites)
         }
-    override val title: String get() = episode?.parseSort(context) + " " + if (episode?.name_cn.isNullOrEmpty()) episode?.name else episode?.name_cn
+    override val title: String get() = episode?.parseSort(context!!) + " " + if (episode?.name_cn.isNullOrEmpty()) episode?.name else episode?.name_cn
 
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View) {
         view.dialog_title.setOnClickListener {
-            WebActivity.launchUrl(context, "${Bangumi.SERVER}/m/topic/ep/${episode?.id}", "")
+            WebActivity.launchUrl(view.context, "${Bangumi.SERVER}/m/topic/ep/${episode?.id}", "")
         }
-        LayoutInflater.from(context).inflate(R.layout.dialog_epsode, view.layout_content)
+        LayoutInflater.from(view.context).inflate(R.layout.dialog_epsode, view.layout_content)
         val episode = episode ?: return
         view.item_episode_desc.text = (if (episode.name_cn.isNullOrEmpty()) "" else episode.name + "\n") +
-                (if (episode.airdate.isNullOrEmpty()) "" else context.getString(
+                (if (episode.airdate.isNullOrEmpty()) "" else view.context.getString(
                     R.string.phrase_air_date,
                     episode.airdate
                 ) + "\n") +
-                (if (episode.duration.isNullOrEmpty()) "" else context.getString(
+                (if (episode.duration.isNullOrEmpty()) "" else view.context.getString(
                     R.string.phrase_duration,
                     episode.duration
                 ) + "\n") +
-                context.getString(R.string.phrase_comment, episode.comment)
+                view.context.getString(R.string.phrase_comment, episode.comment)
         val emptyTextView = TextView(context)
-        val dp4 = (context.resources.displayMetrics.density * 4 + 0.5f).toInt()
+        val dp4 = (view.context.resources.displayMetrics.density * 4 + 0.5f).toInt()
         emptyTextView.setPadding(dp4, dp4, dp4, dp4)
         emptyTextView.setText(R.string.hint_no_play_source)
         adapter.emptyView = emptyTextView
         adapter.setOnItemClickListener { _, _, position ->
-            WebActivity.launchUrl(context, adapter.data[position].url(), "")
+            WebActivity.launchUrl(view.context, adapter.data[position].url(), "")
         }
         view.item_site_list.adapter = adapter
         view.post { info = info }

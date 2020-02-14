@@ -1,12 +1,12 @@
 package soko.ekibun.bangumi.ui.subject
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.text.Html
 import android.text.method.LinkMovementMethod
 import android.view.View
 import android.widget.TableRow
 import android.widget.TextView
+import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.android.synthetic.main.dialog_infobox.view.*
 import soko.ekibun.bangumi.R
@@ -20,16 +20,16 @@ import soko.ekibun.bangumi.util.TextUtil
 /**
  * 条目信息对话框
  */
-class InfoboxDialog(context: Context) : BaseDialog(context, R.layout.dialog_infobox) {
+class InfoboxDialog : BaseDialog(R.layout.dialog_infobox) {
     companion object {
         /**
          * 显示对话框
          */
-        fun showDialog(context: Context, subject: Subject) {
+        fun showDialog(fragmentManager: FragmentManager, subject: Subject) {
             // if(subject.infobox?.isNotEmpty() != true) return
-            val dialog = InfoboxDialog(context)
+            val dialog = InfoboxDialog()
             dialog.subject = subject
-            dialog.show()
+            dialog.show(fragmentManager, "info")
         }
     }
 
@@ -49,10 +49,10 @@ class InfoboxDialog(context: Context) : BaseDialog(context, R.layout.dialog_info
             @Suppress("DEPRECATION")
             txtInfo.text =
                 TextUtil.setTextUrlCallback(Html.fromHtml(subject.infobox?.filter { it.first == cat }?.map { it.second }?.reduce { acc, s -> "$acc<br>$s" })) {
-                    WebActivity.launchUrl(context, Bangumi.parseUrl(it), "")
+                    WebActivity.launchUrl(view.context, Bangumi.parseUrl(it), "")
             }
             txtInfo.movementMethod = LinkMovementMethod.getInstance()
-            val dp = context.resources.displayMetrics.density
+            val dp = view.context.resources.displayMetrics.density
             txtInfo.setLineSpacing(4 * dp, 1f)
             txtInfo.setPadding((4 * dp + 0.5).toInt(), 0, 0, (6 * dp + 0.5).toInt())
             row.addView(txtCat)

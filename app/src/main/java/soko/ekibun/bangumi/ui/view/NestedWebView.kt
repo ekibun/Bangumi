@@ -32,14 +32,12 @@ class NestedWebView @JvmOverloads constructor(context: Context, attrs: Attribute
         settings.domStorageEnabled = true
         settings.setSupportMultipleWindows(true)
         settings.javaScriptCanOpenWindowsAutomatically = true
-        settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-        /*
+
         settings.setSupportZoom(true)
         settings.builtInZoomControls = true
+        settings.displayZoomControls = false
         settings.useWideViewPort = true
-        settings.layoutAlgorithm = WebSettings.LayoutAlgorithm.SINGLE_COLUMN
-        settings.loadWithOverviewMode = true
-
+        /*
         settings.allowFileAccess = true
         settings.allowContentAccess = true
         settings.allowUniversalAccessFromFileURLs = true
@@ -127,7 +125,11 @@ class NestedWebView @JvmOverloads constructor(context: Context, attrs: Attribute
         val mWebViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 return ((view as? NestedWebView)?.shouldOverrideUrlLoading?.invoke(view, request)
-                        ?: false) || super.shouldOverrideUrlLoading(view, request)
+                    ?: false) || super.shouldOverrideUrlLoading(view, request)
+            }
+
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
             }
         }
     }

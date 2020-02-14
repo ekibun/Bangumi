@@ -18,23 +18,28 @@
                       android:orientation="horizontal">
             <TextView
                     android:id="@+id/item_hint"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="4dp"
                     android:layout_marginStart="16dp"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:layout_gravity="center"
                     tools:text="回复：2333"
                     android:singleLine="true"/>
+
             <ImageButton
                     android:id="@+id/item_bbcode"
-                    android:layout_width="wrap_content"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:padding="4dp"
                     android:tint="@color/color_selectable"
-                    android:layout_margin="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
                     android:tintMode="src_in"
                     android:background="?android:attr/selectableItemBackgroundBorderless"
-                    android:layout_height="wrap_content"
                     app:srcCompat="@drawable/ic_code"
-                    tools:activate="true" tools:ignore="ContentDescription"/>
+                    tools:activate="true"
+                    tools:ignore="ContentDescription"/>
         </LinearLayout>
 
 
@@ -66,7 +71,7 @@
                     android:tint="?android:textColorSecondary"
                     android:padding="6dp"
                     android:tintMode="src_in"
-                    android:background="?android:attr/selectableItemBackground"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
                     android:layout_height="wrap_content"
                     app:srcCompat="@drawable/ic_emoji_keyboard"
                     android:contentDescription="@string/desc_emoji"/>
@@ -76,7 +81,7 @@
                     android:tint="?android:textColorSecondary"
                     android:padding="6dp"
                     android:tintMode="src_in"
-                    android:background="?android:attr/selectableItemBackground"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
                     android:layout_height="wrap_content"
                     app:srcCompat="@drawable/ic_image"
                     android:contentDescription="@string/desc_image"/>
@@ -86,7 +91,7 @@
                     android:tint="?android:textColorSecondary"
                     android:padding="6dp"
                     android:tintMode="src_in"
-                    android:background="?android:attr/selectableItemBackground"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
                     android:layout_height="wrap_content"
                     app:srcCompat="@drawable/ic_format"
                     android:contentDescription="@string/desc_format"/>
@@ -97,7 +102,7 @@
                     android:id="@+id/item_btn_send"
                     android:layout_width="wrap_content"
                     android:padding="6dp"
-                    android:background="?android:attr/selectableItemBackground"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
                     android:layout_height="wrap_content"
                     app:srcCompat="@drawable/ic_send"
                     android:contentDescription="@string/desc_send"/>

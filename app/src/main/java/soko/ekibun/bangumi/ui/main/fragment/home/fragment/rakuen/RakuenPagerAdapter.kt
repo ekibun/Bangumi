@@ -10,6 +10,7 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.ui.topic.TopicActivity
+import soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
 
 /**
  * 超展开PagerAdapter
@@ -37,11 +38,11 @@ class RakuenPagerAdapter(
     }
 
     @SuppressLint("UseSparseArrays")
-    private val items = HashMap<Int, Pair<RakuenAdapter, androidx.swiperefreshlayout.widget.SwipeRefreshLayout>>()
+    private val items = HashMap<Int, Pair<RakuenAdapter, FixSwipeRefreshLayout>>()
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
         val item = items.getOrPut(position) {
-            val swipeRefreshLayout = androidx.swiperefreshlayout.widget.SwipeRefreshLayout(container.context)
+            val swipeRefreshLayout = FixSwipeRefreshLayout(container.context)
             val recyclerView = androidx.recyclerview.widget.RecyclerView(container.context)
             recyclerView.overScrollMode = View.OVER_SCROLL_NEVER
 

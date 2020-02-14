@@ -7,15 +7,18 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.drawable.Drawable
-import android.os.Bundle
 import android.provider.OpenableColumns
 import android.text.Html
 import android.text.style.ImageSpan
-import android.view.*
+import android.view.KeyEvent
+import android.view.MenuItem
+import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
+import androidx.fragment.app.FragmentManager
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.GridLayoutManager
 import com.awarmisland.android.richedittext.view.RichEditText
 import kotlinx.android.synthetic.main.dialog_reply.view.*
@@ -24,7 +27,7 @@ import okhttp3.RequestBody
 import org.jsoup.Jsoup
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
-import soko.ekibun.bangumi.model.ThemeModel
+import soko.ekibun.bangumi.ui.view.BaseDialog
 import soko.ekibun.bangumi.util.CollapseUrlDrawable
 import soko.ekibun.bangumi.util.HtmlTagHandler
 import soko.ekibun.bangumi.util.TextUtil
@@ -34,8 +37,7 @@ import java.lang.ref.WeakReference
 /**
  * 回复对话框
  */
-class ReplyDialog: androidx.fragment.app.DialogFragment() {
-    private var contentView: View? = null
+class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
 
     var hint: String = ""
     var callback: (String?, Boolean) -> Unit = { _, _ -> }
@@ -67,14 +69,16 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
 
         popup.setOnMenuItemClickListener {
             if (bbCode) {
-                insertCode(when (it.itemId) {
-                    R.id.format_bold -> "b"
-                    R.id.format_italic -> "i"
-                    R.id.format_strike -> "s"
-                    R.id.format_underline -> "u"
-                    R.id.format_mask -> "mask"
-                    else -> return@setOnMenuItemClickListener true
-                })
+                insertCode(
+                    when (it.itemId) {
+                        R.id.format_bold -> "b"
+                        R.id.format_italic -> "i"
+                        R.id.format_strike -> "s"
+                        R.id.format_underline -> "u"
+                        R.id.format_mask -> "mask"
+                        else -> return@setOnMenuItemClickListener true
+                    }
+                )
                 return@setOnMenuItemClickListener true
             }
             when (it.itemId) {
@@ -113,122 +117,132 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
         popup.show()
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val contentView = contentView ?: inflater.inflate(R.layout.dialog_reply, container)
-        this.contentView = contentView
+    override val title = ""
+    override fun onViewCreated(view: View) {
+        bbCode = PreferenceManager.getDefaultSharedPreferences(view.context).getBoolean("use_bbcode", false)
 
-        contentView.item_bbcode.isSelected = bbCode
-        contentView.item_bbcode.setOnClickListener {
+        view.item_bbcode.isSelected = bbCode
+        view.item_bbcode.setOnClickListener {
             bbCode = !bbCode
-            contentView.item_bbcode.isSelected = bbCode
+            view.item_bbcode.isSelected = bbCode
             if (bbCode) {
-                contentView.item_input.setText(TextUtil.span2bbcode(contentView.item_input.editableText))
+                view.item_input.setText(TextUtil.span2bbcode(view.item_input.editableText))
             } else {
-                contentView.item_input.setText(TextUtil.setTextUrlCallback(Html.fromHtml(parseHtml(TextUtil.bbcode2html(contentView.item_input.editableText.toString())),
-                        CollapseHtmlHttpImageGetter(contentView.item_input),
-                        HtmlTagHandler(contentView.item_input, onClick = onClickImage)), onClickUrl))
-                contentView.item_input.post { contentView.item_input.text = contentView.item_input.text }
+                view.item_input.setText(
+                    TextUtil.setTextUrlCallback(
+                        Html.fromHtml(
+                            parseHtml(TextUtil.bbcode2html(view.item_input.editableText.toString())),
+                            CollapseHtmlHttpImageGetter(view.item_input),
+                            HtmlTagHandler(view.item_input, onClick = onClickImage)
+                        ), onClickUrl
+                    )
+                )
+                view.item_input.post { view.item_input.text = view.item_input.text }
             }
         }
 
         val emojiAdapter = EmojiAdapter(emojiList)
         emojiAdapter.setOnItemChildClickListener { _, _, position ->
             if (bbCode) {
-                contentView.item_input.editableText.replace(contentView.item_input.selectionStart, contentView.item_input.selectionEnd, emojiList[position].first)
+                view.item_input.editableText.replace(
+                    view.item_input.selectionStart,
+                    view.item_input.selectionEnd,
+                    emojiList[position].first
+                )
                 return@setOnItemChildClickListener
             }
-            val drawable = CollapseUrlDrawable(WeakReference(contentView.item_input))
+            val drawable = CollapseUrlDrawable(WeakReference(view.item_input))
             drawable.url = emojiList[position].second
             drawable.loadImage()
-            contentView.item_input.setImage(HtmlTagHandler.ClickableImage(ImageSpan(drawable, emojiList[position].first)) {})
+            view.item_input.setImage(HtmlTagHandler.ClickableImage(ImageSpan(drawable, emojiList[position].first)) {})
         }
-        contentView.item_btn_format.setOnClickListener { view ->
-            showFormatPop(contentView.item_input, view)
+        view.item_btn_format.setOnClickListener { v ->
+            showFormatPop(view.item_input, v)
         }
-        contentView.item_emoji_list.adapter = emojiAdapter
-        contentView.item_emoji_list.layoutManager = GridLayoutManager(context, 7)
+        view.item_emoji_list.adapter = emojiAdapter
+        view.item_emoji_list.layoutManager = GridLayoutManager(context, 7)
 
         var insetsBottom = 0
-        val paddingBottom = contentView.item_emoji_list.paddingBottom
+        val paddingBottom = view.item_emoji_list.paddingBottom
         val updateEmojiList = {
             if (insetsBottom > 200) {
-                contentView.item_emoji_list.layoutParams.height = insetsBottom
-                contentView.item_emoji_list.layoutParams = contentView.item_emoji_list.layoutParams
+                view.item_emoji_list.layoutParams.height = insetsBottom
+                view.item_emoji_list.layoutParams = view.item_emoji_list.layoutParams
             } else {
-                contentView.item_emoji_list.setPadding(contentView.item_emoji_list.paddingLeft, contentView.item_emoji_list.paddingTop, contentView.item_emoji_list.paddingRight, paddingBottom + insetsBottom)
-                contentView.item_nav_padding.layoutParams.height = insetsBottom
-                contentView.item_nav_padding.layoutParams = contentView.item_nav_padding.layoutParams
+                view.item_emoji_list.let {
+                    it.setPadding(it.paddingLeft, it.paddingTop, it.paddingRight, paddingBottom + insetsBottom)
+                }
+                view.item_nav_padding.layoutParams.height = insetsBottom
+                view.item_nav_padding.layoutParams = view.item_nav_padding.layoutParams
             }
-            contentView.item_emoji_list.visibility = if (insetsBottom > 200) View.INVISIBLE else if (contentView.item_btn_emoji.isSelected) View.VISIBLE else View.GONE
-            (contentView.item_lock.layoutParams as? LinearLayout.LayoutParams)?.weight = 1f
+            view.item_emoji_list.visibility =
+                if (insetsBottom > 200) View.INVISIBLE else if (view.item_btn_emoji.isSelected) View.VISIBLE else View.GONE
+            (view.item_lock.layoutParams as? LinearLayout.LayoutParams)?.weight = 1f
         }
 
-        contentView.item_btn_image.setOnClickListener {
+        view.item_btn_image.setOnClickListener {
             val intent = Intent(Intent.ACTION_GET_CONTENT)
             intent.type = "image/*"
             startActivityForResult(Intent.createChooser(intent, "选择图片"), 1)
         }
-        contentView.item_btn_send.setOnClickListener {
-            callback(TextUtil.span2bbcode(contentView.item_input.editableText), true)
+        view.item_btn_send.setOnClickListener {
+            callback(TextUtil.span2bbcode(view.item_input.editableText), true)
             callback = { _, _ -> }
             dismiss()
         }
 
-        contentView.setOnApplyWindowInsetsListener { _, insets ->
+        view.setOnApplyWindowInsetsListener { _, insets ->
             insetsBottom = insets.systemWindowInsetBottom
             updateEmojiList()
             if (insetsBottom > 200) {
-                contentView.item_btn_emoji.isSelected = false
+                view.item_btn_emoji.isSelected = false
             }
             insets
         }
-        val inputMethodManager = inflater.context.applicationContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        contentView.item_btn_emoji.setOnClickListener {
-            contentView.item_btn_emoji.isSelected = !contentView.item_btn_emoji.isSelected
-            if (insetsBottom > 200 == contentView.item_btn_emoji.isSelected) {
+
+        val inputMethodManager =
+            view.context.applicationContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        view.item_btn_emoji.setOnClickListener {
+            view.item_btn_emoji.isSelected = !view.item_btn_emoji.isSelected
+            if (insetsBottom > 200 == view.item_btn_emoji.isSelected) {
                 inputMethodManager.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS)
             }
             updateEmojiList()
-            if (contentView.item_emoji_list.visibility == View.GONE && insetsBottom < 200) {
-                val layoutParams = contentView.item_lock.layoutParams as LinearLayout.LayoutParams
-                layoutParams.height = contentView.item_lock.height
+            if (view.item_emoji_list.visibility == View.GONE && insetsBottom < 200) {
+                val layoutParams = view.item_lock.layoutParams as LinearLayout.LayoutParams
+                layoutParams.height = view.item_lock.height
                 layoutParams.weight = 0f
             }
         }
 
         dialog?.setOnKeyListener { _, keyCode, keyEvent ->
-            if (keyEvent.action == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK && contentView.item_btn_emoji.isSelected) {
-                contentView.item_btn_emoji.isSelected = false
+            if (keyEvent.action == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK && view.item_btn_emoji.isSelected) {
+                view.item_btn_emoji.isSelected = false
                 updateEmojiList()
                 true
             } else false
         }
 
 
-        contentView.item_lock.setOnClickListener { dismiss() }
-        contentView.item_hint.text = hint
+        view.item_lock.setOnClickListener { dismiss() }
+        view.item_hint.text = hint
 
         if (!draft.isNullOrEmpty()) {
             if (bbCode) {
-                contentView.item_input.setText(draft)
+                view.item_input.setText(draft)
             } else {
-                contentView.item_input.setText(TextUtil.setTextUrlCallback(Html.fromHtml(parseHtml(TextUtil.bbcode2html(draft!!)),
-                        CollapseHtmlHttpImageGetter(contentView.item_input),
-                        HtmlTagHandler(contentView.item_input, onClick = onClickImage)), onClickUrl))
-                contentView.item_input.post { contentView.item_input.text = contentView.item_input.text }
+                view.item_input.setText(
+                    TextUtil.setTextUrlCallback(
+                        Html.fromHtml(
+                            parseHtml(TextUtil.bbcode2html(draft!!)),
+                            CollapseHtmlHttpImageGetter(view.item_input),
+                            HtmlTagHandler(view.item_input, onClick = onClickImage)
+                        ), onClickUrl
+                    )
+                )
+                view.item_input.post { view.item_input.text = view.item_input.text }
             }
         }
-
-        dialog?.window?.let { ThemeModel.updateNavigationTheme(it, contentView.context) }
-
-        dialog?.window?.attributes?.let {
-            it.dimAmount = 0.6f
-            dialog?.window?.attributes = it
-        }
-        dialog?.window?.setWindowAnimations(R.style.AnimDialog)
-        dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-        dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-        return contentView
     }
 
     val onClickImage = { _: ImageSpan ->
@@ -244,11 +258,6 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
         callback(contentView?.item_input?.editableText?.let { TextUtil.span2bbcode(it) }, false)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setStyle(STYLE_NORMAL, R.style.AppTheme_Dialog)
-    }
-
     @SuppressLint("Recycle")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -257,7 +266,7 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
             contentView?.item_input?.postDelayed({
                 contentView?.item_input?.requestFocus()
                 val inputMethodManager = (context
-                        ?: return@postDelayed).applicationContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    ?: return@postDelayed).applicationContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 inputMethodManager.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS)
             }, 200)
         }
@@ -301,6 +310,22 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
     }
 
     companion object {
+        /**
+         * 显示对话框
+         */
+        fun showDialog(
+            fragmentManager: FragmentManager,
+            hint: String,
+            draft: String?,
+            callback: (String?, Boolean) -> Unit = { _, _ -> }
+        ) {
+            val dialog = ReplyDialog()
+            dialog.hint = hint
+            dialog.draft = draft
+            dialog.callback = callback
+            dialog.show(fragmentManager, "reply")
+        }
+
         /**
          * 转换html
          */
@@ -351,12 +376,26 @@ class ReplyDialog: androidx.fragment.app.DialogFragment() {
         val emojiList by lazy {
             val emojiList = ArrayList<Pair<String, String>>()
             for (i in 1..23)
-                emojiList.add(String.format("(bgm%02d)", i) to String.format("${Bangumi.SERVER}/img/smiles/bgm/%02d${if (i == 11 || i == 23) ".gif" else ".png"}", i))
+                emojiList.add(
+                    String.format(
+                        "(bgm%02d)",
+                        i
+                    ) to String.format(
+                        "${Bangumi.SERVER}/img/smiles/bgm/%02d${if (i == 11 || i == 23) ".gif" else ".png"}",
+                        i
+                    )
+                )
             for (i in 1..100)
-                emojiList.add(String.format("(bgm%02d)", i + 23) to String.format("${Bangumi.SERVER}/img/smiles/tv/%02d.gif", i))
-            "(=A=)|(=w=)|(-w=)|(S_S)|(=v=)|(@_@)|(=W=)|(TAT)|(T_T)|(='=)|(=3=)|(= =')|(=///=)|(=.,=)|(:P)|(LOL)".split("|").forEachIndexed { i, s ->
-                emojiList.add(s to "${Bangumi.SERVER}/img/smiles/${i + 1}.gif")
-            }
+                emojiList.add(
+                    String.format(
+                        "(bgm%02d)",
+                        i + 23
+                    ) to String.format("${Bangumi.SERVER}/img/smiles/tv/%02d.gif", i)
+                )
+            "(=A=)|(=w=)|(-w=)|(S_S)|(=v=)|(@_@)|(=W=)|(TAT)|(T_T)|(='=)|(=3=)|(= =')|(=///=)|(=.,=)|(:P)|(LOL)".split("|")
+                .forEachIndexed { i, s ->
+                    emojiList.add(s to "${Bangumi.SERVER}/img/smiles/${i + 1}.gif")
+                }
             emojiList
         }
     }

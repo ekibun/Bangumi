@@ -83,4 +83,5 @@ dependencies {
     implementation 'com.jakewharton:disklrucache:2.0.2'
     implementation 'com.caverock:androidsvg:1.2.1'
     implementation 'com.michaelmuenzer.android:ScrollableNumberPicker:0.2.2'
+    implementation 'net.sourceforge.nekohtml:nekohtml:1.9.22'
 }

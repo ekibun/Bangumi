@@ -40,10 +40,11 @@ class TimeLineFragment : HomeTabFragment(R.layout.fragment_timeline) {
 
         var draft: String? = null
         item_new?.setOnClickListener {
-            val dialog = ReplyDialog()
-            dialog.hint = context?.getString(R.string.timeline_dialog_add) ?: ""
-            dialog.draft = draft
-            dialog.callback = { content, send ->
+            ReplyDialog.showDialog(
+                activity?.supportFragmentManager ?: return@setOnClickListener,
+                hint = context?.getString(R.string.timeline_dialog_add) ?: "",
+                draft = draft
+            ) { content, send ->
                 if (content != null && send) {
                     TimeLine.addComment(content).enqueue(ApiHelper.buildCallback({
                         if (it) {
@@ -55,7 +56,6 @@ class TimeLineFragment : HomeTabFragment(R.layout.fragment_timeline) {
                     }) { })
                 } else draft = content
             }
-            dialog.show(activity?.supportFragmentManager ?: return@setOnClickListener, "say")
         }
 
         onSelect()

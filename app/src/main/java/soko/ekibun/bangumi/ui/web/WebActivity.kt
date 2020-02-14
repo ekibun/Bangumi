@@ -6,7 +6,10 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.view.*
+import android.view.KeyEvent
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
@@ -40,21 +43,12 @@ class WebActivity : BaseActivity(R.layout.activity_web) {
 
     private var filePathsCallback: ValueCallback<Array<Uri>>? = null
 
-    private val mOnScrollChangedListener = ViewTreeObserver.OnScrollChangedListener {
-        var view = webview
-        while (view.childWebView != null)
-            view = view.childWebView!!
-        item_swipe.isEnabled = view.scrollY == 0
-    }
-
     override fun onStop() {
         super.onStop()
-        item_swipe.viewTreeObserver.removeOnScrollChangedListener(mOnScrollChangedListener)
     }
 
     override fun onStart() {
         super.onStart()
-        item_swipe.viewTreeObserver.addOnScrollChangedListener(mOnScrollChangedListener)
     }
 
     private val collapsibleAppBarHelper by lazy { CollapsibleAppBarHelper(app_bar as AppBarLayout) }
@@ -70,28 +64,20 @@ class WebActivity : BaseActivity(R.layout.activity_web) {
         collapsibleAppBarHelper.updateStatus(1f)
         collapsibleAppBarHelper.appbarCollapsible(CollapsibleAppBarHelper.CollapseStatus.COLLAPSED)
 
-        val paddingBottom = item_swipe.paddingBottom
+        val paddingBottom = webview_container.paddingBottom
         root_layout.setOnApplyWindowInsetsListener { _, insets ->
-            item_swipe.setPadding(
-                item_swipe.paddingLeft,
-                item_swipe.paddingTop,
-                item_swipe.paddingRight,
+            webview_container.setPadding(
+                webview_container.paddingLeft,
+                webview_container.paddingTop,
+                webview_container.paddingRight,
                 paddingBottom + insets.systemWindowInsetBottom
             )
             insets
         }
 
-        item_swipe.setOnRefreshListener {
-            var view = webview
-            while (view.childWebView != null)
-                view = view.childWebView!!
-            view.reload()
-        }
-
         webview_progress.max = 100
         webview.onProgressChanged = { _: WebView, newProgress: Int ->
             webview_progress.visibility = if (newProgress == 100) View.GONE else View.VISIBLE
-            item_swipe.isRefreshing = newProgress != 100
             webview_progress.progress = newProgress
         }
 
@@ -193,6 +179,7 @@ class WebActivity : BaseActivity(R.layout.activity_web) {
             }
             R.id.action_open -> AppUtil.openBrowser(this, view.url)
             R.id.action_share -> AppUtil.shareString(this, view.url)
+            R.id.action_refresh -> view.reload()
         }
         return super.onOptionsItemSelected(item)
     }

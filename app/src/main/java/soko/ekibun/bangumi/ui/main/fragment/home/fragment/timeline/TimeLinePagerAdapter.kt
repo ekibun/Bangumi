@@ -1,5 +1,6 @@
 package soko.ekibun.bangumi.ui.main.fragment.home.fragment.timeline
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +11,7 @@ import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.TimeLine
 import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
+import soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
 
 /**
  * 时间线PagerAdapter
@@ -34,19 +36,22 @@ class TimeLinePagerAdapter(
                     pageIndex[position] = 0
                     loadTopicList(position)
                 }
-            } })
+            }
+        })
     }
 
     fun reset() {
-        items.forEach {  (it.value.second.tag as? androidx.recyclerview.widget.RecyclerView)?.tag = null }
+        items.forEach { (it.value.second.tag as? androidx.recyclerview.widget.RecyclerView)?.tag = null }
         pageIndex.clear()
         loadTopicList()
     }
 
-    private val items = HashMap<Int, Pair<TimeLineAdapter, androidx.swiperefreshlayout.widget.SwipeRefreshLayout>>()
+    @SuppressLint("UseSparseArrays")
+    private val items = HashMap<Int, Pair<TimeLineAdapter, FixSwipeRefreshLayout>>()
+
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
-        val item = items.getOrPut(position){
-            val swipeRefreshLayout = androidx.swiperefreshlayout.widget.SwipeRefreshLayout(container.context)
+        val item = items.getOrPut(position) {
+            val swipeRefreshLayout = FixSwipeRefreshLayout(container.context)
             val recyclerView = androidx.recyclerview.widget.RecyclerView(container.context)
             recyclerView.overScrollMode = View.OVER_SCROLL_NEVER
 

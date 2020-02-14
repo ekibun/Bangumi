@@ -1,10 +1,11 @@
 package soko.ekibun.bangumi.ui.subject
 
 import android.annotation.SuppressLint
-import android.content.Context
+import android.content.DialogInterface
 import android.view.Menu
 import android.view.View
 import android.widget.PopupMenu
+import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.android.synthetic.main.dialog_episode_list.view.*
@@ -16,15 +17,15 @@ import soko.ekibun.bangumi.util.ResourceUtil
 /**
  * 剧集列表对话框
  */
-class EpisodeListDialog(context: Context) : BaseDialog(context, R.layout.dialog_episode_list) {
+class EpisodeListDialog : BaseDialog(R.layout.dialog_episode_list) {
     companion object {
         /**
          * 显示对话框
          */
-        fun showDialog(context: Context, presenter: SubjectPresenter) {
-            val dialog = EpisodeListDialog(context)
+        fun showDialog(fragmentManager: FragmentManager, presenter: SubjectPresenter) {
+            val dialog = EpisodeListDialog()
             dialog.presenter = presenter
-            dialog.show()
+            dialog.show(fragmentManager, "ep list")
         }
     }
 
@@ -32,6 +33,12 @@ class EpisodeListDialog(context: Context) : BaseDialog(context, R.layout.dialog_
     val adapter get() = presenter.subjectView.episodeDetailAdapter
     var callback: ((eps: List<Episode>, status: String) -> Unit)? = null
     override val title: String = ""
+
+    val clearSelection = {
+        adapter.data.forEach { it.isSelected = false }
+        adapter.updateSelection()
+        adapter.notifyDataSetChanged()
+    }
 
     @SuppressLint("SetTextI18n", "InflateParams")
     override fun onViewCreated(view: View) {
@@ -74,10 +81,10 @@ class EpisodeListDialog(context: Context) : BaseDialog(context, R.layout.dialog_
         view.btn_edit_ep.setOnClickListener {
             val eps = adapter.data.filter { it.isSelected }
             if (eps.isEmpty()) return@setOnClickListener
-            val epStatus = context.resources.getStringArray(R.array.episode_status).toMutableList()
+            val epStatus = view.context.resources.getStringArray(R.array.episode_status).toMutableList()
             epStatus.removeAt(1)
 
-            val popupMenu = PopupMenu(context, view.btn_edit_ep)
+            val popupMenu = PopupMenu(view.context, view.btn_edit_ep)
             epStatus.forEachIndexed { index, s ->
                 popupMenu.menu.add(Menu.NONE, Menu.FIRST + index, index, s)
             }
@@ -93,7 +100,7 @@ class EpisodeListDialog(context: Context) : BaseDialog(context, R.layout.dialog_
             view.btn_edit_ep.visibility = if (eps.isEmpty()) View.GONE else View.VISIBLE
             view.item_ep_title.visibility = view.btn_edit_ep.visibility
             view.item_ep_title.text =
-                "${context.getText(R.string.episodes)}${if (eps.isEmpty()) "" else "(${eps.size})"}"
+                "${view.context.getText(R.string.episodes)}${if (eps.isEmpty()) "" else "(${eps.size})"}"
         }
 
         adapter.setOnItemChildLongClickListener { _, _, position ->
@@ -108,12 +115,6 @@ class EpisodeListDialog(context: Context) : BaseDialog(context, R.layout.dialog_
             val ep = adapter.data[position]?.t
             if (ep?.type == Episode.TYPE_MUSIC || adapter.clickListener(position))
                 ep?.let { presenter.showEpisodeDialog(it.id) }
-        }
-
-        val clearSelection = {
-            adapter.data.forEach { it.isSelected = false }
-            adapter.updateSelection()
-            adapter.notifyDataSetChanged()
         }
 
         view.btn_dismiss.setOnClickListener {
@@ -138,9 +139,10 @@ class EpisodeListDialog(context: Context) : BaseDialog(context, R.layout.dialog_
             )
             insets
         }
+    }
 
-        setOnDismissListener {
-            clearSelection()
-        }
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        clearSelection()
     }
 }

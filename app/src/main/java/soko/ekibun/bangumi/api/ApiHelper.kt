@@ -2,7 +2,6 @@ package soko.ekibun.bangumi.api
 
 import android.os.Handler
 import android.os.Looper
-import android.text.TextUtils
 import android.util.Log
 import android.util.Xml
 import okhttp3.Request
@@ -14,6 +13,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import soko.ekibun.bangumi.util.HttpUtil
 import java.io.IOException
+import java.io.Reader
 
 /**
  * API工具库
@@ -89,37 +89,45 @@ object ApiHelper {
         val parser = XmlPullParserFactory.newInstance().apply {
             this.isValidating = false
             this.setFeature(Xml.FEATURE_RELAXED, true)
-            this.isNamespaceAware = true
+            this.isNamespaceAware = false
         }.newPullParser()
-        parser.setInput(rsp.body!!.charStream())
+        val stream = rsp.body!!.charStream()
 
-        var lastData = ""
-        while (parser.eventType != XmlPullParser.END_DOCUMENT) {
-            val event = checkEvent(parser, lastData)
-            if (event == SaxEventType.BEGIN) lastData = ""
-            else if (event == SaxEventType.END) break
-            when (parser.eventType) {
-                XmlPullParser.START_TAG -> {
-                    lastData += "<${parser.name} ${(0 until parser.attributeCount).joinToString(" ") {
-                        "${parser.getAttributeName(
-                            it
-                        )}=\"${parser.getAttributeValue(it)}\""
-                    }}>"
-                }
-                XmlPullParser.END_TAG -> {
-                    if (parser.name != "br") lastData += "</${parser.name}>"
-                }
-                XmlPullParser.TEXT -> {
-                    lastData += TextUtils.htmlEncode(parser.text)
-                }
+        var htmlString = ""
+        parser.setInput(object : Reader() {
+            override fun close() {
+                stream.close()
             }
+
+            override fun read(p0: CharArray, p1: Int, p2: Int): Int {
+                val charArray = CharArray(p1 + p2)
+                val ret = stream.read(charArray, 0, p1 + p2)
+                if (ret > 0) htmlString += String(charArray, 0, ret)
+                charArray.copyInto(p0, 0, p1, p2)
+                return if (ret >= p1) ret - p1 else ret
+            }
+        })
+
+        var lastIndex = 0
+        var lastEventIndex = 0
+        while (parser.eventType != XmlPullParser.END_DOCUMENT) {
+            val curIndex = Math.min(
+                htmlString.length,
+                htmlString.split('\n').subList(
+                    0,
+                    parser.lineNumber - 1
+                ).sumBy { it.length + 1 } + parser.columnNumber - 1)
+            val event = checkEvent(parser, htmlString.substring(lastIndex, curIndex))
+            if (event == SaxEventType.BEGIN) lastIndex = lastEventIndex
+            else if (event == SaxEventType.END) break
+            lastEventIndex = curIndex
             try {
                 parser.next()
             } catch (e: Exception) {
                 //Log.e("SaxErr", e.localizedMessage ?: e.message ?: "")
             }
         }
-        return lastData
+        return htmlString.substring(lastIndex)
     }
 
     fun <T> buildHttpCall(

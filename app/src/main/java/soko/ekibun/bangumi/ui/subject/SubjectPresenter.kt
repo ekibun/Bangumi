@@ -45,10 +45,10 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
         subjectView.updateSubject(subject)
 
         subjectView.detail.item_subject_info.setOnClickListener {
-            InfoboxDialog.showDialog(context, subject)
+            InfoboxDialog.showDialog(context.supportFragmentManager, subject)
         }
         subjectView.detail.item_detail.setOnClickListener {
-            InfoboxDialog.showDialog(context, subject)
+            InfoboxDialog.showDialog(context.supportFragmentManager, subject)
         }
         subjectView.sitesAdapter.setOnItemClickListener { _, _, position ->
             WebActivity.launchUrl(context, subjectView.sitesAdapter.data[position].url(), "")
@@ -151,7 +151,7 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
     }
 
     fun showEpisodeListDialog() {
-        EpisodeListDialog.showDialog(context, this)
+        EpisodeListDialog.showDialog(context.supportFragmentManager, this)
     }
 
     private var episodeDialog: EpisodeDialog? = null
@@ -160,7 +160,7 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
         val episodeIndex = eps.indexOfFirst { it.id == id }
         val episode = eps.getOrNull(episodeIndex) ?: return
         episodeDialog = EpisodeDialog.showDialog(
-            context,
+            context.supportFragmentManager,
             episode,
             eps.subList(0, episodeIndex + 1).filter { it.progress != Episode.PROGRESS_DROP },
             subject.onair
@@ -328,7 +328,7 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
         }
 
         subjectView.detail.item_collect.setOnLongClickListener {
-            EditSubjectDialog.showDialog(context, subject, body) {
+            EditSubjectDialog.showDialog(context.supportFragmentManager, subject, body) {
                 refreshCollection()
             }
             true
