@@ -25,6 +25,9 @@ import kotlin.collections.HashMap
 
 /**
  * 回复 Adapter
+ * @property imaageSizes HashMap<String, Size>
+ * @property largeContent WeakHashMap<String, Spanned>
+ * @constructor
  */
 class PostAdapter(data: MutableList<TopicPost>? = null) :
         BaseMultiItemQuickAdapter<TopicPost, BaseViewHolder>(data), FastScrollRecyclerView.SectionedAdapter {
@@ -127,6 +130,8 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
     companion object {
         /**
          * 转换Html
+         * @param html String
+         * @return String
          */
         fun parseHtml(html: String): String {
             val doc = Jsoup.parse(html.replace(Regex("</?noscript>"), ""), Bangumi.SERVER)

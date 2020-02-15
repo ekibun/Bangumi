@@ -2,6 +2,10 @@ package soko.ekibun.bangumi.api.github.bean
 
 /**
  * 版本信息
+ * @property tag_name String?
+ * @property assets List<Assets>?
+ * @property body String?
+ * @constructor
  */
 data class Release(
         val tag_name: String? = null,
@@ -10,6 +14,10 @@ data class Release(
 ){
     /**
      * 版本附件信息
+     * @property name String?
+     * @property download_count String?
+     * @property browser_download_url String?
+     * @constructor
      */
     data class Assets(
             val name: String? = null,

@@ -15,6 +15,19 @@ import java.lang.ref.WeakReference
 
 /**
  * url图片Drawable
+ * @property container WeakReference<TextView>
+ * @property updateSize Function1<Size, Unit>
+ * @property drawable Drawable?
+ * @property error Boolean?
+ * @property size Size?
+ * @property url String?
+ * @property uri Uri?
+ * @property textSize Float
+ * @property maxWidth Float
+ * @property mBuffer Bitmap
+ * @property mPaint Paint
+ * @property drawableCallback Callback
+ * @constructor
  */
 open class UrlDrawable(val container: WeakReference<TextView>, val updateSize: (Size) -> Unit = {}) : AnimationDrawable() {
     var drawable: Drawable? = null
@@ -34,6 +47,8 @@ open class UrlDrawable(val container: WeakReference<TextView>, val updateSize: (
 
     /**
      * 更新Drawable
+     * @param drawable Drawable
+     * @param defSize Int
      */
     open fun update(drawable: Drawable, defSize: Int) {
         val width = Math.max(textSize, Math.min(drawable.intrinsicWidth.toFloat(), maxWidth))

@@ -15,6 +15,9 @@ import soko.ekibun.bangumi.util.GlideUtil
 
 /**
  * 图片浏览页 Adapter
+ * @property items List<String>
+ * @property thumbs List<Drawable>?
+ * @property onDismiss Function0<Unit>
  * @constructor
  */
 class PhotoPagerAdapter(private val items: List<String>, private val thumbs: List<Drawable>?, private val onDismiss: () -> Unit) : androidx.viewpager.widget.PagerAdapter() {
@@ -64,8 +67,16 @@ class PhotoPagerAdapter(private val items: List<String>, private val thumbs: Lis
     }
 
     companion object {
+        /**
+         * 显示对话框
+         * @param view View
+         * @param items List<String>
+         * @param thumbs List<Drawable>?
+         * @param index Int
+         */
         fun showWindow(view: View, items: List<String>, thumbs: List<Drawable>? = null, index: Int = 0) {
-            val popWindow = PopupWindow(view, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, true)
+            val popWindow =
+                PopupWindow(view, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, true)
             val viewPager = FixMultiViewPager(view.context)
             popWindow.contentView = viewPager
             viewPager.adapter = PhotoPagerAdapter(items, thumbs) {

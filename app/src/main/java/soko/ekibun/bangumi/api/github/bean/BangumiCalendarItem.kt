@@ -4,6 +4,17 @@ import soko.ekibun.bangumi.api.bangumi.bean.Episode
 
 /**
  * 时间表条目项
+ * @property id Int?
+ * @property name String?
+ * @property name_cn String?
+ * @property air_date String?
+ * @property weekDayJP Int?
+ * @property weekDayCN Int?
+ * @property timeJP String?
+ * @property timeCN String?
+ * @property image String?
+ * @property eps List<Episode>?
+ * @constructor
  */
 data class BangumiCalendarItem(
         val id: Int?,

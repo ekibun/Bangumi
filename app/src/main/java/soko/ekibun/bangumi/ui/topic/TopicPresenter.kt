@@ -19,6 +19,13 @@ import kotlin.collections.set
 
 /**
  * 帖子Presenter
+ * @property context TopicActivity
+ * @property topicView TopicView
+ * @property dataCacheModel DataCacheModel
+ * @property topic Topic
+ * @property loadMoreFail Boolean?
+ * @property drafts HashMap<String, String>
+ * @constructor
  */
 class TopicPresenter(private val context: TopicActivity) {
     val topicView = TopicView(context)
@@ -27,9 +34,6 @@ class TopicPresenter(private val context: TopicActivity) {
 
     lateinit var topic: Topic
 
-    /**
-     * 初始化
-     */
     fun init(topic: Topic, scrollPost: String) {
         // 读取缓存
         DataCacheModel.merge(topic, dataCacheModel.get(topic.cacheKey))
@@ -48,6 +52,7 @@ class TopicPresenter(private val context: TopicActivity) {
     private var loadMoreFail: Boolean? = null
     /**
      * 读取帖子
+     * @param scrollPost String
      */
     fun getTopic(scrollPost: String = "") {
         loadMoreFail = null
@@ -115,10 +120,17 @@ class TopicPresenter(private val context: TopicActivity) {
                             }.show()
                 }
                 R.id.item_edit -> {
-                    buildPopupWindow(context.getString(if (post.floor == if (topic.blog == null) 1 else 0) R.string.parse_hint_modify_topic else R.string.parse_hint_modify_post, topic.title), html = post.pst_content) { text, send ->
+                    buildPopupWindow(
+                        context.getString(
+                            if (post.floor == if (topic.blog == null) 1 else 0) R.string.parse_hint_modify_topic else R.string.parse_hint_modify_post,
+                            topic.title
+                        ),
+                        title = if (post.floor == if (topic.blog == null) 1 else 0) topic.title else null,
+                        html = post.pst_content
+                    ) { text, title, send ->
                         if (send) {
                             if (post.floor == if (topic.blog == null) 1 else 0) {
-                                Topic.edit(topic, text ?: "")
+                                Topic.edit(topic, title ?: "", text ?: "")
                             } else {
                                 TopicPost.edit(post, text ?: "")
                             }.enqueue(ApiHelper.buildCallback({
@@ -132,13 +144,20 @@ class TopicPresenter(private val context: TopicActivity) {
     }
 
     @Suppress("DEPRECATION")
-    private fun buildPopupWindow(hint: String = "", draft: String? = null, html: String = "", callback: (String?, Boolean) -> Unit) {
+    private fun buildPopupWindow(
+        hint: String = "",
+        draft: String? = null,
+        title: String? = null,
+        html: String = "",
+        callback: (String?, String?, Boolean) -> Unit
+    ) {
         ReplyDialog.showDialog(
             context.supportFragmentManager,
             hint = hint,
             draft = draft ?: {
                 TextUtil.span2bbcode(Html.fromHtml(ReplyDialog.parseHtml(html), null, HtmlTagHandler()))
             }(),
+            title = title,
             callback = callback
         )
     }
@@ -149,7 +168,7 @@ class TopicPresenter(private val context: TopicActivity) {
         val draftId = post?.pst_id ?: "topic"
         val hint = post?.let { context.getString(R.string.parse_hint_reply_post, post.nickname) }
                 ?: context.getString(R.string.parse_hint_reply_topic, topic.title)
-        buildPopupWindow(hint, drafts[draftId]) { inputString, send ->
+        buildPopupWindow(hint, drafts[draftId]) { inputString, _, send ->
             if (send) {
                 Topic.reply(topic, post, inputString ?: "").enqueue(ApiHelper.buildCallback<List<TopicPost>>({
                     topicView.setNewData(it, topic)

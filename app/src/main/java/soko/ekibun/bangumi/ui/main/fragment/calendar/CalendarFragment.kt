@@ -9,6 +9,7 @@ import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
 
 /**
  * 时间表
+ * @property titleRes Int
  */
 class CalendarFragment: DrawerFragment(R.layout.content_calendar) {
     override val titleRes: Int = R.string.calendar

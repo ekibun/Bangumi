@@ -13,6 +13,7 @@ import soko.ekibun.bangumi.util.GlideUtil
 
 /**
  * 超展开列表Adapter
+ * @constructor
  */
 class RakuenAdapter(data: MutableList<Topic>? = null) :
         BaseQuickAdapter<Topic, BaseViewHolder>(R.layout.item_topic, data) {

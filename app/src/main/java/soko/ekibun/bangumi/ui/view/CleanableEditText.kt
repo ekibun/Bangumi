@@ -12,6 +12,9 @@ import soko.ekibun.bangumi.util.ResourceUtil
 
 /**
  * 可清空EditText
+ * @property clearDrawable Drawable
+ * @property onBackPress Function0<Unit>
+ * @constructor
  */
 class CleanableEditText constructor(context: Context, attrs: AttributeSet) : AppCompatEditText(context, attrs) {
     private val clearDrawable: Drawable by lazy{

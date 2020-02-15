@@ -7,6 +7,8 @@ import soko.ekibun.bangumi.api.bangumi.bean.Subject
 
 /**
  * 索引类型View
+ * @property selectedType Int
+ * @constructor
  */
 class IndexTypeView(view: TextView, onChange:()->Unit){
     companion object {

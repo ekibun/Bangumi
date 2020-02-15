@@ -19,8 +19,31 @@ import kotlin.math.abs
 import kotlin.math.max
 
 /**
- * 下拉关闭
- * 带加载进度条
+ * 下拉关闭 带加载进度条
+ * @property circularProgressDrawable CircularProgressDrawable
+ * @property mPaint Paint
+ * @property mDownX Float
+ * @property mDownY Float
+ * @property mTranslateY Float
+ * @property mTranslateX Float
+ * @property mScale Float
+ * @property mWidth Int
+ * @property mHeight Int
+ * @property minDragDownScale Float
+ * @property mAlpha Int
+ * @property isAnimate Boolean
+ * @property isTouchEvent Boolean
+ * @property mTapListener Function0<Unit>?
+ * @property mExitListener Function0<Unit>?
+ * @property mLongClickListener Function0<Unit>?
+ * @property alphaAnimation ValueAnimator
+ * @property translateYAnimation ValueAnimator
+ * @property translateXAnimation ValueAnimator
+ * @property scaleAnimation ValueAnimator
+ * @property timer Timer
+ * @property timeoutTask TimerTask?
+ * @property longClick Boolean
+ * @constructor
  */
 class DragPhotoView @JvmOverloads constructor(context: Context, attr: AttributeSet? = null, defStyle: Int = 0) : FitScreenPhotoView(context, attr, defStyle) {
     val circularProgressDrawable by lazy {

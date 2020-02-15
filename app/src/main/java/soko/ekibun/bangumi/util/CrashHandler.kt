@@ -8,6 +8,9 @@ import java.io.StringWriter
 
 /**
  * 崩溃拦截
+ * @property application Application
+ * @property mDefaultHandler UncaughtExceptionHandler?
+ * @constructor
  */
 class CrashHandler(private val application: Application) : Thread.UncaughtExceptionHandler {
     private val mDefaultHandler: Thread.UncaughtExceptionHandler? = Thread.getDefaultUncaughtExceptionHandler()

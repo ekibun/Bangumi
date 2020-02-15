@@ -18,6 +18,21 @@ import kotlin.math.roundToInt
 
 /**
  * 快速滚动RecyclerView
+ * @property mScrollbar FastScroller
+ * @property mFastScrollEnabled Boolean
+ * @property mDownX Int
+ * @property mDownY Int
+ * @property mLastY Int
+ * @property mStateChangeListener OnFastScrollStateChangeListener?
+ * @property scrollBarWidth Int
+ * @property scrollBarThumbHeight Int
+ * @property itemHeightCache IntArray
+ * @property nestedScrollRange Function0<Int>
+ * @property nestedScrollDistance Function0<Int>
+ * @property scrollTopMargin Int
+ * @property mOnItemTouchListeners ArrayList<OnItemTouchListener>
+ * @property mInterceptingOnItemTouchListener OnItemTouchListener?
+ * @constructor
  */
 class FastScrollRecyclerView @JvmOverloads constructor(
     context: Context,

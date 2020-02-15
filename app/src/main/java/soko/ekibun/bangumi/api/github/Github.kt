@@ -13,6 +13,7 @@ interface Github{
 
     /**
      * 获取版本列表
+     * @return Call<List<Release>>
      */
     @GET("/repos/ekibun/Bangumi/releases")
     fun releases(): Call<List<Release>>
@@ -21,6 +22,7 @@ interface Github{
         private const val SERVER_API = "https://api.github.com"
         /**
          * 创建retrofit实例
+         * @return Github
          */
         fun createInstance(): Github{
             return Retrofit.Builder().baseUrl(SERVER_API)

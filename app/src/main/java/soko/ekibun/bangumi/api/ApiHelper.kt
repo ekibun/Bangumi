@@ -21,6 +21,12 @@ import java.io.Reader
  * API工具库
  */
 object ApiHelper {
+    /**
+     * 创建回调
+     * @param callback Function1<T, Unit>
+     * @param finish Function1<Throwable?, Unit>
+     * @return Callback<T>
+     */
     fun <T> buildCallback(callback: (T) -> Unit, finish: (Throwable?) -> Unit = {}): Callback<T> {
         return object : Callback<T> {
             override fun onFailure(call: Call<T>, t: Throwable) {
@@ -41,6 +47,12 @@ object ApiHelper {
         }
     }
 
+    /**
+     * 转换Call返回的数据类型
+     * @param src Call<T>
+     * @param converter Function1<T, U>
+     * @return Call<U>
+     */
     fun <T, U> convertCall(src: Call<T>, converter: (T) -> U): Call<U> {
         return object : Call<U> {
             override fun execute(): Response<U> {
@@ -90,6 +102,12 @@ object ApiHelper {
         END
     }
 
+    /**
+     * Sax解析
+     * @param rsp Response
+     * @param checkEvent Function2<XmlPullParser, String, SaxEventType>
+     * @return String
+     */
     fun parseWithSax(rsp: okhttp3.Response, checkEvent: (XmlPullParser, String) -> SaxEventType): String {
         val parser = XmlPullParserFactory.newInstance().apply {
             this.isValidating = false
@@ -135,6 +153,15 @@ object ApiHelper {
         return htmlString.substring(lastIndex)
     }
 
+    /**
+     * 创建http请求
+     * @param url String
+     * @param header Map<String, String>
+     * @param body RequestBody?
+     * @param useCookie Boolean
+     * @param converter Function1<Response, T>
+     * @return Call<T>
+     */
     fun <T> buildHttpCall(
         url: String,
         header: Map<String, String> = HashMap(),
@@ -195,11 +222,18 @@ object ApiHelper {
         }
     }
 
+    /**
+     * 并行请求
+     * @param calls Array<Call<*>>
+     * @param onIndexResponse Function2<Int, Any?, Unit>
+     * @return Call<Unit>
+     */
     fun buildGroupCall(calls: Array<Call<*>>, onIndexResponse: (Int, Any?) -> Unit): Call<Unit> {
         return object : Call<Unit> {
             override fun enqueue(callback: Callback<Unit>) {
                 var rspCount = 0
                 calls.forEachIndexed { index, call ->
+                    @Suppress("UNCHECKED_CAST")
                     (call as Call<Any>).enqueue(buildCallback({
                         onIndexResponse(index, it)
                     }, {

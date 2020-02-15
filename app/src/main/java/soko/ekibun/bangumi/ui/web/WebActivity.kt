@@ -30,6 +30,10 @@ import java.net.URI
 
 /**
  * 内置浏览器Activity
+ * @property isAuth Boolean
+ * @property openUrl String
+ * @property filePathsCallback ValueCallback<Array<Uri>>?
+ * @property collapsibleAppBarHelper CollapsibleAppBarHelper
  */
 class WebActivity : BaseActivity(R.layout.activity_web) {
     private val isAuth by lazy { intent.getBooleanExtra(IS_AUTH, false) }
@@ -191,6 +195,7 @@ class WebActivity : BaseActivity(R.layout.activity_web) {
         const val OPEN_URL = "openUrl"
         /**
          * 启动验证
+         * @param context Activity
          */
         fun startActivityForAuth(context: Activity) {
             val intent = Intent(context, WebActivity::class.java)
@@ -198,14 +203,31 @@ class WebActivity : BaseActivity(R.layout.activity_web) {
             context.startActivityForResult(intent, REQUEST_AUTH)
         }
 
+        /**
+         * 启动
+         * @param context Context
+         * @param page String?
+         */
         fun startActivity(context: Context, page: String?) {
             context.startActivity(parseIntent(context, page))
         }
 
+        /**
+         * 启动url
+         * @param context Context
+         * @param url String?
+         * @param openUrl String
+         */
         fun launchUrl(context: Context, url: String?, openUrl: String) {
             context.startActivity(parseUrlIntent(context, url, openUrl))
         }
 
+        /**
+         * intent
+         * @param context Context
+         * @param page String?
+         * @return Intent?
+         */
         private fun parseIntent(context: Context, page: String?): Intent? {
             if (page.isNullOrEmpty()) return null
             val intent = Intent(context, WebActivity::class.java)
@@ -213,6 +235,13 @@ class WebActivity : BaseActivity(R.layout.activity_web) {
             return intent
         }
 
+        /**
+         * url intent
+         * @param context Context
+         * @param url String?
+         * @param openUrl String
+         * @return Intent?
+         */
         fun parseUrlIntent(context: Context, url: String?, openUrl: String): Intent? {
             return jumpUrl(context, url, openUrl) ?: {
                 if (url?.startsWith("http") == false || !isBgmPage(url ?: "")) try {
@@ -232,6 +261,8 @@ class WebActivity : BaseActivity(R.layout.activity_web) {
 
         /**
          * 判断是否是bgm页面
+         * @param url String
+         * @return Boolean
          */
         fun isBgmPage(url: String): Boolean {
             val host = host(url)
@@ -260,6 +291,10 @@ class WebActivity : BaseActivity(R.layout.activity_web) {
         private val bgmHosts = arrayOf("bgm.tv", "bangumi.tv", "chii.in", "tinygrail.com")
         /**
          * 跳转到对应Activity
+         * @param context Context
+         * @param page String?
+         * @param openUrl String
+         * @return Intent?
          */
         fun jumpUrl(context: Context, page: String?, openUrl: String): Intent? {
             val url = page?.split("#")?.get(0) // 去掉post

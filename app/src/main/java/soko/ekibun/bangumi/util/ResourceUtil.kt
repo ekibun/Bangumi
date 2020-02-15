@@ -39,27 +39,37 @@ object ResourceUtil{
         return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, res.displayMetrics).toInt()
     }
 
+    /**
+     * rtl
+     * @param res Resources
+     * @return Boolean
+     */
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun isRtl(res: Resources): Boolean {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && res.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
     }
 
-
+    /**
+     * 获取 drawable
+     * @param context Context
+     * @param resId Int
+     * @return Drawable
+     */
     fun getDrawable(context: Context, @DrawableRes resId: Int): Drawable {
         return context.resources.getDrawable(resId, context.theme)
     }
 
+    /**
+     * 获取颜色
+     * @param context Context
+     * @param colorAttr Int
+     * @return Int
+     */
     @ColorInt
     fun resolveColorAttr(context: Context, @AttrRes colorAttr: Int): Int {
         val resolvedAttr = resolveThemeAttr(context, colorAttr)
         val colorRes = if (resolvedAttr.resourceId != 0) resolvedAttr.resourceId else resolvedAttr.data
         return ContextCompat.getColor(context, colorRes)
-    }
-
-    fun resolveDrawableAttr(context: Context, @AttrRes drawableAttr: Int): Drawable {
-        val resolvedAttr = resolveThemeAttr(context, drawableAttr)
-        val drawableRes = if (resolvedAttr.resourceId != 0) resolvedAttr.resourceId else resolvedAttr.data
-        return getDrawable(context, drawableRes)
     }
 
     private fun resolveThemeAttr(context: Context, @AttrRes attrRes: Int): TypedValue {

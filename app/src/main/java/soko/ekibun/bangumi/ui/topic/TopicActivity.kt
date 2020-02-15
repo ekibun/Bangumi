@@ -17,6 +17,7 @@ import soko.ekibun.bangumi.util.JsonUtil
 
 /**
  * 帖子Activity
+ * @property topicPresenter TopicPresenter
  */
 class TopicActivity : BaseActivity(R.layout.activity_topic) {
     val topicPresenter by lazy { TopicPresenter(this) }
@@ -59,6 +60,10 @@ class TopicActivity : BaseActivity(R.layout.activity_topic) {
         return super.onOptionsItemSelected(item)
     }
 
+    /**
+     * 处理url
+     * @param url String
+     */
     fun processUrl(url: String) {
         WebActivity.parseUrlIntent(this, url, "")?.let {
             if (it.hasExtra(EXTRA_TOPIC) && JsonUtil.toEntity<Topic>(
@@ -76,6 +81,9 @@ class TopicActivity : BaseActivity(R.layout.activity_topic) {
 
         /**
          * 启动Activity
+         * @param context Context
+         * @param topic Topic
+         * @param post Int
          */
         fun startActivity(context: Context, topic: Topic, post: Int = 0) {
             context.startActivity(parseIntent(context, topic, post))
@@ -83,6 +91,10 @@ class TopicActivity : BaseActivity(R.layout.activity_topic) {
 
         /**
          * intent
+         * @param context Context
+         * @param topic Topic
+         * @param post Int
+         * @return Intent
          */
         fun parseIntent(context: Context, topic: Topic, post: Int): Intent {
             val intent = Intent(context, TopicActivity::class.java)

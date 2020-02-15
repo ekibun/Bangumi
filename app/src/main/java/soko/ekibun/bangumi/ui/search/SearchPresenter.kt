@@ -22,6 +22,17 @@ import soko.ekibun.bangumi.ui.web.WebActivity
 
 /**
  * 搜索Presenter
+ * @property context SearchActivity
+ * @property searchHistoryModel SearchHistoryModel
+ * @property typeView SearchTypeView
+ * @property monoAdapter MonoAdapter
+ * @property subjectAdapter SearchAdapter
+ * @property searchHistoryAdapter SearchHistoryAdapter
+ * @property subjectCall Call<List<Subject>>?
+ * @property monoCall Call<List<MonoInfo>>?
+ * @property lastKey String
+ * @property loadCount Int
+ * @constructor
  */
 class SearchPresenter(private val context: SearchActivity) {
     val searchHistoryModel by lazy { SearchHistoryModel(context) }
@@ -109,6 +120,8 @@ class SearchPresenter(private val context: SearchActivity) {
     private var loadCount = 0
     /**
      * 搜索
+     * @param key String
+     * @param refresh Boolean
      */
     fun search(key: String = lastKey, refresh: Boolean = false){
         if(refresh || lastKey != key){

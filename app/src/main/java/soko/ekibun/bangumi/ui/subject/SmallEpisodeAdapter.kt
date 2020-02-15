@@ -11,6 +11,7 @@ import soko.ekibun.bangumi.util.ResourceUtil
 
 /**
  * 剧集列表Adapter
+ * @constructor
  */
 class SmallEpisodeAdapter(data: MutableList<Episode>? = null) :
         BaseQuickAdapter<Episode, BaseViewHolder>

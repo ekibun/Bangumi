@@ -10,6 +10,12 @@ import kotlinx.android.synthetic.main.appbar_layout.*
 import kotlinx.android.synthetic.main.base_activity.*
 import soko.ekibun.bangumi.R
 
+/**
+ * 基础Activity
+ * @property resId Int?
+ * @property collapsibleAppBarHelper CollapsibleAppBarHelper
+ * @constructor
+ */
 abstract class BaseFragmentActivity(@LayoutRes private val resId: Int? = null) :
     BaseActivity(R.layout.base_activity) {
     val collapsibleAppBarHelper by lazy { CollapsibleAppBarHelper(app_bar as AppBarLayout) }

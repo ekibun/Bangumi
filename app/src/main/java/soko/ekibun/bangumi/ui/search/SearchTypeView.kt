@@ -8,6 +8,10 @@ import soko.ekibun.bangumi.api.bangumi.bean.Subject
 
 /**
  * 搜索类型
+ * @property subjectTypeList Map<Int, String>
+ * @property monoTypeList Map<Int, String>
+ * @property selectedType Int
+ * @constructor
  */
 class SearchTypeView(view: TextView, onChange:()->Unit){
     val subjectTypeList = mapOf(

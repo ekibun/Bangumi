@@ -16,6 +16,12 @@ import soko.ekibun.bangumi.util.ResourceUtil
 
 /**
  * 剧集列表Adapter
+ * @property headerHeight Int
+ * @property itemHeight Int
+ * @property longClickListener Function1<Int, Boolean>
+ * @property clickListener Function1<Int, Boolean>
+ * @property updateSelection Function0<Unit>
+ * @constructor
  */
 class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null) :
     BaseSectionQuickAdapter<EpisodeAdapter.SelectableSectionEntity<Episode>, BaseViewHolder>
@@ -41,6 +47,8 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
 
     /**
      * 可选中列表项
+     * @param T
+     * @property isSelected Boolean
      */
     class SelectableSectionEntity<T>: SectionEntity<T>{
         var isSelected = false
@@ -99,6 +107,8 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
     var updateSelection: ()->Unit = {}
     /**
      * 关联RecyclerView
+     * @param recyclerView RecyclerView
+     * @return DragSelectTouchListener
      */
     fun setUpWithRecyclerView(recyclerView: androidx.recyclerview.widget.RecyclerView): DragSelectTouchListener{
         bindToRecyclerView(recyclerView)

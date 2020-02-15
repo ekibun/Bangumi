@@ -5,6 +5,11 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+/**
+ * loading callback
+ *
+ * @param <T>
+ */
 public abstract class RetrofitCallback<T> implements Callback<T> {
     @Override
     public void onResponse(@NotNull Call<T> call, Response<T> response) {

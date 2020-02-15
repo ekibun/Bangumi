@@ -9,6 +9,8 @@ import soko.ekibun.bangumi.R
 
 /**
  * 标签Adapter
+ * @property hasTag Function1<String, Boolean>
+ * @constructor
  */
 class TagAdapter(data: MutableList<Pair<String, Int>>? = null, var hasTag: (String) -> Boolean = { false }) :
         BaseQuickAdapter<Pair<String, Int>, BaseViewHolder>(R.layout.item_tag, data) {

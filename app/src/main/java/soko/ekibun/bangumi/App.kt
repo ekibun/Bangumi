@@ -10,6 +10,9 @@ import soko.ekibun.bangumi.util.CrashHandler
 
 /**
  * App entry
+ * @property dataCacheModel DataCacheModel
+ * @property pluginInstance Pair<Context, Any>?
+ * @property remoteAction Function3<[@kotlin.ParameterName] Intent?, [@kotlin.ParameterName] Int, [@kotlin.ParameterName] Int, Unit>
  */
 class App : Application() {
     val dataCacheModel by lazy { DataCacheModel(this) }
@@ -28,6 +31,11 @@ class App : Application() {
     companion object {
         var appContext: App? = null
 
+        /**
+         * get from context
+         * @param context Context
+         * @return App
+         */
         fun get(context: Context): App {
             return context.applicationContext as App
         }

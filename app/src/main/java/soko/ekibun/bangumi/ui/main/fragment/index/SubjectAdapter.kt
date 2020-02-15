@@ -12,6 +12,7 @@ import soko.ekibun.bangumi.util.GlideUtil
 
 /**
  * 索引条目Adapter
+ * @constructor
  */
 class SubjectAdapter(data: MutableList<Subject>? = null) :
         BaseQuickAdapter<Subject, BaseViewHolder>(R.layout.item_subject, data) {

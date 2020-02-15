@@ -26,6 +26,8 @@ import java.nio.ByteBuffer
 object AppUtil {
     /**
      * 分享字符串
+     * @param context Context
+     * @param str String
      */
     fun shareString(context: Context, str: String){
         val intent = Intent(Intent.ACTION_SEND)
@@ -36,6 +38,8 @@ object AppUtil {
 
     /**
      * 分享图片
+     * @param context Context
+     * @param drawable Drawable
      */
     fun shareDrawable(context: Context, drawable: Drawable){
         try {
@@ -71,6 +75,8 @@ object AppUtil {
 
     /**
      * 打开浏览器
+     * @param context Context
+     * @param url String
      */
     fun openBrowser(context: Context, url: String){
         try{
@@ -81,6 +87,9 @@ object AppUtil {
 
     /**
      * 检测更新
+     * @param activity Activity
+     * @param checkIgnore Boolean
+     * @param onLatest Function0<Unit>
      */
     fun checkUpdate(activity: Activity, checkIgnore: Boolean = true, onLatest: () -> Unit = {}) {
         when (BuildConfig.FLAVOR) {

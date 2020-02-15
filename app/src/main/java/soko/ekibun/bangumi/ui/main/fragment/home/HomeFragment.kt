@@ -13,6 +13,10 @@ import soko.ekibun.bangumi.ui.main.fragment.home.fragment.timeline.TimeLineFragm
 
 /**
  * 主页
+ * @property titleRes Int
+ * @property collectionFragment CollectionFragment
+ * @property fragments List<HomeTabFragment>
+ * @property checkedPos Int
  */
 class HomeFragment: DrawerFragment(R.layout.content_home) {
     override val titleRes: Int = R.string.home
@@ -23,7 +27,11 @@ class HomeFragment: DrawerFragment(R.layout.content_home) {
         RakuenFragment()
     )
 
-    var checkedPos = 0
+    private var checkedPos = 0
+    /**
+     * 选中
+     * @param pos Int
+     */
     fun select(pos: Int) {
         checkedPos = pos
         childFragmentManager.beginTransaction().replace(R.id.frame_pager, fragments[checkedPos]).commit()
@@ -55,6 +63,7 @@ class HomeFragment: DrawerFragment(R.layout.content_home) {
 
     /**
      * 更新用户收藏
+     * @return Unit?
      */
     fun updateUserCollection(): Unit? {
         return collectionFragment.reset()

@@ -11,6 +11,7 @@ import soko.ekibun.bangumi.util.GlideUtil
 
 /**
  * 角色Adapter
+ * @constructor
  */
 class CharacterAdapter(data: MutableList<Character>? = null) :
         BaseQuickAdapter<Character, BaseViewHolder>(R.layout.item_character, data) {

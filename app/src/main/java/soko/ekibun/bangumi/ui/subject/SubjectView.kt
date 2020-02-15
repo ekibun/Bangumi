@@ -2,7 +2,6 @@ package soko.ekibun.bangumi.ui.subject
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
-import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -34,6 +33,30 @@ import soko.ekibun.bangumi.util.HttpUtil
 
 /**
  * 条目view
+ * @property context SubjectActivity
+ * @property collapsibleAppBarHelper CollapsibleAppBarHelper
+ * @property episodeAdapter SmallEpisodeAdapter
+ * @property episodeDetailAdapter EpisodeAdapter
+ * @property linkedSubjectsAdapter LinkedSubjectAdapter
+ * @property recommendSubjectsAdapter LinkedSubjectAdapter
+ * @property characterAdapter CharacterAdapter
+ * @property tagAdapter TagAdapter
+ * @property topicAdapter TopicAdapter
+ * @property blogAdapter BlogAdapter
+ * @property sitesAdapter SitesAdapter
+ * @property commentAdapter CommentAdapter
+ * @property seasonAdapter SeasonAdapter
+ * @property seasonLayoutManager LinearLayoutManager
+ * @property detail View
+ * @property isScrollDown Boolean
+ * @property onStateChangedListener Function1<Int, Unit>
+ * @property peakRatio Float
+ * @property peakMargin Float
+ * @property insertTop Int
+ * @property behavior BottomSheetBehavior<(androidx.constraintlayout.widget.ConstraintLayout..androidx.constraintlayout.widget.ConstraintLayout?)>
+ * @property subjectEpisode List<Episode>
+ * @property scrolled Boolean
+ * @constructor
  */
 @SuppressLint("InflateParams")
 class SubjectView(private val context: SubjectActivity) {
@@ -69,16 +92,12 @@ class SubjectView(private val context: SubjectActivity) {
         } else false
     }
 
-    private val isLandscape
-        get() = context.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-                && !(Build.VERSION.SDK_INT > 24 && context.isInMultiWindowMode)
-
     var peakRatio = 0f
         set(value) {
             field = value
             behavior.peekHeight =
                 context.bottom_sheet.height - Math.max(
-                    if (isLandscape) 0 else (context.bottom_sheet.height * value).toInt(),
+                    if (context.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) 0 else (context.bottom_sheet.height * value).toInt(),
                     context.app_bar.height - context.bottom_sheet.paddingTop - context.bottom_sheet.paddingBottom
                 )
         }
@@ -92,7 +111,7 @@ class SubjectView(private val context: SubjectActivity) {
                     insertTop +
                             Math.max(
                                 context.toolbar.height,
-                                if (context.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) 0 else (it.width * value).toInt()
+                                if (behavior.isHideable) 0 else (it.width * value).toInt()
                             )
                 )
                 it.translationY = it.paddingBottom.toFloat()
@@ -202,22 +221,10 @@ class SubjectView(private val context: SubjectActivity) {
         commentAdapter.setHeaderView(detail)
     }
 
-//    /**
-//     * 收起剧集列表
-//     */
-//    fun closeEpisodeDetail() {
-//        val eps = episodeDetailAdapter.data.filter { it.isSelected }
-//        if (eps.isEmpty())
-//            showEpisodeDetail(false)
-//        else {
-//            for (ep in eps) ep.isSelected = false
-//            episodeDetailAdapter.updateSelection()
-//            episodeDetailAdapter.notifyDataSetChanged()
-//        }
-//    }
-
     /**
      * 更新条目
+     * @param subject Subject
+     * @param tag SaxTag?
      */
     @SuppressLint("SetTextI18n")
     fun updateSubject(subject: Subject, tag: Subject.SaxTag? = null) {
@@ -285,9 +292,6 @@ class SubjectView(private val context: SubjectActivity) {
                 "${if (subject.eps_count <= 0) "" else "/${subject.eps_count}"} ${context.getString(R.string.ep_unit)}"
             detail.item_ep_status.value = subject.ep_status
             detail.item_progress_edit.visibility = View.INVISIBLE
-//            detail.item_progress_info.text = context.getString(R.string.phrase_progress,
-//                    (if (subject.vol_count != 0) context.getString(R.string.parse_sort_vol, "${subject.vol_status}${if (subject.vol_count == 0) "" else "/${subject.vol_count}"}") + " " else "") +
-//                            context.getString(R.string.parse_sort_ep, "${subject.ep_status}${if (subject.eps_count == 0) "" else "/${subject.eps_count}"}"))
             subject.rating?.let {
                 detail.detail_score.text = if (it.score == 0f) "-" else String.format("%.1f", it.score)
                 detail.detail_friend_score.text =
@@ -362,6 +366,8 @@ class SubjectView(private val context: SubjectActivity) {
 
     /**
      * 更新集数标签
+     * @param episodes List<Episode>
+     * @param subject Subject
      */
     fun updateEpisodeLabel(episodes: List<Episode>, subject: Subject) {
         val mainEps = episodes.filter { it.type == Episode.TYPE_MAIN || it.type == Episode.TYPE_MUSIC }
@@ -378,6 +384,8 @@ class SubjectView(private val context: SubjectActivity) {
     private var subjectEpisode: List<Episode> = ArrayList()
     /**
      * 更新剧集列表
+     * @param episodes List<Episode>
+     * @return List<Episode>
      */
     fun updateEpisode(episodes: List<Episode>): List<Episode> {
         if (episodes.none { it.id != 0 }) return subjectEpisode
@@ -419,10 +427,4 @@ class SubjectView(private val context: SubjectActivity) {
     }
 
     private var scrolled = false
-//
-//    private fun showEpisodeDetail(show: Boolean) {
-//        context.episode_detail_list_container.visibility = if (show) View.VISIBLE else View.INVISIBLE
-//        context.episode_detail_list_container.animation =
-//            AnimationUtils.loadAnimation(context, if (show) R.anim.move_in else R.anim.move_out)
-//    }
 }

@@ -13,6 +13,7 @@ import soko.ekibun.bangumi.util.ResourceUtil
 
 /**
  * 收藏列表Adapter
+ * @constructor
  */
 class CollectionListAdapter(data: MutableList<Subject>? = null) :
         BaseQuickAdapter<Subject, BaseViewHolder>(R.layout.item_subject, data) {

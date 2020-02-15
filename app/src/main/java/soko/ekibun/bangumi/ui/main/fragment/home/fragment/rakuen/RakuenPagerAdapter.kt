@@ -14,6 +14,13 @@ import soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
 
 /**
  * 超展开PagerAdapter
+ * @property fragment RakuenFragment
+ * @property pager ViewPager
+ * @property tabList (kotlin.Array<(kotlin.String..kotlin.String?)>..kotlin.Array<out (kotlin.String..kotlin.String?)>?)
+ * @property selectedFilter Int
+ * @property items HashMap<Int, Pair<RakuenAdapter, FixSwipeRefreshLayout>>
+ * @property topicCall HashMap<Int, Call<List<Topic>>>
+ * @constructor
  */
 class RakuenPagerAdapter(
     context: Context,
@@ -69,6 +76,7 @@ class RakuenPagerAdapter(
 
     /**
      * 重置
+     * @param position Int
      */
     fun reset(position: Int) {
         val item = items[position] ?: return
@@ -82,6 +90,7 @@ class RakuenPagerAdapter(
 
     /**
      * 加载帖子列表
+     * @param position Int
      */
     fun loadTopicList(position: Int = pager.currentItem) {
         val item = items[position] ?: return

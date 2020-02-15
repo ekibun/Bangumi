@@ -15,10 +15,11 @@ import soko.ekibun.bangumi.ui.view.BaseFragmentActivity
 
 /**
  * 错误报告
+ * @property uploadCall Call<BaseResult>?
  */
 class CrashActivity : BaseFragmentActivity(R.layout.fragment_crash) {
 
-    var uploadCall: Call<BaseResult>? = null
+    private var uploadCall: Call<BaseResult>? = null
     override fun onViewCreated(view: View) {
         val content = intent.getStringExtra(EXTRA_CRASH) ?: ""
         view.item_content.text = content
@@ -47,6 +48,8 @@ class CrashActivity : BaseFragmentActivity(R.layout.fragment_crash) {
         private const val EXTRA_CRASH = "extraCrash"
         /**
          * 启动activity
+         * @param context Context
+         * @param crash String
          */
         fun startActivity(context: Context, crash: String){
             val intent = Intent(context.applicationContext, CrashActivity::class.java)

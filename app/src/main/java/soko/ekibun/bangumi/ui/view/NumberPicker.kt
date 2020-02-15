@@ -8,6 +8,12 @@ import androidx.core.widget.doAfterTextChanged
 import kotlinx.android.synthetic.main.number_picker.view.*
 import soko.ekibun.bangumi.R
 
+/**
+ * 数字选择
+ * @property onValueChangeListener Function1<Int, Unit>
+ * @property value Int
+ * @constructor
+ */
 class NumberPicker @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
     FrameLayout(context, attrs) {
 

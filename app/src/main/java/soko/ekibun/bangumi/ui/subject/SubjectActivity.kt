@@ -15,6 +15,7 @@ import soko.ekibun.bangumi.util.JsonUtil
 
 /**
  * 条目Activity
+ * @property subjectPresenter SubjectPresenter
  */
 class SubjectActivity : BaseActivity(R.layout.activity_subject) {
     private val subjectPresenter: SubjectPresenter by lazy {
@@ -61,6 +62,8 @@ class SubjectActivity : BaseActivity(R.layout.activity_subject) {
         private const val EXTRA_SUBJECT = "extraSubject"
         /**
          * 启动Activity
+         * @param context Context
+         * @param subject Subject
          */
         fun startActivity(context: Context, subject: Subject) {
             context.startActivity(parseIntent(context, subject))
@@ -68,6 +71,9 @@ class SubjectActivity : BaseActivity(R.layout.activity_subject) {
 
         /**
          * intent
+         * @param context Context
+         * @param subject Subject
+         * @return Intent
          */
         fun parseIntent(context: Context, subject: Subject): Intent {
             val intent = Intent(context, SubjectActivity::class.java)

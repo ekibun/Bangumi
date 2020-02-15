@@ -10,6 +10,10 @@ import java.lang.ref.WeakReference
 
 /**
  * 自定义http图片解析
+ * @property drawables ArrayList<String>
+ * @property sizeInfos HashMap<String, Size>
+ * @property container WeakReference<(android.widget.TextView..android.widget.TextView?)>
+ * @constructor
  */
 class HtmlHttpImageGetter(container: TextView, private val drawables: ArrayList<String>, private val sizeInfos: HashMap<String, Size>) : Html.ImageGetter {
     private val container = WeakReference(container)

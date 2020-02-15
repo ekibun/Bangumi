@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import android.os.Message
+import android.preference.PreferenceManager
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.ViewGroup
@@ -12,6 +13,13 @@ import soko.ekibun.bangumi.util.HttpUtil
 
 /**
  * 多窗口WebView
+ * @property onProgressChanged Function2<WebView, Int, Unit>
+ * @property shouldOverrideUrlLoading Function2<WebView, WebResourceRequest, Boolean>
+ * @property onReceivedTitle Function2<WebView?, String?, Unit>
+ * @property onShowFileChooser Function2<ValueCallback<Array<Uri>>?, FileChooserParams?, Boolean>
+ * @property parentWebView NestedWebView?
+ * @property childWebView NestedWebView?
+ * @constructor
  */
 class NestedWebView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = android.R.attr.webViewStyle) : WebView(context, attrs, defStyleAttr) {
 
@@ -122,14 +130,36 @@ class NestedWebView @JvmOverloads constructor(context: Context, attrs: Attribute
             }
         }
 
+        fun updateViewPort(view: WebView) {
+            if (!PreferenceManager.getDefaultSharedPreferences(view.context).getBoolean(
+                    "webview_fix_scale",
+                    true
+                )
+            ) return
+            view.evaluateJavascript(
+                """
+                    (function(){
+                        document.getElementsByName('viewport').forEach((v)=>{ v.parentNode.removeChild(v) })
+                        document.head.innerHTML += '<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">'
+                    })()
+                """.trimIndent()
+            ) {}
+        }
+
         val mWebViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 return ((view as? NestedWebView)?.shouldOverrideUrlLoading?.invoke(view, request)
                     ?: false) || super.shouldOverrideUrlLoading(view, request)
             }
 
-            override fun onPageFinished(view: WebView?, url: String?) {
+            override fun onPageCommitVisible(view: WebView, url: String?) {
+                super.onPageCommitVisible(view, url)
+                updateViewPort(view)
+            }
+
+            override fun onPageFinished(view: WebView, url: String?) {
                 super.onPageFinished(view, url)
+                updateViewPort(view)
             }
         }
     }

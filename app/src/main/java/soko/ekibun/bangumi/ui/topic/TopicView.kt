@@ -23,6 +23,11 @@ import soko.ekibun.bangumi.util.ResourceUtil
 
 /**
  * 帖子View
+ * @property context TopicActivity
+ * @property collapsibleAppBarHelper CollapsibleAppBarHelper
+ * @property adapter PostAdapter
+ * @property scroll2Top Function0<Boolean>
+ * @constructor
  */
 class TopicView(private val context: TopicActivity) {
     private val collapsibleAppBarHelper = CollapsibleAppBarHelper(context.app_bar as AppBarLayout)
@@ -76,17 +81,10 @@ class TopicView(private val context: TopicActivity) {
             -collapsibleAppBarHelper.appBarOffset
         }
 
-        val maxBgOffset = ResourceUtil.toPixels(context.resources, 24f)
         context.item_list.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 canScroll = context.item_list.canScrollVertically(-1) || collapsibleAppBarHelper.appBarOffset != 0
                 context.item_swipe.setOnChildScrollUpCallback { _, _ -> canScroll }
-            }
-
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-//                context.item_bg.translationY =
-//                    -Math.min(maxBgOffset, context.item_list.getScrolledPastHeight()).toFloat()
             }
         })
         context.title_collapse.setOnClickListener {
@@ -123,6 +121,11 @@ class TopicView(private val context: TopicActivity) {
 
     /**
      * 处理帖子内容
+     * @param topic Topic
+     * @param scrollPost String
+     * @param header Boolean
+     * @param isCache Boolean
+     * @param onItemClick Function2<View, Int, Unit>
      */
     fun processTopic(
         topic: Topic,
@@ -146,9 +149,16 @@ class TopicView(private val context: TopicActivity) {
         })
 
         GlideUtil.with(context.item_cover_blur)
-                ?.load(Images.getImage(topic.image, context))
-                ?.apply(RequestOptions.bitmapTransform(BlurTransformation(25, 8)).placeholder(context.item_cover_blur.drawable))
-                ?.into(context.item_cover_blur)
+            ?.load(Images.getImage(topic.image, context))
+            ?.apply(
+                RequestOptions.bitmapTransform(
+                    BlurTransformation(
+                        25,
+                        8
+                    )
+                ).placeholder(context.item_cover_blur.drawable)
+            )
+            ?.into(context.item_cover_blur)
 
         if (header) return
         adapter.isUseEmpty(!isCache)
@@ -166,14 +176,14 @@ class TopicView(private val context: TopicActivity) {
             else -> context.getString(R.string.hint_login_topic)
         }
         context.btn_reply.setCompoundDrawablesWithIntrinsicBounds(
-                when {
-                    !topic.lastview.isNullOrEmpty() -> ResourceUtil.getDrawable(context, R.drawable.ic_edit)
-                    topic.replies.isNotEmpty() -> ResourceUtil.getDrawable(context, R.drawable.ic_lock)
-                    else -> null
-                },//left
-                null,
-                if (!topic.lastview.isNullOrEmpty()) ResourceUtil.getDrawable(context, R.drawable.ic_send) else null,//right
-                null
+            when {
+                !topic.lastview.isNullOrEmpty() -> ResourceUtil.getDrawable(context, R.drawable.ic_edit)
+                topic.replies.isNotEmpty() -> ResourceUtil.getDrawable(context, R.drawable.ic_lock)
+                else -> null
+            },//left
+            null,
+            if (!topic.lastview.isNullOrEmpty()) ResourceUtil.getDrawable(context, R.drawable.ic_send) else null,//right
+            null
         )
 
         adapter.setOnItemChildClickListener { _, v, position ->
@@ -183,6 +193,9 @@ class TopicView(private val context: TopicActivity) {
 
     /**
      * 更新楼层数据
+     * @param data List<TopicPost>
+     * @param topic Topic
+     * @param isCache Boolean
      */
     fun setNewData(data: List<TopicPost>, topic: Topic, isCache: Boolean = false) {
         var floor = 0

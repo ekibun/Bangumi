@@ -28,6 +28,15 @@ import kotlin.collections.HashMap
 
 /**
  * 时间表PagerAdapter
+ * @property view ViewGroup
+ * @property sp SharedPreferences
+ * @property windowInsets WindowInsets?
+ * @property items SparseArray<CalendarAdapter>
+ * @property dataCacheModel DataCacheModel
+ * @property currentView RecyclerView?
+ * @property mainPresenter MainPresenter?
+ * @property calendarCall Call<List<BangumiCalendarItem>>?
+ * @constructor
  */
 @SuppressLint("ClickableViewAccessibility")
 class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.widget.PagerAdapter() {
@@ -170,13 +179,19 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
             }
             item.setNewData(data)
             if (date.first == now) {
-                ((view.item_pager.findViewWithTag(7) as? RecyclerView)?.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(index - 1, 0)
+                ((view.item_pager.findViewWithTag(7) as? RecyclerView)?.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(
+                    index - 1,
+                    0
+                )
             }
         }
     }
 
     private val mainPresenter: MainPresenter? get() = (view.context as? MainActivity)?.mainPresenter
     private var calendarCall: Call<List<BangumiCalendarItem>>? = null
+    /**
+     * 加载日历列表
+     */
     @SuppressLint("UseSparseArrays")
     fun loadCalendarList() {
         view.item_swipe.isRefreshing = true
@@ -207,6 +222,8 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
 
     /**
      * 获取项对应的时间
+     * @param pos Int
+     * @return Calendar
      */
     fun getPostDate(pos: Int): Calendar {
         val cal = CalendarAdapter.getIntCalendar(CalendarAdapter.getNowInt(

@@ -7,12 +7,15 @@ import soko.ekibun.bangumi.util.JsonUtil
 
 /**
  * 搜索历史
+ * @property sp SharedPreferences
+ * @constructor
  */
 class SearchHistoryModel(context: Context){
-    val sp: SharedPreferences by lazy{ PreferenceManager.getDefaultSharedPreferences(context) }
+    private val sp: SharedPreferences by lazy { PreferenceManager.getDefaultSharedPreferences(context) }
 
     /**
      * 添加
+     * @param searchKey String
      */
     fun addHistory(searchKey: String) {
         val newList = getHistoryList().toMutableList()
@@ -22,6 +25,8 @@ class SearchHistoryModel(context: Context){
 
     /**
      * 删除
+     * @param searchKey String
+     * @return Boolean
      */
     fun removeHistory(searchKey: String): Boolean {
         val newList = getHistoryList().toMutableList()
@@ -39,6 +44,7 @@ class SearchHistoryModel(context: Context){
 
     /**
      * 获取列表
+     * @return List<String>
      */
     fun getHistoryList(): List<String> {
         return JsonUtil.toEntity<List<String>>(sp.getString(PREF_SEARCH_HISTORY, JsonUtil.toJson(ArrayList<String>()))

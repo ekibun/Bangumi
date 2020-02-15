@@ -17,6 +17,13 @@ import soko.ekibun.bangumi.ui.setting.SettingsActivity
 
 /**
  * 抽屉
+ * @property context MainActivity
+ * @property checkedId Int
+ * @property homeFragment HomeFragment
+ * @property fragments Map<Int, DrawerFragment>
+ * @property toggle ActionBarDrawerToggle
+ * @property navigationItemSelectedListener Function1<MenuItem, Boolean>
+ * @constructor
  */
 class DrawerView(private val context: MainActivity, onLogout: () -> Unit) {
     var checkedId = R.id.nav_home
@@ -69,6 +76,7 @@ class DrawerView(private val context: MainActivity, onLogout: () -> Unit) {
 
     /**
      * 保存状态
+     * @param outState Bundle
      */
     fun onSaveInstanceState(outState: Bundle) {
         outState.putInt("DrawerCheckedId", checkedId)
@@ -79,6 +87,7 @@ class DrawerView(private val context: MainActivity, onLogout: () -> Unit) {
 
     /**
      * 恢复状态
+     * @param savedInstanceState Bundle
      */
     fun onRestoreInstanceState(savedInstanceState: Bundle) {
         select(savedInstanceState.getInt("DrawerCheckedId"))
@@ -89,6 +98,7 @@ class DrawerView(private val context: MainActivity, onLogout: () -> Unit) {
 
     /**
      * 获取当前fragment
+     * @return DrawerFragment?
      */
     fun current(): DrawerFragment? {
         return fragments[checkedId]
@@ -96,6 +106,7 @@ class DrawerView(private val context: MainActivity, onLogout: () -> Unit) {
 
     /**
      * 选中fragment
+     * @param id Int
      */
     fun select(id: Int) {
         checkedId = id

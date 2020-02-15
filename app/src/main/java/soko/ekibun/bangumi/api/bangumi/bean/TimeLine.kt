@@ -14,42 +14,60 @@ import java.util.*
 /**
  * 时间线
  */
-class TimeLine: SectionEntity<TimeLine.TimeLineItem> {
-    constructor(isHeader: Boolean, header: String): super(isHeader, header)
-    constructor(t: TimeLineItem): super(t)
+class TimeLine : SectionEntity<TimeLine.TimeLineItem> {
+    constructor(isHeader: Boolean, header: String) : super(isHeader, header)
+    constructor(t: TimeLineItem) : super(t)
 
     /**
      * 时间线条目
+     * @property user UserInfo
+     * @property action String
+     * @property time String
+     * @property content String?
+     * @property contentUrl String?
+     * @property collectStar Int
+     * @property thumbs List<ThumbItem>
+     * @property delUrl String?
+     * @property sayUrl String?
+     * @constructor
      */
     data class TimeLineItem(
-            val user: UserInfo,
-            val action: String,
-            val time: String,
-            val content: String?,
-            val contentUrl: String?,
-            val collectStar: Int,
-            val thumbs: List<ThumbItem>,
-            val delUrl: String?,
-            val sayUrl: String?
-    ){
+        val user: UserInfo,
+        val action: String,
+        val time: String,
+        val content: String?,
+        val contentUrl: String?,
+        val collectStar: Int,
+        val thumbs: List<ThumbItem>,
+        val delUrl: String?,
+        val sayUrl: String?
+    ) {
         data class ThumbItem(
-                val image: String,
-                val title: String,
-                val url: String
+            val image: String,
+            val title: String,
+            val url: String
         )
     }
 
     companion object {
         /**
          * 时间线列表
+         * @param type String
+         * @param page Int
+         * @param usr UserInfo?
+         * @param global Boolean
+         * @return Call<List<TimeLine>>
          */
         fun getList(
-                type: String,
-                page: Int,
-                usr: UserInfo?,
-                global: Boolean
+            type: String,
+            page: Int,
+            usr: UserInfo?,
+            global: Boolean
         ): Call<List<TimeLine>> {
-            return ApiHelper.buildHttpCall("${Bangumi.SERVER}${if (usr == null) "" else "/user/${usr.username}"}/timeline?type=$type&page=$page&ajax=1", useCookie = !global) { rsp ->
+            return ApiHelper.buildHttpCall(
+                "${Bangumi.SERVER}${if (usr == null) "" else "/user/${usr.username}"}/timeline?type=$type&page=$page&ajax=1",
+                useCookie = !global
+            ) { rsp ->
                 val doc = Jsoup.parse(rsp.body?.string() ?: "")
                 val ret = ArrayList<TimeLine>()
                 var user = usr ?: UserInfo()
@@ -62,29 +80,33 @@ class TimeLine: SectionEntity<TimeLine.TimeLineItem> {
                             user = UserInfo.parse(it, Bangumi.parseImageUrl(it.selectFirst("span.avatarNeue")))
                         }
                         ret += TimeLine(TimeLineItem(
-                                user = user,
-                                action = item.selectFirst(cssInfo)?.childNodes()?.map {
-                                    if (it is TextNode || (it as? Element)?.tagName() == "a" && it.selectFirst("img") == null)
-                                        it.outerHtml()
-                                    else if ((it as? Element)?.hasClass("status") == true)
-                                        "<br/>" + it.html()
-                                    else ""
-                                }?.reduce { acc, s -> acc + s } ?: "",
-                                time = item.selectFirst(".date")?.text()?.trim('·', ' ', '回', '复') ?: "",
-                                content = item.selectFirst(".collectInfo")?.text()
-                                        ?: item.selectFirst(".info_sub")?.text(),
-                                contentUrl = item.selectFirst(".info_sub a")?.attr("href"),
-                                collectStar = Regex("""stars([0-9]*)""").find(item.selectFirst(".starlight")?.outerHtml()
-                                        ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 0,
-                                thumbs = item.select("$cssInfo img").map {
-                                    val url = it.parent().attr("href")
-                                    TimeLineItem.ThumbItem(
-                                            image = Bangumi.parseImageUrl(it),
-                                            title = item.select("a[href=\"$url\"]")?.text() ?: "",
-                                            url = url)
-                                },
-                                delUrl = item.selectFirst(".tml_del")?.attr("href"),
-                                sayUrl = item.selectFirst("a.tml_comment")?.attr("href")))
+                            user = user,
+                            action = item.selectFirst(cssInfo)?.childNodes()?.map {
+                                if (it is TextNode || (it as? Element)?.tagName() == "a" && it.selectFirst("img") == null)
+                                    it.outerHtml()
+                                else if ((it as? Element)?.hasClass("status") == true)
+                                    "<br/>" + it.html()
+                                else ""
+                            }?.reduce { acc, s -> acc + s } ?: "",
+                            time = item.selectFirst(".date")?.text()?.trim('·', ' ', '回', '复') ?: "",
+                            content = item.selectFirst(".collectInfo")?.text()
+                                ?: item.selectFirst(".info_sub")?.text(),
+                            contentUrl = item.selectFirst(".info_sub a")?.attr("href"),
+                            collectStar = Regex("""stars([0-9]*)""").find(
+                                item.selectFirst(".starlight")?.outerHtml() ?: ""
+                            )?.groupValues?.get(1)?.toIntOrNull() ?: 0,
+                            thumbs = item.select("$cssInfo img").map {
+                                val url = it.parent().attr("href")
+                                TimeLineItem.ThumbItem(
+                                    image = Bangumi.parseImageUrl(it),
+                                    title = item.select("a[href=\"$url\"]")?.text() ?: "",
+                                    url = url
+                                )
+                            },
+                            delUrl = item.selectFirst(".tml_del")?.attr("href"),
+                            sayUrl = item.selectFirst("a.tml_comment")?.attr("href")
+                        )
+                        )
                     }
                 }
                 ret
@@ -93,14 +115,19 @@ class TimeLine: SectionEntity<TimeLine.TimeLineItem> {
 
         /**
          * 时间线吐槽
+         * @param say_input String
+         * @return Call<Boolean>
          */
         fun addComment(
-                say_input: String
+            say_input: String
         ): Call<Boolean> {
-            return ApiHelper.buildHttpCall("${Bangumi.SERVER}/update/user/say?ajax=1", body = FormBody.Builder()
+            return ApiHelper.buildHttpCall(
+                "${Bangumi.SERVER}/update/user/say?ajax=1",
+                body = FormBody.Builder()
                     .add("say_input", say_input)
                     .add("formhash", HttpUtil.formhash)
-                    .add("submit", "submit").build()) {
+                    .add("submit", "submit").build()
+            ) {
                 it.body?.string()?.contains("\"status\":\"ok\"") == true
             }
         }

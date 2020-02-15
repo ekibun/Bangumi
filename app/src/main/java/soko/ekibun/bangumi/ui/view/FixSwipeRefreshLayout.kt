@@ -6,14 +6,16 @@ import android.view.MotionEvent
 import android.view.ViewConfiguration
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
+/**
+ * 解决滑动冲突
+ * @property touchSlop Int
+ * @property prevX Float
+ * @property declined Boolean
+ * @constructor
+ */
 class FixSwipeRefreshLayout @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
     SwipeRefreshLayout(context, attrs) {
     private val touchSlop by lazy { ViewConfiguration.get(context).scaledTouchSlop }
-
-    override fun setRefreshing(refreshing: Boolean) {
-        clearAnimation()
-        super.setRefreshing(refreshing)
-    }
 
     var prevX = 0f
     var declined = false

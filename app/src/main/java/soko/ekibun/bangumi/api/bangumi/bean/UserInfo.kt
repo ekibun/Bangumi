@@ -1,15 +1,17 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
-import android.webkit.CookieManager
-import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
-import retrofit2.Call
-import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
-import soko.ekibun.bangumi.util.HttpUtil
 
 /**
  * 用户信息类
+ * @property id Int
+ * @property username String?
+ * @property nickname String?
+ * @property avatar String?
+ * @property sign String?
+ * @property url String
+ * @constructor
  */
 data class UserInfo(
         var id: Int = 0,
@@ -23,6 +25,8 @@ data class UserInfo(
     companion object {
         /**
          * 从url中提取用户名
+         * @param href String?
+         * @return String?
          */
         fun getUserName(href: String?): String? {
             return Regex("""/user/([^/]*)""").find(href ?: "")?.groupValues?.get(1)
@@ -30,6 +34,9 @@ data class UserInfo(
 
         /**
          * 获取用户信息
+         * @param user Element?
+         * @param avatar String?
+         * @return UserInfo
          */
         fun parse(user: Element?, avatar: String? = null): UserInfo {
             val username = getUserName(user?.attr("href"))
@@ -39,30 +46,6 @@ data class UserInfo(
                     nickname = user?.text(),
                     avatar = avatar
             )
-        }
-
-        /**
-         * 自己的用户信息
-         */
-        fun getSelf(reload: () -> Unit): Call<UserInfo> {
-            val cookieManager = CookieManager.getInstance()
-            return ApiHelper.buildHttpCall("${Bangumi.SERVER}/settings") {
-                val doc = Jsoup.parse(it.body?.string() ?: "")
-                val user = doc.selectFirst(".idBadgerNeue a.avatar") ?: throw Exception("login failed")
-                val username = getUserName(user.attr("href"))
-                it.headers("set-cookie").forEach {
-                    cookieManager.setCookie(Bangumi.SERVER, it)
-                }
-                if (it.headers("set-cookie").isNotEmpty()) reload()
-                HttpUtil.formhash = doc.selectFirst("input[name=formhash]")?.attr("value") ?: HttpUtil.formhash
-                UserInfo(
-                        id = username?.toIntOrNull() ?: 0,
-                        username = username,
-                        nickname = doc.selectFirst("input[name=nickname]")?.attr("value"),
-                        avatar = Bangumi.parseImageUrl(user.selectFirst("span.avatarNeue")),
-                        sign = doc.selectFirst("input[name=sign_input]")?.attr("value")
-                )
-            }
         }
     }
 }

@@ -14,6 +14,8 @@ object JsonUtil {
 
     /**
      * 转换为JSON
+     * @param src Any
+     * @return String
      */
     fun toJson(src: Any): String {
         return GSON.toJson(src)
@@ -21,6 +23,8 @@ object JsonUtil {
 
     /**
      * 转换为实例T
+     * @param json String
+     * @return T?
      */
     inline fun <reified T> toEntity(json: String): T? {
         return try {
@@ -33,6 +37,8 @@ object JsonUtil {
 
     /**
      * 转为JsonObject
+     * @param json String
+     * @return JsonObject
      */
     fun toJsonObject(json: String): JsonObject {
         return JSON_PARSER.parse(json).asJsonObject

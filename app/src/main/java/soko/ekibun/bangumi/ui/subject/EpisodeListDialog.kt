@@ -16,11 +16,18 @@ import soko.ekibun.bangumi.util.ResourceUtil
 
 /**
  * 剧集列表对话框
+ * @property presenter SubjectPresenter
+ * @property adapter EpisodeAdapter
+ * @property callback Function2<[@kotlin.ParameterName] List<Episode>, [@kotlin.ParameterName] String, Unit>?
+ * @property title String
+ * @property clearSelection Function0<Unit>
  */
 class EpisodeListDialog : BaseDialog(R.layout.dialog_episode_list) {
     companion object {
         /**
          * 显示对话框
+         * @param fragmentManager FragmentManager
+         * @param presenter SubjectPresenter
          */
         fun showDialog(fragmentManager: FragmentManager, presenter: SubjectPresenter) {
             val dialog = EpisodeListDialog()

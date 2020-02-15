@@ -2,8 +2,11 @@ package soko.ekibun.bangumi.api.uploadcc.bean
 
 /**
  * uploadcc返回数据
-{"code":100,"total_success":1,"total_error":0,
-"success_image":[{"name":"a291a6d847474ae09ca7249efdfea65f.gif","url":"i1\/2019\/06\/03\/JkipGQ.gif","thumbnail":"i1\/2019\/06\/03\/JkipGQb.jpg","delete":"7$2y$10$cZalTTI5kFOqOnC96Tj\/Lu10NLJdmFQL12guRMj2yB6OJj9bcASPm5"}]}
+ * @property code Int
+ * @property total_success Int
+ * @property total_error Int
+ * @property success_image List<DataBean>?
+ * @constructor
  */
 data class Response(
         var code: Int = 0,
@@ -14,7 +17,11 @@ data class Response(
 
     /**
      * 图片链接
-    {"name":"a291a6d847474ae09ca7249efdfea65f.gif","url":"i1\/2019\/06\/03\/JkipGQ.gif","thumbnail":"i1\/2019\/06\/03\/JkipGQb.jpg","delete":"7$2y$10$cZalTTI5kFOqOnC96Tj\/Lu10NLJdmFQL12guRMj2yB6OJj9bcASPm5"}
+     * @property name String?
+     * @property url String?
+     * @property thumbnail String?
+     * @property delete String?
+     * @constructor
      */
     data class DataBean(
             var name: String? = null,

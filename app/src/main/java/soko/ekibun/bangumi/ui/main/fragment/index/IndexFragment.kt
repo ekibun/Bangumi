@@ -9,6 +9,7 @@ import java.util.*
 
 /**
  * 索引
+ * @property titleRes Int
  */
 class IndexFragment: DrawerFragment(R.layout.content_index){
     override val titleRes: Int = R.string.index

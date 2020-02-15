@@ -9,6 +9,7 @@ import soko.ekibun.bangumi.util.GlideUtil
 
 /**
  * 表情Adapter
+ * @constructor
  */
 class EmojiAdapter(data: MutableList<Pair<String, String>>? = null) :
         BaseQuickAdapter<Pair<String, String>, BaseViewHolder>(R.layout.item_emoji, data) {

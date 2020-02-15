@@ -55,6 +55,14 @@
 
         <androidx.preference.SwitchPreference
                 app:iconSpaceReserved="false"
+                app:key="webview_fix_scale"
+                app:title="禁用页面缩放"
+                app:summaryOn="重写页面viewport并禁用缩放"
+                app:summaryOff="使用页面设置的viewport参数"
+                app:defaultValue="true"/>
+
+        <androidx.preference.SwitchPreference
+                app:iconSpaceReserved="false"
                 app:key="use_bbcode"
                 app:title="使用bbcode"
                 app:summary="回复时默认使用bbcode而不是富文本编辑器"

@@ -10,6 +10,8 @@ import java.lang.ref.WeakReference
 
 /**
  * 限制最大高度的 url drawable
+ * @property gradientPaint Paint
+ * @constructor
  */
 open class CollapseUrlDrawable(container: WeakReference<TextView>) : UrlDrawable(container) {
 

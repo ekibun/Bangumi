@@ -6,6 +6,7 @@ import soko.ekibun.bangumi.R
 
 /**
  * 搜索历史Adapter
+ * @constructor
  */
 class SearchHistoryAdapter(data: MutableList<String>? = null) :
         BaseQuickAdapter<String, BaseViewHolder>(R.layout.item_search_history, data) {

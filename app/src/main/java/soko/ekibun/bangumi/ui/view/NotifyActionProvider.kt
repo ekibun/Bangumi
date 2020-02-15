@@ -12,6 +12,11 @@ import soko.ekibun.bangumi.R
 
 /**
  * 通知提示ActionProvider
+ * @property mIvIcon ImageView?
+ * @property mTvBadge TextView?
+ * @property onClick Function0<Unit>
+ * @property badge Int
+ * @constructor
  */
 class NotifyActionProvider(context: Context): ActionProvider(context){
     private var mIvIcon: ImageView? = null

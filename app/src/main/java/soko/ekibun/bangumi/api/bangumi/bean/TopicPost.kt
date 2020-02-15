@@ -11,6 +11,24 @@ import soko.ekibun.bangumi.util.HttpUtil
 
 /**
  * 帖子回复
+ * @property pst_id String
+ * @property pst_mid String
+ * @property pst_uid String
+ * @property pst_content String
+ * @property username String
+ * @property nickname String
+ * @property sign String
+ * @property avatar String
+ * @property dateline String
+ * @property is_self Boolean
+ * @property isSub Boolean
+ * @property editable Boolean
+ * @property relate String
+ * @property model String
+ * @property floor Int
+ * @property sub_floor Int
+ * @property badge String?
+ * @constructor
  */
 data class TopicPost(
         var pst_id: String = "",
@@ -40,6 +58,8 @@ data class TopicPost(
     companion object {
         /**
          * 讨论
+         * @param it Element
+         * @return TopicPost?
          */
         fun parse(it: Element): TopicPost? {
             val user = it.selectFirst(".inner a") ?: return null
@@ -76,6 +96,8 @@ data class TopicPost(
 
         /**
          * 删除帖子回复
+         * @param post TopicPost
+         * @return Call<Boolean>
          */
         fun remove(
                 post: TopicPost
@@ -95,6 +117,9 @@ data class TopicPost(
 
         /**
          * 编辑帖子回复
+         * @param post TopicPost
+         * @param content String
+         * @return Call<Boolean>
          */
         fun edit(
                 post: TopicPost,

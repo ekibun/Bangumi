@@ -5,6 +5,15 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.material.appbar.AppBarLayout
 import kotlinx.android.synthetic.main.appbar_layout.view.*
 
+/**
+ * App bar helper
+ * @property appbar AppBarLayout
+ * @property appBarOffset Int
+ * @property collapsible CollapseStatus
+ * @property mRatio Float
+ * @property onTitleClickListener Function1<ClickEvent, Unit>
+ * @constructor
+ */
 class CollapsibleAppBarHelper(val appbar: AppBarLayout) {
     var appBarOffset = 0
 

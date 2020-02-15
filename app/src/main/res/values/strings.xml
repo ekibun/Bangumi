@@ -295,4 +295,5 @@
 
     <!-- 对话框 -->
     <string name="dialog_subject_edit_title">修改收藏</string>
+    <string name="title">标题</string>
 </resources>

@@ -19,7 +19,9 @@ interface BgmIpViewer {
 
     /**
      * 获取条目关联的条目链
-     * @param id 条目 id
+     * @param id Int
+     * @param ua String
+     * @return Call<IpView>
      */
     @GET("/api.v1/view_ip/subject/{id}")
     fun subject(@Path("id") id: Int,
@@ -29,6 +31,7 @@ interface BgmIpViewer {
         private const val SERVER_API = "https://www.trim21.cn/"
         /**
          * 创建retrofit实例
+         * @return BgmIpViewer
          */
         fun createInstance(): BgmIpViewer {
             return Retrofit.Builder().baseUrl(SERVER_API)
@@ -38,25 +41,35 @@ interface BgmIpViewer {
 
         /**
          * 获取条目的季度条目链（OVA & 续集）
-         * @param it 条目链
-         * @param subject 当前条目
+         * @param it IpView
+         * @param subject Subject
+         * @return List<Subject>
          */
         fun getSeason(it: IpView, subject: Subject): List<Subject> {
             return getSeasonNode(it, subject).map {
-                Subject(it.subject_id,
-                        name = it.name, name_cn = it.name_cn,
-                        image = it.image)
+                Subject(
+                    it.subject_id,
+                    name = it.name, name_cn = it.name_cn,
+                    image = it.image
+                )
             }
         }
 
+        /**
+         * 解析季度数据
+         * @param it IpView
+         * @param subject Subject
+         * @return List<IpView.Node>
+         */
         private fun getSeasonNode(it: IpView, subject: Subject): List<IpView.Node> {
             val ret = ArrayList<IpView.Node>()
 
-            val bgmIp = it.nodes?.firstOrNull { it.subject_id == subject.id }?:return ret
-            val id = it.edges?.firstOrNull{ edge-> edge.source == bgmIp.id && edge.relation == "主线故事"}?.target?:bgmIp.id
+            val bgmIp = it.nodes?.firstOrNull { it.subject_id == subject.id } ?: return ret
+            val id =
+                it.edges?.firstOrNull { edge -> edge.source == bgmIp.id && edge.relation == "主线故事" }?.target ?: bgmIp.id
 
             for (edge in it.edges?.filter { edge -> edge.target == id && edge.relation == "主线故事" }?.reversed()
-                    ?: ArrayList()) {
+                ?: ArrayList()) {
                 ret.add(0, it.nodes.firstOrNull { it.id == edge.source } ?: continue)
             }
             ret.add(0,it.nodes.firstOrNull { it.id == id }?:return ret)

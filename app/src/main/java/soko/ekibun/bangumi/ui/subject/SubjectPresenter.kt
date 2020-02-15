@@ -4,7 +4,6 @@ import android.view.Menu
 import android.view.View
 import android.widget.PopupMenu
 import androidx.appcompat.app.AlertDialog
-import com.chad.library.adapter.base.BaseQuickAdapter
 import kotlinx.android.synthetic.main.activity_subject.*
 import kotlinx.android.synthetic.main.brvah_quick_view_load_more.view.*
 import kotlinx.android.synthetic.main.dialog_subject.view.*
@@ -29,6 +28,16 @@ import soko.ekibun.bangumi.util.HttpUtil
 
 /**
  * 条目Presenter
+ * @property context SubjectActivity
+ * @property subject Subject
+ * @property subjectView SubjectView
+ * @property dataCacheModel DataCacheModel
+ * @property commentPage Int
+ * @property episodeDialog EpisodeDialog?
+ * @property subjectCall Call<Unit>?
+ * @property subjectRefreshListener Function1<Any?, Unit>
+ * @property epCalls Call<List<Episode>>?
+ * @constructor
  */
 class SubjectPresenter(private val context: SubjectActivity, var subject: Subject) {
     val subjectView by lazy { SubjectView(context) }
@@ -37,9 +46,6 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
 
     var commentPage = 1
 
-    /**
-     * 初始化
-     */
     init {
         DataCacheModel.merge(subject, dataCacheModel.get(subject.cacheKey))
         subjectView.updateSubject(subject)
@@ -105,11 +111,10 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
             WebActivity.startActivity(context, "${subject.url}/reviews")
         }
 
-        subjectView.episodeAdapter.onItemLongClickListener =
-            BaseQuickAdapter.OnItemLongClickListener { _, _, position ->
-                WebActivity.launchUrl(context, subjectView.episodeAdapter.data[position].url, "")
-                true
-            }
+        subjectView.episodeAdapter.setOnItemLongClickListener { _, _, position ->
+            WebActivity.launchUrl(context, subjectView.episodeAdapter.data[position].url, "")
+            true
+        }
 
         subjectView.episodeAdapter.setOnItemClickListener { _, _, position ->
             showEpisodeDialog(subjectView.episodeAdapter.data[position].id)
@@ -120,15 +125,15 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
         }
 
         subjectView.linkedSubjectsAdapter.setOnItemClickListener { _, _, position ->
-            subjectView.linkedSubjectsAdapter.data[position]?.let { SubjectActivity.startActivity(context, it) }
+            subjectView.linkedSubjectsAdapter.data[position].let { SubjectActivity.startActivity(context, it) }
         }
 
         subjectView.recommendSubjectsAdapter.setOnItemClickListener { _, _, position ->
-            subjectView.recommendSubjectsAdapter.data[position]?.let { SubjectActivity.startActivity(context, it) }
+            subjectView.recommendSubjectsAdapter.data[position].let { SubjectActivity.startActivity(context, it) }
         }
 
         subjectView.characterAdapter.setOnItemClickListener { _, _, position ->
-            WebActivity.launchUrl(context, subjectView.characterAdapter.data[position]?.url, "")
+            WebActivity.launchUrl(context, subjectView.characterAdapter.data[position].url, "")
         }
 
         subjectView.topicAdapter.setOnItemClickListener { _, _, position ->
@@ -150,11 +155,18 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
         }
     }
 
+    /**
+     * 显示剧集列表对话框
+     */
     fun showEpisodeListDialog() {
         EpisodeListDialog.showDialog(context.supportFragmentManager, this)
     }
 
     private var episodeDialog: EpisodeDialog? = null
+    /**
+     * 显示剧集信息
+     * @param id Int
+     */
     fun showEpisodeDialog(id: Int) {
         val eps = subject.eps ?: return
         val episodeIndex = eps.indexOfFirst { it.id == id }
@@ -169,6 +181,11 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
         }
     }
 
+    /**
+     * 更新进度
+     * @param eps List<Episode>
+     * @param newStatus String
+     */
     fun updateProgress(eps: List<Episode>, newStatus: String) {
         EpisodeDialog.updateProgress(eps, newStatus) {
             subjectView.episodeAdapter.notifyDataSetChanged()

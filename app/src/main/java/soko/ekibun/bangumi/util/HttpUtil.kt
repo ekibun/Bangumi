@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit
 object HttpUtil {
     val ua = "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Mobile Safari/537.36"
     var formhash = ""
-    val httpCookieClient: OkHttpClient by lazy {
+    private val httpCookieClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
             .readTimeout(Integer.MAX_VALUE.toLong(), TimeUnit.MILLISECONDS)
             .addInterceptor(BrotliInterceptor)
@@ -24,6 +24,11 @@ object HttpUtil {
 
     /**
      * 封装OkHttp请求，携带Cookie和User-Agent
+     * @param url String
+     * @param header Map<String, String>
+     * @param body RequestBody?
+     * @param useCookie Boolean
+     * @return Call
      */
     fun getCall(url: String, header: Map<String, String> = HashMap(), body: RequestBody? = null, useCookie: Boolean = true): Call {
         val mutableHeader = header.toMutableMap()

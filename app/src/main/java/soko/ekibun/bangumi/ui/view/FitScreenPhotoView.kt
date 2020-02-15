@@ -10,6 +10,8 @@ import com.github.chrisbanes.photoview.PhotoView
 
 /**
  * 适应屏幕PhotoView
+ * @property isMinScale Boolean
+ * @constructor
  */
 open class FitScreenPhotoView @JvmOverloads constructor(context: Context, attr: AttributeSet? = null, defStyle: Int = 0) : PhotoView(context, attr, defStyle) {
     val isMinScale get() = scale == 1f

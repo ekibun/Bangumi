@@ -17,6 +17,16 @@ import java.util.*
 interface Xxxlin {
     /**
      * 错误报告
+     * @param content String
+     * @param appVersionCode Int
+     * @param appVersionName String
+     * @param deviceManufacturer String
+     * @param deviceBrand String
+     * @param deviceModel String
+     * @param deviceLanguage String
+     * @param deviceVersionRelease String
+     * @param deviceSdkInt Int
+     * @return Call<BaseResult>
      */
     @FormUrlEncoded
     @POST("/api/soko/bangumi/v1/log/add")
@@ -34,6 +44,7 @@ interface Xxxlin {
         private const val SERVER_API = "http://www.Xxxlin.com"
         /**
          * 创建retrofit实例
+         * @return Xxxlin
          */
         fun createInstance(): Xxxlin{
             return Retrofit.Builder().baseUrl(SERVER_API)

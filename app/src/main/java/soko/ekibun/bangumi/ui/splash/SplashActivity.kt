@@ -20,6 +20,7 @@ class SplashActivity : AppCompatActivity() {
     companion object {
         /**
          * 启动
+         * @param context Context
          */
         fun startActivity(context: Context){
             val intent = Intent(context.applicationContext, SplashActivity::class.java)

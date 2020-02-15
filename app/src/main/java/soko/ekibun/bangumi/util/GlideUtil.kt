@@ -30,6 +30,13 @@ object GlideUtil {
 
     /**
      * Glide进度
+     * @param url String
+     * @param view View
+     * @param options RequestOptions
+     * @param circularProgressDrawable CircularProgressDrawable
+     * @param uri Uri?
+     * @param callback Function2<Int, Drawable?, Unit>
+     * @return Target<Drawable>?
      */
     fun loadWithProgress(url: String, view: View, options: RequestOptions, circularProgressDrawable: CircularProgressDrawable, uri: Uri? = null, callback: (Int, Drawable?) -> Unit): Target<Drawable>? {
         val request = with(view) ?: return null

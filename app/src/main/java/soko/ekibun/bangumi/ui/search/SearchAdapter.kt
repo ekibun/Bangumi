@@ -12,6 +12,7 @@ import soko.ekibun.bangumi.util.GlideUtil
 
 /**
  * 搜索条目Adapter
+ * @constructor
  */
 class SearchAdapter(data: MutableList<Subject>? = null) :
         BaseQuickAdapter<Subject, BaseViewHolder>(R.layout.item_subject, data) {

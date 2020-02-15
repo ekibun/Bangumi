@@ -11,6 +11,9 @@ import soko.ekibun.bangumi.util.GlideUtil
 
 /**
  * 用户信息View
+ * @property context MainActivity
+ * @property headerView (android.view.View..android.view.View?)
+ * @constructor
  */
 class UserView(private val context: MainActivity, onUserFigureClickListener: View.OnClickListener) {
     val headerView by lazy { context.nav_view.getHeaderView(0) }
@@ -21,6 +24,7 @@ class UserView(private val context: MainActivity, onUserFigureClickListener: Vie
 
     /**
      * 更新用户信息
+     * @param user UserInfo?
      */
     fun setUser(user: UserInfo?) {
         context.runOnUiThread {

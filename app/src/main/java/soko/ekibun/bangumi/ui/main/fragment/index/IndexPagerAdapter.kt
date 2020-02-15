@@ -20,6 +20,13 @@ import java.util.*
 
 /**
  * 索引PagerAdapter
+ * @property pager ViewPager
+ * @property windowInsets WindowInsets?
+ * @property indexTypeView IndexTypeView
+ * @property pageIndex SparseIntArray
+ * @property indexCalls WeakHashMap<Int, Call<List<Subject>>>
+ * @property holders ArrayList<IndexPagerViewHolder>
+ * @constructor
  */
 class IndexPagerAdapter(fragment: IndexFragment, private val pager: androidx.viewpager.widget.ViewPager) :
     RecyclePagerAdapter<IndexPagerAdapter.IndexPagerViewHolder>() {
@@ -117,6 +124,10 @@ class IndexPagerAdapter(fragment: IndexFragment, private val pager: androidx.vie
 
     /**
      * 索引ViewHolder
+     * @property view FixSwipeRefreshLayout
+     * @property adapter SubjectAdapter
+     * @property position Int
+     * @constructor
      */
     class IndexPagerViewHolder(val view: FixSwipeRefreshLayout, val adapter: SubjectAdapter) :
         RecyclePagerAdapter.PagerViewHolder({ view }()) {

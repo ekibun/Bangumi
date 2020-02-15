@@ -37,6 +37,7 @@ class SearchActivity : BaseFragmentActivity(R.layout.fragment_search) {
     companion object{
         /**
          * 启动Activity
+         * @param context Context
          */
         fun startActivity(context: Context) {
             val intent = Intent(context, SearchActivity::class.java)

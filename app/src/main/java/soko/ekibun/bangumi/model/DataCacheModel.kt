@@ -10,6 +10,9 @@ import java.util.*
 
 /**
  * 数据离线缓存
+ * @property memoryCache WeakHashMap<String, Any>
+ * @property diskLruCache DiskLruCache
+ * @constructor
  */
 open class DataCacheModel(context: Context) {
     val memoryCache = WeakHashMap<String, Any>()
@@ -21,6 +24,8 @@ open class DataCacheModel(context: Context) {
 
     /**
      * 读取缓存
+     * @param key String
+     * @return T?
      */
     inline fun <reified T> get(key: String): T? {
         return (memoryCache[key] as? T) ?: diskLruCache.get(key)?.let { snapshot ->
@@ -35,6 +40,8 @@ open class DataCacheModel(context: Context) {
 
     /**
      * 保存缓存
+     * @param key String
+     * @param data T
      */
     inline fun <reified T : Any> set(key: String, data: T) {
         memoryCache[key] = data
@@ -47,6 +54,9 @@ open class DataCacheModel(context: Context) {
     companion object {
         /**
          * 获取缓存位置
+         * @param context Context
+         * @param uniqueName String
+         * @return File
          */
         fun getDiskCacheDir(context: Context, uniqueName: String): File {
             return File(if (Environment.MEDIA_MOUNTED == Environment.getExternalStorageState() || !Environment.isExternalStorageRemovable()) {
@@ -58,6 +68,8 @@ open class DataCacheModel(context: Context) {
 
         /**
          * 混合数据
+         * @param a T
+         * @param b T?
          */
         inline fun <reified T : Any> merge(a: T, b: T?) {
             if (b == null) return

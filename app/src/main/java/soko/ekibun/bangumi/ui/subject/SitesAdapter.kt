@@ -10,6 +10,8 @@ import soko.ekibun.bangumi.api.github.bean.OnAirInfo
 
 /**
  * 站点Adapter
+ * @property collapseLabel Boolean
+ * @constructor
  */
 class SitesAdapter(private val collapseLabel: Boolean = false, data: MutableList<OnAirInfo.Site>? = null) :
         BaseQuickAdapter<OnAirInfo.Site, BaseViewHolder>(R.layout.item_site, data) {

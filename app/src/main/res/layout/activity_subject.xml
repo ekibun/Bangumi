@@ -51,22 +51,29 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_marginTop="40dp"
-                    app:layout_constraintLeft_toLeftOf="@+id/item_list"
-                    app:layout_constraintRight_toRightOf="@+id/item_list"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintLeft_toLeftOf="@+id/item_list_container"
+                    app:layout_constraintRight_toRightOf="@+id/item_list_container"
                     android:background="?android:colorBackground"/>
 
-            <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/item_list"
+            <RelativeLayout
+                    android:id="@+id/item_list_container"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:overScrollMode="never"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintWidth_max="700dp"
                     app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintRight_toRightOf="parent"
-                    tools:listitem="@layout/dialog_subject"
-                    tools:itemCount="1"
-                    android:clipToPadding="false"/>
+                    app:layout_constraintRight_toRightOf="parent">
+
+                <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/item_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:overScrollMode="never"
+                        tools:listitem="@layout/dialog_subject"
+                        tools:itemCount="1"
+                        android:clipToPadding="false"/>
+            </RelativeLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

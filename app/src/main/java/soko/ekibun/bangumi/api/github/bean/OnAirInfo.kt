@@ -2,6 +2,11 @@ package soko.ekibun.bangumi.api.github.bean
 
 /**
  * 放送信息
+ * @property id Int
+ * @property name String
+ * @property sites List<SubjectSite>
+ * @property eps List<Ep>
+ * @constructor
  */
 data class OnAirInfo (
         val id: Int,
@@ -11,6 +16,11 @@ data class OnAirInfo (
 ){
     /**
      * 剧集信息
+     * @property id Int
+     * @property name String
+     * @property name_cn String
+     * @property sites List<Site>
+     * @constructor
      */
     data class Ep(
             val id: Int,
@@ -21,6 +31,11 @@ data class OnAirInfo (
 
     /**
      * 站点信息
+     * @property site String
+     * @property title String
+     * @property url String
+     * @property color Int
+     * @constructor
      */
     open class Site(
             val site: String,
@@ -59,6 +74,10 @@ data class OnAirInfo (
 
     /**
      * 站点信息
+     * @property id String
+     * @property week Int
+     * @property time String?
+     * @constructor
      */
     class SubjectSite(
             site: String,

@@ -19,11 +19,16 @@ import soko.ekibun.bangumi.util.TextUtil
 
 /**
  * 条目信息对话框
+ * @property subject Subject
+ * @property callback Function2<[@kotlin.ParameterName] List<Episode>, [@kotlin.ParameterName] String, Unit>?
+ * @property title String
  */
 class InfoboxDialog : BaseDialog(R.layout.dialog_infobox) {
     companion object {
         /**
          * 显示对话框
+         * @param fragmentManager FragmentManager
+         * @param subject Subject
          */
         fun showDialog(fragmentManager: FragmentManager, subject: Subject) {
             // if(subject.infobox?.isNotEmpty() != true) return

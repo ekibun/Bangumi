@@ -9,7 +9,6 @@ import java.io.IOException;
 
 /**
  * 扩展OkHttp的请求体，实现上传时的进度提示
- *
  * @param <T>
  */
 public final class FileRequestBody<T> extends RequestBody {

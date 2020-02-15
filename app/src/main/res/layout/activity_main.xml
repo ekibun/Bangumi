@@ -41,8 +41,8 @@
                         android:id="@+id/toolbar"
                         android:layout_width="match_parent"
                         android:layout_height="?attr/actionBarSize"
-                        app:contentInsetStart="0dp"
                         app:contentInsetStartWithNavigation="0dp"
+                        app:titleTextAppearance="@android:style/TextAppearance.DeviceDefault.WindowTitle"
                         app:menu="@menu/action_main"
                         app:popupTheme="@style/AppTheme.PopupOverlay"/>
             </com.google.android.material.appbar.AppBarLayout>

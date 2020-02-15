@@ -21,6 +21,9 @@ import soko.ekibun.bangumi.util.AppUtil
 
 /**
  * 主页
+ * @property mainPresenter MainPresenter
+ * @property user UserInfo?
+ * @property notifyMenu NotifyActionProvider?
  */
 class MainActivity : BaseActivity(R.layout.activity_main) {
     val mainPresenter by lazy { MainPresenter(this) }
@@ -124,6 +127,7 @@ class MainActivity : BaseActivity(R.layout.activity_main) {
     companion object {
         /**
          * 启动
+         * @param context Context
          */
         fun startActivity(context: Context) {
             val intent = Intent(context, MainActivity::class.java)

@@ -21,6 +21,10 @@ import soko.ekibun.bangumi.util.HttpUtil
 
 /**
  * 收藏对话框
+ * @property title String
+ * @property subject Subject
+ * @property collection Collection
+ * @property callback Function0<Unit>
  */
 class EditSubjectDialog : BaseDialog(R.layout.base_dialog) {
     override val title: String get() = context!!.getString(R.string.dialog_subject_edit_title)
@@ -28,6 +32,10 @@ class EditSubjectDialog : BaseDialog(R.layout.base_dialog) {
     companion object {
         /**
          * 显示对话框
+         * @param fragmentManager FragmentManager
+         * @param subject Subject
+         * @param status Collection
+         * @param callback Function0<Unit>
          */
         fun showDialog(fragmentManager: FragmentManager, subject: Subject, status: Collection, callback: () -> Unit) {
             val dialog = EditSubjectDialog()

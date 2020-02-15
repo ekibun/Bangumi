@@ -10,6 +10,8 @@ import soko.ekibun.bangumi.util.ResourceUtil
 
 /**
  * 季度列表Adapter
+ * @property currentId Int
+ * @constructor
  */
 class SeasonAdapter(data: MutableList<Subject>? = null) :
         BaseQuickAdapter<Subject, BaseViewHolder>

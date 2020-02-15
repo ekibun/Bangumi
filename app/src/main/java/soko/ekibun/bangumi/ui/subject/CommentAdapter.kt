@@ -12,6 +12,7 @@ import soko.ekibun.bangumi.util.GlideUtil
 
 /**
  * 吐槽Adapter
+ * @constructor
  */
 class CommentAdapter(data: MutableList<Comment>? = null) :
         BaseQuickAdapter<Comment, BaseViewHolder>(R.layout.item_comment, data) {

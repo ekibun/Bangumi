@@ -24,6 +24,17 @@ import soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
 
 /**
  * 收藏PagerAdapter
+ * @property context Context
+ * @property fragment CollectionFragment
+ * @property pager ViewPager
+ * @property tabList Array<String>
+ * @property collectionTypeView CollectTypeView
+ * @property mainPresenter MainPresenter?
+ * @property items HashMap<Int, Pair<CollectionListAdapter, FixSwipeRefreshLayout>>
+ * @property isScrollDown Boolean
+ * @property collectionCalls HashMap<Int, Call<List<Subject>>>
+ * @property pageIndex HashMap<Int, Int>
+ * @constructor
  */
 class CollectionPagerAdapter(
     private val context: Context,
@@ -57,7 +68,7 @@ class CollectionPagerAdapter(
 
     val isScrollDown get() = (items[pager.currentItem]?.second?.tag as? RecyclerView)?.canScrollVertically(-1) == true
 
-    fun useApi(position: Int): Boolean {
+    private fun useApi(position: Int): Boolean {
         return collectionTypeView.getType() == Collection.STATUS_DO && tabList[position] in arrayOf(
             Subject.TYPE_ANIME,
             Subject.TYPE_BOOK,

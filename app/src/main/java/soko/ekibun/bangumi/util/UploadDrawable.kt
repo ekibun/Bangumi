@@ -43,7 +43,7 @@ class UploadDrawable(
                     android.R.attr.textColorSecondary
                 )
             )
-            circularProgressDrawable.strokeWidth = 5f
+            circularProgressDrawable.strokeWidth = textSize / 8f
             circularProgressDrawable.centerRadius = textSize / 2 - circularProgressDrawable.strokeWidth - 1f
             circularProgressDrawable.progressRotation = 0.75f
             update(circularProgressDrawable, textSize.toInt())

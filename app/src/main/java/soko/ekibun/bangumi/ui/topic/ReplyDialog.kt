@@ -35,12 +35,21 @@ import java.lang.ref.WeakReference
 
 /**
  * 回复对话框
+ * @property hint String
+ * @property callback Function3<String?, String?, Boolean, Unit>
+ * @property draft String?
+ * @property postTitle String?
+ * @property bbCode Boolean
+ * @property title String
+ * @property onClickImage Function1<ImageSpan, Unit>
+ * @property onClickUrl Function1<String, Unit>
  */
 class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
 
     var hint: String = ""
-    var callback: (String?, Boolean) -> Unit = { _, _ -> }
+    var callback: (String?, String?, Boolean) -> Unit = { _, _, _ -> }
     var draft: String? = null
+    var postTitle: String? = null
 
     var bbCode: Boolean = false
 
@@ -123,6 +132,9 @@ class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
     override fun onViewCreated(view: View) {
         bbCode = PreferenceManager.getDefaultSharedPreferences(view.context).getBoolean("use_bbcode", false)
 
+        view.item_title_container.visibility = if (postTitle == null) View.GONE else View.VISIBLE
+        view.item_title.setText(postTitle)
+
         view.item_expand.setOnClickListener {
             it.rotation = -it.rotation
             val isExpand = it.rotation > 0
@@ -201,8 +213,8 @@ class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
             startActivityForResult(Intent.createChooser(intent, "选择图片"), 1)
         }
         view.item_btn_send.setOnClickListener {
-            callback(TextUtil.span2bbcode(view.item_input.editableText), true)
-            callback = { _, _ -> }
+            callback(TextUtil.span2bbcode(view.item_input.editableText), view.item_title.editableText.toString(), true)
+            callback = { _, _, _ -> }
             dismiss()
         }
 
@@ -271,7 +283,12 @@ class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        callback(contentView?.item_input?.editableText?.let { TextUtil.span2bbcode(it) }, false)
+        callback(
+            contentView?.item_input?.editableText?.let { TextUtil.span2bbcode(it) },
+            contentView?.item_title?.text?.toString(),
+            false
+        )
+        callback = { _, _, _ -> }
     }
 
     @SuppressLint("Recycle")
@@ -313,7 +330,9 @@ class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
     }
 
     /**
-     *  限制最大高度url drawable ImageGetter
+     * 限制最大高度url drawable ImageGetter
+     * @property container WeakReference<(android.widget.TextView..android.widget.TextView?)>
+     * @constructor
      */
     class CollapseHtmlHttpImageGetter(container: TextView) : Html.ImageGetter {
         private val container = WeakReference(container)
@@ -328,22 +347,31 @@ class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
     companion object {
         /**
          * 显示对话框
+         * @param fragmentManager FragmentManager
+         * @param hint String
+         * @param draft String?
+         * @param title String?
+         * @param callback Function3<String?, String?, Boolean, Unit>
          */
         fun showDialog(
             fragmentManager: FragmentManager,
             hint: String,
             draft: String?,
-            callback: (String?, Boolean) -> Unit = { _, _ -> }
+            title: String? = null,
+            callback: (String?, String?, Boolean) -> Unit = { _, _, _ -> }
         ) {
             val dialog = ReplyDialog()
             dialog.hint = hint
             dialog.draft = draft
+            dialog.postTitle = title
             dialog.callback = callback
             dialog.show(fragmentManager, "reply")
         }
 
         /**
          * 转换html
+         * @param html String
+         * @return String
          */
         fun parseHtml(html: String): String {
             val doc = Jsoup.parse(html.replace(Regex("</?noscript>"), ""), Bangumi.SERVER)

@@ -16,6 +16,10 @@ import soko.ekibun.bangumi.model.ThemeModel
 
 /**
  * 基础对话框
+ * @property resId Int
+ * @property contentView View?
+ * @property title String
+ * @constructor
  */
 abstract class BaseDialog(@LayoutRes private val resId: Int) :
     DialogFragment() {

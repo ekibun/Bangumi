@@ -19,12 +19,24 @@ import soko.ekibun.bangumi.ui.web.WebActivity
 
 /**
  * 剧集对话框
+ * @property eps List<Episode>
+ * @property episode Episode?
+ * @property callback Function2<[@kotlin.ParameterName] List<Episode>, [@kotlin.ParameterName] String, Unit>?
+ * @property adapter SitesAdapter
+ * @property info OnAirInfo?
+ * @property title String
  */
 class EpisodeDialog : BaseDialog(R.layout.base_dialog) {
     companion object {
         const val WATCH_TO = "watch_to"
         /**
          * 显示对话框
+         * @param fragmentManager FragmentManager
+         * @param episode Episode
+         * @param eps List<Episode>
+         * @param onAirInfo OnAirInfo?
+         * @param callback Function2<[@kotlin.ParameterName] List<Episode>, [@kotlin.ParameterName] String, Unit>
+         * @return EpisodeDialog
          */
         fun showDialog(
             fragmentManager: FragmentManager,
@@ -44,6 +56,9 @@ class EpisodeDialog : BaseDialog(R.layout.base_dialog) {
 
         /**
          * 更新进度
+         * @param eps List<Episode>
+         * @param newStatus String
+         * @param callback Function1<Boolean, Unit>
          */
         fun updateProgress(eps: List<Episode>, newStatus: String, callback: (Boolean) -> Unit) {
             if (newStatus == WATCH_TO) {

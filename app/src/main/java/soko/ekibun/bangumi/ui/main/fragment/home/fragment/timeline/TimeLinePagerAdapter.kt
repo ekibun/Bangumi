@@ -15,6 +15,14 @@ import soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
 
 /**
  * 时间线PagerAdapter
+ * @property fragment TimeLineFragment
+ * @property pager ViewPager
+ * @property tabList (kotlin.Array<(kotlin.String..kotlin.String?)>..kotlin.Array<out (kotlin.String..kotlin.String?)>?)
+ * @property topicCall HashMap<Int, Call<List<TimeLine>>>
+ * @property pageIndex HashMap<Int, Int>
+ * @property selectedType Int
+ * @property items HashMap<Int, Pair<TimeLineAdapter, FixSwipeRefreshLayout>>
+ * @constructor
  */
 class TimeLinePagerAdapter(
     context: Context,
@@ -22,7 +30,9 @@ class TimeLinePagerAdapter(
     private val pager: androidx.viewpager.widget.ViewPager
 ) : androidx.viewpager.widget.PagerAdapter() {
     private val tabList = context.resources.getStringArray(R.array.timeline_list)
+    @SuppressLint("UseSparseArrays")
     private var topicCall = HashMap<Int, Call<List<TimeLine>>>()
+    @SuppressLint("UseSparseArrays")
     val pageIndex = HashMap<Int, Int>()
 
     var selectedType = R.id.timeline_type_friend
@@ -32,7 +42,7 @@ class TimeLinePagerAdapter(
             override fun onPageScrollStateChanged(state: Int) {}
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
             override fun onPageSelected(position: Int) {
-                if((items[position]?.second?.tag as? androidx.recyclerview.widget.RecyclerView)?.tag == null) {
+                if ((items[position]?.second?.tag as? androidx.recyclerview.widget.RecyclerView)?.tag == null) {
                     pageIndex[position] = 0
                     loadTopicList(position)
                 }
@@ -40,6 +50,9 @@ class TimeLinePagerAdapter(
         })
     }
 
+    /**
+     * 重置
+     */
     fun reset() {
         items.forEach { (it.value.second.tag as? androidx.recyclerview.widget.RecyclerView)?.tag = null }
         pageIndex.clear()
@@ -70,26 +83,45 @@ class TimeLinePagerAdapter(
             swipeRefreshLayout.tag = recyclerView
             swipeRefreshLayout.setOnRefreshListener {
                 pageIndex[position] = 0
-                loadTopicList(position) }
-            Pair(adapter,swipeRefreshLayout)
+                loadTopicList(position)
+            }
+            Pair(adapter, swipeRefreshLayout)
         }
         container.addView(item.second)
-        if(pageIndex[position] == 0)
+        if (pageIndex[position] == 0)
             loadTopicList(position)
         return item.second
     }
 
-    fun loadTopicList(position: Int = pager.currentItem){
-        val item = items[position]?:return
+    /**
+     * 加载帖子列表
+     * @param position Int
+     */
+    fun loadTopicList(position: Int = pager.currentItem) {
+        val item = items[position] ?: return
         item.first.isUseEmpty(false)
-        val page = pageIndex.getOrPut(position) {0}
-        if(page == 0) {
+        val page = pageIndex.getOrPut(position) { 0 }
+        if (page == 0) {
             item.second.isRefreshing = true
             item.first.setNewData(null)
         }
         topicCall[position]?.cancel()
-        topicCall[position] = TimeLine.getList(listOf("all", "say", "subject", "progress", "blog", "mono", "relation", "group", "wiki", "index", "doujin")[position], page + 1,
-                if (selectedType == R.id.timeline_type_self) (fragment.activity as? MainActivity)?.user else null, selectedType == R.id.timeline_type_all)
+        topicCall[position] = TimeLine.getList(
+            listOf(
+                "all",
+                "say",
+                "subject",
+                "progress",
+                "blog",
+                "mono",
+                "relation",
+                "group",
+                "wiki",
+                "index",
+                "doujin"
+            )[position],
+            page + 1,
+            if (selectedType == R.id.timeline_type_self) (fragment.activity as? MainActivity)?.user else null, selectedType == R.id.timeline_type_all)
         topicCall[position]?.enqueue(ApiHelper.buildCallback({
             item.first.isUseEmpty(true)
             if(it.isEmpty()) item.first.loadMoreEnd()

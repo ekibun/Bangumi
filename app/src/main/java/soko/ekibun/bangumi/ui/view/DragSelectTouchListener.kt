@@ -9,6 +9,25 @@ import androidx.recyclerview.widget.RecyclerView
 
 /**
  * 拖动选择Listener
+ * @property isActive Boolean
+ * @property start Int
+ * @property end Int
+ * @property selectListener Function3<[@kotlin.ParameterName] Int, [@kotlin.ParameterName] Int, [@kotlin.ParameterName] Boolean, Unit>?
+ * @property recyclerView RecyclerView?
+ * @property autoScrollDistance Int
+ * @property mTopBound Int
+ * @property mBottomBound Int
+ * @property inTopSpot Boolean
+ * @property inBottomSpot Boolean
+ * @property autoScrollHandler Handler
+ * @property scrollDistance Int
+ * @property lastX Float
+ * @property lastY Float
+ * @property lastStart Int
+ * @property lastEnd Int
+ * @property scrollRunnable <no name provided>
+ * @property scrollRun <no name provided>
+ * @property nestScrollDistance Function0<Int>
  */
 class DragSelectTouchListener : RecyclerView.OnItemTouchListener {
 

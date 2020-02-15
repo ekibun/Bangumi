@@ -13,6 +13,9 @@ import soko.ekibun.bangumi.ui.web.WebActivity
 
 /**
  * 超展开
+ * @property titleRes Int
+ * @property iconRes Int
+ * @property refresh Function0<Unit>
  */
 class RakuenFragment: HomeTabFragment(R.layout.fragment_rakuen){
     override val titleRes: Int = R.string.rakuen

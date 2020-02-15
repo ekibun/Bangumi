@@ -11,6 +11,8 @@ import soko.ekibun.bangumi.ui.web.WebActivity
 
 /**
  * 收藏页
+ * @property titleRes Int
+ * @property iconRes Int
  */
 class CollectionFragment: HomeTabFragment(R.layout.fragment_collection){
     override val titleRes: Int = R.string.collect

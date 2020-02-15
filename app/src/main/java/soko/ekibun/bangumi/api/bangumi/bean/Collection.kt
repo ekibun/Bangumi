@@ -11,23 +11,27 @@ import soko.ekibun.bangumi.util.HttpUtil
 
 /**
  * 条目收藏信息
- * @property status 收藏状态
- * @property rating 评分
- * @property comment 吐槽
- * @property private 自己可见
- * @property tag 标签
+ * @property status String?
+ * @property rating Int
+ * @property comment String?
+ * @property private Int
+ * @property tag List<String>?
+ * @property myTag List<String>?
+ * @property statusId Int
  * @constructor
  */
 data class Collection(
-        @CollectionStatus val status: String? = null,
-        val rating : Int = 0,
-        val comment : String? = null,
-        val private : Int = 0,
-        val tag: List<String>? = null,
-        var myTag: List<String>? = null
+    @CollectionStatus val status: String? = null,
+    val rating: Int = 0,
+    val comment: String? = null,
+    val private: Int = 0,
+    val tag: List<String>? = null,
+    var myTag: List<String>? = null
 ) {
-    val statusId = status?.let { arrayOf(STATUS_WISH, STATUS_COLLECT, STATUS_DO, STATUS_ON_HOLD, STATUS_DROPPED).indexOf(it) + 1 }
-            ?: 0
+    val statusId
+        get() = status?.let {
+            arrayOf(STATUS_WISH, STATUS_COLLECT, STATUS_DO, STATUS_ON_HOLD, STATUS_DROPPED).indexOf(it) + 1
+        } ?: 0
 
     /**
      * 收藏状态
@@ -46,6 +50,8 @@ data class Collection(
 
         /**
          * 由id获取状态类型
+         * @param id Int
+         * @return String
          */
         @CollectionStatus
         fun getStatusById(id: Int): String {
@@ -54,6 +60,8 @@ data class Collection(
 
         /**
          * 获取收藏类型字符串数组
+         * @param type String
+         * @return Int
          */
         @ArrayRes
         fun getStatusNamesRes(@Subject.SubjectType type: String): Int {
@@ -68,15 +76,22 @@ data class Collection(
 
         /**
          * 更新收藏
+         * @param subject Subject
+         * @param newCollection Collection
+         * @return Call<Collection>
          */
         fun updateStatus(
-                subject: Subject,
-                newCollection: Collection): Call<Collection> {
-            return ApiHelper.buildHttpCall("${Bangumi.SERVER}/subject/${subject.id}/interest/update?gh=${HttpUtil.formhash}", body = FormBody.Builder()
+            subject: Subject,
+            newCollection: Collection
+        ): Call<Collection> {
+            return ApiHelper.buildHttpCall("${Bangumi.SERVER}/subject/${subject.id}/interest/update?gh=${HttpUtil.formhash}",
+                body = FormBody.Builder()
                     .add("referer", "ajax")
                     .add("interest", newCollection.statusId.toString())
                     .add("rating", newCollection.rating.toString())
-                    .add("tags", if (newCollection.tag?.isNotEmpty() == true) newCollection.tag.reduce { acc, s -> "$acc $s" } else "")
+                    .add(
+                        "tags",
+                        if (newCollection.tag?.isNotEmpty() == true) newCollection.tag.reduce { acc, s -> "$acc $s" } else "")
                     .add("comment", newCollection.comment ?: "")
                     .add("privacy", newCollection.private.toString())
                     .add("update", "保存").build()) {
@@ -86,9 +101,11 @@ data class Collection(
 
         /**
          * 删除收藏
+         * @param subject Subject
+         * @return Call<Boolean>
          */
         fun remove(
-                subject: Subject
+            subject: Subject
         ): Call<Boolean> {
             return ApiHelper.buildHttpCall("${Bangumi.SERVER}/subject/${subject.id}/remove?gh=${HttpUtil.formhash}") {
                 it.code == 200

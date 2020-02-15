@@ -11,6 +11,16 @@ import soko.ekibun.bangumi.model.ThemeModel
 
 /**
  * 基础Activity
+ * @property resId Int
+ * @property onStartListener Function0<Unit>
+ * @property onStopListener Function0<Unit>
+ * @property onDestroyListener Function0<Unit>
+ * @property onPauseListener Function0<Unit>
+ * @property onResumeListener Function0<Unit>
+ * @property onActivityResultListener Function3<Int, Int, Intent?, Unit>
+ * @property onUserLeaveHintListener Function0<Unit>
+ * @property onBackListener Function0<Boolean>
+ * @constructor
  */
 abstract class BaseActivity(@LayoutRes private val resId: Int) : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

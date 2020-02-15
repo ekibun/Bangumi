@@ -24,6 +24,18 @@ import soko.ekibun.bangumi.util.JsonUtil
 
 /**
  * 主页Presenter
+ * @property context MainActivity
+ * @property userView UserView
+ * @property onLogout Function0<Unit>
+ * @property drawerView DrawerView
+ * @property user UserInfo?
+ * @property nav_view (com.google.android.material.navigation.NavigationView..com.google.android.material.navigation.NavigationView?)
+ * @property nav_lp (android.view.ViewGroup.LayoutParams..android.view.ViewGroup.LayoutParams?)
+ * @property calendar List<BangumiCalendarItem>
+ * @property collectionList List<Subject>
+ * @property collectionCall Call<List<Subject>>?
+ * @property notify Pair<Int, Int>?
+ * @constructor
  */
 class MainPresenter(private val context: MainActivity) {
     private val userView = UserView(context, View.OnClickListener {
@@ -47,6 +59,7 @@ class MainPresenter(private val context: MainActivity) {
 
     /**
      * 返回处理
+     * @return Boolean
      */
     fun processBack(): Boolean {
         if (context.drawer_layout.isDrawerOpen(GravityCompat.START)) {
@@ -78,6 +91,9 @@ class MainPresenter(private val context: MainActivity) {
     val nav_view by lazy { context.nav_view }
     val nav_lp by lazy { nav_view.layoutParams }
 
+    /**
+     * 更新配置
+     */
     fun updateConfiguration() {
         val lp = nav_lp
         (nav_view.parent as? ViewGroup)?.removeView(nav_view)
@@ -95,6 +111,7 @@ class MainPresenter(private val context: MainActivity) {
 
     /**
      * 保存状态
+     * @param outState Bundle
      */
     fun onSaveInstanceState(outState: Bundle) {
         drawerView.onSaveInstanceState(outState)
@@ -103,6 +120,7 @@ class MainPresenter(private val context: MainActivity) {
 
     /**
      * 恢复状态
+     * @param savedInstanceState Bundle
      */
     fun onRestoreInstanceState(savedInstanceState: Bundle) {
         val userString = savedInstanceState.getString("user", "")
@@ -113,6 +131,9 @@ class MainPresenter(private val context: MainActivity) {
 
     /**
      * 处理回调
+     * @param requestCode Int
+     * @param resultCode Int
+     * @param data Intent?
      */
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode == Activity.RESULT_OK)
@@ -136,6 +157,8 @@ class MainPresenter(private val context: MainActivity) {
     var notify: Pair<Int, Int>? = null
     /**
      * 获取收藏
+     * @param callback Function1<List<Subject>, Unit>
+     * @param onError Function1<Throwable?, Unit>
      */
     fun updateUserCollection(callback: (List<Subject>) -> Unit = {}, onError: (Throwable?) -> Unit = {}) {
         collectionCall?.cancel()

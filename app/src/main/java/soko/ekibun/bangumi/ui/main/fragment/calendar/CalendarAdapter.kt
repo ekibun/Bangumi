@@ -19,6 +19,7 @@ import java.util.*
 
 /**
  * 时间表Adapter
+ * @constructor
  */
 class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
         BaseSectionQuickAdapter<CalendarAdapter.CalendarSection, BaseViewHolder>
@@ -72,6 +73,9 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
 
     /**
      * 时间表项（带section）
+     * @property date Int
+     * @property time String
+     * @constructor
      */
     class CalendarSection(isHeader: Boolean, subject: OnAir, var date: Int, var time: String) : SectionEntity<OnAir>(isHeader, ""){
         init{
@@ -81,6 +85,9 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
 
     /**
      * 放送项数据
+     * @property episode Episode?
+     * @property subject Subject
+     * @constructor
      */
     data class OnAir(
             var episode: Episode?,
@@ -95,6 +102,10 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
 
         /**
          * 转换时间
+         * @param date Int
+         * @param time String
+         * @param use_30h Boolean
+         * @return Boolean
          */
         fun pastTime(date: Int, time: String, use_30h: Boolean): Boolean{
             val match = Regex("""([0-9]*):([0-9]*)""").find(time)
@@ -110,6 +121,8 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
 
         /**
          * Int -> Calendar
+         * @param date Int
+         * @return Calendar
          */
         fun getIntCalendar(date: Int):Calendar{
             val cal = Calendar.getInstance()
@@ -119,6 +132,8 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
 
         /**
          * Calendar -> Int
+         * @param now Calendar
+         * @return Int
          */
         fun getCalendarInt(now: Calendar):Int{
             return now.get(Calendar.YEAR)*10000 + (now.get(Calendar.MONTH)+1) * 100 + now.get(Calendar.DATE)
@@ -126,6 +141,8 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
 
         /**
          * 获取星期
+         * @param now Calendar
+         * @return Int
          */
         fun getWeek(now: Calendar): Int{
             val isFirstSunday = now.firstDayOfWeek == Calendar.SUNDAY
@@ -141,6 +158,8 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
 
         /**
          * 获取当前时间（Int）
+         * @param use_30h Boolean
+         * @return Int
          */
         fun getNowInt(use_30h: Boolean):Int{
             val cal = Calendar.getInstance()

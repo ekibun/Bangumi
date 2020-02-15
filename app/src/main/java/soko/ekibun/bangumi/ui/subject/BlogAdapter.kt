@@ -12,6 +12,7 @@ import soko.ekibun.bangumi.util.GlideUtil
 
 /**
  * 日志Adapter
+ * @constructor
  */
 class BlogAdapter(data: MutableList<Topic>? = null) :
         BaseQuickAdapter<Topic, BaseViewHolder>(R.layout.item_blog, data) {

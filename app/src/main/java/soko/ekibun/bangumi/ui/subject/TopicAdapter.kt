@@ -9,6 +9,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.Topic
 
 /**
  * 讨论板Adapter
+ * @constructor
  */
 class TopicAdapter(data: MutableList<Topic>? = null) :
         BaseQuickAdapter<Topic, BaseViewHolder>(R.layout.item_subject_topic, data) {

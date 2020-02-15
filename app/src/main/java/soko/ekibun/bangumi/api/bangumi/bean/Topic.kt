@@ -13,20 +13,35 @@ import java.util.*
 
 /**
  * 帖子
+ * @property model String
+ * @property id Int
+ * @property title String?
+ * @property links Map<String, String>?
+ * @property image String?
+ * @property replies List<TopicPost>
+ * @property lastview String?
+ * @property error Pair<String, String>?
+ * @property replyCount Int
+ * @property time String?
+ * @property blog TopicPost?
+ * @property user UserInfo?
+ * @property cacheKey String
+ * @property url String
+ * @constructor
  */
 data class Topic(
-        val model: String,
-        val id: Int,
-        var title: String? = null,
-        var links: Map<String, String>? = null,
-        var image: String? = null,
-        var replies: List<TopicPost> = ArrayList(),
-        var lastview: String? = null,
-        var error: Pair<String, String>? = null,
-        var replyCount: Int = 0,
-        var time: String? = null,
-        var blog: TopicPost? = null,
-        var user: UserInfo? = null // blog & subject
+    val model: String,
+    val id: Int,
+    var title: String? = null,
+    var links: Map<String, String>? = null,
+    var image: String? = null,
+    var replies: List<TopicPost> = ArrayList(),
+    var lastview: String? = null,
+    var error: Pair<String, String>? = null,
+    var replyCount: Int = 0,
+    var time: String? = null,
+    var blog: TopicPost? = null,
+    var user: UserInfo? = null // blog & subject
 ) {
     val cacheKey = "topic_${model}_$id"
 
@@ -43,38 +58,47 @@ data class Topic(
     companion object {
         /**
          * 超展开
+         * @param type String
+         * @return Call<List<Topic>>
          */
         fun getList(
-                type: String
+            type: String
         ): Call<List<Topic>> {
             return ApiHelper.buildHttpCall("${Bangumi.SERVER}/rakuen/topiclist" + if (type.isEmpty()) "" else "?type=$type") { rsp ->
                 val doc = Jsoup.parse(rsp.body?.string() ?: "")
                 doc.select(".item_list").mapNotNull {
                     val title = it.selectFirst(".title") ?: return@mapNotNull null
                     val modelId = Regex("""/rakuen/topic/([^/]+)/(\d+)""").find(title.attr("href") ?: "")?.groupValues
-                            ?: return@mapNotNull null
+                        ?: return@mapNotNull null
 
                     val group = it.selectFirst(".row").selectFirst("a")
                     Topic(
-                            model = modelId[1],
-                            id = modelId[2].toInt(),
-                            image = Bangumi.parseImageUrl(it.selectFirst("span.avatarNeue")),
-                            title = title.text(),
-                            links = mapOf((group?.text() ?: "") to Bangumi.parseUrl(group?.attr("href") ?: "")),
-                            time = it.selectFirst(".time")?.text()?.replace("...", "") ?: "",
-                            replyCount = it.selectFirst(".grey")?.text()?.trim('(', '+', ')')?.toIntOrNull() ?: 0)
+                        model = modelId[1],
+                        id = modelId[2].toInt(),
+                        image = Bangumi.parseImageUrl(it.selectFirst("span.avatarNeue")),
+                        title = title.text(),
+                        links = mapOf((group?.text() ?: "") to Bangumi.parseUrl(group?.attr("href") ?: "")),
+                        time = it.selectFirst(".time")?.text()?.replace("...", "") ?: "",
+                        replyCount = it.selectFirst(".grey")?.text()?.trim('(', '+', ')')?.toIntOrNull() ?: 0
+                    )
                 }
             }
         }
 
         /**
          * 加载帖子（Sax）
+         * @param topic Topic
+         * @param onUpdate Function1<Topic, Unit>
+         * @param onNewPost Function1<[@kotlin.ParameterName] TopicPost, Unit>
+         * @return Call<Topic>
          */
         fun getTopicSax(topic: Topic, onUpdate: (Topic) -> Unit, onNewPost: (post: TopicPost) -> Unit): Call<Topic> {
-            return ApiHelper.buildHttpCall(when (topic.model) {
-                "blog" -> "${Bangumi.SERVER}/blog/${topic.id}"
-                else -> "${Bangumi.SERVER}/rakuen/topic/${topic.model}/${topic.id}"
-            }) { rsp ->
+            return ApiHelper.buildHttpCall(
+                when (topic.model) {
+                    "blog" -> "${Bangumi.SERVER}/blog/${topic.id}"
+                    else -> "${Bangumi.SERVER}/rakuen/topic/${topic.model}/${topic.id}"
+                }
+            ) { rsp ->
                 var beforeData = ""
                 val replies = ArrayList<TopicPost>()
                 val updateReply = { str: String ->
@@ -97,17 +121,19 @@ data class Topic(
                         if (topic.model == "blog") {
                             val userInfo = doc.selectFirst("#pageHeader a.avatar")
                             val userName = UserInfo.getUserName(userInfo?.attr("href")) ?: ""
-                            topic.blog = TopicPost("", "",
-                                    pst_uid = userName,
-                                    username = userName,
-                                    nickname = userInfo?.text() ?: "",
-                                    avatar = image,
-                                    pst_content = doc.selectFirst("#entry_content")?.html() ?: "",
-                                    dateline = doc.selectFirst(".re_info")?.text()?.substringBefore('/')?.trim(' ')
-                                            ?: "",
-                                    is_self = it.selectFirst(".re_info")?.text()?.contains("del") == true,
-                                    editable = it.selectFirst(".re_info")?.text()?.contains("del") == true,
-                                    model = "blog")
+                            topic.blog = TopicPost(
+                                "", "",
+                                pst_uid = userName,
+                                username = userName,
+                                nickname = userInfo?.text() ?: "",
+                                avatar = image,
+                                pst_content = doc.selectFirst("#entry_content")?.html() ?: "",
+                                dateline = doc.selectFirst(".re_info")?.text()?.substringBefore('/')?.trim(' ')
+                                    ?: "",
+                                is_self = it.selectFirst(".re_info")?.text()?.contains("del") == true,
+                                editable = it.selectFirst(".re_info")?.text()?.contains("del") == true,
+                                model = "blog"
+                            )
                             onNewPost(topic.blog!!)
                         }
                         onUpdate(topic)
@@ -147,25 +173,33 @@ data class Topic(
 
         /**
          * 删除帖子
+         * @param topic Topic
+         * @return Call<Boolean>
          */
         fun remove(
-                topic: Topic
+            topic: Topic
         ): Call<Boolean> {
-            return ApiHelper.buildHttpCall(when (topic.model) {
-                "blog" -> "${Bangumi.SERVER}/erase/entry/${topic.id}"
-                else -> topic.url.replace(Bangumi.SERVER, "${Bangumi.SERVER}/erase")
-            } + "?gh=${HttpUtil.formhash}&ajax=1") {
+            return ApiHelper.buildHttpCall(
+                when (topic.model) {
+                    "blog" -> "${Bangumi.SERVER}/erase/entry/${topic.id}"
+                    else -> topic.url.replace(Bangumi.SERVER, "${Bangumi.SERVER}/erase")
+                } + "?gh=${HttpUtil.formhash}&ajax=1"
+            ) {
                 it.code == 200
             }
         }
 
         /**
          * 回复帖子
+         * @param topic Topic
+         * @param post TopicPost?
+         * @param content String
+         * @return Call<List<TopicPost>>
          */
         fun reply(
-                topic: Topic,
-                post: TopicPost?,
-                content: String
+            topic: Topic,
+            post: TopicPost?,
+            content: String
         ): Call<List<TopicPost>> {
             val comment = if (post?.isSub == true)
                 "[quote][b]${post.nickname}[/b] 说: ${Jsoup.parse(post.pst_content).let { doc ->
@@ -176,20 +210,22 @@ data class Topic(
                 }}[/quote]\n" else ""
 
             val data = FormBody.Builder()
-                    .add("lastview", topic.lastview ?: "")
-                    .add("formhash", HttpUtil.formhash)
-                    .add("content", comment + content)
-                    .add("submit", "submit")
+                .add("lastview", topic.lastview ?: "")
+                .add("formhash", HttpUtil.formhash)
+                .add("content", comment + content)
+                .add("submit", "submit")
             if (post != null) {
                 data.add("topic_id", post.pst_mid)
-                        .add("related", post.relate)
-                        .add("post_uid", post.pst_uid)
+                    .add("related", post.relate)
+                    .add("post_uid", post.pst_uid)
             }
 
-            return ApiHelper.buildHttpCall(when (topic.model) {
-                "blog" -> "${Bangumi.SERVER}/blog/entry/${topic.id}"
-                else -> topic.url
-            } + "/new_reply?ajax=1", body = data.build()) { rsp ->
+            return ApiHelper.buildHttpCall(
+                when (topic.model) {
+                    "blog" -> "${Bangumi.SERVER}/blog/entry/${topic.id}"
+                    else -> topic.url
+                } + "/new_reply?ajax=1", body = data.build()
+            ) { rsp ->
                 val replies = ArrayList(topic.replies)
                 replies.removeAll { it.sub_floor > 0 }
                 replies.sortedBy { it.floor }
@@ -205,7 +241,7 @@ data class Topic(
                 replies.toTypedArray().forEach { replies.addAll(it.subItems ?: return@forEach) }
                 replies.sortedBy { it.floor + it.sub_floor * 1.0f / replies.size }
                 val sub = JsonUtil.toEntity<Map<String, List<TopicPost>>>(posts.get("sub")?.toString() ?: "")
-                        ?: HashMap()
+                    ?: HashMap()
                 sub.forEach {
                     replies.lastOrNull { old -> old.pst_id == it.key }?.isExpanded = true
                     var relate = replies.lastOrNull { old -> old.relate == it.key } ?: return@forEach
@@ -226,16 +262,23 @@ data class Topic(
 
         /**
          * 编辑帖子
+         * @param topic Topic
+         * @param title String
+         * @param content String
+         * @return Call<Boolean>
          */
         fun edit(
-                topic: Topic,
-                content: String
+            topic: Topic,
+            title: String,
+            content: String
         ): Call<Boolean> {
-            return ApiHelper.buildHttpCall(topic.url + "/edit?ajax=1", body = FormBody.Builder()
+            return ApiHelper.buildHttpCall(
+                topic.url + "/edit?ajax=1", body = FormBody.Builder()
                     .add("formhash", HttpUtil.formhash)
-                    .add("title", topic.title ?: "")
+                    .add("title", title)
                     .add("submit", "改好了")
-                    .add("content", content).build()) {
+                    .add("content", content).build()
+            ) {
                 it.code == 200
             }
         }

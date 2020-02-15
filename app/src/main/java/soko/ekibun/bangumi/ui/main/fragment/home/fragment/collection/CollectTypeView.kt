@@ -7,12 +7,15 @@ import soko.ekibun.bangumi.api.bangumi.bean.Collection
 
 /**
  * 收藏类型
+ * @property selectedType Int
+ * @constructor
  */
 class CollectTypeView(view: TextView, onChange: () -> Unit) {
     var selectedType = Collection.statusArray.indexOf(Collection.STATUS_DO)
 
     /**
      * 获取当前收藏类型
+     * @return String
      */
     fun getType(): String {
         return Collection.statusArray[selectedType]

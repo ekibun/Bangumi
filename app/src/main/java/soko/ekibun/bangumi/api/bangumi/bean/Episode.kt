@@ -14,22 +14,37 @@ import java.text.DecimalFormat
 
 /**
  * 剧集类
+ * @property id Int
+ * @property type Int
+ * @property sort Float
+ * @property name String?
+ * @property name_cn String?
+ * @property duration String?
+ * @property airdate String?
+ * @property comment Int
+ * @property desc String?
+ * @property status String?
+ * @property progress String?
+ * @property category String?
+ * @property url String
+ * @property isAir Boolean
+ * @constructor
  */
 data class Episode(
-        val id: Int = 0,
-        @EpisodeType var type: Int = 0,
-        var sort: Float = 0f,
-        var name: String? = null,
-        var name_cn: String? = null,
-        var duration: String? = null,
-        var airdate: String? = null,
-        var comment: Int = 0,
-        var desc: String? = null,
-        @EpisodeStatus var status: String? = null,
-        @ProgressType var progress: String? = null,
-        var category: String? = null
+    val id: Int = 0,
+    @EpisodeType var type: Int = 0,
+    var sort: Float = 0f,
+    var name: String? = null,
+    var name_cn: String? = null,
+    var duration: String? = null,
+    var airdate: String? = null,
+    var comment: Int = 0,
+    var desc: String? = null,
+    @EpisodeStatus var status: String? = null,
+    @ProgressType var progress: String? = null,
+    var category: String? = null
 ) {
-    val url = "${Bangumi.SERVER}/ep/$id"
+    val url get() = "${Bangumi.SERVER}/ep/$id"
 
     /**
      * 混合数据
@@ -89,6 +104,8 @@ data class Episode(
 
         /**
          * 剧集类型字符串资源
+         * @param type Int
+         * @return Int
          */
         @StringRes
         fun getTypeRes(@EpisodeType type: Int): Int {
@@ -115,6 +132,8 @@ data class Episode(
 
         /**
          * 剧集和曲目列表
+         * @param doc Element
+         * @return List<Episode>
          */
         private fun parseLineList(doc: Element): List<Episode> {
             var cat = "本篇"
@@ -163,6 +182,9 @@ data class Episode(
 
         /**
          * 主页和概览的剧集信息
+         * @param item Element
+         * @param doc Element?
+         * @return List<Episode>
          */
         fun parseProgressList(item: Element, doc: Element? = null): List<Episode> {
             if (item.selectFirst("ul.line_list_music") != null) return parseLineList(item)
@@ -174,43 +196,46 @@ data class Episode(
                 val epInfo = rel?.selectFirst(".tip")?.textNodes()?.map { it.text() }
                 val airdate = epInfo?.firstOrNull { it.startsWith("首播") }?.substringAfter(":")
                 Episode(
-                        id = it.id().substringAfter("_").toIntOrNull() ?: return@mapNotNull null,
-                        type = when (cat) {
-                            "本篇" -> TYPE_MAIN
-                            "SP" -> TYPE_SP
-                            "OP" -> TYPE_OP
-                            "ED" -> TYPE_ED
-                            "PV" -> TYPE_PV
-                            "MAD" -> TYPE_MAD
-                            else -> TYPE_OTHER
-                        },
-                        sort = Regex("""\d*(\.\d*)?""").find(it.text())?.groupValues?.getOrNull(0)?.toFloatOrNull()
-                                ?: 0f,
-                        name = it.attr("title")?.substringAfter(" "),
-                        name_cn = epInfo?.firstOrNull { it.startsWith("中文标题") }?.substringAfter(":"),
-                        duration = epInfo?.firstOrNull { it.startsWith("时长") }?.substringAfter(":"),
-                        airdate = airdate,
-                        comment = rel?.selectFirst(".cmt .na")?.text()?.trim('(', ')', '+')?.toIntOrNull() ?: 0,
-                        status = when {
-                            it.hasClass("epBtnToday") -> STATUS_TODAY
-                            it.hasClass("epBtnAir") -> STATUS_AIR
-                            it.hasClass("epBtnNA") -> STATUS_NA
-                            else -> null
-                        },
-                        progress = when {
-                            it.hasClass("epBtnWatched") -> PROGRESS_WATCH
-                            it.hasClass("epBtnQueue") -> PROGRESS_QUEUE
-                            it.hasClass("epBtnDrop") -> PROGRESS_DROP
-                            else -> PROGRESS_REMOVE
-                        })
+                    id = it.id().substringAfter("_").toIntOrNull() ?: return@mapNotNull null,
+                    type = when (cat) {
+                        "本篇" -> TYPE_MAIN
+                        "SP" -> TYPE_SP
+                        "OP" -> TYPE_OP
+                        "ED" -> TYPE_ED
+                        "PV" -> TYPE_PV
+                        "MAD" -> TYPE_MAD
+                        else -> TYPE_OTHER
+                    },
+                    sort = Regex("""\d*(\.\d*)?""").find(it.text())?.groupValues?.getOrNull(0)?.toFloatOrNull()
+                        ?: 0f,
+                    name = it.attr("title")?.substringAfter(" "),
+                    name_cn = epInfo?.firstOrNull { it.startsWith("中文标题") }?.substringAfter(":"),
+                    duration = epInfo?.firstOrNull { it.startsWith("时长") }?.substringAfter(":"),
+                    airdate = airdate,
+                    comment = rel?.selectFirst(".cmt .na")?.text()?.trim('(', ')', '+')?.toIntOrNull() ?: 0,
+                    status = when {
+                        it.hasClass("epBtnToday") -> STATUS_TODAY
+                        it.hasClass("epBtnAir") -> STATUS_AIR
+                        it.hasClass("epBtnNA") -> STATUS_NA
+                        else -> null
+                    },
+                    progress = when {
+                        it.hasClass("epBtnWatched") -> PROGRESS_WATCH
+                        it.hasClass("epBtnQueue") -> PROGRESS_QUEUE
+                        it.hasClass("epBtnDrop") -> PROGRESS_DROP
+                        else -> PROGRESS_REMOVE
+                    }
+                )
             }
         }
 
         /**
          * 获取剧集列表
+         * @param subject Subject
+         * @return Call<List<Episode>>
          */
         fun getSubjectEps(
-                subject: Subject
+            subject: Subject
         ): Call<List<Episode>> {
             return ApiHelper.buildHttpCall("${Bangumi.SERVER}/subject/${subject.id}/ep") {
                 parseLineList(Jsoup.parse(it.body?.string() ?: ""))

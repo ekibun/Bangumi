@@ -19,6 +19,7 @@ import soko.ekibun.bangumi.util.TextUtil
 
 /**
  * 时间线Adapter
+ * @constructor
  */
 class TimeLineAdapter(data: MutableList<TimeLine>? = null) :
     BaseSectionQuickAdapter<TimeLine, BaseViewHolder>

@@ -8,6 +8,11 @@ import androidx.annotation.LayoutRes
 
 /**
  * 主页fragment
+ * @property resId Int
+ * @property titleRes Int
+ * @property iconRes Int
+ * @property savedInstanceState Bundle?
+ * @constructor
  */
 abstract class HomeTabFragment(@LayoutRes private val resId: Int): androidx.fragment.app.Fragment(){
     abstract val titleRes: Int

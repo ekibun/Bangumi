@@ -17,7 +17,9 @@ import soko.ekibun.bangumi.api.uploadcc.bean.Response
 interface UploadCC {
 
     /**
-     * 上传
+     * 上传图片
+     * @param fileToUpload Part
+     * @return Call<Response>
      */
     @Multipart
     @POST("/image_upload")
@@ -27,6 +29,7 @@ interface UploadCC {
         private const val SERVER_API = "https://upload.cc"
         /**
          * 创建retrofit实例
+         * @return UploadCC
          */
         fun createInstance(): UploadCC {
             return Retrofit.Builder().baseUrl(SERVER_API)
@@ -34,6 +37,12 @@ interface UploadCC {
                 .build().create(UploadCC::class.java)
         }
 
+        /**
+         * 上传图片
+         * @param requestBody RequestBody
+         * @param fileName String
+         * @return Call<String>
+         */
         fun uploadImage(requestBody: RequestBody, fileName: String): Call<String> {
             val body = MultipartBody.Part.createFormData("uploaded_file[]", fileName, requestBody)
             return ApiHelper.convertCall(createInstance().upload(body)) {

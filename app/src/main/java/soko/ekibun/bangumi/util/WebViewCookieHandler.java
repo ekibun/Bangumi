@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * cookie 同步
+ */
 public class WebViewCookieHandler implements CookieJar {
     private CookieManager mCookieManager = CookieManager.getInstance();
 

@@ -14,6 +14,8 @@ import soko.ekibun.bangumi.ui.topic.ReplyDialog
 
 /**
  * 时间线
+ * @property titleRes Int
+ * @property iconRes Int
  */
 class TimeLineFragment : HomeTabFragment(R.layout.fragment_timeline) {
     override val titleRes: Int = R.string.timeline
@@ -44,7 +46,7 @@ class TimeLineFragment : HomeTabFragment(R.layout.fragment_timeline) {
                 activity?.supportFragmentManager ?: return@setOnClickListener,
                 hint = context?.getString(R.string.timeline_dialog_add) ?: "",
                 draft = draft
-            ) { content, send ->
+            ) { content, _, send ->
                 if (content != null && send) {
                     TimeLine.addComment(content).enqueue(ApiHelper.buildCallback({
                         if (it) {

@@ -15,6 +15,17 @@ import java.util.*
 
 /**
  * 自定义标签解析
+ * @property baseSize Float
+ * @property onClick Function1<ImageSpan, Unit>
+ * @property bgColor Int
+ * @property colorInv Int
+ * @property widget WeakReference<TextView>
+ * @property startSizeIndex Int
+ * @property endSizeIndex Int
+ * @property startMaskIndex Int
+ * @property endMaskIndex Int
+ * @property attributes HashMap<String, String>
+ * @constructor
  */
 class HtmlTagHandler(view: TextView? = null, private var baseSize: Float = 12f, private val onClick: (ImageSpan) -> Unit = {}) : Html.TagHandler {
     private val bgColor = view?.textColors?.defaultColor ?: Color.BLACK

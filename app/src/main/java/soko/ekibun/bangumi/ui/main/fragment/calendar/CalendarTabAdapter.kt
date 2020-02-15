@@ -12,6 +12,8 @@ import soko.ekibun.bangumi.R
 
 /**
  * 时间表TabAdapter
+ * @property viewpager ViewPager
+ * @constructor
  */
 class CalendarTabAdapter(val viewpager: ViewPager) : RecyclerTabLayout.Adapter<CalendarTabAdapter.ViewHolder>(viewpager) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -38,6 +40,7 @@ class CalendarTabAdapter(val viewpager: ViewPager) : RecyclerTabLayout.Adapter<C
 
     /**
      * 时间表Tab项
+     * @constructor
      */
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         init {
