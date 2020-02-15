@@ -21,7 +21,11 @@ import soko.ekibun.bangumi.util.HttpUtil
  * @property childWebView NestedWebView?
  * @constructor
  */
-class NestedWebView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = android.R.attr.webViewStyle) : WebView(context, attrs, defStyleAttr) {
+class NestedWebView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = android.R.attr.webViewStyle
+) : WebView(context, attrs, defStyleAttr) {
 
     var onProgressChanged = { _: WebView, _: Int -> }
     var shouldOverrideUrlLoading = { _: WebView, _: WebResourceRequest -> false }
@@ -59,7 +63,7 @@ class NestedWebView @JvmOverloads constructor(context: Context, attrs: Attribute
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if(event.action == MotionEvent.ACTION_DOWN && scrollY <= 0)
+        if (event.action == MotionEvent.ACTION_DOWN && scrollY <= 0)
             scrollTo(scrollX, 1)
 
         return super.onTouchEvent(event)
@@ -68,7 +72,7 @@ class NestedWebView @JvmOverloads constructor(context: Context, attrs: Attribute
     /**
      * 关闭窗口
      */
-    fun close(){
+    fun close() {
         val parentWebView = parentWebView ?: return
         val parent = (parent as? ViewGroup) ?: return
         parent.removeView(this)
@@ -82,15 +86,24 @@ class NestedWebView @JvmOverloads constructor(context: Context, attrs: Attribute
 
     companion object {
 
-        val mWebChromeClient = object: WebChromeClient(){
-            override fun onShowFileChooser(webView: WebView?, filePathCallback: ValueCallback<Array<Uri>>?, fileChooserParams: FileChooserParams?): Boolean {
+        val mWebChromeClient = object : WebChromeClient() {
+            override fun onShowFileChooser(
+                webView: WebView?,
+                filePathCallback: ValueCallback<Array<Uri>>?,
+                fileChooserParams: FileChooserParams?
+            ): Boolean {
                 return (webView as? NestedWebView)?.onShowFileChooser?.invoke(filePathCallback, fileChooserParams)
-                        ?: super.onShowFileChooser(webView, filePathCallback, fileChooserParams)
+                    ?: super.onShowFileChooser(webView, filePathCallback, fileChooserParams)
             }
 
-            override fun onCreateWindow(view: WebView, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message): Boolean {
+            override fun onCreateWindow(
+                view: WebView,
+                isDialog: Boolean,
+                isUserGesture: Boolean,
+                resultMsg: Message
+            ): Boolean {
                 val parent = (view.parent as? ViewGroup) ?: return false
-                val webview = (view as? NestedWebView)?: return false
+                val webview = (view as? NestedWebView) ?: return false
                 val newView = NestedWebView(view.context)
                 newView.onProgressChanged = webview.onProgressChanged
                 newView.onShowFileChooser = webview.onShowFileChooser
@@ -116,7 +129,7 @@ class NestedWebView @JvmOverloads constructor(context: Context, attrs: Attribute
 
             override fun onCloseWindow(window: WebView?) {
                 super.onCloseWindow(window)
-                val webview = (window as? NestedWebView)?: return
+                val webview = (window as? NestedWebView) ?: return
                 webview.close()
             }
 
@@ -131,10 +144,8 @@ class NestedWebView @JvmOverloads constructor(context: Context, attrs: Attribute
         }
 
         fun updateViewPort(view: WebView) {
-            if (!PreferenceManager.getDefaultSharedPreferences(view.context).getBoolean(
-                    "webview_fix_scale",
-                    true
-                )
+            if (!PreferenceManager.getDefaultSharedPreferences(view.context)
+                    .getBoolean("webview_fix_scale", true)
             ) return
             view.evaluateJavascript(
                 """
