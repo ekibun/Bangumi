@@ -152,13 +152,13 @@ class NestedWebView @JvmOverloads constructor(context: Context, attrs: Attribute
                     ?: false) || super.shouldOverrideUrlLoading(view, request)
             }
 
-            override fun onPageCommitVisible(view: WebView, url: String?) {
-                super.onPageCommitVisible(view, url)
+            override fun onScaleChanged(view: WebView, oldScale: Float, newScale: Float) {
+                super.onScaleChanged(view, oldScale, newScale)
                 updateViewPort(view)
             }
 
-            override fun onPageFinished(view: WebView, url: String?) {
-                super.onPageFinished(view, url)
+            override fun onPageCommitVisible(view: WebView, url: String?) {
+                super.onPageCommitVisible(view, url)
                 updateViewPort(view)
             }
         }
