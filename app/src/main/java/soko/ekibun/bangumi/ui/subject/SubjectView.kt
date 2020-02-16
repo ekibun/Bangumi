@@ -78,8 +78,8 @@ class SubjectView(private val context: SubjectActivity) {
     val detail: View by lazy { LayoutInflater.from(context).inflate(R.layout.dialog_subject, null) }
 
     val isScrollDown
-        get() = behavior.isHideable || context.item_list.canScrollVertically(-1) || (behavior.state != BottomSheetBehavior.STATE_COLLAPSED &&
-                context.app_bar.height != context.bottom_sheet.paddingTop + context.bottom_sheet.paddingBottom)
+        get() = context.item_list.canScrollVertically(-1) || (behavior.state != BottomSheetBehavior.STATE_COLLAPSED &&
+                context.app_bar.height > context.bottom_sheet.paddingTop + context.bottom_sheet.paddingBottom)
 
     var onStateChangedListener = { state: Int -> }
 
@@ -162,6 +162,9 @@ class SubjectView(private val context: SubjectActivity) {
             override fun onStateChanged(bottomSheet: View, @BottomSheetBehavior.State newState: Int) { /* no-op */
                 if (newState == BottomSheetBehavior.STATE_HIDDEN) ThemeModel.fullScreen(context.window)
                 else ThemeModel.updateNavigationTheme(context)
+                if (newState == BottomSheetBehavior.STATE_COLLAPSED)
+                    (context.item_list.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(0, 0)
+                if (newState == BottomSheetBehavior.STATE_HIDDEN) context.item_swipe.isRefreshing = false
                 onStateChangedListener(newState)
             }
 
@@ -175,7 +178,7 @@ class SubjectView(private val context: SubjectActivity) {
         }
 
         context.item_swipe.setOnChildScrollUpCallback { _, _ ->
-            isScrollDown
+            isScrollDown || behavior.isHideable
         }
 
         behavior.isHideable = false

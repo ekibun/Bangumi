@@ -2,6 +2,7 @@ package soko.ekibun.bangumi.ui.view
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.MenuItem
 import androidx.annotation.LayoutRes
@@ -46,6 +47,7 @@ abstract class BaseActivity(@LayoutRes private val resId: Int) : AppCompatActivi
     var onDestroyListener = {}
     override fun onDestroy() {
         super.onDestroy()
+        Log.v("destroy", "${this.javaClass}")
         onDestroyListener()
     }
 

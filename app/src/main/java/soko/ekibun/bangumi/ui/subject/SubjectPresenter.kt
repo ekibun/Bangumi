@@ -79,14 +79,7 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
         }
 
         subjectView.detail.item_progress_edit.setOnClickListener {
-            Subject.updateSubjectProgress(
-                subject,
-                watchedeps = subjectView.detail.item_ep_status.value.toString(),
-                watched_vols = subjectView.detail.item_vol_status.value.toString()
-            )
-                .enqueue(ApiHelper.buildCallback({
-                    refresh()
-                }, {}))
+            updateSubjectProgress(subjectView.detail.item_vol_status.value, subjectView.detail.item_ep_status.value)
         }
         val updateInt = { _: Int ->
             subjectView.detail.item_progress_edit.visibility =
@@ -192,6 +185,16 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
             subjectView.episodeDetailAdapter.notifyDataSetChanged()
             refreshProgress()
         }
+    }
+
+    fun updateSubjectProgress(vol: Int?, ep: Int?) {
+        Subject.updateSubjectProgress(
+            subject,
+            watchedeps = (ep ?: subject.ep_status).toString(),
+            watched_vols = (vol ?: subject.vol_status).toString()
+        ).enqueue(ApiHelper.buildCallback({
+            refresh()
+        }, {}))
     }
 
     private var subjectCall: Call<Unit>? = null

@@ -28,9 +28,10 @@ import soko.ekibun.bangumi.ui.setting.SettingsActivity
 class DrawerView(private val context: MainActivity, onLogout: () -> Unit) {
     var checkedId = R.id.nav_home
     val homeFragment = HomeFragment()
+    val calendarFragment = CalendarFragment()
     private val fragments: Map<Int, DrawerFragment> = mapOf(
         R.id.nav_home to homeFragment,
-        R.id.nav_calendar to CalendarFragment(),
+        R.id.nav_calendar to calendarFragment,
         R.id.nav_index to IndexFragment()
     )
 

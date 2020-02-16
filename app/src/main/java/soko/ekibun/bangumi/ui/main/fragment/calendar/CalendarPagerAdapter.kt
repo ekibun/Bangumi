@@ -99,7 +99,7 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
         return recyclerView
     }
 
-    private fun setOnAirList(it: List<BangumiCalendarItem>) {
+    fun setOnAirList(it: List<BangumiCalendarItem>) {
         val useCN = sp.getBoolean("calendar_use_cn", false)
         val use30h = sp.getBoolean("calendar_use_30h", false)
 
@@ -120,45 +120,54 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
                     image = subject.image)
             subject.eps?.forEach {
                 val item = CalendarAdapter.OnAir(it, bangumi)
-                val timeInt = (if (!useCN || subject.timeCN.isNullOrEmpty()) subject.timeJP else subject.timeCN)?.toIntOrNull()
+                val timeInt =
+                    (if (!useCN || subject.timeCN.isNullOrEmpty()) subject.timeJP else subject.timeCN)?.toIntOrNull()
                         ?: 0
-                val zoneOffset = TimeZone.getDefault().rawOffset
-                val hourDif = zoneOffset / 1000 / 3600 - 8
-                val minuteDif = zoneOffset / 1000 / 60 % 60
-                val minute = timeInt % 100 + minuteDif
-                val hour = timeInt / 100 + hourDif + when {
-                    minute >= 60 -> 1
-                    minute < 0 -> -1
+                val zoneOffset = TimeZone.getDefault().rawOffset / 1000 / 60    // 时差（min）
+                val hourDif = zoneOffset / 60 - 8           // 小时差（源数据是UTC+8，减8）
+                val minuteDif = zoneOffset % 60             // 分钟差
+                val minute = timeInt % 100 + minuteDif      // 分钟 + 分钟差
+                val hour = timeInt / 100 + hourDif + when { // 小时 + 小时差 + 分钟的进位
+                    minute >= 60 -> 1   // 大于60，进1位
+                    minute < 0 -> -1    // 小于0，退1位
                     else -> 0
                 }
-                val dayCarry = when {
-                    hour >= if (use30h) 30 else 24 -> 1
-                    hour < if (use30h) 6 else 0 -> -1
+                val dayCarry = when {               // 日期进位
+                    hour >= if (use30h) 30 else 24 -> 1  // 30小时制大于30进位，否则大于24进位
+                    hour < if (use30h) 6 else 0 -> -1    // 30小时制小于6退位，否则小于0退位
                     else -> 0
                 }
-                val mStrBuilder = StringBuilder()
-                val mFormatter = Formatter(mStrBuilder, Locale.getDefault())
-                mStrBuilder.setLength(0)
-                val time = mFormatter.format("%02d:%02d", if (use30h) (hour - 6 + 24) % 24 + 6 else (hour + 24) % 24, minute % 60).toString()
+                // 格式化日期 -> hh:mm
+                val time =
+                    String.format("%02d:%02d", if (use30h) (hour - 6 + 24) % 24 + 6 else (hour + 24) % 24, minute % 60)
+                // 根据airdate创建日期对象
                 val cal = Calendar.getInstance()
                 cal.time = try {
                     SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.airdate ?: "")
                 } catch (e: Exception) {
                     null
                 } ?: cal.time
-                val week = (if ((subject.timeJP?.toIntOrNull()
-                                ?: 0) / 100 < 5) 1 else 0) + if (!useCN || subject.timeCN.isNullOrEmpty()) 0 else
-                    Math.min(if (subject.timeCN.toIntOrNull() ?: 0 < subject.timeJP?.toIntOrNull() ?: 0) 1 else 0, when (((subject.weekDayCN
-                            ?: 0) - (subject.weekDayJP ?: 0) + 7) % 7) {
-                        6 -> if ((subject.timeJP?.toIntOrNull() ?: 0) / 100 < 5) -1 else 0
-                        0 -> 0
-                        else -> 1
-                    })
-                val dayDif = week + dayCarry
-                cal.add(Calendar.DAY_OF_MONTH, dayDif)
+                val jpDayDiff = (if ((subject.timeJP?.toIntOrNull()
+                        ?: 0) / 100 < 6
+                )                            // 假设airdate按30小时算，若日本放送时间<6:00，取次日
+                    Math.min(
+                        1,
+                        (CalendarAdapter.getWeek(cal) - (subject.weekDayJP ?: 0) + 7) % 7
+                    ) else 0)           // 若日本放送星期与airdate相同，取0
+                val week = jpDayDiff + if (!useCN || subject.timeCN.isNullOrEmpty()) 0
+                else Math.min(                                                                               // 若是国内放送日期加上以下两种情况的最小值
+                    if (subject.timeCN.toIntOrNull() ?: 0 < subject.timeJP?.toIntOrNull() ?: 0) 1 else 0,    // 1.假设日本放送时间早于国内时间，若国内放送时间小于日本放送时间，取次日
+                    when (((subject.weekDayCN ?: 0) - (subject.weekDayJP
+                        ?: 0) + 7) % 7) {                   // 2.比较国内放送和日本放送的周数差
+                        5, 6 -> -jpDayDiff                                                                   // (1) 比日本早，认为日本放送时间有问题，减去前面由日本放送时间计算的周数差
+                        0 -> 0                                                                               // (2) 相同，取0
+                        else -> 1                                                                            // (3) 比日本晚，取1
+                    }
+                )
+                val dayDif = week + dayCarry        // 日期差 + 由于时差引起的进位
+                cal.add(Calendar.DAY_OF_MONTH, dayDif)   // 加上日期差，计算日期
                 val date = CalendarAdapter.getCalendarInt(cal)
-                if (date in minDate..maxDate)
-                    onAir.getOrPut(date) { HashMap() }.getOrPut(time) { ArrayList() }.add(item)
+                if (date in minDate..maxDate) onAir.getOrPut(date) { HashMap() }.getOrPut(time) { ArrayList() }.add(item)
             }
         }
         onAir.toList().forEach { date ->
@@ -168,7 +177,9 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
             date.second.toList().sortedBy { it.first }.forEach { time ->
                 var isHeader = true
                 time.second.forEach {
-                    it.subject.collect = if (mainPresenter?.collectionList?.find { c -> c.id == it.subject.id } != null) Collection(Collection.STATUS_DO) else null
+                    it.subject.collect =
+                        if (mainPresenter?.collectionList?.find { c -> c.id == it.subject.id } != null)
+                            Collection(Collection.STATUS_DO) else null
                     if (it.subject.image != null) {
                         if (index == -1 && !CalendarAdapter.pastTime(date.first, time.first, use30h))
                             index = item.data.size
@@ -217,7 +228,9 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
 
     private fun parseDate(date: Int): String {
         val cal = CalendarAdapter.getIntCalendar(date)
-        return "${date / 100 % 100}-${date % 100}\n${CalendarAdapter.weekList[CalendarAdapter.getWeek(cal)]}(${CalendarAdapter.weekJp[CalendarAdapter.getWeek(cal)]})"
+        return "${date / 100 % 100}-${date % 100
+        }\n${CalendarAdapter.weekList[CalendarAdapter.getWeek(cal)]
+        }(${CalendarAdapter.weekJp[CalendarAdapter.getWeek(cal)]})"
     }
 
     /**
@@ -226,8 +239,9 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
      * @return Calendar
      */
     fun getPostDate(pos: Int): Calendar {
-        val cal = CalendarAdapter.getIntCalendar(CalendarAdapter.getNowInt(
-                sp.getBoolean("calendar_use_30h", false)))
+        val cal = CalendarAdapter.getIntCalendar(
+            CalendarAdapter.getNowInt(sp.getBoolean("calendar_use_30h", false))
+        )
         cal.add(Calendar.DAY_OF_MONTH, pos - 7)
         return cal
     }

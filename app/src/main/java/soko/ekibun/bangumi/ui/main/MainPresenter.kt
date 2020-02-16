@@ -174,7 +174,10 @@ class MainPresenter(private val context: MainActivity) {
                 }
             }
             collectionList = it
-            context.runOnUiThread { callback(it) }
+            context.runOnUiThread {
+                drawerView.calendarFragment.onCollectionChange()
+                callback(it)
+            }
         })
         collectionCall?.enqueue(ApiHelper.buildCallback({}, {
             onError(it)

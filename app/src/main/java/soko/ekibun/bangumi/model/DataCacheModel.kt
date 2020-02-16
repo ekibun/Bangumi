@@ -59,11 +59,13 @@ open class DataCacheModel(context: Context) {
          * @return File
          */
         fun getDiskCacheDir(context: Context, uniqueName: String): File {
-            return File(if (Environment.MEDIA_MOUNTED == Environment.getExternalStorageState() || !Environment.isExternalStorageRemovable()) {
-                context.externalCacheDir!!.path
-            } else {
-                context.cacheDir.path
-            } + File.separator + uniqueName)
+            return File(
+                if (Environment.MEDIA_MOUNTED == Environment.getExternalStorageState() || !Environment.isExternalStorageRemovable()) {
+                    context.externalCacheDir?.path ?: context.cacheDir.path
+                } else {
+                    context.cacheDir.path
+                } + File.separator + uniqueName
+            )
         }
 
         /**

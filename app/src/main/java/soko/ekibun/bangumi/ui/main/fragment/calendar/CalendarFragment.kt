@@ -5,6 +5,7 @@ import android.view.Menu
 import android.view.View
 import kotlinx.android.synthetic.main.content_calendar.*
 import soko.ekibun.bangumi.R
+import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
 
 /**
@@ -38,9 +39,18 @@ class CalendarFragment: DrawerFragment(R.layout.content_calendar) {
         super.onPrepareOptionsMenu(menu)
     }
 
-    override fun processBack(): Boolean{
-        if(item_pager == null || item_pager?.currentItem == 7) return false
+    override fun processBack(): Boolean {
+        if (item_pager == null || item_pager?.currentItem == 7) return false
         item_pager?.currentItem = 7
         return true
+    }
+
+    /**
+     * 用户收藏改变
+     */
+    fun onCollectionChange() {
+        (activity as? MainActivity)?.mainPresenter?.calendar?.let {
+            (item_pager?.adapter as? CalendarPagerAdapter)?.setOnAirList(it)
+        }
     }
 }
