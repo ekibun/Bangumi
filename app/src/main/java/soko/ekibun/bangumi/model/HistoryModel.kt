@@ -78,7 +78,7 @@ class HistoryModel(context: Context) {
 
     companion object {
         const val PREF_HISTORY = "history"
-        val dateFormat by lazy { SimpleDateFormat("yyyy-MM-dd", Locale.CHINA) }
-        val timeFormat by lazy { SimpleDateFormat("hh:mm", Locale.CHINA) }
+        val dateFormat by lazy { SimpleDateFormat("yyyy-MM-dd") }
+        val timeFormat by lazy { SimpleDateFormat("HH:mm") }
     }
 }
