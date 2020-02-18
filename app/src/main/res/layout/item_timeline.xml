@@ -66,8 +66,8 @@
             app:layout_constraintLeft_toRightOf="@+id/item_time"/>
     <ImageView
             android:id="@+id/item_del"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:padding="4dp"
             android:clickable="true"
             app:layout_constraintTop_toTopOf="parent"

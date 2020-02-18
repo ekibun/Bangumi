@@ -73,7 +73,7 @@
                     android:text="@string/search_history_clear"
                     android:clickable="true"
                     android:padding="12dp"
-                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:background="?selectableItemBackground"
                     android:focusable="true"/>
         </LinearLayout>
 

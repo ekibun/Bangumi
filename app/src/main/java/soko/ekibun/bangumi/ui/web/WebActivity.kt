@@ -25,6 +25,7 @@ import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.ui.topic.TopicActivity
 import soko.ekibun.bangumi.ui.view.BaseActivity
 import soko.ekibun.bangumi.ui.view.CollapsibleAppBarHelper
+import soko.ekibun.bangumi.ui.view.NestedWebView
 import soko.ekibun.bangumi.util.AppUtil
 import java.net.URI
 
@@ -47,14 +48,6 @@ class WebActivity : BaseActivity(R.layout.activity_web) {
 
     private var filePathsCallback: ValueCallback<Array<Uri>>? = null
 
-    override fun onStop() {
-        super.onStop()
-    }
-
-    override fun onStart() {
-        super.onStart()
-    }
-
     private val collapsibleAppBarHelper by lazy { CollapsibleAppBarHelper(app_bar as AppBarLayout) }
     override fun setTitle(title: CharSequence?) {
         collapsibleAppBarHelper.setTitle(title.toString(), supportActionBar?.subtitle?.toString())
@@ -68,21 +61,31 @@ class WebActivity : BaseActivity(R.layout.activity_web) {
         collapsibleAppBarHelper.updateStatus(1f)
         collapsibleAppBarHelper.appbarCollapsible(CollapsibleAppBarHelper.CollapseStatus.COLLAPSED)
 
-        val paddingBottom = webview_container.paddingBottom
+        val paddingBottom = item_swipe.paddingBottom
         root_layout.setOnApplyWindowInsetsListener { _, insets ->
-            webview_container.setPadding(
-                webview_container.paddingLeft,
-                webview_container.paddingTop,
-                webview_container.paddingRight,
+            item_swipe.setPadding(
+                item_swipe.paddingLeft,
+                item_swipe.paddingTop,
+                item_swipe.paddingRight,
                 paddingBottom + insets.systemWindowInsetBottom
             )
             insets
         }
 
+        item_swipe.setOnChildScrollUpCallback { _, _ ->
+            !curWebView.overScrollY
+        }
+
+        item_swipe.setOnRefreshListener {
+            curWebView.reload()
+        }
+
         webview_progress.max = 100
-        webview.onProgressChanged = { _: WebView, newProgress: Int ->
+        webview.onProgressChanged = onProgressChanged@{ v: WebView, newProgress: Int ->
+            if (curWebView != v) return@onProgressChanged
             webview_progress.visibility = if (newProgress == 100) View.GONE else View.VISIBLE
             webview_progress.progress = newProgress
+            item_swipe.isRefreshing = newProgress < 100
         }
 
         if (!isAuth) {
@@ -139,6 +142,14 @@ class WebActivity : BaseActivity(R.layout.activity_web) {
         }
     }
 
+    val curWebView: NestedWebView
+        get() {
+            var view = webview
+            while (view.childWebView != null)
+                view = view.childWebView!!
+            return view
+        }
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         if (!isAuth)
             menuInflater.inflate(R.menu.action_web, menu)
@@ -146,10 +157,7 @@ class WebActivity : BaseActivity(R.layout.activity_web) {
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        var view = webview
-        while (view.childWebView != null)
-            view = view.childWebView!!
-
+        val view = curWebView
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             when {
                 view.canGoBack() -> view.goBack()

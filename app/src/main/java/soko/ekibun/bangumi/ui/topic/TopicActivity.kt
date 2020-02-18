@@ -7,20 +7,29 @@ import android.view.Menu
 import android.view.MenuItem
 import kotlinx.android.synthetic.main.activity_topic.*
 import kotlinx.android.synthetic.main.appbar_layout.*
+import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
+import soko.ekibun.bangumi.model.HistoryModel
 import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.view.BaseActivity
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.AppUtil
 import soko.ekibun.bangumi.util.JsonUtil
+import java.util.*
 
 /**
  * 帖子Activity
  * @property topicPresenter TopicPresenter
  */
 class TopicActivity : BaseActivity(R.layout.activity_topic) {
-    val topicPresenter by lazy { TopicPresenter(this) }
+    val topicPresenter by lazy {
+        TopicPresenter(
+            this,
+            JsonUtil.toEntity<Topic>(intent.getStringExtra(EXTRA_TOPIC) ?: "")!!,
+            intent.getIntExtra(EXTRA_POST, 0).toString()
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,16 +37,34 @@ class TopicActivity : BaseActivity(R.layout.activity_topic) {
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        topicPresenter.init(
-            JsonUtil.toEntity<Topic>(intent.getStringExtra(EXTRA_TOPIC) ?: "")!!,
-            intent.getIntExtra(EXTRA_POST, 0).toString()
-        )
+        topicPresenter.topic.let {
+            App.get(this).historyModel.addHistory(
+                HistoryModel.History(
+                    type = "topic",
+                    title = it.title,
+                    subTitle = it.links?.keys?.firstOrNull(),
+                    thumb = it.image,
+                    data = JsonUtil.toJson(Topic(it.model, it.id)),
+                    timestamp = Calendar.getInstance().timeInMillis
+                )
+            )
+        }
 
         val listPaddingBottom = item_list.paddingBottom
         val replyPaddingBottom = item_reply_container.paddingBottom
         root_layout.setOnApplyWindowInsetsListener { _, insets ->
-            item_list.setPadding(item_list.paddingLeft, item_list.paddingTop, item_list.paddingRight, listPaddingBottom + insets.systemWindowInsetBottom)
-            item_reply_container.setPadding(item_reply_container.paddingLeft, item_reply_container.paddingTop, item_reply_container.paddingRight, replyPaddingBottom + insets.systemWindowInsetBottom)
+            item_list.setPadding(
+                item_list.paddingLeft,
+                item_list.paddingTop,
+                item_list.paddingRight,
+                listPaddingBottom + insets.systemWindowInsetBottom
+            )
+            item_reply_container.setPadding(
+                item_reply_container.paddingLeft,
+                item_reply_container.paddingTop,
+                item_reply_container.paddingRight,
+                replyPaddingBottom + insets.systemWindowInsetBottom
+            )
             insets
         }
     }

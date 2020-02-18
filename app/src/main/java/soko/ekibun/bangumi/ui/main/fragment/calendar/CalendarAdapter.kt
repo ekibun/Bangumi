@@ -29,7 +29,6 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
         helper.addOnClickListener(R.id.item_layout)
         helper.setText(R.id.item_title, item.t.subject.displayName)
         helper.setText(R.id.item_ep_name, item.t.episode?.parseSort(helper.itemView.context) + " " + (if(item.t.episode?.name_cn.isNullOrEmpty()) item.t.episode?.name?:"" else item.t.episode?.name_cn))
-        helper.addOnClickListener(R.id.item_layout)
         GlideUtil.with(helper.itemView.item_cover)
             ?.load(Images.small(item.t.subject.image))
             ?.apply(RequestOptions.errorOf(R.drawable.err_404).placeholder(R.drawable.placeholder))

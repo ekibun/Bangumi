@@ -27,14 +27,14 @@ import kotlin.collections.set
  * @property drafts HashMap<String, String>
  * @constructor
  */
-class TopicPresenter(private val context: TopicActivity) {
+class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPost: String) {
     val topicView = TopicView(context)
 
     val dataCacheModel by lazy { App.get(context).dataCacheModel }
 
-    lateinit var topic: Topic
+    var topic: Topic
 
-    fun init(topic: Topic, scrollPost: String) {
+    init {
         // 读取缓存
         DataCacheModel.merge(topic, dataCacheModel.get(topic.cacheKey))
         this.topic = topic

@@ -61,11 +61,15 @@ class NestedWebView @JvmOverloads constructor(
         webViewClient = mWebViewClient
     }
 
+    var overScrollY = false
+    override fun onOverScrolled(scrollX: Int, scrollY: Int, clampedX: Boolean, clampedY: Boolean) {
+        overScrollY = clampedY
+        super.onOverScrolled(scrollX, scrollY, clampedX, clampedY)
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (event.action == MotionEvent.ACTION_DOWN && scrollY <= 0)
-            scrollTo(scrollX, 1)
-
+        if (event.action == MotionEvent.ACTION_DOWN) overScrollY = false
         return super.onTouchEvent(event)
     }
 

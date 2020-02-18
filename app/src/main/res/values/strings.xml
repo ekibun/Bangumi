@@ -185,7 +185,7 @@
     <!-- 搜索页 -->
     <string name="search_hint">搜索…</string>
     <string name="search_history">搜索历史</string>
-    <string name="search_history_clear">删除搜索历史</string>
+    <string name="search_history_clear">清空搜索历史</string>
     <string name="search_hint_no_history">没有搜索的历史记录</string>
     <string name="search_history_remove">删除搜索历史</string>
 
@@ -253,9 +253,10 @@
     <string name="navigation_drawer_open">导航开</string>
     <string name="navigation_drawer_close">导航关</string>
 
-    <string name="search_dialog_history_clear">删除搜索历史?</string>
+    <string name="search_dialog_history_clear">清空搜索历史?</string>
     <string name="collection_dialog_remove">删除这个条目收藏?</string>
     <string name="timeline_dialog_remove">删除这条时间线?</string>
+    <string name="history_dialog_remove">清空历史记录?</string>
     <string name="reply_dialog_remove">删除这条回复?</string>
     <string name="timeline_dialog_add">添加动态</string>
 
@@ -296,4 +297,6 @@
     <!-- 对话框 -->
     <string name="dialog_subject_edit_title">修改收藏</string>
     <string name="title">标题</string>
+    <string name="history">历史记录</string>
+    <string name="clear_history">清空历史记录</string>
 </resources>

@@ -16,6 +16,10 @@
                 android:id="@+id/nav_index"
                 android:icon="@drawable/ic_widgets"
                 android:title="@string/index"/>
+        <item
+                android:id="@+id/nav_history"
+                android:icon="@drawable/ic_history"
+                android:title="@string/history"/>
     </group>
 
     <group android:id="@+id/group2">

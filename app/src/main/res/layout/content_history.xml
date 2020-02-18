@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/item_swipe"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/list_item"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="12dp"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="4dp"
+                android:overScrollMode="never"
+                android:clipToPadding="false"/>
+
+        <TextView
+                android:id="@+id/item_clear_history"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:padding="12dp"
+                android:gravity="center"
+                android:text="@string/clear_history"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:background="?selectableItemBackground"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout>

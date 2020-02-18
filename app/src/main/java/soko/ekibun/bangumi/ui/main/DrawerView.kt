@@ -10,6 +10,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
 import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarFragment
+import soko.ekibun.bangumi.ui.main.fragment.history.HistoryFragment
 import soko.ekibun.bangumi.ui.main.fragment.home.HomeFragment
 import soko.ekibun.bangumi.ui.main.fragment.index.IndexFragment
 import soko.ekibun.bangumi.ui.search.SearchActivity
@@ -32,7 +33,8 @@ class DrawerView(private val context: MainActivity, onLogout: () -> Unit) {
     private val fragments: Map<Int, DrawerFragment> = mapOf(
         R.id.nav_home to homeFragment,
         R.id.nav_calendar to calendarFragment,
-        R.id.nav_index to IndexFragment()
+        R.id.nav_index to IndexFragment(),
+        R.id.nav_history to HistoryFragment()
     )
 
     val toggle = {
