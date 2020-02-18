@@ -21,7 +21,7 @@ import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
 import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.main.MainPresenter
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
-import java.text.SimpleDateFormat
+import soko.ekibun.bangumi.util.TimeUtil
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -112,17 +112,19 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
         calWeek.add(Calendar.DAY_OF_MONTH, +14)
         val maxDate = CalendarAdapter.getCalendarInt(calWeek)
         it.forEach { subject ->
+            val useCNTime = useCN && !subject.timeCN.isNullOrEmpty() // 判断是否使用国内时间
+            val timeInt = (if (useCNTime) subject.timeCN else subject.timeJP)?.toIntOrNull() ?: 0
+            val weekInt = (if (useCNTime) subject.weekDayCN else subject.weekDayJP) ?: 0
+
             val bangumi = Subject(
-                    id = subject.id ?: return@forEach,
-                    type = Subject.TYPE_ANIME,
-                    name = subject.name,
-                    name_cn = subject.name_cn,
-                    image = subject.image)
+                id = subject.id ?: return@forEach,
+                type = Subject.TYPE_ANIME,
+                name = subject.name,
+                name_cn = subject.name_cn,
+                image = subject.image
+            )
             subject.eps?.forEach {
                 val item = CalendarAdapter.OnAir(it, bangumi)
-                val timeInt =
-                    (if (!useCN || subject.timeCN.isNullOrEmpty()) subject.timeJP else subject.timeCN)?.toIntOrNull()
-                        ?: 0
                 val zoneOffset = TimeZone.getDefault().rawOffset / 1000 / 60    // 时差（min）
                 val hourDif = zoneOffset / 60 - 8           // 小时差（源数据是UTC+8，减8）
                 val minuteDif = zoneOffset % 60             // 分钟差
@@ -138,33 +140,21 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
                     else -> 0
                 }
                 // 格式化日期 -> hh:mm
-                val time =
-                    String.format("%02d:%02d", if (use30h) (hour - 6 + 24) % 24 + 6 else (hour + 24) % 24, minute % 60)
+                val time = String.format(
+                    "%02d:%02d",
+                    if (use30h) (hour - 6 + 24) % 24 + 6 else (hour + 24) % 24, minute % 60
+                )
                 // 根据airdate创建日期对象
                 val cal = Calendar.getInstance()
                 cal.time = try {
-                    SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.airdate ?: "")
+                    TimeUtil.dateFormat.parse(it.airdate ?: "")
                 } catch (e: Exception) {
                     null
                 } ?: cal.time
-                val jpDayDiff = (if ((subject.timeJP?.toIntOrNull()
-                        ?: 0) / 100 < 6
-                )                            // 假设airdate按30小时算，若日本放送时间<6:00，取次日
-                    Math.min(
-                        1,
-                        (CalendarAdapter.getWeek(cal) - (subject.weekDayJP ?: 0) + 7) % 7
-                    ) else 0)           // 若日本放送星期与airdate相同，取0
-                val week = jpDayDiff + if (!useCN || subject.timeCN.isNullOrEmpty()) 0
-                else Math.min(                                                                               // 若是国内放送日期加上以下两种情况的最小值
-                    if (subject.timeCN.toIntOrNull() ?: 0 < subject.timeJP?.toIntOrNull() ?: 0) 1 else 0,    // 1.假设日本放送时间早于国内时间，若国内放送时间小于日本放送时间，取次日
-                    when (((subject.weekDayCN ?: 0) - (subject.weekDayJP
-                        ?: 0) + 7) % 7) {                   // 2.比较国内放送和日本放送的周数差
-                        5, 6 -> -jpDayDiff                                                                   // (1) 比日本早，认为日本放送时间有问题，减去前面由日本放送时间计算的周数差
-                        0 -> 0                                                                               // (2) 相同，取0
-                        else -> 1                                                                            // (3) 比日本晚，取1
-                    }
-                )
-                val dayDif = week + dayCarry        // 日期差 + 由于时差引起的进位
+                val dayDif = dayCarry + if (
+                    timeInt / 100 < (if (useCNTime) 5 else 6) && // 假设airdate按30小时算，且国内放送时间与日本相同，若日本放送时间<6:00，取次日
+                    (CalendarAdapter.getWeek(cal) - weekInt + 7) % 7 > 0 // 若日本放送星期与airdate相同，取0
+                ) 1 else 0
                 cal.add(Calendar.DAY_OF_MONTH, dayDif)   // 加上日期差，计算日期
                 val date = CalendarAdapter.getCalendarInt(cal)
                 if (date in minDate..maxDate) onAir.getOrPut(date) { HashMap() }.getOrPut(time) { ArrayList() }.add(item)
@@ -229,8 +219,8 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
     private fun parseDate(date: Int): String {
         val cal = CalendarAdapter.getIntCalendar(date)
         return "${date / 100 % 100}-${date % 100
-        }\n${CalendarAdapter.weekList[CalendarAdapter.getWeek(cal)]
-        }(${CalendarAdapter.weekJp[CalendarAdapter.getWeek(cal)]})"
+        }\n${TimeUtil.weekList[CalendarAdapter.getWeek(cal)]
+        }(${TimeUtil.weekJp[CalendarAdapter.getWeek(cal)]})"
     }
 
     /**

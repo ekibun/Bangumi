@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.ViewCompat
+import androidx.core.view.children
 import kotlinx.android.synthetic.main.activity_main.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
@@ -66,9 +67,12 @@ class DrawerView(private val context: MainActivity, onLogout: () -> Unit) {
 
     init {
 
-        context.content_frame.setOnApplyWindowInsetsListener { _, insets ->
-            context.content_frame.setPadding(0, insets.systemWindowInsetTop, 0, 0)
-            insets
+        context.drawer_layout.setOnApplyWindowInsetsListener { _, insets ->
+            context.root_layout.setPadding(0, insets.systemWindowInsetTop, 0, 0)
+            context.content_frame.children.forEach { v ->
+                v.onApplyWindowInsets(insets.replaceSystemWindowInsets(0, 0, 0, insets.systemWindowInsetBottom))
+            }
+            insets.consumeSystemWindowInsets()
         }
 
         context.nav_view.setNavigationItemSelectedListener {
@@ -113,10 +117,12 @@ class DrawerView(private val context: MainActivity, onLogout: () -> Unit) {
      */
     fun select(id: Int) {
         checkedId = id
+        val fragment = fragments[id] ?: return
         context.supportFragmentManager.beginTransaction()
-            .replace(R.id.content_frame, fragments[id]!!).commit()
-        context.setTitle(fragments[id]!!.titleRes)
+            .replace(R.id.content_frame, fragment).runOnCommit {
+                ViewCompat.requestApplyInsets(context.drawer_layout)
+            }.commit()
+        context.setTitle(fragment.titleRes)
         context.nav_view.setCheckedItem(id)
-        ViewCompat.requestApplyInsets(context.drawer_layout)
     }
 }

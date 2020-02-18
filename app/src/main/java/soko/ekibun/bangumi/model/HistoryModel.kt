@@ -6,7 +6,7 @@ import androidx.preference.PreferenceManager
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.ui.topic.TopicActivity
 import soko.ekibun.bangumi.util.JsonUtil
-import java.text.SimpleDateFormat
+import soko.ekibun.bangumi.util.TimeUtil
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -25,8 +25,8 @@ class HistoryModel(context: Context) {
         var data: String,
         var timestamp: Long
     ) {
-        val timeString: String get() = timeFormat.format(Date(timestamp))
-        val dateString: String get() = dateFormat.format(Date(timestamp))
+        val timeString: String get() = TimeUtil.timeFormat.format(Date(timestamp))
+        val dateString: String get() = TimeUtil.dateFormat.format(Date(timestamp))
 
         fun startActivity(context: Context) {
             when (type) {
@@ -78,7 +78,5 @@ class HistoryModel(context: Context) {
 
     companion object {
         const val PREF_HISTORY = "history"
-        val dateFormat by lazy { SimpleDateFormat("yyyy-MM-dd") }
-        val timeFormat by lazy { SimpleDateFormat("HH:mm") }
     }
 }

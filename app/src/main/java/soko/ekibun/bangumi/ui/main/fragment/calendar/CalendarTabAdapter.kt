@@ -9,6 +9,7 @@ import androidx.viewpager.widget.ViewPager
 import com.nshmura.recyclertablayout.RecyclerTabLayout
 import kotlinx.android.synthetic.main.item_calendar_tab.view.*
 import soko.ekibun.bangumi.R
+import soko.ekibun.bangumi.util.TimeUtil
 
 /**
  * 时间表TabAdapter
@@ -30,8 +31,8 @@ class CalendarTabAdapter(val viewpager: ViewPager) : RecyclerTabLayout.Adapter<C
         val posDate = (viewpager.adapter as? CalendarPagerAdapter)?.getPostDate(position)?:return
         val date = CalendarAdapter.getCalendarInt(posDate)
         holder.itemView.item_today.visibility = if(position == 7) View.VISIBLE else View.INVISIBLE
-        holder.itemView.item_date.text = "${date/100%100}-${date%100}"
-        holder.itemView.item_week.text = CalendarAdapter.weekSmall[CalendarAdapter.getWeek(posDate)]
+        holder.itemView.item_date.text = "${date / 100 % 100}-${date % 100}"
+        holder.itemView.item_week.text = TimeUtil.weekSmall[CalendarAdapter.getWeek(posDate)]
         holder.itemView.item_week.isSelected = currentIndicatorPosition == position
         holder.itemView.item_date.isSelected = holder.itemView.item_week.isSelected
         holder.itemView.item_today.isSelected = holder.itemView.item_week.isSelected

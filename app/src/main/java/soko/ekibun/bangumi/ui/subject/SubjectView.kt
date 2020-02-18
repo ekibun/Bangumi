@@ -24,12 +24,12 @@ import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.model.ThemeModel
-import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarAdapter
 import soko.ekibun.bangumi.ui.topic.PhotoPagerAdapter
 import soko.ekibun.bangumi.ui.view.CollapsibleAppBarHelper
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.HttpUtil
+import soko.ekibun.bangumi.util.TimeUtil
 
 /**
  * 条目view
@@ -250,7 +250,7 @@ class SubjectView(private val context: SubjectActivity) {
             infoBoxPreview.add(if (subject.category.isNullOrEmpty()) context.getString(Subject.getTypeRes(subject.type)) else subject.category!!)
             infoBoxPreview.add(subject.infobox?.firstOrNull { it.first in arrayOf("发售日期", "发售日", "发行日期") }?.let {
                 "${Jsoup.parse(it.second).body().text()} ${it.first.substring(0, 2)}"
-            } ?: "${subject.air_date ?: ""} ${CalendarAdapter.weekList[subject.air_weekday]}")
+            } ?: "${subject.air_date ?: ""} ${TimeUtil.weekList[subject.air_weekday]}")
 
             infoBoxPreview.addAll(subject.infobox?.filter {
                 it.first.substringBefore(" ") in arrayOf("动画制作", "作者", "开发", "游戏制作", "艺术家")

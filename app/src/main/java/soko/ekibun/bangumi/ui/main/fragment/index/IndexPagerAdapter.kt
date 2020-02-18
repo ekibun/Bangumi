@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.content_index.*
 import retrofit2.Call
 import soko.ekibun.bangumi.R
@@ -31,6 +32,12 @@ import java.util.*
 class IndexPagerAdapter(fragment: IndexFragment, private val pager: androidx.viewpager.widget.ViewPager) :
     RecyclePagerAdapter<IndexPagerAdapter.IndexPagerViewHolder>() {
     var windowInsets: WindowInsets? = null
+        set(value) {
+            field = value
+            holders.forEach {
+                it.recyclerView.setPadding(0, 0, 0, windowInsets?.systemWindowInsetBottom ?: 0)
+            }
+        }
 
     private val indexTypeView = IndexTypeView(fragment.item_type) {
         pageIndex.clear()
@@ -79,15 +86,15 @@ class IndexPagerAdapter(fragment: IndexFragment, private val pager: androidx.vie
         loadIndex(item)
     }
 
-    private val holders = ArrayList<IndexPagerViewHolder>()
+    val holders = ArrayList<IndexPagerViewHolder>()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): IndexPagerViewHolder {
         val swipeRefreshLayout = FixSwipeRefreshLayout(parent.context)
-        val recyclerView = androidx.recyclerview.widget.RecyclerView(parent.context)
+        val recyclerView = RecyclerView(parent.context)
         recyclerView.overScrollMode = View.OVER_SCROLL_NEVER
         recyclerView.setPadding(0, 0, 0, windowInsets?.systemWindowInsetBottom ?: 0)
         recyclerView.clipToPadding = false
         val adapter = SubjectAdapter()
-        val viewHolder = IndexPagerViewHolder(swipeRefreshLayout, adapter)
+        val viewHolder = IndexPagerViewHolder(swipeRefreshLayout, adapter, recyclerView)
 
         adapter.emptyView = LayoutInflater.from(parent.context).inflate(R.layout.view_empty, parent, false)
         adapter.isUseEmpty(false)
@@ -103,7 +110,6 @@ class IndexPagerAdapter(fragment: IndexFragment, private val pager: androidx.vie
         recyclerView.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(parent.context)
         recyclerView.isNestedScrollingEnabled = false
         swipeRefreshLayout.addView(recyclerView)
-        swipeRefreshLayout.tag = recyclerView
         swipeRefreshLayout.setOnRefreshListener { reset(viewHolder) }
         holders.add(viewHolder)
         Log.v("holder", holders.size.toString())
@@ -129,8 +135,12 @@ class IndexPagerAdapter(fragment: IndexFragment, private val pager: androidx.vie
      * @property position Int
      * @constructor
      */
-    class IndexPagerViewHolder(val view: FixSwipeRefreshLayout, val adapter: SubjectAdapter) :
-        RecyclePagerAdapter.PagerViewHolder({ view }()) {
+    class IndexPagerViewHolder(
+        val view: FixSwipeRefreshLayout,
+        val adapter: SubjectAdapter,
+        val recyclerView: RecyclerView
+    ) :
+        RecyclePagerAdapter.PagerViewHolder(view) {
         var position = 0
     }
 }

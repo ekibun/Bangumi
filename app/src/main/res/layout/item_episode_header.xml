@@ -3,16 +3,18 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="36dp"
-        android:background="?android:colorBackground">
+        android:layout_height="36dp">
 
     <TextView
             android:id="@+id/item_header"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingStart="12dp"
+            android:paddingStart="8dp"
             android:paddingTop="2dp"
-            android:paddingEnd="12dp"
+            android:paddingEnd="8dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             tools:text="@sample/episode.json/data/header"
+            android:background="?android:colorBackground"
             android:textAppearance="@android:style/TextAppearance.Material.Subhead"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
