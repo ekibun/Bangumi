@@ -14,7 +14,7 @@
             android:id="@+id/app_bar"
             layout="@layout/appbar_layout"/>
 
-    <soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/item_swipe"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
             android:layout_width="match_parent"
@@ -35,7 +35,7 @@
                     android:layout_alignParentStart="true"
                     android:layout_alignParentTop="true"/>
         </RelativeLayout>
-    </soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <ProgressBar
             android:id="@+id/webview_progress"

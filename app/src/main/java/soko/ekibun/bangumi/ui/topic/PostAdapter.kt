@@ -106,7 +106,7 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
                             ?: WebActivity.launchUrl(helper.itemView.context, Bangumi.parseUrl(it), "")
                     }
                 }
-                item_message.text = if (item.pst_content.length < 10000) makeSpan() else largeContent.getOrPut(item.pst_id, makeSpan)
+                item_message.text = largeContent.getOrPut(item.pst_content, makeSpan)
             }
             helper.itemView.item_message.onFocusChangeListener = View.OnFocusChangeListener { view, focus ->
                 if (!focus) {

@@ -17,8 +17,8 @@ class FixSwipeRefreshLayout @JvmOverloads constructor(context: Context, attrs: A
     SwipeRefreshLayout(context, attrs) {
     private val touchSlop by lazy { ViewConfiguration.get(context).scaledTouchSlop }
 
-    var prevX = 0f
-    var declined = false
+    private var prevX = 0f
+    private var declined = false
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
         when (ev.action) {
             MotionEvent.ACTION_DOWN -> {
