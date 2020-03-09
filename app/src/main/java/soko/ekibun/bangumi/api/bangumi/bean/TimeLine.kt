@@ -28,7 +28,7 @@ class TimeLine : SectionEntity<TimeLine.TimeLineItem> {
      * @property collectStar Int
      * @property thumbs List<ThumbItem>
      * @property delUrl String?
-     * @property sayUrl String?
+     * @property say Say?
      * @constructor
      */
     data class TimeLineItem(
@@ -40,7 +40,7 @@ class TimeLine : SectionEntity<TimeLine.TimeLineItem> {
         val collectStar: Int,
         val thumbs: List<ThumbItem>,
         val delUrl: String?,
-        val sayUrl: String?
+        val say: Say?
     ) {
         data class ThumbItem(
             val image: String,
@@ -77,8 +77,12 @@ class TimeLine : SectionEntity<TimeLine.TimeLineItem> {
                         ret += TimeLine(true, timeline.text())
                     } else timeline.select(".tml_item")?.forEach { item ->
                         item.selectFirst("a.avatar")?.let {
-                            user = UserInfo.parse(it, Bangumi.parseImageUrl(it.selectFirst("span.avatarNeue")))
+                            user = UserInfo.parse(
+                                item.selectFirst("$cssInfo a.l") ?: it,
+                                Bangumi.parseImageUrl(it.selectFirst("span.avatarNeue"))
+                            )
                         }
+                        val delUrl = item.selectFirst(".tml_del")?.attr("href")
                         ret += TimeLine(TimeLineItem(
                             user = user,
                             action = item.selectFirst(cssInfo)?.childNodes()?.map {
@@ -103,8 +107,14 @@ class TimeLine : SectionEntity<TimeLine.TimeLineItem> {
                                     url = url
                                 )
                             },
-                            delUrl = item.selectFirst(".tml_del")?.attr("href"),
-                            sayUrl = item.selectFirst("a.tml_comment")?.attr("href")
+                            delUrl = delUrl,
+                            say = Say.parse(
+                                item.selectFirst("a.tml_comment")?.attr("href") ?: "",
+                                user = user,
+                                message = item.selectFirst("$cssInfo .status")?.html(),
+                                time = item.selectFirst(".date")?.ownText()?.trim('·', ' ')?.replace("·", "via") ?: "",
+                                self = if (delUrl.isNullOrEmpty()) null else user
+                            )
                         )
                         )
                     }

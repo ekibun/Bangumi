@@ -29,14 +29,17 @@ import java.lang.ref.WeakReference
  * @property drawableCallback Callback
  * @constructor
  */
-open class UrlDrawable(val container: WeakReference<TextView>, val updateSize: (Size) -> Unit = {}) : AnimationDrawable() {
+open class UrlDrawable(
+    val container: WeakReference<TextView>,
+    val maxWidth: () -> Float,
+    val updateSize: (Size) -> Unit = {}
+) : AnimationDrawable() {
     var drawable: Drawable? = null
     var error: Boolean? = null
     var size: Size? = null
     var url: String? = null
     var uri: Uri? = null
     val textSize get() = container.get()?.textSize ?: 10f
-    val maxWidth get() = container.get()?.let { it.width.toFloat() - it.paddingLeft - it.paddingRight } ?: 1000f
 
     protected var mBuffer: Bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
     private val mPaint = Paint(Paint.FILTER_BITMAP_FLAG or Paint.DITHER_FLAG)
@@ -51,7 +54,7 @@ open class UrlDrawable(val container: WeakReference<TextView>, val updateSize: (
      * @param defSize Int
      */
     open fun update(drawable: Drawable, defSize: Int) {
-        val width = Math.max(textSize, Math.min(drawable.intrinsicWidth.toFloat(), maxWidth))
+        val width = Math.max(textSize, Math.min(drawable.intrinsicWidth.toFloat(), maxWidth()))
 
         val size = if (defSize > 0) this.size
                 ?: Size(defSize, defSize) else Size(width.toInt(), (drawable.intrinsicHeight * width / drawable.intrinsicWidth).toInt())

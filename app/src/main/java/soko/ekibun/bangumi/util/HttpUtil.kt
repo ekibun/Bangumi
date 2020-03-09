@@ -7,7 +7,6 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.brotli.BrotliInterceptor
 import okhttp3.internal.http.BridgeInterceptor
-import java.util.concurrent.TimeUnit
 
 /**
  * Http请求工具类
@@ -17,7 +16,7 @@ object HttpUtil {
     var formhash = ""
     private val httpCookieClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
-            .readTimeout(Integer.MAX_VALUE.toLong(), TimeUnit.MILLISECONDS)
+            // .readTimeout(Integer.MAX_VALUE.toLong(), TimeUnit.MILLISECONDS)
             .addInterceptor(BrotliInterceptor)
             .addInterceptor(BridgeInterceptor(WebViewCookieHandler())).build()
     }

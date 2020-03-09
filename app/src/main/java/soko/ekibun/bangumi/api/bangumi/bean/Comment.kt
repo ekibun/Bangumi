@@ -37,7 +37,6 @@ data class Comment(
                     val username = UserInfo.getUserName(user?.attr("href"))
                     Comment(
                         user = UserInfo(
-                            id = username?.toIntOrNull() ?: 0,
                             username = username,
                             nickname = user?.text(),
                             avatar = Bangumi.parseImageUrl(it.selectFirst(".avatarNeue"))

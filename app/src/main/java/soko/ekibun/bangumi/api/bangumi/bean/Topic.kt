@@ -102,11 +102,10 @@ data class Topic(
                 var beforeData = ""
                 val replies = ArrayList<TopicPost>()
                 val updateReply = { str: String ->
-                    val it = Jsoup.parse(str)
-                    it.outputSettings().prettyPrint(false)
+                    val doc = Jsoup.parse(str)
+                    doc.outputSettings().prettyPrint(false)
                     if (beforeData.isEmpty()) {
                         beforeData = str
-                        val doc = Jsoup.parse(str)
                         topic.title = doc.selectFirst("#pageHeader h1")?.ownText()
 
                         topic.links = LinkedHashMap<String, String>().let { links ->
@@ -130,15 +129,15 @@ data class Topic(
                                 pst_content = doc.selectFirst("#entry_content")?.html() ?: "",
                                 dateline = doc.selectFirst(".re_info")?.text()?.substringBefore('/')?.trim(' ')
                                     ?: "",
-                                is_self = it.selectFirst(".re_info")?.text()?.contains("del") == true,
-                                editable = it.selectFirst(".re_info")?.text()?.contains("del") == true,
+                                is_self = doc.selectFirst(".re_info")?.text()?.contains("del") == true,
+                                editable = doc.selectFirst(".re_info")?.text()?.contains("del") == true,
                                 model = "blog"
                             )
                             onNewPost(topic.blog!!)
                         }
                         onUpdate(topic)
                     } else {
-                        TopicPost.parse(it)?.let {
+                        TopicPost.parse(doc)?.let {
                             replies += it
                             onNewPost(it)
                         }

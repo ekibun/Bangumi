@@ -3,6 +3,7 @@ package soko.ekibun.bangumi.model
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
+import soko.ekibun.bangumi.ui.say.SayActivity
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.ui.topic.TopicActivity
 import soko.ekibun.bangumi.util.JsonUtil
@@ -32,6 +33,7 @@ class HistoryModel(context: Context) {
             when (type) {
                 "subject" -> SubjectActivity.startActivity(context, JsonUtil.toEntity(data)!!)
                 "topic" -> TopicActivity.startActivity(context, JsonUtil.toEntity(data)!!)
+                "say" -> SayActivity.startActivity(context, JsonUtil.toEntity(data)!!)
             }
         }
     }

@@ -42,7 +42,7 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
         return "#${item.floor}"
     }
 
-    private val imaageSizes = HashMap<String, Size>()
+    private val imageSizes = HashMap<String, Size>()
     private val largeContent = WeakHashMap<String, Spanned>()
     @SuppressLint("SetTextI18n")
     override fun convert(helper: BaseViewHolder, item: TopicPost) {
@@ -94,14 +94,26 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
             helper.itemView.item_message.let { item_message ->
                 val makeSpan = {
                     @Suppress("DEPRECATION")
-                    TextUtil.setTextUrlCallback(Html.fromHtml(parseHtml(item.pst_content), HtmlHttpImageGetter(item_message, drawables, imaageSizes), HtmlTagHandler(item_message) { imageSpan ->
-                        helper.itemView.item_message?.let { itemView ->
-                            val imageList = drawables.filter { (it.startsWith("http") || !it.contains("smile")) }.toList()
-                            val index = imageList.indexOfFirst { d -> d == imageSpan.source }
-                            if (index < 0) return@HtmlTagHandler
-                            PhotoPagerAdapter.showWindow(itemView, imageList.map { Bangumi.parseUrl(it) }, index = index)
-                        }
-                    })) {
+                    TextUtil.setTextUrlCallback(
+                        Html.fromHtml(
+                            parseHtml(item.pst_content),
+                            HtmlHttpImageGetter(item_message, drawables, imageSizes, {
+                                item_message.width.toFloat()
+                            }),
+                            HtmlTagHandler(item_message) { imageSpan ->
+                                helper.itemView.item_message?.let { itemView ->
+                                    val imageList =
+                                        drawables.filter { (it.startsWith("http") || !it.contains("smile")) }.toList()
+                                    val index = imageList.indexOfFirst { d -> d == imageSpan.source }
+                                    if (index < 0) return@HtmlTagHandler
+                                    PhotoPagerAdapter.showWindow(
+                                        itemView,
+                                        imageList.map { Bangumi.parseUrl(it) },
+                                        index = index
+                                    )
+                                }
+                            })
+                    ) {
                         (helper.itemView.context as? TopicActivity)?.processUrl(Bangumi.parseUrl(it))
                             ?: WebActivity.launchUrl(helper.itemView.context, Bangumi.parseUrl(it), "")
                     }

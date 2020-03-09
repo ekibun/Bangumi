@@ -159,7 +159,9 @@ class FastScrollRecyclerView @JvmOverloads constructor(
         val adapter = adapter ?: return
         val itemCount = ((adapter as? BaseQuickAdapter<*, *>)?.data?.filter { it !is AbstractExpandableItem<*> || it.level == 0 }
             ?.map { 1 + if (it is AbstractExpandableItem<*> && it.isExpanded) it.subItems?.size ?: 0 else 0 }?.sum()
-            ?: adapter.itemCount) + 1
+            ?.let {
+                it + ((adapter as? BaseQuickAdapter<*, *>)?.loadMoreViewCount ?: 0)
+            } ?: adapter.itemCount)
         if (itemHeightCache.size != itemCount)
             itemHeightCache = IntArray(itemCount) { itemHeightCache.getOrNull(it) ?: 200 }
 

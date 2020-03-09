@@ -13,11 +13,16 @@ import java.lang.ref.WeakReference
  * @property gradientPaint Paint
  * @constructor
  */
-open class CollapseUrlDrawable(container: WeakReference<TextView>) : UrlDrawable(container) {
+open class CollapseUrlDrawable(container: WeakReference<TextView>) : UrlDrawable(container, {
+    container.get()?.width?.toFloat() ?: 0f
+}) {
 
     override fun update(drawable: Drawable, defSize: Int) {
-        val width = Math.max(textSize, Math.min(drawable.intrinsicWidth.toFloat(), maxWidth))
-        val size = if (defSize > 0) Size(defSize, defSize) else Size(width.toInt(), (drawable.intrinsicHeight * width / drawable.intrinsicWidth).toInt())
+        val width = Math.max(textSize, Math.min(drawable.intrinsicWidth.toFloat(), maxWidth()))
+        val size = if (defSize > 0) Size(defSize, defSize) else Size(
+            width.toInt(),
+            (drawable.intrinsicHeight * width / drawable.intrinsicWidth).toInt()
+        )
         (this.drawable as? Animatable)?.stop()
         this.drawable?.callback = null
         this.drawable = drawable

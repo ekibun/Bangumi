@@ -15,7 +15,12 @@ import java.lang.ref.WeakReference
  * @property container WeakReference<(android.widget.TextView..android.widget.TextView?)>
  * @constructor
  */
-class HtmlHttpImageGetter(container: TextView, private val drawables: ArrayList<String>, private val sizeInfos: HashMap<String, Size>) : Html.ImageGetter {
+class HtmlHttpImageGetter(
+    container: TextView,
+    private val drawables: ArrayList<String>,
+    private val sizeInfos: HashMap<String, Size>,
+    val maxWidth: () -> Float
+) : Html.ImageGetter {
     private val container = WeakReference(container)
 
     init {
@@ -26,7 +31,7 @@ class HtmlHttpImageGetter(container: TextView, private val drawables: ArrayList<
     }
 
     override fun getDrawable(source: String): Drawable {
-        val urlDrawable = UrlDrawable(container) {
+        val urlDrawable = UrlDrawable(container, maxWidth) {
             sizeInfos[source] = it
         }
         urlDrawable.url = Bangumi.parseUrl(source)

@@ -385,7 +385,7 @@ data class Subject(
                                             time = it.selectFirst("small.time")?.text(),
                                             blog = TopicPost(
                                                 "", "",
-                                                pst_uid = user.id.toString(),
+                                                pst_uid = user.username ?: "",
                                                 username = user.username ?: "",
                                                 nickname = user.nickname ?: "",
                                                 pst_content = it.selectFirst(".content")?.ownText() ?: "",

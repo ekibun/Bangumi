@@ -172,9 +172,11 @@ class CollectionPagerAdapter(
             if (collectionTypeView.getType() == Collection.STATUS_DO) onError(it)
         })
         else {
-            collectionCalls[position] = Bangumi.getCollectionList(tabList[position],
-                (fragment.activity as? MainActivity)?.user?.let { it.username ?: it.id.toString() } ?: return,
-                collectionTypeView.getType(), page + 1)
+            collectionCalls[position] = Bangumi.getCollectionList(
+                tabList[position],
+                (fragment.activity as? MainActivity)?.user?.username ?: return,
+                collectionTypeView.getType(), page + 1
+            )
             collectionCalls[position]?.enqueue(ApiHelper.buildCallback(callback, onError))
         }
     }

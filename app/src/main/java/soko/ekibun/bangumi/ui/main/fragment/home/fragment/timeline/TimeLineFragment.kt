@@ -2,8 +2,8 @@ package soko.ekibun.bangumi.ui.main.fragment.home.fragment.timeline
 
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.widget.PopupMenu
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_timeline.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
@@ -54,7 +54,7 @@ class TimeLineFragment : HomeTabFragment(R.layout.fragment_timeline) {
                             if (item_pager?.currentItem ?: 2 !in 0..1) item_pager?.currentItem = 1
                             adapter.pageIndex[item_pager?.currentItem ?: 0] = 0
                             adapter.loadTopicList()
-                        } else Snackbar.make(item_pager, R.string.hint_submit_error, Snackbar.LENGTH_SHORT).show()
+                        } else Toast.makeText(activity, R.string.hint_submit_error, Toast.LENGTH_LONG).show()
                     }) { })
                 } else draft = content
             }

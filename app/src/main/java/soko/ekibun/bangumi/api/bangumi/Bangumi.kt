@@ -239,7 +239,6 @@ object Bangumi {
                             ?: HttpUtil.formhash
                         onUser(
                             UserInfo(
-                                id = username?.toIntOrNull() ?: 0,
                                 username = username,
                                 nickname = doc.selectFirst("#header a")?.text(),
                                 avatar = parseImageUrl(user.selectFirst("span.avatarNeue")),

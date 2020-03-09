@@ -3,7 +3,7 @@ package soko.ekibun.bangumi.ui.crash
 import android.content.Context
 import android.content.Intent
 import android.view.View
-import com.google.android.material.snackbar.Snackbar
+import android.widget.Toast
 import kotlinx.android.synthetic.main.fragment_crash.view.*
 import retrofit2.Call
 import soko.ekibun.bangumi.R
@@ -27,13 +27,13 @@ class CrashActivity : BaseFragmentActivity(R.layout.fragment_crash) {
             uploadCall?.cancel()
             uploadCall = Xxxlin.createInstance().crashReport(content)
             uploadCall?.enqueue(ApiHelper.buildCallback({
-                Snackbar.make(
-                    view.item_upload,
+                Toast.makeText(
+                    this,
                     if (it.code == 0) getString(R.string.crash_upload_ok) else getString(
                         R.string.crash_upload_failed,
                         it.msg ?: ""
                     ),
-                    Snackbar.LENGTH_SHORT
+                    Toast.LENGTH_LONG
                 ).show()
                 view.item_upload.setOnClickListener {}
             }, {}))

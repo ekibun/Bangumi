@@ -13,6 +13,7 @@ import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.TimeLine
+import soko.ekibun.bangumi.ui.say.SayActivity
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.TextUtil
@@ -31,14 +32,9 @@ class TimeLineAdapter(data: MutableList<TimeLine>? = null) :
     override fun convert(helper: BaseViewHolder, item: TimeLine) {
         //say
         helper.itemView.item_layout.setOnClickListener {
-            WebActivity.launchUrl(
-                helper.itemView.context, Bangumi.parseUrl(
-                    item.t.sayUrl
-                        ?: return@setOnClickListener
-                ), ""
-            )
+            SayActivity.startActivity(helper.itemView.context, item.t.say ?: return@setOnClickListener)
         }
-        helper.itemView.item_layout.isClickable = !item.t.sayUrl.isNullOrEmpty()
+        helper.itemView.item_layout.isClickable = item.t.say != null
         //action
         @Suppress("DEPRECATION")
         helper.itemView.item_action.text = TextUtil.setTextUrlCallback(Html.fromHtml(item.t.action)) {
