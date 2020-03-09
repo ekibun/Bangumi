@@ -85,7 +85,8 @@ class HtmlTagHandler(view: TextView? = null, private var baseSize: Float = 12f, 
     /**
      * 马赛克Span
      */
-    class MaskSpan(private var bgColor: Int, private var colorInv: Int, private val textView: WeakReference<TextView>) : ClickableSpan() {
+    class MaskSpan(private var bgColor: Int, private var colorInv: Int, var textView: WeakReference<TextView>) :
+        ClickableSpan() {
         private val edit = textView.get() is RichEditText
         override fun onClick(widget: View) {
             if (edit) return

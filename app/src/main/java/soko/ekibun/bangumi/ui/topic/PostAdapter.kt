@@ -19,6 +19,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
 import soko.ekibun.bangumi.ui.view.FastScrollRecyclerView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.*
+import java.lang.ref.WeakReference
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -118,7 +119,10 @@ class PostAdapter(data: MutableList<TopicPost>? = null) :
                             ?: WebActivity.launchUrl(helper.itemView.context, Bangumi.parseUrl(it), "")
                     }
                 }
-                item_message.text = largeContent.getOrPut(item.pst_content, makeSpan)
+                item_message.text = TextUtil.updateTextViewRef(
+                    largeContent.getOrPut(item.pst_content, makeSpan),
+                    WeakReference(item_message)
+                )
             }
             helper.itemView.item_message.onFocusChangeListener = View.OnFocusChangeListener { view, focus ->
                 if (!focus) {

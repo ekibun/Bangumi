@@ -30,7 +30,7 @@ import java.lang.ref.WeakReference
  * @constructor
  */
 open class UrlDrawable(
-    val container: WeakReference<TextView>,
+    var container: WeakReference<TextView>,
     val maxWidth: () -> Float,
     val updateSize: (Size) -> Unit = {}
 ) : AnimationDrawable() {

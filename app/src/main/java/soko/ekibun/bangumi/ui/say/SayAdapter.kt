@@ -23,6 +23,7 @@ import soko.ekibun.bangumi.ui.topic.TopicActivity
 import soko.ekibun.bangumi.ui.view.FastScrollRecyclerView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.*
+import java.lang.ref.WeakReference
 import java.util.*
 
 class SayAdapter(data: MutableList<Say.SayReply>? = null) :
@@ -63,7 +64,8 @@ class SayAdapter(data: MutableList<Say.SayReply>? = null) :
                         ?: WebActivity.launchUrl(helper.itemView.context, Bangumi.parseUrl(it), "")
                 }
             }
-            item_message.text = largeContent.getOrPut(item.message, makeSpan)
+            item_message.text =
+                TextUtil.updateTextViewRef(largeContent.getOrPut(item.message, makeSpan), WeakReference(item_message))
         }
 
         helper.itemView.item_message.onFocusChangeListener = View.OnFocusChangeListener { view, focus ->

@@ -7,9 +7,11 @@ import android.text.TextPaint
 import android.text.TextUtils
 import android.text.style.*
 import android.view.View
+import android.widget.TextView
 import org.jsoup.Jsoup
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.ui.topic.ReplyDialog
+import java.lang.ref.WeakReference
 import kotlin.math.roundToInt
 
 /**
@@ -31,6 +33,24 @@ object TextUtil {
                 htmlString.setSpan(CustomURLSpan(url, onClick), start, end, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
             }
         }
+        return htmlString
+    }
+
+    fun updateTextViewRef(htmlString: Spanned, textview: WeakReference<TextView>): Spanned {
+        val drawables = (htmlString as? SpannableStringBuilder)?.getSpans(0, htmlString.length, ImageSpan::class.java)
+            ?: return htmlString
+        val masks =
+            (htmlString as? SpannableStringBuilder)?.getSpans(0, htmlString.length, HtmlTagHandler.MaskSpan::class.java)
+                ?: return htmlString
+
+        drawables.forEach {
+            (it.drawable as? UrlDrawable)?.container = textview
+        }
+
+        masks.forEach {
+            it.textView = textview
+        }
+
         return htmlString
     }
 
