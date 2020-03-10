@@ -44,6 +44,26 @@ class CollectionFragment: HomeTabFragment(R.layout.fragment_collection){
         item_tab_container?.isPressed = (item_pager?.adapter as? CollectionPagerAdapter)?.isScrollDown ?: false
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        item_pager?.currentItem?.let {
+            outState.putInt("collection_fragment_item_index", it)
+        }
+        (item_pager?.adapter as? CollectionPagerAdapter)?.collectionTypeView?.let {
+            outState.putInt("collection_fragment_type_index", it.selectedType)
+        }
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+        savedInstanceState?.getInt("collection_fragment_item_index")?.let {
+            item_pager?.currentItem = it
+        }
+        savedInstanceState?.getInt("collection_fragment_type_index")?.let {
+            (item_pager?.adapter as? CollectionPagerAdapter)?.collectionTypeView?.selectedType = it
+        }
+    }
+
     override fun onUserChange() {
         val hasUser = (activity as? MainActivity)?.user != null
         item_login_info?.visibility = if (!hasUser) View.VISIBLE else View.GONE

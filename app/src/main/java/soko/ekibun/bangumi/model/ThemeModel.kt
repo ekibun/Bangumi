@@ -3,6 +3,7 @@ package soko.ekibun.bangumi.model
 import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Build
 import android.view.View
@@ -11,6 +12,7 @@ import android.view.WindowManager
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.preference.PreferenceManager
 import soko.ekibun.bangumi.util.ResourceUtil
+
 
 /**
  * 主题模块
@@ -41,6 +43,27 @@ class ThemeModel(context: Context) {
                 AppCompatDelegate.setDefaultNightMode(nightMode)
                 if (context is Activity) context.recreate()
             }
+        }
+
+        /**
+         * 获取一个 View 的缓存视图
+         *
+         * @param view
+         * @return
+         */
+        private fun getCacheBitmapFromView(view: View): Bitmap? {
+            val drawingCacheEnabled = true
+            view.isDrawingCacheEnabled = drawingCacheEnabled
+            view.buildDrawingCache(drawingCacheEnabled)
+            val drawingCache = view.drawingCache
+            val bitmap: Bitmap?
+            if (drawingCache != null) {
+                bitmap = Bitmap.createBitmap(drawingCache)
+                view.isDrawingCacheEnabled = false
+            } else {
+                bitmap = null
+            }
+            return bitmap
         }
 
         /**

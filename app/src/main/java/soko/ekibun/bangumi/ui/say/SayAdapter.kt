@@ -76,6 +76,11 @@ class SayAdapter(data: MutableList<SaySection>? = null) :
         helper.addOnLongClickListener(R.id.item_avatar)
         helper.itemView.item_user.text = item.t.user.name
 
+        if (data.indexOf(item) == 0) helper.setBackgroundRes(R.id.item_layout, R.drawable.bg_round_dialog)
+        else helper.setBackgroundColor(
+            R.id.item_layout,
+            ResourceUtil.resolveColorAttr(helper.itemView.context, android.R.attr.colorBackground)
+        )
         val dpBottom = ResourceUtil.toPixels(helper.itemView.resources, 12f)
         helper.itemView.setPadding(0, 0, 0, if (helper.adapterPosition == data.size - 1) dpBottom else 0)
 

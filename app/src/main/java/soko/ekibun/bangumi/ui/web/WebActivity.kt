@@ -19,8 +19,10 @@ import kotlinx.android.synthetic.main.activity_web.*
 import kotlinx.android.synthetic.main.appbar_layout.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
+import soko.ekibun.bangumi.api.bangumi.bean.Say
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
+import soko.ekibun.bangumi.ui.say.SayActivity
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.ui.topic.TopicActivity
 import soko.ekibun.bangumi.ui.view.BaseActivity
@@ -326,6 +328,8 @@ class WebActivity : BaseActivity(R.layout.activity_web) {
             val id = regex.find(url)?.groupValues?.get(1)?.toIntOrNull()
             if (id != null)
                 return SubjectActivity.parseIntent(context, Subject(id))
+            //Say
+            Say.parse(url)?.let { return SayActivity.parseIntent(context, it) }
             return null
         }
     }

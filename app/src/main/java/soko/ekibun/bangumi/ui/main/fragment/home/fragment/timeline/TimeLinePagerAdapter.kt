@@ -20,7 +20,6 @@ import soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
  * @property tabList (kotlin.Array<(kotlin.String..kotlin.String?)>..kotlin.Array<out (kotlin.String..kotlin.String?)>?)
  * @property topicCall HashMap<Int, Call<List<TimeLine>>>
  * @property pageIndex HashMap<Int, Int>
- * @property selectedType Int
  * @property items HashMap<Int, Pair<TimeLineAdapter, FixSwipeRefreshLayout>>
  * @constructor
  */
@@ -34,8 +33,6 @@ class TimeLinePagerAdapter(
     private var topicCall = HashMap<Int, Call<List<TimeLine>>>()
     @SuppressLint("UseSparseArrays")
     val pageIndex = HashMap<Int, Int>()
-
-    var selectedType = R.id.timeline_type_friend
 
     init {
         pager.addOnPageChangeListener(object : androidx.viewpager.widget.ViewPager.OnPageChangeListener {
@@ -121,7 +118,9 @@ class TimeLinePagerAdapter(
                 "doujin"
             )[position],
             page + 1,
-            if (selectedType == R.id.timeline_type_self) (fragment.activity as? MainActivity)?.user else null, selectedType == R.id.timeline_type_all)
+            if (fragment.selectedType == R.id.timeline_type_self) (fragment.activity as? MainActivity)?.user else null,
+            fragment.selectedType == R.id.timeline_type_all
+        )
         topicCall[position]?.enqueue(ApiHelper.buildCallback({
             item.first.isUseEmpty(true)
             if(it.isEmpty()) item.first.loadMoreEnd()

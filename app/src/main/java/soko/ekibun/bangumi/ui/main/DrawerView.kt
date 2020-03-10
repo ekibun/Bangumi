@@ -3,6 +3,7 @@ package soko.ekibun.bangumi.ui.main
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.ViewCompat
@@ -29,13 +30,21 @@ import soko.ekibun.bangumi.ui.setting.SettingsActivity
  */
 class DrawerView(private val context: MainActivity, onLogout: () -> Unit) {
     var checkedId = R.id.nav_home
-    val homeFragment = HomeFragment()
-    val calendarFragment = CalendarFragment()
+
+    private fun <T> findOrCreateFragmentByClassName(clazz: Class<T>): T {
+        @Suppress("UNCHECKED_CAST")
+        return (context.supportFragmentManager.findFragmentByTag(clazz.name)?.also {
+            Log.v("restore", clazz.name)
+        } ?: clazz.newInstance()) as T
+    }
+
+    val homeFragment = findOrCreateFragmentByClassName(HomeFragment::class.java)
+    val calendarFragment = findOrCreateFragmentByClassName(CalendarFragment::class.java)
     private val fragments: Map<Int, DrawerFragment> = mapOf(
         R.id.nav_home to homeFragment,
         R.id.nav_calendar to calendarFragment,
-        R.id.nav_index to IndexFragment(),
-        R.id.nav_history to HistoryFragment()
+        R.id.nav_index to findOrCreateFragmentByClassName(IndexFragment::class.java),
+        R.id.nav_history to findOrCreateFragmentByClassName(HistoryFragment::class.java)
     )
 
     val toggle = {
@@ -87,9 +96,6 @@ class DrawerView(private val context: MainActivity, onLogout: () -> Unit) {
      */
     fun onSaveInstanceState(outState: Bundle) {
         outState.putInt("DrawerCheckedId", checkedId)
-        fragments.forEach {
-            it.value.onSaveInstanceState(outState)
-        }
     }
 
     /**
@@ -98,9 +104,6 @@ class DrawerView(private val context: MainActivity, onLogout: () -> Unit) {
      */
     fun onRestoreInstanceState(savedInstanceState: Bundle) {
         select(savedInstanceState.getInt("DrawerCheckedId"))
-        fragments.forEach {
-            it.value.onRestoreInstanceState(savedInstanceState)
-        }
     }
 
     /**
@@ -119,7 +122,7 @@ class DrawerView(private val context: MainActivity, onLogout: () -> Unit) {
         checkedId = id
         val fragment = fragments[id] ?: return
         context.supportFragmentManager.beginTransaction()
-            .replace(R.id.content_frame, fragment).runOnCommit {
+            .replace(R.id.content_frame, fragment, fragment.javaClass.name).runOnCommit {
                 ViewCompat.requestApplyInsets(context.drawer_layout)
             }.commit()
         context.setTitle(fragment.titleRes)

@@ -109,7 +109,7 @@ class SayActivity : BaseActivity(R.layout.activity_topic) {
          * @param say Say
          * @return Intent
          */
-        private fun parseIntent(context: Context, say: Say): Intent {
+        fun parseIntent(context: Context, say: Say): Intent {
             val intent = Intent(context, SayActivity::class.java)
             intent.putExtra(EXTRA_SAY, JsonUtil.toJson(say))
             return intent

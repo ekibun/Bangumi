@@ -21,6 +21,8 @@ class TimeLineFragment : HomeTabFragment(R.layout.fragment_timeline) {
     override val titleRes: Int = R.string.timeline
     override val iconRes: Int = R.drawable.ic_timelapse
 
+    var selectedType = R.id.timeline_type_friend
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -29,11 +31,11 @@ class TimeLineFragment : HomeTabFragment(R.layout.fragment_timeline) {
         item_tabs?.setupWithViewPager(item_pager)
         val popup = PopupMenu(view.context, item_type)
         popup.menuInflater.inflate(R.menu.list_timeline, popup.menu)
-        item_type?.text = popup.menu.findItem(adapter.selectedType)?.title
+        item_type?.text = popup.menu.findItem(selectedType)?.title
         item_type?.setOnClickListener {
             popup.setOnMenuItemClickListener {
                 item_type?.text = it.title
-                adapter.selectedType = it.itemId
+                selectedType = it.itemId
                 adapter.reset()
                 true
             }
@@ -60,7 +62,27 @@ class TimeLineFragment : HomeTabFragment(R.layout.fragment_timeline) {
             }
         }
 
-        onSelect()
+        item_pager?.post {
+            onSelect()
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        item_pager?.currentItem?.let {
+            outState.putInt("timeline_fragment_item_index", it)
+        }
+        outState.putInt("timeline_fragment_type_index", selectedType)
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+        savedInstanceState?.getInt("timeline_fragment_item_index")?.let {
+            item_pager?.currentItem = it
+        }
+        savedInstanceState?.getInt("timeline_fragment_type_index")?.let {
+            selectedType = it
+        }
     }
 
     override fun onUserChange() {

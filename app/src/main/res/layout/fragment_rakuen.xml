@@ -12,6 +12,7 @@
             android:layout_width="match_parent"
             app:tabSelectedTextColor="?colorAccent"
             app:layout_constraintTop_toTopOf="parent"
+            app:tabIndicatorHeight="0dp"
             app:tabPaddingStart="0dp"
             app:tabPaddingEnd="0dp"
             android:layout_height="48dp"/>

@@ -43,7 +43,7 @@ class CollectionPagerAdapter(
 ) : androidx.viewpager.widget.PagerAdapter() {
     private val tabList =
         arrayOf(Subject.TYPE_ANIME, Subject.TYPE_BOOK, Subject.TYPE_MUSIC, Subject.TYPE_GAME, Subject.TYPE_REAL)
-    private val collectionTypeView = CollectTypeView(fragment.item_type) { reset() }
+    val collectionTypeView = CollectTypeView(fragment.item_type) { reset() }
     private val mainPresenter: MainPresenter? get() = (fragment.activity as? MainActivity)?.mainPresenter
 
     init {

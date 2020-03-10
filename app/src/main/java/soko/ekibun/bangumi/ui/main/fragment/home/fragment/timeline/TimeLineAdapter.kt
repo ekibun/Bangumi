@@ -64,8 +64,9 @@ class TimeLineAdapter(data: MutableList<TimeLine>? = null) :
         helper.itemView.item_content.visibility = if (item.t.content.isNullOrEmpty()) View.GONE else View.VISIBLE
         helper.itemView.item_content.text = item.t.content ?: ""
         helper.itemView.item_content.setOnClickListener {
-            WebActivity.launchUrl(helper.itemView.context, item.t.contentUrl, "")
+            WebActivity.launchUrl(helper.itemView.context, item.t.contentUrl ?: return@setOnClickListener, "")
         }
+        helper.itemView.item_content.isClickable = item.t.contentUrl != null
         //time
         helper.itemView.item_time.text = item.t.time
 

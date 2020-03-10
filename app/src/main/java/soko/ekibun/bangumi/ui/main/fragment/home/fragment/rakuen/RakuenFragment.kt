@@ -21,6 +21,8 @@ class RakuenFragment: HomeTabFragment(R.layout.fragment_rakuen){
     override val titleRes: Int = R.string.rakuen
     override val iconRes: Int = R.drawable.ic_explore
 
+    var selectedFilter = R.id.topic_filter_all
+
     var refresh = {}
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -32,14 +34,14 @@ class RakuenFragment: HomeTabFragment(R.layout.fragment_rakuen){
         val topicTab = LayoutInflater.from(view.context).inflate(R.layout.item_rakuen_tab, item_tabs, false)
         val popup = PopupMenu(view.context, topicTab)
         popup.menuInflater.inflate(R.menu.list_topic_filter, popup.menu)
-        popup.setOnMenuItemClickListener{
-            if(adapter.selectedFilter != it.itemId) adapter.reset(1)
-            adapter.selectedFilter = it.itemId
+        popup.setOnMenuItemClickListener {
+            if (selectedFilter != it.itemId) adapter.reset(1)
+            selectedFilter = it.itemId
             topicTab.item_filter.text = it.title
             adapter.loadTopicList()
             true
         }
-        topicTab.item_filter.text = popup.menu.findItem(adapter.selectedFilter)?.title
+        topicTab.item_filter.text = popup.menu.findItem(selectedFilter)?.title
         topicTab.setOnClickListener {
             if(item_pager?.currentItem != 1) item_pager?.currentItem = 1
             else popup.show()
@@ -50,6 +52,24 @@ class RakuenFragment: HomeTabFragment(R.layout.fragment_rakuen){
             WebActivity.startActivity(view.context, "${Bangumi.SERVER}/rakuen/new_topic")
         }
         refresh = { adapter.loadTopicList() }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        item_pager?.currentItem?.let {
+            outState.putInt("rakuen_fragment_item_index", it)
+        }
+        outState.putInt("rakuen_fragment_filter_index", selectedFilter)
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+        savedInstanceState?.getInt("rakuen_fragment_item_index")?.let {
+            item_pager?.currentItem = it
+        }
+        savedInstanceState?.getInt("rakuen_fragment_filter_index")?.let {
+            selectedFilter = it
+        }
     }
 
     override fun onSelect() {

@@ -17,7 +17,6 @@ import soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
  * @property fragment RakuenFragment
  * @property pager ViewPager
  * @property tabList (kotlin.Array<(kotlin.String..kotlin.String?)>..kotlin.Array<out (kotlin.String..kotlin.String?)>?)
- * @property selectedFilter Int
  * @property items HashMap<Int, Pair<RakuenAdapter, FixSwipeRefreshLayout>>
  * @property topicCall HashMap<Int, Call<List<Topic>>>
  * @constructor
@@ -28,7 +27,6 @@ class RakuenPagerAdapter(
     private val pager: androidx.viewpager.widget.ViewPager
 ) : androidx.viewpager.widget.PagerAdapter() {
     private val tabList = context.resources.getStringArray(R.array.topic_list)
-    var selectedFilter = R.id.topic_filter_all
 
     init {
         pager.addOnPageChangeListener(object : androidx.viewpager.widget.ViewPager.OnPageChangeListener {
@@ -96,12 +94,14 @@ class RakuenPagerAdapter(
         val item = items[position] ?: return
         item.first.isUseEmpty(false)
         topicCall[position]?.cancel()
-        topicCall[position] = Topic.getList(if (position == 1) when (selectedFilter) {
-            R.id.topic_filter_join -> "my_group"
-            R.id.topic_filter_post -> "my_group&filter=topic"
-            R.id.topic_filter_reply -> "my_group&filter=reply"
-            else -> "group"
-        } else listOf("", "group", "subject", "ep", "mono")[position])
+        topicCall[position] = Topic.getList(
+            if (position == 1) when (fragment.selectedFilter) {
+                R.id.topic_filter_join -> "my_group"
+                R.id.topic_filter_post -> "my_group&filter=topic"
+                R.id.topic_filter_reply -> "my_group&filter=reply"
+                else -> "group"
+            } else listOf("", "group", "subject", "ep", "mono")[position]
+        )
         item.second.isRefreshing = true
         topicCall[position]?.enqueue(ApiHelper.buildCallback({
             item.first.isUseEmpty(true)

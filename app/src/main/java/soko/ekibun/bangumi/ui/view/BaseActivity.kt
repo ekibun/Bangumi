@@ -35,6 +35,7 @@ abstract class BaseActivity(@LayoutRes private val resId: Int) : AppCompatActivi
     var onStartListener = { ThemeModel.updateNavigationTheme(this) }
     override fun onStart() {
         super.onStart()
+        delegate.localNightMode = ThemeModel(this).getTheme()
         onStartListener()
     }
 

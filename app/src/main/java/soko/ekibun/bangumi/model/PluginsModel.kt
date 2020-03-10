@@ -16,7 +16,7 @@ object PluginsModel {
     fun createPluginInstance(context: Context): Pair<Context, Any>? {
         return try {
             val pluginContext = context.createPackageContext(
-                "soko.ekibun.bangumi.plugin",
+                "soko.ekibun.bangumi.plugins",
                 Context.CONTEXT_IGNORE_SECURITY or Context.CONTEXT_INCLUDE_CODE
             )
             val pluginClass = pluginContext.classLoader.loadClass("soko.ekibun.bangumi.plugins.Plugin")

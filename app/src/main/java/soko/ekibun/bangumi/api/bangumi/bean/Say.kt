@@ -30,7 +30,13 @@ data class Say(
          * @param url String
          * @return Say?
          */
-        fun parse(url: String, user: UserInfo?, message: String?, time: String?, self: UserInfo?): Say? {
+        fun parse(
+            url: String,
+            user: UserInfo? = null,
+            message: String? = null,
+            time: String? = null,
+            self: UserInfo? = null
+        ): Say? {
             val result = Regex("""/user/([^/]+)/timeline/status/(\d+)""").find(url)?.groupValues ?: return null
             return Say(
                 id = result.getOrNull(2)?.toIntOrNull() ?: return null,

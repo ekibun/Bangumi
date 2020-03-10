@@ -10,8 +10,14 @@ import soko.ekibun.bangumi.api.bangumi.bean.Collection
  * @property selectedType Int
  * @constructor
  */
-class CollectTypeView(view: TextView, onChange: () -> Unit) {
+class CollectTypeView(private val view: TextView, private val onChange: () -> Unit) {
     var selectedType = Collection.statusArray.indexOf(Collection.STATUS_DO)
+        set(value) {
+            field = value
+            val stringArray = view.context.resources.getStringArray(R.array.collection_status_anime)
+            view.text = stringArray[value]
+            onChange()
+        }
 
     /**
      * 获取当前收藏类型
@@ -31,8 +37,6 @@ class CollectTypeView(view: TextView, onChange: () -> Unit) {
         view.setOnClickListener {
             popup.setOnMenuItemClickListener {
                 selectedType = stringArray.indexOf(it.title)
-                view.text = it.title
-                onChange()
                 true
             }
             popup.show()

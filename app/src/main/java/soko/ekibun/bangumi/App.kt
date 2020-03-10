@@ -24,7 +24,7 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         ThemeModel.setTheme(this, ThemeModel(this).getTheme())
-        Thread.setDefaultUncaughtExceptionHandler(CrashHandler(this))
+        if (!BuildConfig.DEBUG) Thread.setDefaultUncaughtExceptionHandler(CrashHandler(this))
 
         pluginInstance = PluginsModel.createPluginInstance(this)
         appContext = this

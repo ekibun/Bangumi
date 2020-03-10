@@ -23,19 +23,18 @@
 
     </androidx.preference.PreferenceScreen>
 
-    <androidx.preference.ListPreference
-            app:iconSpaceReserved="false"
-            app:key="pref_dark_mode"
-            app:title="夜间模式"
-            app:entries="@array/pref_dark_mode"
-            app:entryValues="@array/pref_dark_mode_values"
-            app:defaultValue="-1"/>
-
-
     <androidx.preference.PreferenceScreen
             app:iconSpaceReserved="false"
             app:key="pref_miscellaneous"
             app:title="@string/pref_miscellaneous">
+
+        <androidx.preference.ListPreference
+                app:iconSpaceReserved="false"
+                app:key="pref_dark_mode"
+                app:title="夜间模式"
+                app:entries="@array/pref_dark_mode"
+                app:entryValues="@array/pref_dark_mode_values"
+                app:defaultValue="-1"/>
 
         <androidx.preference.ListPreference
                 app:iconSpaceReserved="false"

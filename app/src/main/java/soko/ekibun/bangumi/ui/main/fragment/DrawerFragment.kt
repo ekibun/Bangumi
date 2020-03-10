@@ -10,7 +10,6 @@ import androidx.annotation.LayoutRes
  * 抽屉fragment
  * @property resId Int
  * @property titleRes Int
- * @property savedInstanceState Bundle?
  * @constructor
  */
 abstract class DrawerFragment(@LayoutRes private val resId: Int): androidx.fragment.app.Fragment(){
@@ -18,15 +17,6 @@ abstract class DrawerFragment(@LayoutRes private val resId: Int): androidx.fragm
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return inflater.inflate(resId, container, false)
-    }
-
-    var savedInstanceState:Bundle? = null
-    /**
-     * 恢复状态
-     * @param savedInstanceState Bundle
-     */
-    fun onRestoreInstanceState(savedInstanceState: Bundle){
-        this.savedInstanceState = savedInstanceState
     }
 
     /**

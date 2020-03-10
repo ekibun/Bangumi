@@ -24,13 +24,14 @@
 
         <com.google.android.material.tabs.TabLayout
                 android:id="@+id/item_tabs"
-            app:tabGravity="fill"
-            app:tabMode="scrollable"
-            app:tabMaxWidth="0dp"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            app:tabSelectedTextColor="?colorAccent"
-            android:layout_height="48dp"/>
+                app:tabGravity="fill"
+                app:tabMode="scrollable"
+                app:tabMaxWidth="0dp"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                app:tabIndicatorHeight="0dp"
+                app:tabSelectedTextColor="?colorAccent"
+                android:layout_height="48dp"/>
     </LinearLayout>
     <androidx.viewpager.widget.ViewPager
             android:id="@+id/item_pager"

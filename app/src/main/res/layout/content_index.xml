@@ -26,6 +26,7 @@
             android:id="@+id/item_tabs"
             android:layout_width="0dp"
             android:layout_height="48dp"
+            app:rtl_tabIndicatorHeight="0dp"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintLeft_toRightOf="@+id/item_type"
             app:layout_constraintRight_toRightOf="parent"
