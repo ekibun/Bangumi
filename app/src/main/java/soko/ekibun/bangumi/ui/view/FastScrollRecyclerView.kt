@@ -203,7 +203,8 @@ class FastScrollRecyclerView @JvmOverloads constructor(
         val totalHeight = nestedRange + itemHeightCache.sum()
 
         val scrollRange = height - paddingBottom - nestedRange - scrollTopMargin
-        mScrollbar.mThumbHeight = Math.max(height * scrollRange / totalHeight, mScrollbar.minThumbHeight)
+        mScrollbar.mThumbHeight =
+            if (totalHeight > 0) Math.max(height * scrollRange / totalHeight, mScrollbar.minThumbHeight) else 0
 
         val availableScrollHeight = totalHeight - height + paddingBottom
         val availableScrollBarHeight = scrollRange - mScrollbar.mThumbHeight
@@ -277,7 +278,8 @@ class FastScrollRecyclerView @JvmOverloads constructor(
         val totalHeight = nestedRange + itemHeightCache.sum()
 
         val scrollRange = height - paddingBottom - nestedRange - scrollTopMargin
-        mScrollbar.mThumbHeight = Math.max(height * scrollRange / totalHeight, mScrollbar.minThumbHeight)
+        mScrollbar.mThumbHeight =
+            if (totalHeight > 0) Math.max(height * scrollRange / totalHeight, mScrollbar.minThumbHeight) else 0
 
         val availableScrollHeight = totalHeight - height + paddingBottom
 

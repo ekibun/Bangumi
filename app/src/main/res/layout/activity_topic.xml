@@ -57,6 +57,20 @@
                     tools:listitem="@layout/item_reply"/>
         </soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout>
 
+        <com.oubowu.stickyitemdecoration.StickyHeadContainer
+                android:id="@+id/shc"
+                android:visibility="gone"
+                android:layout_width="0dp"
+                app:layout_constraintTop_toTopOf="@+id/item_swipe"
+                app:layout_constraintStart_toStartOf="@+id/item_swipe"
+                app:layout_constraintEnd_toEndOf="@+id/item_swipe"
+                android:layout_height="wrap_content">
+
+            <include
+                    layout="@layout/item_avatar_header"/>
+
+        </com.oubowu.stickyitemdecoration.StickyHeadContainer>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout

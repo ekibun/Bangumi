@@ -3,6 +3,9 @@ package soko.ekibun.bangumi.model
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
+import soko.ekibun.bangumi.api.bangumi.bean.Say
+import soko.ekibun.bangumi.api.bangumi.bean.Subject
+import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.ui.say.SayActivity
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.ui.topic.TopicActivity
@@ -29,6 +32,15 @@ class HistoryModel(context: Context) {
         val timeString: String get() = TimeUtil.timeFormat.format(Date(timestamp))
         val dateString: String get() = TimeUtil.dateFormat.format(Date(timestamp))
 
+        fun getCacheKey(): String {
+            return when (type) {
+                "subject" -> JsonUtil.toEntity<Subject>(data)!!.cacheKey
+                "topic" -> JsonUtil.toEntity<Topic>(data)!!.cacheKey
+                "say" -> JsonUtil.toEntity<Say>(data)!!.cacheKey
+                else -> ""
+            }
+        }
+
         fun startActivity(context: Context) {
             when (type) {
                 "subject" -> SubjectActivity.startActivity(context, JsonUtil.toEntity(data)!!)
@@ -46,7 +58,8 @@ class HistoryModel(context: Context) {
      */
     fun addHistory(data: History) {
         val newList = getHistoryList().toMutableList()
-        newList.removeAll { it.type == data.type && it.data == data.data }
+        val cacheKey = data.getCacheKey()
+        newList.removeAll { it.getCacheKey() == cacheKey }
         newList.add(0, data)
         sp.edit().putString(PREF_HISTORY, JsonUtil.toJson(newList.sortedByDescending { it.timestamp })).apply()
     }

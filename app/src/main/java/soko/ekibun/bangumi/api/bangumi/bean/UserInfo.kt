@@ -4,6 +4,7 @@ import org.jsoup.nodes.Element
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.util.JsonUtil
+import java.util.*
 
 /**
  * 用户信息类
@@ -58,16 +59,19 @@ data class UserInfo(
             )
         }
 
+        private val userCache = WeakHashMap<String, UserInfo>()
         fun getApiUser(user: UserInfo): UserInfo {
-            val obj =
+            return userCache.getOrPut(user.username) {
                 JsonUtil.toJsonObject(ApiHelper.buildHttpCall("https://api.bgm.tv/user/${user.username}") { it.body?.string() }
-                    .execute().body() ?: "")
-            return UserInfo(
-                username = obj.get("username")?.asString,
-                nickname = obj.get("nickname")?.asString,
-                avatar = obj.getAsJsonObject("avatar")?.get("large")?.asString,
-                sign = obj.get("sign")?.asString
-            )
+                    .execute().body() ?: "").let { obj ->
+                    UserInfo(
+                        username = obj.get("username")?.asString,
+                        nickname = obj.get("nickname")?.asString,
+                        avatar = obj.getAsJsonObject("avatar")?.get("large")?.asString,
+                        sign = obj.get("sign")?.asString
+                    )
+                }
+            }
         }
     }
 }

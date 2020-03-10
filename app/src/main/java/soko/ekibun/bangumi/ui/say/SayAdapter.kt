@@ -3,13 +3,19 @@ package soko.ekibun.bangumi.ui.say
 import android.text.Html
 import android.text.Spanned
 import android.text.method.LinkMovementMethod
+import android.util.Log
 import android.util.Size
 import android.view.View
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.bumptech.glide.request.RequestOptions
-import com.chad.library.adapter.base.BaseQuickAdapter
+import com.chad.library.adapter.base.BaseSectionQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
+import com.chad.library.adapter.base.entity.SectionEntity
+import com.oubowu.stickyitemdecoration.StickyHeadContainer
+import com.oubowu.stickyitemdecoration.StickyItemDecoration
+import kotlinx.android.synthetic.main.item_avatar_header.view.*
 import kotlinx.android.synthetic.main.item_say.view.*
 import org.jsoup.Jsoup
 import soko.ekibun.bangumi.R
@@ -26,25 +32,88 @@ import soko.ekibun.bangumi.util.*
 import java.lang.ref.WeakReference
 import java.util.*
 
-class SayAdapter(data: MutableList<Say.SayReply>? = null) :
-    BaseQuickAdapter<Say.SayReply, BaseViewHolder>(R.layout.item_say, data), FastScrollRecyclerView.SectionedAdapter {
-    var self: UserInfo? = null
+class SayAdapter(data: MutableList<SaySection>? = null) :
+    BaseSectionQuickAdapter<SayAdapter.SaySection, BaseViewHolder>(R.layout.item_say, R.layout.item_say, data),
+    FastScrollRecyclerView.SectionedAdapter {
+    private var self: UserInfo? = null
+    private var pinnedIndex = 0
+
+    /**
+     * 关联RecyclerView
+     * @param recyclerView RecyclerView
+     * @return DragSelectTouchListener
+     */
+    fun setUpWithRecyclerView(container: StickyHeadContainer, recyclerView: androidx.recyclerview.widget.RecyclerView) {
+        bindToRecyclerView(recyclerView)
+
+        container.setDataCallback {
+            val item = data[it]
+            val isSelf = item.t.user.username == self?.username
+            container.item_avatar_left.visibility = View.INVISIBLE
+            container.item_avatar_right.visibility = View.INVISIBLE
+            val avatar = if (isSelf) container.item_avatar_right else container.item_avatar_left
+            avatar.visibility = View.VISIBLE
+
+            recyclerView.layoutManager?.findViewByPosition(pinnedIndex)?.item_avatar?.visibility = View.VISIBLE
+            recyclerView.layoutManager?.findViewByPosition(it)?.item_avatar?.visibility = View.INVISIBLE
+            pinnedIndex = it
+            container.visibility = View.VISIBLE
+            avatar.setOnClickListener { v ->
+                onItemChildClickListener?.onItemChildClick(this, v, it)
+            }
+            avatar.setOnLongClickListener { v ->
+                onItemChildLongClickListener?.onItemChildLongClick(this, v, it) ?: false
+            }
+            updateAvatar(avatar, item)
+        }
+
+        recyclerView.addItemDecoration(StickyItemDecoration(container, SECTION_HEADER_VIEW))
+    }
 
     private val imageSizes = HashMap<String, Size>()
     private val largeContent = WeakHashMap<String, Spanned>()
-    override fun convert(helper: BaseViewHolder, item: Say.SayReply) {
+    override fun convert(helper: BaseViewHolder, item: SaySection) {
         helper.addOnClickListener(R.id.item_avatar)
         helper.addOnLongClickListener(R.id.item_avatar)
-        helper.itemView.item_user.text = item.user.name
+        helper.itemView.item_user.text = item.t.user.name
+
+        val dpBottom = ResourceUtil.toPixels(helper.itemView.resources, 12f)
+        helper.itemView.setPadding(0, 0, 0, if (helper.adapterPosition == data.size - 1) dpBottom else 0)
+
+        updateAvatar(helper.itemView.item_avatar, item)
+        val isSelf = item.t.user.username == self?.username
+        val showAvatar = item.isHeader
+        helper.itemView.item_avatar.visibility =
+            if (showAvatar && pinnedIndex != helper.layoutPosition) View.VISIBLE else View.INVISIBLE
+        (helper.itemView.item_avatar.layoutParams as ConstraintLayout.LayoutParams).let {
+            it.horizontalBias = if (isSelf) 1f else 0f
+        }
+
+        (helper.itemView.item_user.layoutParams as ConstraintLayout.LayoutParams).let {
+            it.startToStart = if (isSelf) ConstraintLayout.LayoutParams.UNSET else helper.itemView.item_message.id
+            it.endToEnd = if (isSelf) helper.itemView.item_message.id else ConstraintLayout.LayoutParams.UNSET
+        }
+
+        val dpStart = ResourceUtil.toPixels(helper.itemView.resources, 56f)
+        val dpEnd = ResourceUtil.toPixels(helper.itemView.resources, 64f)
+        (helper.itemView.item_message.layoutParams as ConstraintLayout.LayoutParams).let {
+            it.horizontalBias = if (isSelf) 1f else 0f
+            it.marginEnd = if (isSelf) dpStart else dpEnd
+            it.marginStart = if (isSelf) dpEnd else dpStart
+        }
+        helper.itemView.item_message.setBackgroundResource(if (isSelf) R.drawable.bg_say_right else R.drawable.bg_say_left)
+
+        helper.itemView.item_user.visibility = if (item.isHeader && !isSelf) View.VISIBLE else View.GONE
+
         val drawables = ArrayList<String>()
         helper.itemView.item_message.let { item_message ->
             val makeSpan = {
                 @Suppress("DEPRECATION")
                 TextUtil.setTextUrlCallback(
                     Html.fromHtml(
-                        parseHtml(item.message),
+                        parseHtml(item.t.message),
                         HtmlHttpImageGetter(item_message, drawables, imageSizes) {
-                            helper.itemView.width.toFloat() - ResourceUtil.toPixels(helper.itemView.resources, 50f)
+                            helper.itemView.width.toFloat() - dpStart - dpEnd
                         },
                         HtmlTagHandler(item_message) { imageSpan ->
                             helper.itemView.item_message?.let { itemView ->
@@ -65,7 +134,7 @@ class SayAdapter(data: MutableList<Say.SayReply>? = null) :
                 }
             }
             item_message.text =
-                TextUtil.updateTextViewRef(largeContent.getOrPut(item.message, makeSpan), WeakReference(item_message))
+                TextUtil.updateTextViewRef(largeContent.getOrPut(item.t.message, makeSpan), WeakReference(item_message))
         }
 
         helper.itemView.item_message.onFocusChangeListener = View.OnFocusChangeListener { view, focus ->
@@ -75,53 +144,50 @@ class SayAdapter(data: MutableList<Say.SayReply>? = null) :
             }
         }
         helper.itemView.item_message.movementMethod = LinkMovementMethod.getInstance()
+        helper.itemView.item_message.requestLayout()
+    }
 
-        GlideUtil.with(helper.itemView.item_avatar)
-            ?.load(Images.small(Bangumi.parseUrl(item.user.avatar ?: "")))
+    private fun updateAvatar(view: ImageView, item: SaySection) {
+        GlideUtil.with(view)
+            ?.load(Images.small(Bangumi.parseUrl(item.t.user.avatar ?: "")))
             ?.apply(
                 RequestOptions.circleCropTransform().error(R.drawable.err_404).placeholder(R.drawable.placeholder_round)
             )
-            ?.into(helper.itemView.item_avatar)
-
-        val isSelf = item.user.username == self?.username
-
-        (helper.itemView.item_avatar.layoutParams as ConstraintLayout.LayoutParams).let {
-            it.startToStart =
-                if (isSelf) ConstraintLayout.LayoutParams.UNSET else ConstraintLayout.LayoutParams.PARENT_ID
-            it.endToEnd = if (isSelf) ConstraintLayout.LayoutParams.PARENT_ID else ConstraintLayout.LayoutParams.UNSET
-        }
-
-        (helper.itemView.item_user.layoutParams as ConstraintLayout.LayoutParams).let {
-            it.startToStart = if (isSelf) ConstraintLayout.LayoutParams.UNSET else helper.itemView.item_message.id
-            it.endToEnd = if (isSelf) helper.itemView.item_message.id else ConstraintLayout.LayoutParams.UNSET
-        }
-
-        val dp8 = ResourceUtil.toPixels(helper.itemView.resources, 8f)
-        val dp48 = ResourceUtil.toPixels(helper.itemView.resources, 48f)
-        (helper.itemView.item_message.layoutParams as ConstraintLayout.LayoutParams).let {
-            it.startToEnd = if (isSelf) ConstraintLayout.LayoutParams.UNSET else helper.itemView.item_avatar.id
-            it.endToStart = if (isSelf) helper.itemView.item_avatar.id else ConstraintLayout.LayoutParams.UNSET
-            it.endToEnd = if (isSelf) ConstraintLayout.LayoutParams.UNSET else ConstraintLayout.LayoutParams.PARENT_ID
-            it.startToStart =
-                if (isSelf) ConstraintLayout.LayoutParams.PARENT_ID else ConstraintLayout.LayoutParams.UNSET
-            it.horizontalBias = if (isSelf) 1f else 0f
-            it.marginEnd = if (isSelf) dp8 else dp48
-            it.marginStart = if (isSelf) dp48 else dp8
-        }
-        helper.itemView.item_message.setBackgroundResource(if (isSelf) R.drawable.bg_say_right else R.drawable.bg_say_left)
-
-        val showAvatar = data.getOrNull(helper.adapterPosition - 1)?.user?.username != item.user.username
-        helper.itemView.item_avatar.visibility = if (showAvatar) View.VISIBLE else View.INVISIBLE
-        helper.itemView.item_user.visibility = if (showAvatar) View.VISIBLE else View.GONE
-
-        helper.itemView.item_message.requestLayout()
-        helper.itemView.requestLayout()
+            ?.into(view)
     }
 
     override fun getSectionName(position: Int): String {
         return "#$position"
     }
 
+    /**
+     * 对话项目（带section）
+     * @constructor
+     */
+    class SaySection(isHeader: Boolean, reply: Say.SayReply) :
+        SectionEntity<Say.SayReply>(isHeader, "") {
+        init {
+            t = reply
+        }
+    }
+
+    override fun convertHead(helper: BaseViewHolder, item: SaySection) {
+        convert(helper, item)
+    }
+
+    fun setNewData(say: Say) {
+        self = say.self
+        super.setNewData(listOfNotNull(
+            Say.SayReply(
+                user = say.user,
+                message = say.message ?: ""
+            )
+        ).plus(say.replies ?: ArrayList()).let {
+            it.mapIndexed { index, sayReply ->
+                SaySection(it.getOrNull(index - 1)?.user?.username != sayReply.user.username, sayReply)
+            }
+        })
+    }
 
     companion object {
         /**
@@ -130,11 +196,17 @@ class SayAdapter(data: MutableList<Say.SayReply>? = null) :
          * @return String
          */
         fun parseHtml(html: String): String {
-            val doc = Jsoup.parse(html.replace("[img]<a ", "<aimg ").replace("</a>[/img]", "</aimg>"), Bangumi.SERVER)
+            val doc = Jsoup.parse(
+                html
+                    .replace("[img]<a ", "<aimg ").replace("</a>[/img]", "</aimg>")
+                    .replace(Regex("""\[url=<a ([^>]*)>(.*?)<\/a>]"""), "<a $1>").replace("[/url]", "</a>")
+                , Bangumi.SERVER
+            )
             doc.outputSettings().indentAmount(0).prettyPrint(false)
             doc.select("aimg").map {
                 it.html("[img]${it.attr("href")}[/img]")
             }
+            Log.v("html", doc.body().html())
             @Suppress("DEPRECATION")
             return PostAdapter.parseHtml(
                 TextUtil.bbcode2html(

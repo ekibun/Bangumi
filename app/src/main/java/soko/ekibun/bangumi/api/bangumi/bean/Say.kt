@@ -78,7 +78,7 @@ data class Say(
                             } ?: ""
                         )
                     },
-                    self = UserInfo.parse(self, Bangumi.parseImageUrl(self))
+                    self = UserInfo.parse(self, Bangumi.parseImageUrl(self.selectFirst("span.avatarNeue")))
                 )
             }
         }
