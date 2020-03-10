@@ -14,7 +14,7 @@ import androidx.core.view.ViewCompat;
 public class StickyHeadContainer extends ViewGroup {
 
     private int mOffset;
-    private int mLastOffset = Integer.MIN_VALUE;
+    private int mLastOffset = 0;
     private int mLastStickyHeadPosition = Integer.MIN_VALUE;
 
     private int mLeft;

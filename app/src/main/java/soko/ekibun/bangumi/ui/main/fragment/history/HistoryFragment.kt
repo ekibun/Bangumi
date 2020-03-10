@@ -18,7 +18,7 @@ class HistoryFragment : DrawerFragment(R.layout.content_history) {
         val adapter = HistoryAdapter()
         adapter.setEmptyView(R.layout.view_empty, item_swipe)
         list_item?.layoutManager = LinearLayoutManager(view.context)
-        adapter.setUpWithRecyclerView(list_item)
+        adapter.setUpWithRecyclerView(shc, list_item)
         updateHistory()
         item_swipe?.setOnRefreshListener {
             updateHistory()

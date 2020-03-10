@@ -1,11 +1,14 @@
 package soko.ekibun.bangumi.ui.main.fragment.history
 
+import android.util.Log
 import android.view.View
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseSectionQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
 import com.chad.library.adapter.base.entity.SectionEntity
-import com.oushangfeng.pinnedsectionitemdecoration.PinnedHeaderItemDecoration
+import com.oubowu.stickyitemdecoration.StickyHeadContainer
+import com.oubowu.stickyitemdecoration.StickyItemDecoration
+import kotlinx.android.synthetic.main.item_episode_header.view.*
 import kotlinx.android.synthetic.main.item_history.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Images
@@ -25,9 +28,12 @@ class HistoryAdapter(data: MutableList<History>? = null) :
         helper.setText(R.id.item_header, item.header)
     }
 
-    fun setUpWithRecyclerView(recyclerView: androidx.recyclerview.widget.RecyclerView) {
+    fun setUpWithRecyclerView(container: StickyHeadContainer, recyclerView: androidx.recyclerview.widget.RecyclerView) {
         bindToRecyclerView(recyclerView)
-        recyclerView.addItemDecoration(PinnedHeaderItemDecoration.Builder(SECTION_HEADER_VIEW).create())
+        container.setDataCallback {
+            container.item_header.text = data[it].header
+        }
+        recyclerView.addItemDecoration(StickyItemDecoration(container, SECTION_HEADER_VIEW))
     }
 
     override fun convert(helper: BaseViewHolder, item: History) {

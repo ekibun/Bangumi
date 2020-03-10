@@ -71,7 +71,7 @@ class EpisodeListDialog : BaseDialog(R.layout.dialog_episode_list) {
         val nestedScrollRange = {
             view.bottom_sheet.height - behavior.peekHeight
         }
-        val touchListener = adapter.setUpWithRecyclerView(view.bottom_sheet_container)
+        val touchListener = adapter.setUpWithRecyclerView(view.shc, view.bottom_sheet_container)
         touchListener.nestScrollDistance = {
             (nestedScrollRange() * (1 - offset)).toInt()
         }

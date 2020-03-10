@@ -5,9 +5,11 @@ import android.view.View
 import com.chad.library.adapter.base.BaseSectionQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
 import com.chad.library.adapter.base.entity.SectionEntity
-import com.oushangfeng.pinnedsectionitemdecoration.PinnedHeaderItemDecoration
-import com.oushangfeng.pinnedsectionitemdecoration.utils.FullSpanUtil
+import com.oubowu.stickyitemdecoration.FullSpanUtil
+import com.oubowu.stickyitemdecoration.StickyHeadContainer
+import com.oubowu.stickyitemdecoration.StickyItemDecoration
 import kotlinx.android.synthetic.main.item_episode.view.*
+import kotlinx.android.synthetic.main.item_episode_header.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.ui.view.DragSelectTouchListener
@@ -63,7 +65,7 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
         if(headerHeight == 0) {
 //            helper.itemView.measure(0, 0)
 //            headerHeight = helper.itemView.measuredHeight + ((helper.itemView.layoutParams as? ViewGroup.MarginLayoutParams)?.let { it.topMargin + it.bottomMargin }?:0)
-            headerHeight = ResourceUtil.toPixels(helper.itemView.context.resources, 36f)
+            headerHeight = ResourceUtil.toPixels(helper.itemView.context.resources, 48f)
         }
     }
 
@@ -110,10 +112,14 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
      * @param recyclerView RecyclerView
      * @return DragSelectTouchListener
      */
-    fun setUpWithRecyclerView(recyclerView: androidx.recyclerview.widget.RecyclerView): DragSelectTouchListener{
+    fun setUpWithRecyclerView(container: StickyHeadContainer, recyclerView: androidx.recyclerview.widget.RecyclerView): DragSelectTouchListener{
         bindToRecyclerView(recyclerView)
 
-        recyclerView.addItemDecoration(PinnedHeaderItemDecoration.Builder(SECTION_HEADER_VIEW).create())
+        container.setDataCallback {
+            container.item_header.text = data[it].header
+        }
+
+        recyclerView.addItemDecoration(StickyItemDecoration(container, SECTION_HEADER_VIEW))
 
         val touchListener = DragSelectTouchListener()
         recyclerView.addOnItemTouchListener(touchListener)

@@ -19,6 +19,17 @@
                 android:overScrollMode="never"
                 android:clipToPadding="false"/>
 
+        <com.oubowu.stickyitemdecoration.StickyHeadContainer
+                android:id="@+id/shc"
+                app:layout_constraintTop_toTopOf="@+id/list_item"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            <include
+                    layout="@layout/item_episode_header"/>
+
+        </com.oubowu.stickyitemdecoration.StickyHeadContainer>
+
         <TextView
                 android:id="@+id/item_clear_history"
                 android:layout_width="wrap_content"

@@ -3,7 +3,6 @@ package soko.ekibun.bangumi.ui.say
 import android.text.Html
 import android.text.Spanned
 import android.text.method.LinkMovementMethod
-import android.util.Log
 import android.util.Size
 import android.view.View
 import android.widget.ImageView
@@ -206,7 +205,6 @@ class SayAdapter(data: MutableList<SaySection>? = null) :
             doc.select("aimg").map {
                 it.html("[img]${it.attr("href")}[/img]")
             }
-            Log.v("html", doc.body().html())
             @Suppress("DEPRECATION")
             return PostAdapter.parseHtml(
                 TextUtil.bbcode2html(
