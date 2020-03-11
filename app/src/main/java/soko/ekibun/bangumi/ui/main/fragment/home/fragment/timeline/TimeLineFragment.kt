@@ -1,6 +1,8 @@
 package soko.ekibun.bangumi.ui.main.fragment.home.fragment.timeline
 
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.widget.PopupMenu
@@ -42,26 +44,6 @@ class TimeLineFragment : HomeTabFragment(R.layout.fragment_timeline) {
             popup.show()
         }
 
-        var draft: String? = null
-        item_new?.setOnClickListener {
-            ReplyDialog.showDialog(
-                activity?.supportFragmentManager ?: return@setOnClickListener,
-                hint = context?.getString(R.string.timeline_dialog_add) ?: "",
-                draft = draft
-            ) { content, _, send ->
-                if (content != null && send) {
-                    TimeLine.addComment(content).enqueue(ApiHelper.buildCallback({
-                        if (it) {
-                            draft = null
-                            if (item_pager?.currentItem ?: 2 !in 0..1) item_pager?.currentItem = 1
-                            adapter.pageIndex[item_pager?.currentItem ?: 0] = 0
-                            adapter.loadTopicList()
-                        } else Toast.makeText(activity, R.string.hint_submit_error, Toast.LENGTH_LONG).show()
-                    }) { })
-                } else draft = content
-            }
-        }
-
         item_pager?.post {
             onSelect()
         }
@@ -88,7 +70,7 @@ class TimeLineFragment : HomeTabFragment(R.layout.fragment_timeline) {
     override fun onUserChange() {
         val adapter = (item_pager?.adapter as? TimeLinePagerAdapter) ?: return
         val hasUser = (activity as? MainActivity)?.user != null
-        if (hasUser) item_new?.show() else item_new?.hide()
+        menuItem?.isVisible = hasUser
         item_type?.visibility = if (hasUser) View.VISIBLE else View.GONE
         adapter.reset()
     }
@@ -97,5 +79,34 @@ class TimeLineFragment : HomeTabFragment(R.layout.fragment_timeline) {
         val adapter = (item_pager?.adapter as? TimeLinePagerAdapter) ?: return
         adapter.pageIndex[item_pager?.currentItem ?: 0] = adapter.pageIndex[item_pager?.currentItem ?: 0] ?: 0
         if (adapter.pageIndex[item_pager?.currentItem ?: 0] == 0) adapter.loadTopicList()
+    }
+
+    var menuItem: MenuItem? = null
+    override fun onCreateOptionsMenu(menu: Menu) {
+        super.onCreateOptionsMenu(menu)
+
+        var draft: String? = null
+        menuItem = menu.add("添加").setIcon(R.drawable.ic_add).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM)
+            .setOnMenuItemClickListener {
+                val adapter = (item_pager?.adapter as? TimeLinePagerAdapter) ?: return@setOnMenuItemClickListener false
+                ReplyDialog.showDialog(
+                    activity?.supportFragmentManager ?: return@setOnMenuItemClickListener false,
+                    hint = context?.getString(R.string.timeline_dialog_add) ?: "",
+                    draft = draft
+                ) { content, _, send ->
+                    if (content != null && send) {
+                        TimeLine.addComment(content).enqueue(ApiHelper.buildCallback({
+                            if (it) {
+                                draft = null
+                                if (item_pager?.currentItem ?: 2 !in 0..1) item_pager?.currentItem = 1
+                                adapter.pageIndex[item_pager?.currentItem ?: 0] = 0
+                                adapter.loadTopicList()
+                            } else Toast.makeText(activity, R.string.hint_submit_error, Toast.LENGTH_LONG).show()
+                        }) { })
+                    } else draft = content
+                }
+                true
+            }
+        menuItem?.isVisible = (activity as? MainActivity)?.user != null
     }
 }

@@ -2,6 +2,7 @@ package soko.ekibun.bangumi.ui.main.fragment.home.fragment
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.LayoutRes
@@ -29,5 +30,7 @@ abstract class HomeTabFragment(@LayoutRes private val resId: Int): androidx.frag
 
     abstract fun onUserChange()
 
-    var savedInstanceState:Bundle? = null
+    open fun onCreateOptionsMenu(menu: Menu) {}
+
+    var savedInstanceState: Bundle? = null
 }

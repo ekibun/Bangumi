@@ -76,7 +76,7 @@ class MainActivity : BaseActivity(R.layout.activity_main) {
             }
             popup.show()
         }
-
+        mainPresenter.drawerView.current()?.onCreateOptionsMenu(menu)
         return true
     }
 

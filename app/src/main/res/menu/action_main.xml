@@ -3,11 +3,14 @@
       xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item android:id="@+id/action_notify"
+          android:orderInCategory="1"
           app:actionProviderClass="soko.ekibun.bangumi.ui.view.NotifyActionProvider"
           app:showAsAction="ifRoom"
           android:title=""/>
-    <item android:id="@+id/action_search"
-          android:icon="@drawable/ic_search"
-          android:title="@string/search_hint"
-          app:showAsAction="ifRoom"/>
+    <item
+            android:id="@+id/action_search"
+            android:orderInCategory="1"
+            android:icon="@drawable/ic_search"
+            android:title="@string/search_hint"
+            app:showAsAction="ifRoom"/>
 </menu>

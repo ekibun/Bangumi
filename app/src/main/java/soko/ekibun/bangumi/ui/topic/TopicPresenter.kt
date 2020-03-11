@@ -55,6 +55,7 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
      * @param scrollPost String
      */
     fun getTopic(scrollPost: String = "") {
+        topicView.adapter.loadMoreComplete()
         loadMoreFail = null
         context.item_swipe.isRefreshing = true
 

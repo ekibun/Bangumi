@@ -2,6 +2,8 @@ package soko.ekibun.bangumi.ui.main.fragment.home.fragment.rakuen
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.widget.PopupMenu
 import kotlinx.android.synthetic.main.fragment_rakuen.*
@@ -48,9 +50,6 @@ class RakuenFragment: HomeTabFragment(R.layout.fragment_rakuen){
         }
 
         item_tabs?.getTabAt(1)?.customView = topicTab
-        item_new?.setOnClickListener {
-            WebActivity.startActivity(view.context, "${Bangumi.SERVER}/rakuen/new_topic")
-        }
         refresh = { adapter.loadTopicList() }
     }
 
@@ -70,6 +69,15 @@ class RakuenFragment: HomeTabFragment(R.layout.fragment_rakuen){
         savedInstanceState?.getInt("rakuen_fragment_filter_index")?.let {
             selectedFilter = it
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu) {
+        super.onCreateOptionsMenu(menu)
+        menu.add("添加").setIcon(R.drawable.ic_add).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM)
+            .setOnMenuItemClickListener {
+                context?.let { WebActivity.startActivity(it, "${Bangumi.SERVER}/rakuen/new_topic") }
+                true
+            }
     }
 
     override fun onSelect() {

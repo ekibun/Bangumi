@@ -21,6 +21,7 @@ import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
 import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.main.MainPresenter
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
+import soko.ekibun.bangumi.ui.view.ShadowDecoration
 import soko.ekibun.bangumi.util.TimeUtil
 import java.util.*
 import kotlin.collections.ArrayList
@@ -86,7 +87,7 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
         val adapter = getItem(CalendarAdapter.getCalendarInt(getPostDate(position)))
         val recyclerView = RecyclerView(view.context)
-        recyclerView.overScrollMode = View.OVER_SCROLL_NEVER
+        ShadowDecoration.set(recyclerView)
         recyclerView.setPadding(0, 0, 0, windowInsets?.systemWindowInsetBottom ?: 0)
         recyclerView.clipToPadding = false
 

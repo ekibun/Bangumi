@@ -2,6 +2,7 @@ package soko.ekibun.bangumi.ui.main.fragment
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.LayoutRes
@@ -23,7 +24,9 @@ abstract class DrawerFragment(@LayoutRes private val resId: Int): androidx.fragm
      * 返回处理
      * @return Boolean
      */
-    open fun processBack(): Boolean{
+    open fun processBack(): Boolean {
         return false
     }
+
+    open fun onCreateOptionsMenu(menu: Menu) {}
 }

@@ -21,6 +21,7 @@ import soko.ekibun.bangumi.ui.main.MainPresenter
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
+import soko.ekibun.bangumi.ui.view.ShadowDecoration
 
 /**
  * 收藏PagerAdapter
@@ -80,7 +81,7 @@ class CollectionPagerAdapter(
         val item = items.getOrPut(position) {
             val swipeRefreshLayout = FixSwipeRefreshLayout(container.context)
             val recyclerView = RecyclerView(container.context)
-
+            ShadowDecoration.set(recyclerView)
             val adapter = CollectionListAdapter()
             adapter.emptyView = LayoutInflater.from(container.context).inflate(R.layout.view_empty, container, false)
             adapter.isUseEmpty(false)

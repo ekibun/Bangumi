@@ -4,7 +4,6 @@ import am.util.viewpager.adapter.RecyclePagerAdapter
 import android.util.Log
 import android.util.SparseIntArray
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
 import androidx.recyclerview.widget.RecyclerView
@@ -17,6 +16,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
+import soko.ekibun.bangumi.ui.view.ShadowDecoration
 import java.util.*
 
 /**
@@ -90,7 +90,7 @@ class IndexPagerAdapter(fragment: IndexFragment, private val pager: androidx.vie
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): IndexPagerViewHolder {
         val swipeRefreshLayout = FixSwipeRefreshLayout(parent.context)
         val recyclerView = RecyclerView(parent.context)
-        recyclerView.overScrollMode = View.OVER_SCROLL_NEVER
+        ShadowDecoration.set(recyclerView)
         recyclerView.setPadding(0, 0, 0, windowInsets?.systemWindowInsetBottom ?: 0)
         recyclerView.clipToPadding = false
         val adapter = SubjectAdapter()

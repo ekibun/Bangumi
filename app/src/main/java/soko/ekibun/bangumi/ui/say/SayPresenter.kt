@@ -9,6 +9,7 @@ import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.Say
 import soko.ekibun.bangumi.model.DataCacheModel
 import soko.ekibun.bangumi.ui.topic.ReplyDialog
+import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.web.WebActivity
 
 class SayPresenter(private val context: SayActivity, say: Say) {
@@ -22,17 +23,37 @@ class SayPresenter(private val context: SayActivity, say: Say) {
         DataCacheModel.merge(say, dataCacheModel.get(say.cacheKey))
         say.self = self
         this.say = say
-        sayView.processSay(say)
+        sayView.processSay(say, isCache = true)
         getSay()
 
         context.item_swipe.setOnRefreshListener {
             getSay()
         }
+        sayView.adapter.setLoadMoreView(BrvahLoadMoreView())
+        sayView.adapter.setOnLoadMoreListener({ if (loadMoreFail == true) getSay() }, context.item_list)
     }
 
+    private var loadMoreFail: Boolean? = null
+
     fun getSay() {
+        sayView.adapter.loadMoreComplete()
+        loadMoreFail = null
         context.item_swipe.isRefreshing = true
-        Say.getSay(say).enqueue(ApiHelper.buildCallback({ say ->
+        Say.getSaySax(say, { data ->
+            context.runOnUiThread {
+                sayView.processSay(data, true)
+            }
+        }, { index, post ->
+            context.runOnUiThread {
+                val say = SayAdapter.SaySection(
+                    isHeader = sayView.adapter.data.getOrNull(index - 1)?.t?.user?.username != post.user.username,
+                    reply = post
+                )
+                if (index < sayView.adapter.data.size) sayView.adapter.setData(index, say)
+                else sayView.adapter.addData(say)
+            }
+
+        }).enqueue(ApiHelper.buildCallback({ say ->
             sayView.processSay(say)
             dataCacheModel.set(say.cacheKey, say)
 
@@ -51,7 +72,9 @@ class SayPresenter(private val context: SayActivity, say: Say) {
             }
 
         }) {
+            loadMoreFail = it != null
             context.item_swipe.isRefreshing = false
+            sayView.adapter.loadMoreFail()
         })
     }
 

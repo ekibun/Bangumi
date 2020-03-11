@@ -2,6 +2,7 @@ package soko.ekibun.bangumi.ui.main.fragment.home
 
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
 import android.view.View
 import android.widget.CheckedTextView
 import kotlinx.android.synthetic.main.content_home.*
@@ -38,7 +39,7 @@ class HomeFragment: DrawerFragment(R.layout.content_home) {
         )
     }
 
-    private var checkedPos = 0
+    private var checkedPos = 1
 
     /**
      * 选中
@@ -51,6 +52,7 @@ class HomeFragment: DrawerFragment(R.layout.content_home) {
         for (i in 0 until (frame_tabs?.childCount ?: 0)) {
             (frame_tabs?.getChildAt(i) as? CheckedTextView)?.isChecked = i == checkedPos
         }
+        activity?.invalidateOptionsMenu()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -65,7 +67,7 @@ class HomeFragment: DrawerFragment(R.layout.content_home) {
                 }
             }
         }
-        select(1)
+        select(checkedPos)
     }
 
     override fun processBack(): Boolean {
@@ -84,6 +86,11 @@ class HomeFragment: DrawerFragment(R.layout.content_home) {
         savedInstanceState?.getInt("home_select_index")?.let {
             select(it)
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu) {
+        super.onCreateOptionsMenu(menu)
+        fragments[checkedPos].onCreateOptionsMenu(menu)
     }
 
     /**

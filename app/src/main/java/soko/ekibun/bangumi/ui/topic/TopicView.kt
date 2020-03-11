@@ -160,13 +160,19 @@ class TopicView(private val context: TopicActivity) {
             )
             ?.into(context.item_cover_blur)
 
+        adapter.setOnItemChildClickListener { _, v, position ->
+            onItemClick(v, position)
+        }
+
         if (header) return
         adapter.isUseEmpty(!isCache)
         topic.replies.forEach { it.isExpanded = true }
         setNewData(topic.replies, topic, isCache)
         scrollToPost(scrollPost)
-
         adapter.loadMoreEnd()
+
+        if (isCache) return
+
         val lastPost = topic.replies.lastOrNull()
         context.btn_reply.text = when {
             !topic.lastview.isNullOrEmpty() -> context.getString(R.string.hint_reply)
@@ -185,10 +191,6 @@ class TopicView(private val context: TopicActivity) {
             if (!topic.lastview.isNullOrEmpty()) ResourceUtil.getDrawable(context, R.drawable.ic_send) else null,//right
             null
         )
-
-        adapter.setOnItemChildClickListener { _, v, position ->
-            onItemClick(v, position)
-        }
     }
 
     /**

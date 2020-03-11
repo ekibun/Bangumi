@@ -11,6 +11,7 @@ import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.ui.topic.TopicActivity
 import soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
+import soko.ekibun.bangumi.ui.view.ShadowDecoration
 
 /**
  * 超展开PagerAdapter
@@ -49,8 +50,7 @@ class RakuenPagerAdapter(
         val item = items.getOrPut(position) {
             val swipeRefreshLayout = FixSwipeRefreshLayout(container.context)
             val recyclerView = androidx.recyclerview.widget.RecyclerView(container.context)
-            recyclerView.overScrollMode = View.OVER_SCROLL_NEVER
-
+            ShadowDecoration.set(recyclerView)
             val adapter = RakuenAdapter()
             adapter.emptyView = LayoutInflater.from(container.context).inflate(R.layout.view_empty, container, false)
             adapter.isUseEmpty(false)

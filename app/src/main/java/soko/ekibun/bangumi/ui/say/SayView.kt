@@ -86,7 +86,7 @@ class SayView(private val context: SayActivity) {
         }
     }
 
-    fun processSay(say: Say) {
+    fun processSay(say: Say, header: Boolean = false, isCache: Boolean = false) {
         collapsibleAppBarHelper.setTitle("吐槽", say.user.name, say.time)
         context.title_slice_0.setOnClickListener {
             if (scroll2Top()) return@setOnClickListener
@@ -105,8 +105,13 @@ class SayView(private val context: SayActivity) {
             )
             ?.into(context.item_cover_blur)
 
+        if (header) return
+
         adapter.isUseEmpty(true)
         adapter.setNewData(say)
+        adapter.loadMoreEnd()
+
+        if (isCache) return
 
         context.btn_reply.text = when {
             say.self != null -> context.getString(R.string.hint_reply)

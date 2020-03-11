@@ -125,6 +125,7 @@ class DrawerView(private val context: MainActivity, onLogout: () -> Unit) {
             .replace(R.id.content_frame, fragment, fragment.javaClass.name).runOnCommit {
                 ViewCompat.requestApplyInsets(context.drawer_layout)
             }.commit()
+        context.invalidateOptionsMenu()
         context.setTitle(fragment.titleRes)
         context.nav_view.setCheckedItem(id)
     }

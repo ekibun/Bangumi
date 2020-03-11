@@ -12,6 +12,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.TimeLine
 import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
+import soko.ekibun.bangumi.ui.view.ShadowDecoration
 
 /**
  * 时间线PagerAdapter
@@ -63,8 +64,7 @@ class TimeLinePagerAdapter(
         val item = items.getOrPut(position) {
             val swipeRefreshLayout = FixSwipeRefreshLayout(container.context)
             val recyclerView = androidx.recyclerview.widget.RecyclerView(container.context)
-            recyclerView.overScrollMode = View.OVER_SCROLL_NEVER
-
+            ShadowDecoration.set(recyclerView)
             val adapter = TimeLineAdapter()
             adapter.emptyView = LayoutInflater.from(container.context).inflate(R.layout.view_empty, container, false)
             adapter.isUseEmpty(false)

@@ -2,10 +2,20 @@ package soko.ekibun.bangumi.api.bangumi.bean
 
 import okhttp3.FormBody
 import org.jsoup.Jsoup
+import org.xmlpull.v1.XmlPullParser
 import retrofit2.Call
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.util.HttpUtil
+import java.util.*
+import kotlin.collections.HashMap
+import kotlin.collections.List
+import kotlin.collections.forEach
+import kotlin.collections.get
+import kotlin.collections.getOrNull
+import kotlin.collections.joinToString
+import kotlin.collections.plusAssign
+import kotlin.collections.set
 
 data class Say(
     val id: Int,
@@ -53,7 +63,7 @@ data class Say(
          * 加载吐槽
          * @return Call<Say>
          */
-        fun getSay(say: Say): Call<Say> {
+        fun getSaySax(say: Say, onUpdate: (Say) -> Unit, onNewPost: (index: Int, post: SayReply) -> Unit): Call<Say> {
             return ApiHelper.buildHttpCall(say.url) { rsp ->
                 val avatarCache = HashMap<String, String>()
                 say.user.avatar?.let { avatarCache[say.user.username!!] = it }
@@ -61,31 +71,55 @@ data class Say(
                     reply.user.avatar?.let { avatarCache[reply.user.username!!] = it }
                 }
 
-                val doc = Jsoup.parse(rsp.body?.string() ?: "")
-                doc.outputSettings().prettyPrint(false)
-
-                val self = doc.selectFirst(".idBadgerNeue a.avatar")
-                Say(
-                    id = say.id,
-                    user = UserInfo.parse(
-                        doc.selectFirst(".statusHeader .inner a"),
-                        Bangumi.parseImageUrl(doc.selectFirst(".statusHeader .avatar img"))
-                    ),
-                    message = doc.selectFirst(".statusContent .text")?.html(),
-                    time = doc.selectFirst(".statusContent .date")?.text(),
-                    replies = doc.select(".reply_item").map { item ->
-                        val user = UserInfo.parse(item.selectFirst("a.l"))
+                var beforeData = ""
+                val replies = ArrayList<SayReply>()
+                val updateReply = { str: String ->
+                    val doc = Jsoup.parse(str)
+                    doc.outputSettings().prettyPrint(false)
+                    if (beforeData.isEmpty()) {
+                        beforeData = str
+                        val self = doc.selectFirst(".idBadgerNeue a.avatar")
+                        say.user = UserInfo.parse(
+                            doc.selectFirst(".statusHeader .inner a"),
+                            Bangumi.parseImageUrl(doc.selectFirst(".statusHeader .avatar img"))
+                        )
+                        say.message = doc.selectFirst(".statusContent .text")?.html()
+                        say.time = doc.selectFirst(".statusContent .date")?.text()
+                        say.self = UserInfo.parse(self, Bangumi.parseImageUrl(self.selectFirst("span.avatarNeue")))
+                        onUpdate(say)
+                        onNewPost(0, SayReply(say.user, say.message ?: ""))
+                    } else {
+                        val user = UserInfo.parse(doc.selectFirst("a.l"))
                         user.avatar = avatarCache[user.username] ?: user.avatar ?: UserInfo.getApiUser(user).avatar
                         user.avatar?.let { avatarCache[user.username!!] = it }
-                        SayReply(
+                        val reply = SayReply(
                             user = user,
-                            message = item.childNodes()?.let { it.subList(6, it.size) }?.joinToString("") {
-                                it.outerHtml()
-                            } ?: ""
+                            message = doc.selectFirst(".reply_item").childNodes()?.let { it.subList(6, it.size) }
+                                ?.joinToString("") {
+                                    it.outerHtml()
+                                } ?: ""
                         )
-                    },
-                    self = UserInfo.parse(self, Bangumi.parseImageUrl(self.selectFirst("span.avatarNeue")))
-                )
+                        replies += reply
+                        onNewPost(replies.size, reply)
+                    }
+                }
+
+                ApiHelper.parseWithSax(rsp) { parser, str ->
+                    when {
+                        parser.eventType != XmlPullParser.START_TAG -> ApiHelper.SaxEventType.NOTHING
+                        parser.getAttributeValue("", "class")?.contains("reply_item") == true -> {
+                            updateReply(str)
+                            ApiHelper.SaxEventType.BEGIN
+                        }
+                        parser.getAttributeValue("", "id") == "footer" -> {
+                            updateReply(str)
+                            ApiHelper.SaxEventType.END
+                        }
+                        else -> ApiHelper.SaxEventType.NOTHING
+                    }
+                }
+                say.replies = replies
+                say
             }
         }
 
