@@ -19,6 +19,7 @@ import soko.ekibun.bangumi.BuildConfig
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.view.BaseFragmentActivity
+import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.AppUtil
 
 
@@ -133,12 +134,18 @@ class SettingsActivity : BaseFragmentActivity(), PreferenceFragmentCompat.OnPref
         }
 
         override fun onPreferenceTreeClick(preference: Preference?): Boolean {
-            if (preference?.key == "check_update_now") activity?.let {
-                AppUtil.checkUpdate(it, false) {
-                    AlertDialog.Builder(it).setTitle("当前已是最新版")
-                        .setPositiveButton(R.string.ok) { _, _ -> }.show()
+            when (preference?.key) {
+                "check_update_now" -> activity?.let {
+                    AppUtil.checkUpdate(it, false) {
+                        AlertDialog.Builder(it).setTitle("当前已是最新版")
+                            .setPositiveButton(R.string.ok) { _, _ -> }.show()
+                    }
+                }
+                "feed_back" -> activity?.let {
+                    WebActivity.launchUrl(it, "https://bgm.tv/user/ekibun/timeline/status/20692126", "")
                 }
             }
+
             return super.onPreferenceTreeClick(preference)
         }
     }

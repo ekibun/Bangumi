@@ -70,7 +70,6 @@ class TimeLineFragment : HomeTabFragment(R.layout.fragment_timeline) {
     override fun onUserChange() {
         val adapter = (item_pager?.adapter as? TimeLinePagerAdapter) ?: return
         val hasUser = (activity as? MainActivity)?.user != null
-        menuItem?.isVisible = hasUser
         item_type?.visibility = if (hasUser) View.VISIBLE else View.GONE
         adapter.reset()
     }
@@ -81,13 +80,13 @@ class TimeLineFragment : HomeTabFragment(R.layout.fragment_timeline) {
         if (adapter.pageIndex[item_pager?.currentItem ?: 0] == 0) adapter.loadTopicList()
     }
 
-    var menuItem: MenuItem? = null
     override fun onCreateOptionsMenu(menu: Menu) {
         super.onCreateOptionsMenu(menu)
 
         var draft: String? = null
-        menuItem = menu.add("添加").setIcon(R.drawable.ic_add).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM)
+        menu.add("添加").setIcon(R.drawable.ic_add).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM)
             .setOnMenuItemClickListener {
+                if ((activity as? MainActivity)?.user == null) return@setOnMenuItemClickListener false
                 val adapter = (item_pager?.adapter as? TimeLinePagerAdapter) ?: return@setOnMenuItemClickListener false
                 ReplyDialog.showDialog(
                     activity?.supportFragmentManager ?: return@setOnMenuItemClickListener false,
@@ -107,6 +106,5 @@ class TimeLineFragment : HomeTabFragment(R.layout.fragment_timeline) {
                 }
                 true
             }
-        menuItem?.isVisible = (activity as? MainActivity)?.user != null
     }
 }

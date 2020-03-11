@@ -7,6 +7,7 @@ import android.view.KeyEvent
 import android.view.MenuItem
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AppCompatActivity
+import com.umeng.analytics.MobclickAgent
 import soko.ekibun.bangumi.model.PluginsModel
 import soko.ekibun.bangumi.model.ThemeModel
 
@@ -56,12 +57,14 @@ abstract class BaseActivity(@LayoutRes private val resId: Int) : AppCompatActivi
     var onPauseListener = {}
     override fun onPause() {
         super.onPause()
+        MobclickAgent.onPause(this)
         onPauseListener()
     }
 
     var onResumeListener = {}
     override fun onResume() {
         super.onResume()
+        MobclickAgent.onResume(this)
         onResumeListener()
     }
 

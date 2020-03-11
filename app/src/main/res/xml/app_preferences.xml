@@ -67,6 +67,11 @@
                 app:summary="回复时默认使用bbcode而不是富文本编辑器"
                 app:defaultValue="false"/>
 
+        <androidx.preference.Preference
+                app:iconSpaceReserved="false"
+                app:key="feed_back"
+                app:title="反馈"/>
+
         <androidx.preference.SwitchPreference
                 app:iconSpaceReserved="false"
                 app:key="check_update"
