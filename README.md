@@ -6,27 +6,19 @@
 
 这是一个参（抄）考（袭）了bilibili和隔壁各个bgm客户端的又双叒叕一个[Bangumi番组计划](https://bgm.tv)Android客户端
 
-## 现在有啥功能
+## 这东西有啥用
 
-更完整的收藏列表
+-   更原生的收藏列表
 
-更详细的放送时间表
+-   更详细的放送时间表
 
-更好用的番组搜索/索引
+-   更好用的番组搜索/索引
 
-更全面的番组详情
+-   更全面的番组详情
 
-更快捷的收藏/进度管理
+-   更快捷的收藏/进度管理
 
-原生体验的超展开/时间胶囊
-
-## 最近更新了啥
-
-\[实验性]加载时渲染，更快的加载速度
-
-\[实验性]帖子回复支持富文本编辑
-
-半透明导航栏
+-   原生体验的超展开/时间胶囊
 
 ## 这东西长啥样
 
@@ -53,15 +45,15 @@
 
 -   [BaseRecyclerViewAdapterHelper](https://github.com/CymChad/BaseRecyclerViewAdapterHelper)
 
--   [PinnedSectionItemDecoration](https://github.com/oubowu/PinnedSectionItemDecoration)
+-   [StickyItemDecoration](https://github.com/oubowu/Stickyitemdecoration)
 
 -   [android-shape-imageview](https://github.com/siyamed/android-shape-imageview)
-
--   [flowlayoutmanager](https://github.com/xiaofeng-han/AndroidLibs/tree/master/flowlayoutmanager)
 
 -   [RecyclerTabLayout](https://github.com/nshmura/RecyclerTabLayout)
 
 -   [RecyclePagerAdapter](https://github.com/AlexMofer/RecyclePagerAdapter)
+
+-   [DiskLruCache](https://github.com/JakeWharton/DiskLruCache)
 
 -   [PhotoView](https://github.com/chrisbanes/PhotoView)
 
