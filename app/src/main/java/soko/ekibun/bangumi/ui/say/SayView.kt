@@ -16,6 +16,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.Say
 import soko.ekibun.bangumi.ui.view.CollapsibleAppBarHelper
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
+import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.ResourceUtil
 
 
@@ -114,14 +115,14 @@ class SayView(private val context: SayActivity) {
         if (isCache) return
 
         context.btn_reply.text = when {
-            say.self != null -> context.getString(R.string.hint_reply)
+            HttpUtil.formhash.isNotEmpty() -> context.getString(R.string.hint_reply)
             else -> context.getString(R.string.hint_login_topic)
         }
         context.btn_reply.setCompoundDrawablesWithIntrinsicBounds(
-            if (say.self != null) ResourceUtil.getDrawable(context, R.drawable.ic_edit)
+            if (HttpUtil.formhash.isNotEmpty()) ResourceUtil.getDrawable(context, R.drawable.ic_edit)
             else null,//left
             null,
-            if (say.self != null) ResourceUtil.getDrawable(context, R.drawable.ic_send)
+            if (HttpUtil.formhash.isNotEmpty()) ResourceUtil.getDrawable(context, R.drawable.ic_send)
             else null,//right
             null
         )

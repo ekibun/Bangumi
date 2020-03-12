@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import kotlinx.android.synthetic.main.fragment_collection.*
 import retrofit2.Call
+import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
@@ -114,6 +115,7 @@ class CollectionPagerAdapter(
     fun reset() {
         items.forEach { (it.value.second.tag as? RecyclerView)?.tag = null }
         pageIndex.clear()
+        collectionCalls.forEach { it.value.cancel() }
         loadCollectionList()
     }
 
@@ -175,7 +177,7 @@ class CollectionPagerAdapter(
         else {
             collectionCalls[position] = Bangumi.getCollectionList(
                 tabList[position],
-                (fragment.activity as? MainActivity)?.user?.username ?: return,
+                fragment.activity?.let { App.get(it) }?.userModel?.current()?.username ?: return,
                 collectionTypeView.getType(), page + 1
             )
             collectionCalls[position]?.enqueue(ApiHelper.buildCallback(callback, onError))

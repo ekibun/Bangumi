@@ -16,6 +16,7 @@ import java.util.*
  * @constructor
  */
 data class UserInfo(
+    var id: Int = 0,
     var username: String? = null,
     var nickname: String? = null,
     var avatar: String? = null,
@@ -45,15 +46,13 @@ data class UserInfo(
             val username = getUserName(user?.attr("href"))
             val userId = username?.toIntOrNull()
             return UserInfo(
+                id = username?.toIntOrNull() ?: 0,
                 username = username,
                 nickname = user?.text(),
                 avatar = avatar ?: userId?.let {
                     String.format(
                         "https://lain.bgm.tv/pic/user/l/%03d/%02d/%02d/%d.jpg",
-                        it / 1000000,
-                        it / 10000 % 100,
-                        it / 100 % 100,
-                        it
+                        it / 1000000, it / 10000 % 100, it / 100 % 100, it
                     )
                 }
             )
@@ -65,6 +64,7 @@ data class UserInfo(
                 JsonUtil.toJsonObject(ApiHelper.buildHttpCall("https://api.bgm.tv/user/${user.username}") { it.body?.string() }
                     .execute().body() ?: "").let { obj ->
                     UserInfo(
+                        id = obj.get("id")?.asInt ?: 0,
                         username = obj.get("username")?.asString,
                         nickname = obj.get("nickname")?.asString,
                         avatar = obj.getAsJsonObject("avatar")?.get("large")?.asString,

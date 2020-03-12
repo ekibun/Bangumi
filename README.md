@@ -30,7 +30,7 @@
 
 ## 这东西长啥样
 
-| ![](./images/prev1.png) | ![](./images/prev2.png) | ![](./images/prev3.png) | ![](./images/prev4.png) |
+| ![](./images/prev1.jpg) | ![](./images/prev4.jpg) | ![](./images/prev3.jpg) | ![](./images/prev2.jpg) |
 | ---- | ---- | ---- | ---- |
 
 ## 感谢以下的开源项目及作者

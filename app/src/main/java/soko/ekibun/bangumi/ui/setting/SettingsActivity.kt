@@ -15,6 +15,7 @@ import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceScreen
+import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.BuildConfig
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.model.ThemeModel
@@ -58,7 +59,13 @@ class SettingsActivity : BaseFragmentActivity(), PreferenceFragmentCompat.OnPref
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        lastFragment?.let { supportFragmentManager.putFragment(outState, "settings", it) }
+        lastFragment?.let {
+            try {
+                supportFragmentManager.putFragment(outState, "settings", it)
+            } catch (e: IllegalStateException) {
+                e.printStackTrace()
+            }
+        }
 
     }
 
@@ -117,6 +124,8 @@ class SettingsActivity : BaseFragmentActivity(), PreferenceFragmentCompat.OnPref
             findPreference<ListPreference>("pref_dark_mode")?.let { it.summary = it.entry }
             findPreference<ListPreference>("image_quality")?.let { it.summary = it.entry }
             findPreference<Preference>("check_update")?.isVisible = BuildConfig.AUTO_UPDATES
+            findPreference<Preference>("plugins_enabled")?.isVisible =
+                context?.let { App.get(it).pluginInstance } != null
             findPreference<Preference>("check_update_now")?.summary =
                 "${BuildConfig.VERSION_NAME}-${BuildConfig.VERSION_CODE} (${BuildConfig.FLAVOR})"
         }
@@ -143,6 +152,12 @@ class SettingsActivity : BaseFragmentActivity(), PreferenceFragmentCompat.OnPref
                 }
                 "feed_back" -> activity?.let {
                     WebActivity.launchUrl(it, "https://bgm.tv/user/ekibun/timeline/status/20692126", "")
+                }
+                "bangumi_topic" -> activity?.let {
+                    WebActivity.launchUrl(it, "https://bgm.tv/group/topic/346386", "")
+                }
+                "github_page" -> activity?.let {
+                    WebActivity.launchUrl(it, "https://github.com/ekibun/Bangumi", "")
                 }
             }
 

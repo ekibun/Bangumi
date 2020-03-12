@@ -4,6 +4,7 @@ import android.view.View
 import com.bumptech.glide.request.RequestOptions
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.nav_header.view.*
+import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.UserInfo
@@ -20,6 +21,7 @@ class UserView(private val context: MainActivity, onUserFigureClickListener: Vie
 
     init {
         headerView.user_figure.setOnClickListener(onUserFigureClickListener)
+        setUser(App.get(context).userModel.current())
     }
 
     /**
@@ -27,18 +29,17 @@ class UserView(private val context: MainActivity, onUserFigureClickListener: Vie
      * @param user UserInfo?
      */
     fun setUser(user: UserInfo?) {
-        context.runOnUiThread {
-            if (context.isDestroyed) return@runOnUiThread
-            GlideUtil.with(headerView.user_figure)
-                ?.load(Images.large(user?.avatar))
-                ?.apply(RequestOptions.circleCropTransform().error(R.drawable.akkarin).placeholder(R.drawable.placeholder_round))
-                    ?.into(headerView.user_figure)
-            //val token = UserModel(context).getToken()
-            headerView.user_id.text = if (user?.username == null) "" else "@${user.username}"
-            headerView.user_name.text = user?.nickname ?: context.getString(R.string.hint_login)
-            headerView.user_sign.visibility = if (user?.sign.isNullOrEmpty()) View.GONE else View.VISIBLE
-            headerView.user_sign.text = user?.sign
-        }
+        if (context.isDestroyed) return
+        GlideUtil.with(headerView.user_figure)
+            ?.load(Images.large(user?.avatar))
+            ?.apply(
+                RequestOptions.circleCropTransform().error(R.drawable.akkarin).placeholder(R.drawable.placeholder_round)
+            )
+            ?.into(headerView.user_figure)
+        headerView.user_id.text = if (user?.username == null) "" else "@${user.username}"
+        headerView.user_name.text = user?.nickname ?: context.getString(R.string.hint_login)
+        headerView.user_sign.visibility = if (user?.sign.isNullOrEmpty()) View.GONE else View.VISIBLE
+        headerView.user_sign.text = user?.sign
     }
 
 }

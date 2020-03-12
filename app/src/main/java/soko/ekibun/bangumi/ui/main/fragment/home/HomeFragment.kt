@@ -24,8 +24,11 @@ class HomeFragment: DrawerFragment(R.layout.content_home) {
 
     private fun <T> findOrCreateFragmentByClassName(clazz: Class<T>): T {
         @Suppress("UNCHECKED_CAST")
-        return (childFragmentManager.findFragmentByTag(clazz.name)?.also {
-            Log.v("restore", clazz.name)
+        return (try {
+            childFragmentManager.findFragmentByTag(clazz.name)?.also { Log.v("restore", clazz.name) }
+        } catch (e: IllegalStateException) {
+            e.printStackTrace()
+            null
         } ?: clazz.newInstance()) as T
     }
 

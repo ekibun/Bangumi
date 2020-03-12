@@ -102,16 +102,18 @@ data class TopicPost(
         fun remove(
                 post: TopicPost
         ): Call<Boolean> {
-            return ApiHelper.buildHttpCall(Bangumi.SERVER + when (post.model) {
-                "group" -> "/erase/group/reply/"
-                "prsn" -> "/erase/reply/person/"
-                "crt" -> "/erase/reply/character/"
-                "ep" -> "/erase/reply/ep/"
-                "subject" -> "/erase/subject/reply/"
-                "blog" -> "/erase/reply/blog/"
-                else -> ""
-            } + "${post.pst_id}?gh=${HttpUtil.formhash}&ajax=1") {
-                it.body?.string()?.contains("\"status\":\"ok\"") == true
+            return ApiHelper.buildHttpCall(
+                Bangumi.SERVER + when (post.model) {
+                    "group" -> "/erase/group/reply/"
+                    "prsn" -> "/erase/reply/person/"
+                    "crt" -> "/erase/reply/character/"
+                    "ep" -> "/erase/reply/ep/"
+                    "subject" -> "/erase/subject/reply/"
+                    "blog" -> "/erase/reply/blog/"
+                    else -> ""
+                } + "${post.pst_id}?gh=${HttpUtil.formhash}&ajax=1"
+            ) { rsp ->
+                rsp.body?.string()?.contains("\"status\":\"ok\"") == true
             }
         }
 
@@ -134,10 +136,11 @@ data class TopicPost(
                 "blog" -> "/blog/reply/edit/${post.pst_id}"
                 else -> ""
             }, body = FormBody.Builder()
-                    .add("formhash", HttpUtil.formhash)
-                    .add("submit", "改好了")
-                    .add("content", content).build()) {
-                it.code == 200
+                .add("formhash", HttpUtil.formhash)
+                .add("submit", "改好了")
+                .add("content", content).build()
+            ) { rsp ->
+                rsp.code == 200
             }
         }
     }

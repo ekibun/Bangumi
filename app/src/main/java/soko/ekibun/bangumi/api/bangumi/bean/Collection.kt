@@ -107,8 +107,8 @@ data class Collection(
         fun remove(
             subject: Subject
         ): Call<Boolean> {
-            return ApiHelper.buildHttpCall("${Bangumi.SERVER}/subject/${subject.id}/remove?gh=${HttpUtil.formhash}") {
-                it.code == 200
+            return ApiHelper.buildHttpCall("${Bangumi.SERVER}/subject/${subject.id}/remove?gh=${HttpUtil.formhash}") { rsp ->
+                rsp.code == 200
             }
         }
     }

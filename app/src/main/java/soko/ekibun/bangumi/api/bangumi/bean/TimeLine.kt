@@ -89,7 +89,7 @@ class TimeLine : SectionEntity<TimeLine.TimeLineItem> {
                                 if (it is TextNode || (it as? Element)?.tagName() == "a" && it.selectFirst("img") == null)
                                     it.outerHtml()
                                 else if ((it as? Element)?.hasClass("status") == true)
-                                    "<br/>" + it.html()
+                                    (if (usr == null) "<br/>" else "") + it.html()
                                 else ""
                             }?.reduce { acc, s -> acc + s } ?: "",
                             time = item.selectFirst(".date")?.text()?.trim('·', ' ', '回', '复') ?: "",
@@ -112,8 +112,7 @@ class TimeLine : SectionEntity<TimeLine.TimeLineItem> {
                                 item.selectFirst("a.tml_comment")?.attr("href") ?: "",
                                 user = user,
                                 message = item.selectFirst("$cssInfo .status")?.html(),
-                                time = item.selectFirst(".date")?.ownText()?.trim('·', ' ')?.replace("·", "via") ?: "",
-                                self = if (delUrl.isNullOrEmpty()) null else user
+                                time = item.selectFirst(".date")?.ownText()?.trim('·', ' ')?.replace("·", "via") ?: ""
                             )
                         )
                         )
@@ -137,8 +136,8 @@ class TimeLine : SectionEntity<TimeLine.TimeLineItem> {
                     .add("say_input", say_input)
                     .add("formhash", HttpUtil.formhash)
                     .add("submit", "submit").build()
-            ) {
-                it.body?.string()?.contains("\"status\":\"ok\"") == true
+            ) { rsp ->
+                rsp.body?.string()?.contains("\"status\":\"ok\"") == true
             }
         }
     }

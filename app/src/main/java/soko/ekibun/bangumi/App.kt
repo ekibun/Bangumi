@@ -4,11 +4,8 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import com.umeng.commonsdk.UMConfigure
-import soko.ekibun.bangumi.model.DataCacheModel
-import soko.ekibun.bangumi.model.HistoryModel
-import soko.ekibun.bangumi.model.PluginsModel
-import soko.ekibun.bangumi.model.ThemeModel
-import soko.ekibun.bangumi.util.CrashHandler
+import soko.ekibun.bangumi.model.*
+import soko.ekibun.bangumi.util.HttpUtil
 
 /**
  * App entry
@@ -19,15 +16,21 @@ import soko.ekibun.bangumi.util.CrashHandler
 class App : Application() {
     val dataCacheModel by lazy { DataCacheModel(this) }
     val historyModel by lazy { HistoryModel(this) }
+    val userModel by lazy { UserModel(this) }
     var pluginInstance: Pair<Context, Any>? = null
     var remoteAction: (intent: Intent?, flags: Int, startId: Int) -> Unit = { _, _, _ -> }
 
     override fun onCreate() {
         super.onCreate()
+        HttpUtil.formhash = userModel.userList.let { it.users[it.current] }?.formhash ?: HttpUtil.formhash
         ThemeModel.setTheme(this, ThemeModel(this).getTheme())
-        if (!BuildConfig.DEBUG) Thread.setDefaultUncaughtExceptionHandler(CrashHandler(this))
-
-        UMConfigure.init(this, "5e68fe80167edd6e34000185", BuildConfig.FLAVOR, UMConfigure.DEVICE_TYPE_PHONE, null)
+        UMConfigure.init(
+            this,
+            "5e68fe80167edd6e34000185",
+            if (BuildConfig.DEBUG) "debug" else BuildConfig.FLAVOR,
+            UMConfigure.DEVICE_TYPE_PHONE,
+            null
+        )
 
         pluginInstance = PluginsModel.createPluginInstance(this)
         appContext = this

@@ -237,8 +237,8 @@ data class Episode(
         fun getSubjectEps(
             subject: Subject
         ): Call<List<Episode>> {
-            return ApiHelper.buildHttpCall("${Bangumi.SERVER}/subject/${subject.id}/ep") {
-                parseLineList(Jsoup.parse(it.body?.string() ?: ""))
+            return ApiHelper.buildHttpCall("${Bangumi.SERVER}/subject/${subject.id}/ep") { rsp ->
+                parseLineList(Jsoup.parse(rsp.body?.string() ?: ""))
             }
         }
     }

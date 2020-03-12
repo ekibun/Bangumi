@@ -17,6 +17,7 @@ import java.util.*
  */
 object Bangumi {
     const val SERVER = "https://bgm.tv"
+    const val COOKIE_HOST = ".bgm.tv"
 
     /**
      * 获取完整的URL
@@ -64,8 +65,9 @@ object Bangumi {
         @Collection.CollectionStatus collection_status: String,
         page: Int = 1
     ): Call<List<Subject>> {
-        return ApiHelper.buildHttpCall("$SERVER/$subject_type/list/$username/$collection_status?page=$page") {
-            val doc = Jsoup.parse(it.body?.string() ?: "")
+        return ApiHelper.buildHttpCall("$SERVER/$subject_type/list/$username/$collection_status?page=$page")
+        { rsp ->
+            val doc = Jsoup.parse(rsp.body?.string() ?: "")
             val ret = ArrayList<Subject>()
             for (item in doc.select(".item")) {
                 val id = item.attr("id").split('_').getOrNull(1)?.toIntOrNull() ?: continue
@@ -97,7 +99,8 @@ object Bangumi {
         @Subject.SubjectType type: String = Subject.TYPE_ANY,
         page: Int
     ): Call<List<Subject>> {
-        CookieManager.getInstance().setCookie(SERVER, "chii_searchDateLine=${System.currentTimeMillis() / 1000 - 10};")
+        CookieManager.getInstance()
+            .setCookie(COOKIE_HOST, "chii_searchDateLine=${System.currentTimeMillis() / 1000 - 10};")
         return ApiHelper.buildHttpCall(
             "$SERVER/subject_search/${java.net.URLEncoder.encode(
                 keywords,
@@ -105,7 +108,7 @@ object Bangumi {
             )}?cat=${Subject.parseTypeInt(type)}&page=$page"
         ) { rsp ->
             val doc = Jsoup.parse(rsp.body?.string() ?: "")
-            if (doc.select("#colunmNotice") == null) throw Exception("search error")
+            if (doc.select("#colunmNotice") == null) throw error("search error")
             doc.select(".item").mapNotNull { item ->
                 val nameCN = item.selectFirst("h3")?.selectFirst("a")?.text()
                 Subject(
@@ -135,7 +138,8 @@ object Bangumi {
         type: String,
         page: Int
     ): Call<List<MonoInfo>> {
-        CookieManager.getInstance().setCookie(SERVER, "chii_searchDateLine=${System.currentTimeMillis() / 1000 - 10};")
+        CookieManager.getInstance()
+            .setCookie(COOKIE_HOST, "chii_searchDateLine=${System.currentTimeMillis() / 1000 - 10};")
         return ApiHelper.buildHttpCall(
             "$SERVER/mono_search/${java.net.URLEncoder.encode(
                 keywords,
@@ -233,12 +237,16 @@ object Bangumi {
                         val user = doc.selectFirst(".idBadgerNeue a.avatar") ?: throw Exception("login failed")
                         val username = UserInfo.getUserName(user.attr("href"))
                         rsp.headers("set-cookie").forEach {
-                            cookieManager.setCookie(SERVER, it)
+                            cookieManager.setCookie(COOKIE_HOST, it)
                         }
+                        cookieManager.flush()
                         HttpUtil.formhash = Regex("""//bgm.tv/logout/([^"]+)""").find(str)?.groupValues?.getOrNull(1)
                             ?: HttpUtil.formhash
                         onUser(
                             UserInfo(
+                                id = Regex("""CHOBITS_UID = (\d+)""").find(
+                                    doc.select("script").html()
+                                )?.groupValues?.get(1)?.toIntOrNull() ?: username?.toIntOrNull() ?: 0,
                                 username = username,
                                 nickname = doc.selectFirst("#header a")?.text(),
                                 avatar = parseImageUrl(user.selectFirst("span.avatarNeue")),
@@ -273,18 +281,6 @@ object Bangumi {
                 }
             }
             ret
-        }
-    }
-
-    /**
-     * 注销
-     * @return Call<Boolean>
-     */
-    fun logout(): Call<Boolean> {
-        return ApiHelper.buildHttpCall("$SERVER/logout/${HttpUtil.formhash}") {
-            val cookieManager = CookieManager.getInstance()
-            it.headers("set-cookie").forEach { cookieManager.setCookie(SERVER, it) }
-            it.code == 200
         }
     }
 }

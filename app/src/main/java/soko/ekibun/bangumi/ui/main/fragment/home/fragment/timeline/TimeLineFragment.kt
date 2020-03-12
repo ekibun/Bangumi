@@ -7,10 +7,10 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.widget.PopupMenu
 import kotlinx.android.synthetic.main.fragment_timeline.*
+import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.TimeLine
-import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.HomeTabFragment
 import soko.ekibun.bangumi.ui.topic.ReplyDialog
 
@@ -69,7 +69,7 @@ class TimeLineFragment : HomeTabFragment(R.layout.fragment_timeline) {
 
     override fun onUserChange() {
         val adapter = (item_pager?.adapter as? TimeLinePagerAdapter) ?: return
-        val hasUser = (activity as? MainActivity)?.user != null
+        val hasUser = context?.let { App.get(it) }?.userModel?.current() != null
         item_type?.visibility = if (hasUser) View.VISIBLE else View.GONE
         adapter.reset()
     }
@@ -86,7 +86,10 @@ class TimeLineFragment : HomeTabFragment(R.layout.fragment_timeline) {
         var draft: String? = null
         menu.add("添加").setIcon(R.drawable.ic_add).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM)
             .setOnMenuItemClickListener {
-                if ((activity as? MainActivity)?.user == null) return@setOnMenuItemClickListener false
+                if (context?.let { App.get(it) }?.userModel?.current() == null) {
+                    Toast.makeText(context, "登录后才能发表吐槽哦", Toast.LENGTH_LONG).show()
+                    return@setOnMenuItemClickListener false
+                }
                 val adapter = (item_pager?.adapter as? TimeLinePagerAdapter) ?: return@setOnMenuItemClickListener false
                 ReplyDialog.showDialog(
                     activity?.supportFragmentManager ?: return@setOnMenuItemClickListener false,

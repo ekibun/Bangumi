@@ -6,10 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import retrofit2.Call
+import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.TimeLine
-import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
 import soko.ekibun.bangumi.ui.view.ShadowDecoration
@@ -118,19 +118,19 @@ class TimeLinePagerAdapter(
                 "doujin"
             )[position],
             page + 1,
-            if (fragment.selectedType == R.id.timeline_type_self) (fragment.activity as? MainActivity)?.user else null,
+            if (fragment.selectedType == R.id.timeline_type_self) fragment.activity?.let { App.get(it) }?.userModel?.current() else null,
             fragment.selectedType == R.id.timeline_type_all
         )
         topicCall[position]?.enqueue(ApiHelper.buildCallback({
             item.first.isUseEmpty(true)
-            if(it.isEmpty()) item.first.loadMoreEnd()
-            else item.first.loadMoreComplete()
             val list = it.toMutableList()
-            if(it.isNotEmpty() && item.first.data.lastOrNull { it.isHeader }?.header == it.getOrNull(0)?.header)
+            if (it.isNotEmpty() && item.first.data.lastOrNull { it.isHeader }?.header == it.getOrNull(0)?.header)
                 list.removeAt(0)
             item.first.addData(list)
+            if (it.isEmpty() || fragment.selectedType == R.id.timeline_type_all) item.first.loadMoreEnd()
+            else item.first.loadMoreComplete()
             (item.second.tag as? androidx.recyclerview.widget.RecyclerView)?.tag = true
-            pageIndex[position] = (pageIndex[position]?:0) + 1
+            pageIndex[position] = (pageIndex[position] ?: 0) + 1
         },{
             item.second.isRefreshing = false
             item.first.loadMoreFail()

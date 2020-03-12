@@ -45,8 +45,7 @@ class SayActivity : BaseActivity(R.layout.activity_topic) {
                             id = it.id,
                             user = it.user,
                             message = it.message,
-                            time = it.time,
-                            self = it.self
+                            time = it.time
                         )
                     ),
                     timestamp = Calendar.getInstance().timeInMillis

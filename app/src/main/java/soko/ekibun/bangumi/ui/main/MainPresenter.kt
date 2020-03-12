@@ -8,8 +8,10 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.GravityCompat
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.nav_header.view.*
 import retrofit2.Call
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
@@ -19,14 +21,11 @@ import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.bangumi.bean.UserInfo
 import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
 import soko.ekibun.bangumi.ui.web.WebActivity
-import soko.ekibun.bangumi.util.HttpUtil
-import soko.ekibun.bangumi.util.JsonUtil
 
 /**
  * 主页Presenter
  * @property context MainActivity
  * @property userView UserView
- * @property onLogout Function0<Unit>
  * @property drawerView DrawerView
  * @property user UserInfo?
  * @property nav_view (com.google.android.material.navigation.NavigationView..com.google.android.material.navigation.NavigationView?)
@@ -41,21 +40,24 @@ class MainPresenter(private val context: MainActivity) {
     private val userView = UserView(context, View.OnClickListener {
         when (user) {
             null -> {
+                switchUser = null
                 WebActivity.startActivityForAuth(context)
             }
             else -> WebActivity.startActivity(context, user?.url)
         }
     })
 
-    private val onLogout: () -> Unit = {
-        if (HttpUtil.formhash.isNotEmpty()) {
-            Bangumi.logout().enqueue(ApiHelper.buildCallback({
-                refreshUser()
-            }, {}))
+    private val userModel = App.get(context).userModel
+
+    private val user get() = userModel.current()
+
+    val drawerView = DrawerView(context) {
+        user?.let {
+            userModel.removeUser(it)
+            updateUser(user)
+            refreshUser()
         }
     }
-
-    val drawerView = DrawerView(context, onLogout)
 
     /**
      * 返回处理
@@ -76,15 +78,40 @@ class MainPresenter(private val context: MainActivity) {
         return false
     }
 
-    var user: UserInfo? = null
+    var lastUser: UserInfo? = UserInfo(username = "/")
     private fun updateUser(user: UserInfo?) {
         context.runOnUiThread {
-            Log.v("updateUser", "${this.user}->$user")
-            val lastName = this.user?.username
-            this.user = user
-            if (user == null || lastName != user.username) drawerView.homeFragment.onUserChange()
+            Log.v("updateUser", "${lastUser?.username}->${user?.username}")
+            if (lastUser?.username != user?.username) {
+                collectionList = ArrayList()
+                drawerView.homeFragment.onUserChange()
+            }
+            lastUser = user
             context.nav_view.menu.findItem(R.id.nav_logout).isVisible = user != null
             userView.setUser(user)
+        }
+    }
+
+    var switchUser: UserInfo? = null
+
+    init {
+        userView.headerView.user_figure.setOnLongClickListener {
+            val popup = PopupMenu(context, userView.headerView.user_figure)
+            userModel.userList.users.values.forEach {
+                popup.menu.add(0, it.user.id, 0, "${it.user.nickname}@${it.user.username}")
+            }
+            popup.menu.add("添加账号")
+            popup.setOnMenuItemClickListener {
+                switchUser = userModel.current()
+                val user = userModel.userList.users[it.itemId]?.user
+                userModel.switchToUser(user)
+                if (lastUser?.username != user?.username) collectionCall?.cancel()
+                if (user != null) updateUser(user)
+                else WebActivity.startActivityForAuth(context)
+                true
+            }
+            popup.show()
+            true
         }
     }
 
@@ -115,7 +142,6 @@ class MainPresenter(private val context: MainActivity) {
      */
     fun onSaveInstanceState(outState: Bundle) {
         drawerView.onSaveInstanceState(outState)
-        user?.let { outState.putString("user", JsonUtil.toJson(it)) }
     }
 
     /**
@@ -123,10 +149,7 @@ class MainPresenter(private val context: MainActivity) {
      * @param savedInstanceState Bundle
      */
     fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        val userString = savedInstanceState.getString("user", "")
         drawerView.onRestoreInstanceState(savedInstanceState)
-        if (!userString.isNullOrEmpty())
-            updateUser(JsonUtil.toEntity<UserInfo>(userString) ?: return)
     }
 
     /**
@@ -136,12 +159,16 @@ class MainPresenter(private val context: MainActivity) {
      * @param data Intent?
      */
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode == Activity.RESULT_OK)
-            when (requestCode) {
-                WebActivity.REQUEST_AUTH -> {
-                    refreshUser()
+        when (requestCode) {
+            WebActivity.REQUEST_AUTH -> {
+                val lastUser = switchUser
+                if (resultCode != Activity.RESULT_OK) {
+                    userView.setUser(lastUser)
+                    userModel.switchToUser(lastUser)
                 }
+                refreshUser()
             }
+        }
     }
 
     /**
@@ -162,12 +189,18 @@ class MainPresenter(private val context: MainActivity) {
      */
     fun updateUserCollection(callback: (List<Subject>) -> Unit = {}, onError: (Throwable?) -> Unit = {}) {
         collectionCall?.cancel()
+        val callUser = user
         collectionCall = Bangumi.getCollectionSax({ user ->
+            if (callUser?.username != this.user?.username) throw Exception("Canceled")
+            userModel.updateUser(user)
+            userModel.switchToUser(user)
             updateUser(user)
         }, {
+            if (callUser?.username != this.user?.username) throw Exception("Canceled")
             notify = it
             context.runOnUiThread { context.notifyMenu?.badge = notify?.let { it.first + it.second } ?: 0 }
         }, {
+            if (callUser?.username != this.user?.username) throw Exception("Canceled")
             it.forEach { subject ->
                 calendar.find { cal -> cal.id == subject.id }?.eps?.forEach { calEp ->
                     subject.eps?.find { ep -> ep.id == calEp.id }?.merge(calEp)
@@ -180,9 +213,13 @@ class MainPresenter(private val context: MainActivity) {
             }
         })
         collectionCall?.enqueue(ApiHelper.buildCallback({}, {
+            if (callUser?.username != this.user?.username) return@buildCallback
             onError(it)
-            if ((it as? Exception)?.message == "login failed")
-                (context as? MainActivity)?.mainPresenter?.updateUser(null)
+            if ((it as? Exception)?.message == "login failed") {
+                user?.let { u -> userModel.removeUser(u) }
+                userModel.switchToUser(null)
+                updateUser(null)
+            }
         }))
     }
 }

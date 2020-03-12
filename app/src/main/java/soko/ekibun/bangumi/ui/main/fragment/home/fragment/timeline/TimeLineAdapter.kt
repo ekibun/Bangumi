@@ -46,16 +46,17 @@ class TimeLineAdapter(data: MutableList<TimeLine>? = null) :
         helper.itemView.item_del.setOnClickListener {
             AlertDialog.Builder(helper.itemView.context).setMessage(R.string.timeline_dialog_remove)
                     .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
-                        ApiHelper.buildHttpCall("${item.t.delUrl}&ajax=1") {
-                            it.body?.string()?.contains("\"status\":\"ok\"") == true
-                        }.enqueue(ApiHelper.buildCallback<Boolean>({ success ->
-                            if (!success) return@buildCallback
-                            val index = data.indexOfFirst { it === item }
-                            val removeHeader = data.getOrNull(index - 1)?.isHeader == true && data.getOrNull(index + 1)?.isHeader == true
-                            remove(index)
-                            if (removeHeader) remove(index - 1)
-                        }) {})
-                    }.show()
+                    ApiHelper.buildHttpCall("${item.t.delUrl}&ajax=1") { rsp ->
+                        rsp.body?.string()?.contains("\"status\":\"ok\"") == true
+                    }.enqueue(ApiHelper.buildCallback<Boolean>({ success ->
+                        if (!success) return@buildCallback
+                        val index = data.indexOfFirst { it === item }
+                        val removeHeader =
+                            data.getOrNull(index - 1)?.isHeader == true && data.getOrNull(index + 1)?.isHeader == true
+                        remove(index)
+                        if (removeHeader) remove(index - 1)
+                    }) {})
+                }.show()
         }
         //collectStar
         helper.itemView.item_rate.visibility = if (item.t.collectStar == 0) View.GONE else View.VISIBLE

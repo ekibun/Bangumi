@@ -158,10 +158,6 @@
                 android:name=".ui.topic.TopicActivity"
                 android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation">
         </activity>
-        <activity
-                android:name=".ui.crash.CrashActivity"
-                android:label="@string/crash">
-        </activity>
     </application>
 
 </manifest>

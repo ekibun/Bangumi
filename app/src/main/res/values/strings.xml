@@ -175,13 +175,6 @@
     <string name="rakuen">超展开</string>
     <string name="timeline">时间胶囊</string>
 
-    <!-- Crash -->
-    <string name="crash">出错了</string>
-    <string name="crash_upload_crash">上传崩溃日志</string>
-    <string name="crash_restart_app">重新启动应用</string>
-    <string name="crash_upload_ok">日志上传成功</string>
-    <string name="crash_upload_failed">日志上传失败 %1$s</string>
-
     <!-- 搜索页 -->
     <string name="search_hint">搜索…</string>
     <string name="search_history">搜索历史</string>
@@ -299,4 +292,5 @@
     <string name="title">标题</string>
     <string name="history">历史记录</string>
     <string name="clear_history">清空历史记录</string>
+    <string name="about">关于</string>
 </resources>

@@ -183,8 +183,8 @@ data class Topic(
                     "blog" -> "${Bangumi.SERVER}/erase/entry/${topic.id}"
                     else -> topic.url.replace(Bangumi.SERVER, "${Bangumi.SERVER}/erase")
                 } + "?gh=${HttpUtil.formhash}&ajax=1"
-            ) {
-                it.code == 200
+            ) { rsp ->
+                rsp.code == 200
             }
         }
 
@@ -277,8 +277,8 @@ data class Topic(
                     .add("title", title)
                     .add("submit", "改好了")
                     .add("content", content).build()
-            ) {
-                it.code == 200
+            ) { rsp ->
+                rsp.code == 200
             }
         }
     }

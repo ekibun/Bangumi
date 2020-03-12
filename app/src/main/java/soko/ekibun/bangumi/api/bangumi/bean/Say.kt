@@ -9,12 +9,6 @@ import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.util.HttpUtil
 import java.util.*
 import kotlin.collections.HashMap
-import kotlin.collections.List
-import kotlin.collections.forEach
-import kotlin.collections.get
-import kotlin.collections.getOrNull
-import kotlin.collections.joinToString
-import kotlin.collections.plusAssign
 import kotlin.collections.set
 
 data class Say(
@@ -22,8 +16,7 @@ data class Say(
     var user: UserInfo,
     var message: String? = null,
     var time: String? = null,
-    var replies: List<SayReply>? = null,
-    var self: UserInfo? = null
+    var replies: List<SayReply>? = null
 ) {
     val cacheKey = "say_$id"
 
@@ -44,18 +37,17 @@ data class Say(
             url: String,
             user: UserInfo? = null,
             message: String? = null,
-            time: String? = null,
-            self: UserInfo? = null
+            time: String? = null
         ): Say? {
             val result = Regex("""/user/([^/]+)/timeline/status/(\d+)""").find(url)?.groupValues ?: return null
             return Say(
                 id = result.getOrNull(2)?.toIntOrNull() ?: return null,
                 user = user ?: UserInfo(
+                    id = result.getOrNull(1)?.toIntOrNull() ?: 0,
                     username = result.getOrNull(1) ?: return null
                 ),
                 message = message,
-                time = time,
-                self = self
+                time = time
             )
         }
 
@@ -85,7 +77,6 @@ data class Say(
                         )
                         say.message = doc.selectFirst(".statusContent .text")?.html()
                         say.time = doc.selectFirst(".statusContent .date")?.text()
-                        say.self = UserInfo.parse(self, Bangumi.parseImageUrl(self.selectFirst("span.avatarNeue")))
                         onUpdate(say)
                         onNewPost(0, SayReply(say.user, say.message ?: ""))
                     } else {
@@ -130,8 +121,8 @@ data class Say(
                     .add("content", content)
                     .add("formhash", HttpUtil.formhash)
                     .add("submit", "submit").build()
-            ) {
-                it.body?.string()?.contains("\"status\":\"ok\"") == true
+            ) { rsp ->
+                rsp.body?.string()?.contains("\"status\":\"ok\"") == true
             }
         }
     }

@@ -57,7 +57,11 @@ object GlideUtil {
             if (uri != null) {
                 it.load(uri)
             } else {
-                it.load(GlideUrl(url, Headers { mapOf("referer" to url, "user-agent" to HttpUtil.ua) }))
+                it.load(
+                    if (url.isEmpty()) null else GlideUrl(
+                        url,
+                        Headers { mapOf("referer" to url, "user-agent" to HttpUtil.ua) })
+                )
             }
         }.apply(options).into(object : SimpleTarget<Drawable>() {
             override fun onLoadStarted(placeholder: Drawable?) {

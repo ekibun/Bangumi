@@ -22,12 +22,10 @@ import soko.ekibun.bangumi.util.AppUtil
 /**
  * 主页
  * @property mainPresenter MainPresenter
- * @property user UserInfo?
  * @property notifyMenu NotifyActionProvider?
  */
 class MainActivity : BaseActivity(R.layout.activity_main) {
     val mainPresenter by lazy { MainPresenter(this) }
-    val user get() = mainPresenter.user
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

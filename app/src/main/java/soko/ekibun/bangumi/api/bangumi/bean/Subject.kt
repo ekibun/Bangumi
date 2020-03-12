@@ -293,7 +293,8 @@ data class Subject(
                                     ?: subject.rating?.score ?: 0f,
                                 friend_score = doc.selectFirst(".frdScore .num")?.text()?.toFloatOrNull()
                                     ?: subject.rating?.friend_score ?: 0f,
-                                friend_count = doc.selectFirst(".frdScore a.l")?.text()?.split(" ")?.getOrNull(0)?.toIntOrNull()
+                                friend_count = doc.selectFirst(".frdScore a.l")?.text()?.split(" ")?.getOrNull(0)
+                                    ?.toIntOrNull()
                                     ?: subject.rating?.friend_count ?: 0
                             )
                             subject.collect = doc.selectFirst("#collectBoxForm")?.let {
@@ -308,8 +309,8 @@ data class Subject(
                                     tag = doc.selectFirst("#tags")?.attr("value")
                                         ?.split(" ")?.filter { it.isNotEmpty() } ?: ArrayList(),
                                     myTag = doc.select("div.tagList")?.firstOrNull {
-                                        it.selectFirst("span.tip_j")?.text()?.contains("我的标签") ?: false
-                                    }
+                                            it.selectFirst("span.tip_j")?.text()?.contains("我的标签") ?: false
+                                        }
                                         ?.select("div.inner a")?.map { it.text() }
                                 )
                             } ?: Collection()
@@ -532,8 +533,8 @@ data class Subject(
                 "${Bangumi.SERVER}/subject/ep/$id/status/$status?gh=${HttpUtil.formhash}&ajax=1",
                 body = FormBody.Builder()
                     .add("ep_id", epIds ?: id.toString()).build()
-            ) {
-                it.body?.string()?.contains("\"status\":\"ok\"") == true
+            ) { rsp ->
+                rsp.body?.string()?.contains("\"status\":\"ok\"") == true
             }
         }
 
@@ -554,8 +555,11 @@ data class Subject(
                 .add("submit", "更新")
                 .add("watchedeps", watchedeps)
             if (subject.vol_count != 0) body.add("watched_vols", watched_vols)
-            return ApiHelper.buildHttpCall("${Bangumi.SERVER}/subject/set/watched/${subject.id}", body = body.build()) {
-                it.code == 200
+            return ApiHelper.buildHttpCall(
+                "${Bangumi.SERVER}/subject/set/watched/${subject.id}",
+                body = body.build()
+            ) { rsp ->
+                rsp.code == 200
             }
         }
     }

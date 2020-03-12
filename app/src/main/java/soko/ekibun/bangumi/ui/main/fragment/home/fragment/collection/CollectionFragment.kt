@@ -4,8 +4,8 @@ import android.os.Bundle
 import android.view.View
 import kotlinx.android.synthetic.main.fragment_collection.*
 import kotlinx.android.synthetic.main.view_login.*
+import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.HomeTabFragment
 import soko.ekibun.bangumi.ui.web.WebActivity
 
@@ -41,7 +41,7 @@ class CollectionFragment: HomeTabFragment(R.layout.fragment_collection){
     }
 
     override fun onSelect() {
-        item_tab_container?.isPressed = (item_pager?.adapter as? CollectionPagerAdapter)?.isScrollDown ?: false
+        /* no-op */
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -65,9 +65,10 @@ class CollectionFragment: HomeTabFragment(R.layout.fragment_collection){
     }
 
     override fun onUserChange() {
-        val hasUser = (activity as? MainActivity)?.user != null
+        val hasUser = context?.let { App.get(it) }?.userModel?.current() != null
         item_login_info?.visibility = if (!hasUser) View.VISIBLE else View.GONE
         item_pager?.visibility = if (hasUser) View.VISIBLE else View.INVISIBLE
         item_tab_container?.visibility = if (hasUser) View.VISIBLE else View.INVISIBLE
+        (item_pager?.adapter as? CollectionPagerAdapter)?.reset()
     }
 }

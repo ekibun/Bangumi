@@ -67,10 +67,34 @@
                 app:summary="回复时默认使用bbcode而不是富文本编辑器"
                 app:defaultValue="false"/>
 
+        <androidx.preference.SwitchPreference
+                app:iconSpaceReserved="false"
+                app:key="plugins_enabled"
+                app:title="加载插件"
+                app:summary="重新打开后生效"
+                app:defaultValue="true"/>
+
+    </androidx.preference.PreferenceScreen>
+
+    <androidx.preference.PreferenceScreen
+            app:iconSpaceReserved="false"
+            app:key="pref_about"
+            app:title="@string/about">
+
+        <androidx.preference.Preference
+                app:iconSpaceReserved="false"
+                app:key="bangumi_topic"
+                app:title="小组讨论"/>
+
         <androidx.preference.Preference
                 app:iconSpaceReserved="false"
                 app:key="feed_back"
                 app:title="反馈"/>
+
+        <androidx.preference.Preference
+                app:iconSpaceReserved="false"
+                app:key="github_page"
+                app:title="Github地址"/>
 
         <androidx.preference.SwitchPreference
                 app:iconSpaceReserved="false"

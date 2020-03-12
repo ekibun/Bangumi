@@ -11,6 +11,7 @@ import soko.ekibun.bangumi.model.DataCacheModel
 import soko.ekibun.bangumi.ui.topic.ReplyDialog
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.web.WebActivity
+import soko.ekibun.bangumi.util.HttpUtil
 
 class SayPresenter(private val context: SayActivity, say: Say) {
     val sayView = SayView(context)
@@ -19,9 +20,7 @@ class SayPresenter(private val context: SayActivity, say: Say) {
     val dataCacheModel by lazy { App.get(context).dataCacheModel }
 
     init {
-        val self = say.self
         DataCacheModel.merge(say, dataCacheModel.get(say.cacheKey))
-        say.self = self
         this.say = say
         sayView.processSay(say, isCache = true)
         getSay()
@@ -59,8 +58,7 @@ class SayPresenter(private val context: SayActivity, say: Say) {
 
             var draft: String? = null
             context.btn_reply.setOnClickListener {
-                val self = say.self
-                if (self != null) showReply(say, draft) { draft = it }
+                if (HttpUtil.formhash.isNotEmpty()) showReply(say, draft) { draft = it }
                 else WebActivity.launchUrl(context, say.url, "")
             }
             sayView.adapter.setOnItemChildClickListener { _, _, position ->
@@ -79,7 +77,7 @@ class SayPresenter(private val context: SayActivity, say: Say) {
     }
 
     private fun showReply(say: Say, draft: String?, updateDraft: (String?) -> Unit) {
-        val self = say.self ?: return
+        val self = App.get(context).userModel.current() ?: return
         ReplyDialog.showDialog(
             context.supportFragmentManager,
             hint = context.getString(R.string.parse_hint_reply_topic, say.user.nickname) ?: "",
