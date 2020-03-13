@@ -164,7 +164,7 @@ class FastScrollRecyclerView @JvmOverloads constructor(
             } ?: adapter.itemCount)
         if (itemHeightCache.size != itemCount)
             itemHeightCache = IntArray(itemCount) { itemHeightCache.getOrNull(it) ?: 200 }
-
+        if (itemHeightCache.isEmpty()) return
         if (layoutManager is LinearLayoutManager) {
             val firstIndex = layoutManager.findFirstVisibleItemPosition()
             val lastIndex = layoutManager.findLastVisibleItemPosition()
