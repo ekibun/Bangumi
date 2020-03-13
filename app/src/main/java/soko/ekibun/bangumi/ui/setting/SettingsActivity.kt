@@ -22,6 +22,7 @@ import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.view.BaseFragmentActivity
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.AppUtil
+import java.net.URLEncoder
 
 
 /**
@@ -158,6 +159,19 @@ class SettingsActivity : BaseFragmentActivity(), PreferenceFragmentCompat.OnPref
                 }
                 "github_page" -> activity?.let {
                     WebActivity.launchUrl(it, "https://github.com/ekibun/Bangumi", "")
+                }
+                "pref_alipay" -> activity?.let {
+                    it.startActivity(
+                        Intent.createChooser(
+                            Intent.parseUri(
+                                "intent://platformapi/startapp?saId=10000007&" +
+                                        "qrcode=" + URLEncoder.encode("https://qr.alipay.com/fkx192410t0bnuwmwawdaa4") +
+                                        "#Intent;scheme=alipayqr;package=com.eg.android.AlipayGphone;end",
+                                Intent.URI_INTENT_SCHEME
+                            ),
+                            "buy me a coffee"
+                        )
+                    )
                 }
             }
 

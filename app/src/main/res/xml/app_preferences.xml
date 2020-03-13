@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.preference.PreferenceScreen
         xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <androidx.preference.PreferenceScreen
             app:iconSpaceReserved="false"
             app:key="pref_calendar"
@@ -107,6 +108,22 @@
                 app:iconSpaceReserved="false"
                 app:key="check_update_now"
                 app:title="检查更新"/>
+
+        <androidx.preference.PreferenceScreen
+                app:iconSpaceReserved="false"
+                app:key="buy_me_a_coffee"
+                app:title="🍚">
+            <Preference
+                    app:selectable="false"
+                    app:iconSpaceReserved="false"
+                    app:layout="@layout/pref_coffee_header"/>
+            <Preference
+                    app:key="pref_alipay"
+                    app:iconSpaceReserved="false"
+                    app:title="支付宝"
+                    app:summary="请备注id以便联系"
+                    />
+        </androidx.preference.PreferenceScreen>
 
     </androidx.preference.PreferenceScreen>
 </androidx.preference.PreferenceScreen>
