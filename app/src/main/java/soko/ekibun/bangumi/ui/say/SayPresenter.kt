@@ -8,10 +8,15 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.Say
 import soko.ekibun.bangumi.model.DataCacheModel
+import soko.ekibun.bangumi.model.HistoryModel
 import soko.ekibun.bangumi.ui.topic.ReplyDialog
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.HttpUtil
+import soko.ekibun.bangumi.util.JsonUtil
+import soko.ekibun.bangumi.util.TextUtil
+import java.util.*
+import kotlin.collections.ArrayList
 
 class SayPresenter(private val context: SayActivity, say: Say) {
     val sayView = SayView(context)
@@ -30,6 +35,26 @@ class SayPresenter(private val context: SayActivity, say: Say) {
         }
         sayView.adapter.setLoadMoreView(BrvahLoadMoreView())
         sayView.adapter.setOnLoadMoreListener({ if (loadMoreFail == true) getSay() }, context.item_list)
+    }
+
+    fun updateHistory() {
+        App.get(context).historyModel.addHistory(
+            HistoryModel.History(
+                type = "say",
+                title = TextUtil.html2text(say.message ?: ""),
+                subTitle = say.user.nickname,
+                thumb = say.user.avatar,
+                data = JsonUtil.toJson(
+                    Say(
+                        id = say.id,
+                        user = say.user,
+                        message = say.message,
+                        time = say.time
+                    )
+                ),
+                timestamp = Calendar.getInstance().timeInMillis
+            )
+        )
     }
 
     private var loadMoreFail: Boolean? = null
@@ -55,6 +80,7 @@ class SayPresenter(private val context: SayActivity, say: Say) {
         }).enqueue(ApiHelper.buildCallback({ say ->
             sayView.processSay(say)
             dataCacheModel.set(say.cacheKey, say)
+            updateHistory()
 
             var draft: String? = null
             context.btn_reply.setOnClickListener {

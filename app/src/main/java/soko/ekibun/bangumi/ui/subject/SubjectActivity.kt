@@ -6,15 +6,12 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import kotlinx.android.synthetic.main.appbar_layout.*
-import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
-import soko.ekibun.bangumi.model.HistoryModel
 import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.view.BaseActivity
 import soko.ekibun.bangumi.util.AppUtil
 import soko.ekibun.bangumi.util.JsonUtil
-import java.util.*
 
 /**
  * 条目Activity
@@ -37,18 +34,7 @@ class SubjectActivity : BaseActivity(R.layout.activity_subject) {
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        subjectPresenter.subject.let {
-            App.get(this).historyModel.addHistory(
-                HistoryModel.History(
-                    type = "subject",
-                    title = it.displayName,
-                    subTitle = it.name_cn,
-                    thumb = it.image,
-                    data = JsonUtil.toJson(Subject(it.id)),
-                    timestamp = Calendar.getInstance().timeInMillis
-                )
-            )
-        }
+        subjectPresenter.updateHistory()
         subjectPresenter.refresh()
     }
 

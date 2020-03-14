@@ -11,10 +11,15 @@ import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
 import soko.ekibun.bangumi.model.DataCacheModel
+import soko.ekibun.bangumi.model.HistoryModel
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.HtmlTagHandler
+import soko.ekibun.bangumi.util.JsonUtil
 import soko.ekibun.bangumi.util.TextUtil
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 import kotlin.collections.set
 
 /**
@@ -49,7 +54,21 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
         topicView.adapter.setOnLoadMoreListener({ if (loadMoreFail == true) getTopic() }, context.item_list)
     }
 
+    fun updateHistory() {
+        App.get(context).historyModel.addHistory(
+            HistoryModel.History(
+                type = "topic",
+                title = topic.title,
+                subTitle = topic.links?.keys?.firstOrNull(),
+                thumb = topic.image,
+                data = JsonUtil.toJson(Topic(topic.model, topic.id)),
+                timestamp = Calendar.getInstance().timeInMillis
+            )
+        )
+    }
+
     private var loadMoreFail: Boolean? = null
+
     /**
      * 读取帖子
      * @param scrollPost String
@@ -63,6 +82,7 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
             context.runOnUiThread {
                 topicView.processTopic(data, scrollPost, true)
             }
+            updateHistory()
         }, { post ->
             context.runOnUiThread {
                 val related = topicView.adapter.data.find { it.pst_id == post.relate }

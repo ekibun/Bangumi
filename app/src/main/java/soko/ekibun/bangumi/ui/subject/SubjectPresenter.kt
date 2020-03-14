@@ -21,10 +21,13 @@ import soko.ekibun.bangumi.api.github.bean.OnAirInfo
 import soko.ekibun.bangumi.api.trim21.BgmIpViewer
 import soko.ekibun.bangumi.api.trim21.bean.IpView
 import soko.ekibun.bangumi.model.DataCacheModel
+import soko.ekibun.bangumi.model.HistoryModel
 import soko.ekibun.bangumi.ui.topic.TopicActivity
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.HttpUtil
+import soko.ekibun.bangumi.util.JsonUtil
+import java.util.*
 
 /**
  * 条目Presenter
@@ -148,6 +151,19 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
         }
     }
 
+    fun updateHistory() {
+        App.get(context).historyModel.addHistory(
+            HistoryModel.History(
+                type = "subject",
+                title = subject.displayName,
+                subTitle = subject.name_cn,
+                thumb = subject.image,
+                data = JsonUtil.toJson(Subject(subject.id)),
+                timestamp = Calendar.getInstance().timeInMillis
+            )
+        )
+    }
+
     /**
      * 显示剧集列表对话框
      */
@@ -156,6 +172,7 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
     }
 
     private var episodeDialog: EpisodeDialog? = null
+
     /**
      * 显示剧集信息
      * @param id Int
@@ -211,6 +228,7 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
                 Jsdelivr.createInstance().onAirInfo(subject.id / 1000, subject.id),
                 Subject.getDetail(subject) { newSubject, tag ->
                     subject = newSubject
+                    updateHistory()
                     context.runOnUiThread {
                         if (tag == Subject.SaxTag.COLLECT) refreshCollection()
                         subjectView.updateSubject(newSubject, tag)

@@ -7,16 +7,12 @@ import android.view.Menu
 import android.view.MenuItem
 import kotlinx.android.synthetic.main.activity_topic.*
 import kotlinx.android.synthetic.main.appbar_layout.*
-import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Say
-import soko.ekibun.bangumi.model.HistoryModel
 import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.view.BaseActivity
 import soko.ekibun.bangumi.util.AppUtil
 import soko.ekibun.bangumi.util.JsonUtil
-import soko.ekibun.bangumi.util.TextUtil
-import java.util.*
 
 class SayActivity : BaseActivity(R.layout.activity_topic) {
 
@@ -33,25 +29,7 @@ class SayActivity : BaseActivity(R.layout.activity_topic) {
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        sayPresenter.say.let {
-            App.get(this).historyModel.addHistory(
-                HistoryModel.History(
-                    type = "say",
-                    title = TextUtil.html2text(it.message ?: ""),
-                    subTitle = it.user.nickname,
-                    thumb = it.user.avatar,
-                    data = JsonUtil.toJson(
-                        Say(
-                            id = it.id,
-                            user = it.user,
-                            message = it.message,
-                            time = it.time
-                        )
-                    ),
-                    timestamp = Calendar.getInstance().timeInMillis
-                )
-            )
-        }
+        sayPresenter.updateHistory()
 
         val listPaddingBottom = item_list.paddingBottom
         val replyPaddingBottom = item_reply_container.paddingBottom

@@ -7,16 +7,13 @@ import android.view.Menu
 import android.view.MenuItem
 import kotlinx.android.synthetic.main.activity_topic.*
 import kotlinx.android.synthetic.main.appbar_layout.*
-import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
-import soko.ekibun.bangumi.model.HistoryModel
 import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.view.BaseActivity
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.AppUtil
 import soko.ekibun.bangumi.util.JsonUtil
-import java.util.*
 
 /**
  * 帖子Activity
@@ -37,18 +34,7 @@ class TopicActivity : BaseActivity(R.layout.activity_topic) {
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        topicPresenter.topic.let {
-            App.get(this).historyModel.addHistory(
-                HistoryModel.History(
-                    type = "topic",
-                    title = it.title,
-                    subTitle = it.links?.keys?.firstOrNull(),
-                    thumb = it.image,
-                    data = JsonUtil.toJson(Topic(it.model, it.id)),
-                    timestamp = Calendar.getInstance().timeInMillis
-                )
-            )
-        }
+        topicPresenter.updateHistory()
 
         val listPaddingBottom = item_list.paddingBottom
         val replyPaddingBottom = item_reply_container.paddingBottom
