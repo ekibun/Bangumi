@@ -52,27 +52,35 @@ class HistoryModel(context: Context) {
 
     private val sp: SharedPreferences by lazy { PreferenceManager.getDefaultSharedPreferences(context) }
 
+    val historyList by lazy {
+        JsonUtil.toEntity<ArrayList<History>>(sp.getString(PREF_HISTORY, null) ?: "[]") ?: ArrayList()
+    }
+
     /**
      * 添加
      * @param data History
      */
     fun addHistory(data: History) {
-        val newList = getHistoryList().toMutableList()
         val cacheKey = data.getCacheKey()
-        newList.removeAll { it.getCacheKey() == cacheKey }
-        newList.add(0, data)
-        sp.edit().putString(PREF_HISTORY, JsonUtil.toJson(newList.sortedByDescending { it.timestamp })).apply()
+        historyList.removeAll { it.getCacheKey() == cacheKey }
+        historyList.add(0, data)
+        historyList.sortByDescending { it.timestamp }
+        save()
+    }
+
+    private fun save() {
+        sp.edit().putString(PREF_HISTORY, JsonUtil.toJson(historyList.subList(0, Math.min(historyList.size, 500))))
+            .apply()
     }
 
     /**
      * 删除
-     * @param searchKey String
+     * @param data String
      * @return Boolean
      */
     fun removeHistory(data: History): Boolean {
-        val newList = getHistoryList().toMutableList()
-        val removed = newList.removeAll { it.timestamp == data.timestamp }
-        sp.edit().putString(PREF_HISTORY, JsonUtil.toJson(newList)).apply()
+        val removed = historyList.removeAll { it.timestamp == data.timestamp }
+        save()
         return removed
     }
 
@@ -81,14 +89,6 @@ class HistoryModel(context: Context) {
      */
     fun clearHistory() {
         sp.edit().putString(PREF_HISTORY, "[]").apply()
-    }
-
-    /**
-     * 获取列表
-     * @return List<String>
-     */
-    fun getHistoryList(): List<History> {
-        return JsonUtil.toEntity<List<History>>(sp.getString(PREF_HISTORY, null) ?: "[]") ?: ArrayList()
     }
 
     companion object {

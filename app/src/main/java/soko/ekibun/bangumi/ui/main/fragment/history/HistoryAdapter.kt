@@ -30,7 +30,7 @@ class HistoryAdapter(data: MutableList<History>? = null) :
     fun setUpWithRecyclerView(container: StickyHeadContainer, recyclerView: androidx.recyclerview.widget.RecyclerView) {
         bindToRecyclerView(recyclerView)
         container.setDataCallback {
-            container.item_header.text = data[it].header
+            container.item_header.text = data.getOrNull(it)?.header
         }
         recyclerView.addItemDecoration(StickyItemDecoration(container, SECTION_HEADER_VIEW))
     }

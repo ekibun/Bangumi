@@ -50,7 +50,7 @@ class HistoryFragment : DrawerFragment(R.layout.content_history) {
         item_swipe?.isRefreshing = false
         val history = ArrayList<HistoryAdapter.History>()
         var dateString = ""
-        App.get(context ?: return).historyModel.getHistoryList().forEach {
+        App.get(context ?: return).historyModel.historyList.forEach {
             if (dateString != it.dateString) history.add(HistoryAdapter.History(it.dateString))
             history.add(HistoryAdapter.History(it))
             dateString = it.dateString
