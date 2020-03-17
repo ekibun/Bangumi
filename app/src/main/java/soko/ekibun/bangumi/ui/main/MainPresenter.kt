@@ -84,7 +84,7 @@ class MainPresenter(private val context: MainActivity) {
             Log.v("updateUser", "${lastUser?.username}->${user?.username}")
             if (lastUser?.username != user?.username) {
                 collectionList = ArrayList()
-                drawerView.homeFragment.onUserChange()
+                if (lastUser?.username != "/") drawerView.homeFragment.onUserChange()
             }
             lastUser = user
             context.nav_view.menu.findItem(R.id.nav_logout).isVisible = user != null

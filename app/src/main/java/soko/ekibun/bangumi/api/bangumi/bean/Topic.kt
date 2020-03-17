@@ -147,11 +147,11 @@ data class Topic(
                     when {
                         parser.eventType != XmlPullParser.START_TAG -> ApiHelper.SaxEventType.NOTHING
                         parser.getAttributeValue("", "id")?.startsWith("post_") == true -> {
-                            updateReply(str)
+                            updateReply(str())
                             ApiHelper.SaxEventType.BEGIN
                         }
                         parser.getAttributeValue("", "id")?.contains("reply_wrapper") == true -> {
-                            updateReply(str)
+                            updateReply(str())
                             ApiHelper.SaxEventType.BEGIN
                         }
                         else -> ApiHelper.SaxEventType.NOTHING

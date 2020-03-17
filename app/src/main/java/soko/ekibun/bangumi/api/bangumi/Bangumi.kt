@@ -206,6 +206,9 @@ object Bangumi {
         onSubjectLoaded: (List<Subject>) -> Unit = {}
     ): Call<List<Subject>> {
         val cookieManager = CookieManager.getInstance()
+
+        var subjectLoaded = false
+
         return ApiHelper.buildHttpCall(SERVER) { rsp ->
             val ret = ArrayList<Subject>()
 
@@ -233,14 +236,15 @@ object Bangumi {
                 when {
                     parser.eventType != XmlPullParser.START_TAG -> ApiHelper.SaxEventType.NOTHING
                     parser.getAttributeValue("", "id")?.contains("columnHomeA") == true -> {
-                        val doc = Jsoup.parse(str)
+                        val s = str()
+                        val doc = Jsoup.parse(s)
                         val user = doc.selectFirst(".idBadgerNeue a.avatar") ?: throw Exception("login failed")
                         val username = UserInfo.getUserName(user.attr("href"))
                         rsp.headers("set-cookie").forEach {
                             cookieManager.setCookie(COOKIE_HOST, it)
                         }
                         cookieManager.flush()
-                        HttpUtil.formhash = Regex("""//bgm.tv/logout/([^"]+)""").find(str)?.groupValues?.getOrNull(1)
+                        HttpUtil.formhash = Regex("""//bgm.tv/logout/([^"]+)""").find(s)?.groupValues?.getOrNull(1)
                             ?: HttpUtil.formhash
                         onUser(
                             UserInfo(
@@ -256,16 +260,17 @@ object Bangumi {
                         ApiHelper.SaxEventType.BEGIN
                     }
                     parser.getAttributeValue("", "id")?.startsWith("subjectPanel_") == true -> {
-                        addSubject(str)
+                        addSubject(str())
                         ApiHelper.SaxEventType.BEGIN
                     }
-                    parser.getAttributeValue("", "id")?.contains("columnHomeB") == true -> {
-                        addSubject(str)
+                    parser.getAttributeValue("", "id")?.startsWith("home_") == true && !subjectLoaded -> {
+                        subjectLoaded = true
+                        addSubject(str())
                         onSubjectLoaded(ret)
                         ApiHelper.SaxEventType.BEGIN
                     }
                     parser.getAttributeValue("", "id")?.contains("subject_prg_content") == true -> {
-                        val doc = Jsoup.parse(str)
+                        val doc = Jsoup.parse(str())
                         onNotify(
                             Pair(
                                 Regex("叮咚叮咚～你有 ([0-9]+) 条新信息!").find(

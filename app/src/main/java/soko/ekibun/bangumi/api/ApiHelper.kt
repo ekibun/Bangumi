@@ -108,7 +108,7 @@ object ApiHelper {
      * @param checkEvent Function2<XmlPullParser, String, SaxEventType>
      * @return String
      */
-    fun parseWithSax(rsp: okhttp3.Response, checkEvent: (XmlPullParser, String) -> SaxEventType): String {
+    fun parseWithSax(rsp: okhttp3.Response, checkEvent: (XmlPullParser, () -> String) -> SaxEventType): String {
         val parser = XmlPullParserFactory.newInstance().apply {
             this.isValidating = false
             this.setFeature(Xml.FEATURE_RELAXED, true)
@@ -117,7 +117,10 @@ object ApiHelper {
         val stream = rsp.body!!.charStream()
 
         val charList = StringBuilder()
-        var htmlString = ""
+        var lastLineIndex = 0
+        var lastClipIndex = 0
+        val lineMap = arrayListOf(0, 0)
+
         parser.setInput(object : Reader() {
             override fun close() {
                 stream.close()
@@ -125,32 +128,42 @@ object ApiHelper {
 
             override fun read(p0: CharArray, p1: Int, p2: Int): Int {
                 val ret = stream.read(p0, p1, p2)
-                if (ret > 0) charList.append(p0, p1, ret)
-                htmlString = charList.toString()
+                if (ret > 0) {
+                    charList.append(p0, p1, ret)
+                    while (true) {
+                        val nextLineIndex = charList.indexOf('\n', lastLineIndex - lastClipIndex + 1)
+                        if (nextLineIndex < 0) break
+                        lastLineIndex = nextLineIndex + lastClipIndex
+                        lineMap.add(lastLineIndex)
+                    }
+                }
                 return if (ret >= p1) ret - p1 else ret
             }
         })
 
-        var lastIndex = 0
-        var lastEventIndex = 0
+
+        var lastEventLineNumber = 0
+        var lastEventColumnNumber = 0
         while (parser.eventType != XmlPullParser.END_DOCUMENT) {
-            val curIndex = Math.min(
-                htmlString.length,
-                htmlString.split('\n').subList(
+            val event = checkEvent(parser) {
+                charList.substring(
                     0,
-                    parser.lineNumber - 1
-                ).sumBy { it.length + 1 } + parser.columnNumber - 1)
-            val event = checkEvent(parser, htmlString.substring(lastIndex, curIndex))
-            if (event == SaxEventType.BEGIN) lastIndex = lastEventIndex
-            else if (event == SaxEventType.END) break
-            lastEventIndex = curIndex
+                    lineMap[parser.lineNumber] + parser.columnNumber - lastClipIndex
+                )
+            }
+            if (event == SaxEventType.BEGIN) {
+                val curIndex = lineMap[lastEventLineNumber] + lastEventColumnNumber
+                charList.delete(0, curIndex - lastClipIndex)
+                lastClipIndex = curIndex
+            } else if (event == SaxEventType.END) break
+            lastEventLineNumber = parser.lineNumber
+            lastEventColumnNumber = parser.columnNumber
             try {
                 parser.next()
-            } catch (e: Exception) {
-                //Log.e("SaxErr", e.localizedMessage ?: e.message ?: "")
+            } catch (e: Exception) { /* no-op */
             }
         }
-        return htmlString.substring(lastIndex)
+        return charList.toString()
     }
 
     /**

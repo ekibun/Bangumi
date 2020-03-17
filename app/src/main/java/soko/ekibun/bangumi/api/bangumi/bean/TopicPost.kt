@@ -31,23 +31,24 @@ import soko.ekibun.bangumi.util.HttpUtil
  * @constructor
  */
 data class TopicPost(
-        var pst_id: String = "",
-        var pst_mid: String = "",
-        var pst_uid: String = "",
-        var pst_content: String = "",
-        var username: String = "",
-        var nickname: String = "",
-        var sign: String = "",
-        var avatar: String = "",
-        var dateline: String = "",
-        var is_self: Boolean = false,
-        var isSub: Boolean = false,
-        var editable: Boolean = false,
-        var relate: String = "",
-        val model: String = "",
-        var floor: Int = 0,
-        var sub_floor: Int = 0,
-        var badge: String? = null
+    var pst_id: String = "",
+    var pst_mid: String = "",
+    var pst_uid: String = "",
+    var pst_content: String = "",
+    var username: String = "",
+    var nickname: String = "",
+    var sign: String = "",
+    var avatar: String = "",
+    var dateline: String = "",
+    var is_self: Boolean = false,
+    var isSub: Boolean = false,
+    var editable: Boolean = false,
+    var relate: String = "",
+    val model: String = "",
+    var floor: Int = 0,
+    var sub_floor: Int = 0,
+    var badge: String? = null,
+    var rawData: String? = null
 ):  AbstractExpandableItem<TopicPost>(), MultiItemEntity{
     override fun getItemType(): Int {
         return if(isSub) 1 else 0

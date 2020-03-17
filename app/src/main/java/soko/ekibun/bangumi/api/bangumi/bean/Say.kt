@@ -99,11 +99,11 @@ data class Say(
                     when {
                         parser.eventType != XmlPullParser.START_TAG -> ApiHelper.SaxEventType.NOTHING
                         parser.getAttributeValue("", "class")?.contains("reply_item") == true -> {
-                            updateReply(str)
+                            updateReply(str())
                             ApiHelper.SaxEventType.BEGIN
                         }
                         parser.getAttributeValue("", "id") == "footer" -> {
-                            updateReply(str)
+                            updateReply(str())
                             ApiHelper.SaxEventType.END
                         }
                         else -> ApiHelper.SaxEventType.NOTHING

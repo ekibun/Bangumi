@@ -470,43 +470,43 @@ data class Subject(
                         }
                         attr("id") == "navMenuNeue" -> {
                             HttpUtil.formhash = attr("value") ?: HttpUtil.formhash
-                            updateSubject(str, SaxTag.TYPE)
+                            updateSubject(str(), SaxTag.TYPE)
                             ApiHelper.SaxEventType.BEGIN
                         }
                         hasClass("nameSingle") -> {
-                            updateSubject(str, SaxTag.NAME)
+                            updateSubject(str(), SaxTag.NAME)
                             ApiHelper.SaxEventType.BEGIN
                         }
                         attr("id") == "subject_summary" -> {
-                            updateSubject(str, SaxTag.SUMMARY)
+                            updateSubject(str(), SaxTag.SUMMARY)
                             ApiHelper.SaxEventType.BEGIN
                         }
                         hasClass("infobox") -> {
-                            updateSubject(str, SaxTag.IMAGES)
+                            updateSubject(str(), SaxTag.IMAGES)
                             ApiHelper.SaxEventType.BEGIN
                         }
                         attr("id") == "infobox" -> {
-                            updateSubject(str, SaxTag.INFOBOX)
+                            updateSubject(str(), SaxTag.INFOBOX)
                             ApiHelper.SaxEventType.BEGIN
                         }
                         attr("id") == "subjectPanelCollect" -> {
-                            updateSubject(str, SaxTag.COLLECTION)
+                            updateSubject(str(), SaxTag.COLLECTION)
                             ApiHelper.SaxEventType.BEGIN
                         }
                         attr("id") == "panelInterestWrapper" -> {
-                            updateSubject(str, SaxTag.COLLECT)
+                            updateSubject(str(), SaxTag.COLLECT)
                             ApiHelper.SaxEventType.BEGIN
                         }
                         hasClass("line_list_music") || hasClass("prg_list") -> {
-                            updateSubject(str, SaxTag.EPISODES)
+                            updateSubject(str(), SaxTag.EPISODES)
                             ApiHelper.SaxEventType.BEGIN
                         }
                         hasClass("subject_section") -> {
-                            updateSubject(str, SaxTag.SECTIONS)
+                            updateSubject(str(), SaxTag.SECTIONS)
                             ApiHelper.SaxEventType.BEGIN
                         }
                         hasClass("subject_tag_section") -> {
-                            updateSubject(str, SaxTag.TAGS)
+                            updateSubject(str(), SaxTag.TAGS)
                             ApiHelper.SaxEventType.BEGIN
                         }
                         else -> ApiHelper.SaxEventType.NOTHING
