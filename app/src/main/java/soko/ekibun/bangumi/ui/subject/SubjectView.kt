@@ -115,7 +115,6 @@ class SubjectView(private val context: SubjectActivity) {
                             )
                 )
                 it.translationY = it.paddingBottom.toFloat()
-                it.requestLayout()
             }
         }
     var insertTop = 0
