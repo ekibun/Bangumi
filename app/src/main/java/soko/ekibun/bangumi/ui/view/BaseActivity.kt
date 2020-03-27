@@ -2,7 +2,6 @@ package soko.ekibun.bangumi.ui.view
 
 import android.content.Intent
 import android.os.Bundle
-import android.preference.PreferenceManager
 import android.util.Log
 import android.view.KeyEvent
 import android.view.MenuItem
@@ -32,8 +31,7 @@ abstract class BaseActivity(@LayoutRes private val resId: Int) : AppCompatActivi
 
         ThemeModel.updateNavigationTheme(this)
 
-        if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("plugins_enabled", true))
-            PluginsModel.setUpPlugins(this)
+        PluginsModel.setUpPlugins(this)
     }
 
     var onStartListener = { ThemeModel.updateNavigationTheme(this) }

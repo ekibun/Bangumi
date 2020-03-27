@@ -11,10 +11,7 @@ import android.view.ViewGroup
 import android.widget.RelativeLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
-import androidx.preference.ListPreference
-import androidx.preference.Preference
-import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.PreferenceScreen
+import androidx.preference.*
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.BuildConfig
 import soko.ekibun.bangumi.R
@@ -101,6 +98,24 @@ class SettingsActivity : BaseFragmentActivity(), PreferenceFragmentCompat.OnPref
             return relativeLayout
         }
 
+        override fun onBindPreferences() {
+            super.onBindPreferences()
+            if (this.preferenceScreen.key == "pref_plugin") {
+                val cat = findPreference<PreferenceCategory>("pref_plugin_list") ?: return
+                App.get(context!!).pluginInstance.forEach { plugin ->
+                    val appInfo = plugin.key.applicationInfo
+                    cat.addPreference(SwitchPreference(context).also {
+                        it.key = "use_plugin_${plugin.key.packageName}"
+                        it.title = plugin.key.getString(appInfo.labelRes)
+                        it.icon = plugin.key.applicationInfo.loadIcon(plugin.key.packageManager)
+                        it.summary = plugin.key.packageName
+                        it.setDefaultValue(true)
+                    })
+                }
+            }
+
+        }
+
         override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
             updatePreference()
             if (key == "pref_dark_mode") {
@@ -125,8 +140,6 @@ class SettingsActivity : BaseFragmentActivity(), PreferenceFragmentCompat.OnPref
             findPreference<ListPreference>("pref_dark_mode")?.let { it.summary = it.entry }
             findPreference<ListPreference>("image_quality")?.let { it.summary = it.entry }
             findPreference<Preference>("check_update")?.isVisible = BuildConfig.AUTO_UPDATES
-            findPreference<Preference>("plugins_enabled")?.isVisible =
-                context?.let { App.get(it).pluginInstance } != null
             findPreference<Preference>("check_update_now")?.summary =
                 "${BuildConfig.VERSION_NAME}-${BuildConfig.VERSION_CODE} (${BuildConfig.FLAVOR})"
         }

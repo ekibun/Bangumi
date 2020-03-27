@@ -68,6 +68,12 @@
                 app:summary="回复时默认使用bbcode而不是富文本编辑器"
                 app:defaultValue="false"/>
 
+    </androidx.preference.PreferenceScreen>
+
+    <androidx.preference.PreferenceScreen
+            app:iconSpaceReserved="false"
+            app:key="pref_plugin"
+            app:title="插件">
         <androidx.preference.SwitchPreference
                 app:iconSpaceReserved="false"
                 app:key="plugins_enabled"
@@ -75,6 +81,11 @@
                 app:summary="重新打开后生效"
                 app:defaultValue="true"/>
 
+        <androidx.preference.PreferenceCategory
+                app:key="pref_plugin_list"
+                app:title="插件列表"
+                app:iconSpaceReserved="false">
+        </androidx.preference.PreferenceCategory>
     </androidx.preference.PreferenceScreen>
 
     <androidx.preference.PreferenceScreen

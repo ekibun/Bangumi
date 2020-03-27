@@ -10,14 +10,14 @@ import soko.ekibun.bangumi.util.HttpUtil
 /**
  * App entry
  * @property dataCacheModel DataCacheModel
- * @property pluginInstance Pair<Context, Any>?
+ * @property pluginInstance Map<Context, Any>?
  * @property remoteAction Function3<[@kotlin.ParameterName] Intent?, [@kotlin.ParameterName] Int, [@kotlin.ParameterName] Int, Unit>
  */
 class App : Application() {
     val dataCacheModel by lazy { DataCacheModel(this) }
     val historyModel by lazy { HistoryModel(this) }
     val userModel by lazy { UserModel(this) }
-    var pluginInstance: Pair<Context, Any>? = null
+    lateinit var pluginInstance: Map<Context, Any>
     var remoteAction: (intent: Intent?, flags: Int, startId: Int) -> Unit = { _, _, _ -> }
 
     override fun onCreate() {
