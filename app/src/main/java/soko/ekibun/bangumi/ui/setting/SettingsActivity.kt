@@ -169,7 +169,7 @@ class SettingsActivity : BaseFragmentActivity(), PreferenceFragmentCompat.OnPref
                             "intent://platformapi/startapp?saId=10000007&" +
                                     "qrcode=" + URLEncoder.encode(
                                 "https://qr.alipay.com/fkx192410t0bnuwmwawdaa4",
-                                null
+                                "utf-8"
                             ) +
                                     "#Intent;scheme=alipayqr;package=com.eg.android.AlipayGphone;end",
                             Intent.URI_INTENT_SCHEME
