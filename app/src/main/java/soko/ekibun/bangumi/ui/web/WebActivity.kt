@@ -10,9 +10,9 @@ import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.webkit.CookieManager
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
-import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import com.google.android.material.appbar.AppBarLayout
 import kotlinx.android.synthetic.main.activity_web.*
@@ -104,13 +104,12 @@ class WebActivity : BaseActivity(R.layout.activity_web) {
             webview.onReceivedTitle = { _: WebView?, title: String? ->
                 if (title != null) this@WebActivity.title = title
             }
-            webview.shouldOverrideUrlLoading = { view: WebView, request: WebResourceRequest ->
-                val url = request.url.toString()
+            webview.shouldOverrideUrlLoading = { view: WebView, url: String ->
                 if (jumpUrl(this, url, "")?.let { startActivity(it) } != null) {
                     true
                 } else if (!url.startsWith("http") || !isBgmPage(url)) {
                     try {
-                        startActivity(Intent.createChooser(Intent(Intent.ACTION_VIEW, request.url), url))
+                        startActivity(Intent.createChooser(Intent(Intent.ACTION_VIEW, Uri.parse(url)), url))
                         true
                     } catch (e: Exception) {
                         e.printStackTrace()
@@ -127,21 +126,32 @@ class WebActivity : BaseActivity(R.layout.activity_web) {
         } else {
             title = getString(R.string.login)
             val authUrl = "${Bangumi.SERVER}/login"
-            webview.shouldOverrideUrlLoading = { _: WebView, request: WebResourceRequest ->
-                val url = request.url.toString()
-                if (url.trim('/') == Bangumi.SERVER) {
-                    webview.loadUrl("about:blank")
-                    setResult(Activity.RESULT_OK, Intent())
-                    finish()
-                    false
-                } else if (url != authUrl && !url.contains("${Bangumi.SERVER}/FollowTheRabbit")) {
-                    Log.v("redirect", url)
-                    webview.loadUrl(authUrl)
-                    true
-                } else false
+            val acceptList = arrayOf(authUrl, "${Bangumi.SERVER}/FollowTheRabbit", "${Bangumi.SERVER}/signup")
+
+            webview.shouldOverrideUrlLoading = { _: WebView, url: String ->
+                Log.v("webview", "shouldOverrideUrlLoading url=${url}")
+                if (url != authUrl && !isUrlAvailable(url, acceptList)) {
+                    CookieManager.getInstance().flush()
+                    if (CookieManager.getInstance().getCookie(Bangumi.COOKIE_HOST)?.contains("chii_auth") == true) {
+                        webview.loadUrl("about:blank")
+                        setResult(Activity.RESULT_OK, Intent())
+                        finish()
+                    } else {
+                        Log.v("redirect", url)
+                        webview.loadUrl(authUrl)
+                    }
+                }
+                false
             }
             webview.loadUrl(authUrl)
         }
+    }
+
+    private fun isUrlAvailable(url: String, acceptList: Array<String>): Boolean {
+        acceptList.forEach {
+            if (url.contains(it)) return true
+        }
+        return false
     }
 
     val curWebView: NestedWebView

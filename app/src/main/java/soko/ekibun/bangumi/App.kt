@@ -36,6 +36,10 @@ class App : Application() {
         appContext = this
     }
 
+    override fun onTerminate() {
+        super.onTerminate()
+    }
+
     companion object {
         var appContext: App? = null
 

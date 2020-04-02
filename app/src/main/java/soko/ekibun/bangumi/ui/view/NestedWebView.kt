@@ -28,7 +28,7 @@ class NestedWebView @JvmOverloads constructor(
 ) : WebView(context, attrs, defStyleAttr) {
 
     var onProgressChanged = { _: WebView, _: Int -> }
-    var shouldOverrideUrlLoading = { _: WebView, _: WebResourceRequest -> false }
+    var shouldOverrideUrlLoading = { _: WebView, _: String -> false }
     var onReceivedTitle = { _: WebView?, _: String? -> }
 
     var onShowFileChooser = { _: ValueCallback<Array<Uri>>?, _: WebChromeClient.FileChooserParams? -> false }
@@ -114,7 +114,7 @@ class NestedWebView @JvmOverloads constructor(
                 newView.onReceivedTitle = webview.onReceivedTitle
                 newView.parentWebView = webview
                 webview.childWebView = newView
-                newView.shouldOverrideUrlLoading = { _, req: WebResourceRequest ->
+                newView.shouldOverrideUrlLoading = { _, req: String ->
                     newView.shouldOverrideUrlLoading = webview.shouldOverrideUrlLoading
                     if (newView.shouldOverrideUrlLoading(newView, req)) {
                         newView.close()
@@ -161,9 +161,18 @@ class NestedWebView @JvmOverloads constructor(
             ) {}
         }
 
+        var useDeprecatedMethod = true
         val mWebViewClient = object : WebViewClient() {
+
+            @Suppress("DEPRECATION")
+            override fun shouldOverrideUrlLoading(view: WebView?, url: String): Boolean {
+                return (useDeprecatedMethod && ((view as? NestedWebView)?.shouldOverrideUrlLoading?.invoke(view, url)
+                    ?: false)) || super.shouldOverrideUrlLoading(view, url)
+            }
+
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-                return ((view as? NestedWebView)?.shouldOverrideUrlLoading?.invoke(view, request)
+                useDeprecatedMethod = false
+                return ((view as? NestedWebView)?.shouldOverrideUrlLoading?.invoke(view, request.url.toString())
                     ?: false) || super.shouldOverrideUrlLoading(view, request)
             }
 
