@@ -16,15 +16,15 @@ object PluginsModel {
      * @return Pair<Context, Any>?
      */
     fun createPluginInstance(context: Context): Map<Context, Any> {
-        return context.packageManager.queryIntentActivities(
+        return context.packageManager.queryIntentServices(
             Intent("soko.ekibun.bangumi.plugins"), 0
-        ).distinctBy { it.activityInfo.packageName }.mapNotNull {
+        ).distinctBy { it.serviceInfo.packageName }.mapNotNull {
             try {
                 val pluginContext = context.createPackageContext(
-                    it.activityInfo.packageName,
+                    it.serviceInfo.packageName,
                     Context.CONTEXT_IGNORE_SECURITY or Context.CONTEXT_INCLUDE_CODE
                 )
-                val pluginClass = pluginContext.classLoader.loadClass("soko.ekibun.bangumi.plugins.Plugin")
+                val pluginClass = pluginContext.classLoader.loadClass(it.serviceInfo.name)
                 pluginContext to pluginClass.getDeclaredConstructor().let {
                     it.isAccessible = true
                     it.newInstance()

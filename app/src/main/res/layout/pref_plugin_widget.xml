@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:orientation="horizontal"
+              android:layout_width="wrap_content"
+              android:layout_height="match_parent">
+
+    <Switch
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:id="@android:id/switch_widget"
+            tools:ignore="NewApi"/>
+
+    <LinearLayout
+            android:clickable="true"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="horizontal"
+            tools:ignore="KeyboardInaccessibleWidget">
+
+        <View
+                android:layout_gravity="center"
+                android:background="#80808080"
+                android:layout_width="2dp"
+                android:layout_margin="6dp"
+                android:layout_height="16dp"/>
+
+        <ImageButton
+                android:id="@+id/item_settings"
+                android:src="@drawable/ic_settings"
+                android:tint="?android:textColorSecondary"
+                android:tintMode="src_in"
+                android:padding="6dp"
+                android:background="?selectableItemBackgroundBorderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:ignore="ContentDescription"/>
+    </LinearLayout>
+</LinearLayout>

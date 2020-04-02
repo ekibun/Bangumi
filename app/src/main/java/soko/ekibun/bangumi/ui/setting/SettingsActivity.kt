@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package soko.ekibun.bangumi.ui.setting
 
 import android.content.Intent
@@ -19,8 +17,8 @@ import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.view.BaseFragmentActivity
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.AppUtil
+import soko.ekibun.bangumi.util.PluginPreference
 import java.net.URLEncoder
-
 
 /**
  * 设置Activity
@@ -103,17 +101,9 @@ class SettingsActivity : BaseFragmentActivity(), PreferenceFragmentCompat.OnPref
             if (this.preferenceScreen.key == "pref_plugin") {
                 val cat = findPreference<PreferenceCategory>("pref_plugin_list") ?: return
                 App.get(context!!).pluginInstance.forEach { plugin ->
-                    val appInfo = plugin.key.applicationInfo
-                    cat.addPreference(SwitchPreference(context).also {
-                        it.key = "use_plugin_${plugin.key.packageName}"
-                        it.title = plugin.key.getString(appInfo.labelRes)
-                        it.icon = plugin.key.applicationInfo.loadIcon(plugin.key.packageManager)
-                        it.summary = plugin.key.packageName
-                        it.setDefaultValue(true)
-                    })
+                    cat.addPreference(PluginPreference(context, plugin))
                 }
             }
-
         }
 
         override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
@@ -173,19 +163,20 @@ class SettingsActivity : BaseFragmentActivity(), PreferenceFragmentCompat.OnPref
                 "github_page" -> activity?.let {
                     WebActivity.launchUrl(it, "https://github.com/ekibun/Bangumi", "")
                 }
-                "pref_alipay" -> activity?.let {
-                    it.startActivity(
-                        Intent.createChooser(
-                            Intent.parseUri(
-                                "intent://platformapi/startapp?saId=10000007&" +
-                                        "qrcode=" + URLEncoder.encode("https://qr.alipay.com/fkx192410t0bnuwmwawdaa4") +
-                                        "#Intent;scheme=alipayqr;package=com.eg.android.AlipayGphone;end",
-                                Intent.URI_INTENT_SCHEME
-                            ),
-                            "buy me a coffee"
-                        )
+                "pref_alipay" -> activity?.startActivity(
+                    Intent.createChooser(
+                        Intent.parseUri(
+                            "intent://platformapi/startapp?saId=10000007&" +
+                                    "qrcode=" + URLEncoder.encode(
+                                "https://qr.alipay.com/fkx192410t0bnuwmwawdaa4",
+                                null
+                            ) +
+                                    "#Intent;scheme=alipayqr;package=com.eg.android.AlipayGphone;end",
+                            Intent.URI_INTENT_SCHEME
+                        ),
+                        "buy me a coffee"
                     )
-                }
+                )
             }
 
             return super.onPreferenceTreeClick(preference)
