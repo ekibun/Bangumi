@@ -192,8 +192,10 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
         buildPopupWindow(hint, drafts[draftId]) { inputString, _, send ->
             if (send) {
                 Topic.reply(topic, post, inputString ?: "").enqueue(ApiHelper.buildCallback<List<TopicPost>>({
+                    val mypost = it.filter { it.is_self }.maxBy { it.pst_id }
                     topicView.setNewData(it, topic)
                     topicView.adapter.loadMoreEnd()
+                    mypost?.let { topicView.scrollToPost(it.pst_id, true) }
                 }) {})
             } else {
                 inputString?.let { drafts[draftId] = it }

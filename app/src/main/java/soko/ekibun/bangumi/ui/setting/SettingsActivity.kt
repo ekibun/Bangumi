@@ -100,6 +100,7 @@ class SettingsActivity : BaseFragmentActivity(), PreferenceFragmentCompat.OnPref
             super.onBindPreferences()
             if (this.preferenceScreen.key == "pref_plugin") {
                 val cat = findPreference<PreferenceCategory>("pref_plugin_list") ?: return
+                cat.removeAll()
                 App.get(context!!).pluginInstance.forEach { plugin ->
                     cat.addPreference(PluginPreference(context, plugin))
                 }
