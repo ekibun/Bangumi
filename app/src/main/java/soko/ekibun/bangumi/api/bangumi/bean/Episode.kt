@@ -1,12 +1,12 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
-import android.content.Context
 import androidx.annotation.IntDef
 import androidx.annotation.StringDef
 import androidx.annotation.StringRes
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import retrofit2.Call
+import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
@@ -67,11 +67,11 @@ data class Episode(
     /**
      * 第*话
      */
-    fun parseSort(context: Context): String {
+    fun parseSort(): String {
         return if (type == TYPE_MAIN)
-            context.getString(R.string.parse_sort_ep, DecimalFormat("#.##").format(sort))
+            App.app.getString(R.string.parse_sort_ep, DecimalFormat("#.##").format(sort))
         else
-            (category ?: context.getString(getTypeRes(type))) + " ${DecimalFormat("#.##").format(sort)}"
+            (category ?: App.app.getString(getTypeRes(type))) + " ${DecimalFormat("#.##").format(sort)}"
     }
 
     /**

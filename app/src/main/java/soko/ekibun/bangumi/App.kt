@@ -3,8 +3,12 @@ package soko.ekibun.bangumi
 import android.app.Application
 import android.content.Context
 import android.content.Intent
+import androidx.preference.PreferenceManager
 import com.umeng.commonsdk.UMConfigure
-import soko.ekibun.bangumi.model.*
+import soko.ekibun.bangumi.model.DataCacheModel
+import soko.ekibun.bangumi.model.PluginsModel
+import soko.ekibun.bangumi.model.ThemeModel
+import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.util.HttpUtil
 
 /**
@@ -14,16 +18,17 @@ import soko.ekibun.bangumi.util.HttpUtil
  * @property remoteAction Function3<[@kotlin.ParameterName] Intent?, [@kotlin.ParameterName] Int, [@kotlin.ParameterName] Int, Unit>
  */
 class App : Application() {
+    val sp by lazy { PreferenceManager.getDefaultSharedPreferences(this) }
     val dataCacheModel by lazy { DataCacheModel(this) }
-    val historyModel by lazy { HistoryModel(this) }
-    val userModel by lazy { UserModel(this) }
     lateinit var pluginInstance: Map<Context, Any>
     var remoteAction: (intent: Intent?, flags: Int, startId: Int) -> Unit = { _, _, _ -> }
 
     override fun onCreate() {
         super.onCreate()
-        HttpUtil.formhash = userModel.userList.let { it.users[it.current] }?.formhash ?: HttpUtil.formhash
-        ThemeModel.setTheme(this, ThemeModel(this).getTheme())
+        app = this
+
+        HttpUtil.formhash = UserModel.userList.let { it.users[it.current] }?.formhash ?: HttpUtil.formhash
+        ThemeModel.setTheme(this, ThemeModel.getTheme())
         UMConfigure.init(
             this,
             "5e68fe80167edd6e34000185",
@@ -33,15 +38,10 @@ class App : Application() {
         )
 
         pluginInstance = PluginsModel.createPluginInstance(this)
-        appContext = this
-    }
-
-    override fun onTerminate() {
-        super.onTerminate()
     }
 
     companion object {
-        var appContext: App? = null
+        lateinit var app: App
 
         /**
          * get from context

@@ -32,7 +32,7 @@ object ApiHelper {
             override fun onFailure(call: Call<T>, t: Throwable) {
                 Log.e("errUrl", call.request().url.toString())
                 if (!t.toString().contains("Canceled")) {
-                    App.appContext?.let { Toast.makeText(it, t.message, Toast.LENGTH_SHORT).show() }
+                    Toast.makeText(App.app, t.message, Toast.LENGTH_SHORT).show()
                     finish(t)
                     Log.e("call", Log.getStackTraceString(t))
                 }

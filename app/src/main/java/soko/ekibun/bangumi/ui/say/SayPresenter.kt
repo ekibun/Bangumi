@@ -9,6 +9,7 @@ import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.Say
 import soko.ekibun.bangumi.model.DataCacheModel
 import soko.ekibun.bangumi.model.HistoryModel
+import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.ui.topic.ReplyDialog
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.web.WebActivity
@@ -22,7 +23,7 @@ class SayPresenter(private val context: SayActivity, say: Say) {
     val sayView = SayView(context)
 
     var say: Say
-    val dataCacheModel by lazy { App.get(context).dataCacheModel }
+    val dataCacheModel by lazy { App.app.dataCacheModel }
 
     init {
         DataCacheModel.merge(say, dataCacheModel.get(say.cacheKey))
@@ -38,7 +39,7 @@ class SayPresenter(private val context: SayActivity, say: Say) {
     }
 
     fun updateHistory() {
-        App.get(context).historyModel.addHistory(
+        HistoryModel.addHistory(
             HistoryModel.History(
                 type = "say",
                 title = TextUtil.html2text(say.message ?: ""),
@@ -103,7 +104,7 @@ class SayPresenter(private val context: SayActivity, say: Say) {
     }
 
     private fun showReply(say: Say, draft: String?, updateDraft: (String?) -> Unit) {
-        val self = App.get(context).userModel.current() ?: return
+        val self = UserModel.current() ?: return
         ReplyDialog.showDialog(
             context.supportFragmentManager,
             hint = context.getString(R.string.parse_hint_reply_topic, say.user.nickname) ?: "",

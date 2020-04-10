@@ -22,21 +22,9 @@ import soko.ekibun.bangumi.ui.web.WebActivity
 
 /**
  * 搜索Presenter
- * @property context SearchActivity
- * @property searchHistoryModel SearchHistoryModel
- * @property typeView SearchTypeView
- * @property monoAdapter MonoAdapter
- * @property subjectAdapter SearchAdapter
- * @property searchHistoryAdapter SearchHistoryAdapter
- * @property subjectCall Call<List<Subject>>?
- * @property monoCall Call<List<MonoInfo>>?
- * @property lastKey String
- * @property loadCount Int
  * @constructor
  */
 class SearchPresenter(private val context: SearchActivity) {
-    val searchHistoryModel by lazy { SearchHistoryModel(context) }
-
     val typeView = SearchTypeView(context.item_type) {
         search(lastKey, true)
     }
@@ -52,18 +40,18 @@ class SearchPresenter(private val context: SearchActivity) {
         emptyTextView.text = context.getString(R.string.search_hint_no_history)
         emptyTextView.gravity = Gravity.CENTER
         searchHistoryAdapter.emptyView = emptyTextView
-        searchHistoryAdapter.setNewData(searchHistoryModel.getHistoryList())
+        searchHistoryAdapter.setNewData(SearchHistoryModel.getHistoryList())
         searchHistoryAdapter.setOnItemClickListener { _, _, position ->
             context.search_box.setText(searchHistoryAdapter.data[position])
             search(context.search_box.text.toString())
         }
         searchHistoryAdapter.setOnItemChildClickListener { _, _, position ->
-            searchHistoryModel.removeHistory(searchHistoryAdapter.data[position])
+            SearchHistoryModel.removeHistory(searchHistoryAdapter.data[position])
             searchHistoryAdapter.remove(position)
         }
         context.search_history_remove.setOnClickListener {
             AlertDialog.Builder(context).setMessage(R.string.search_dialog_history_clear).setNegativeButton(R.string.cancel){ _, _ -> }.setPositiveButton(R.string.ok){ _, _ ->
-                searchHistoryModel.clearHistory()
+                SearchHistoryModel.clearHistory()
                 searchHistoryAdapter.setNewData(null)
             }.show()
         }
@@ -104,7 +92,8 @@ class SearchPresenter(private val context: SearchActivity) {
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
                 lastKey = ""
                 context.search_swipe.visibility = View.INVISIBLE
-                searchHistoryAdapter.setNewData(searchHistoryModel.getHistoryList().filter { s.isEmpty() || it.contains(s) })
+                searchHistoryAdapter.setNewData(
+                    SearchHistoryModel.getHistoryList().filter { s.isEmpty() || it.contains(s) })
                 context.search_history_remove.visibility = if(s.isEmpty()) View.VISIBLE else View.INVISIBLE
             }
         })
@@ -134,20 +123,22 @@ class SearchPresenter(private val context: SearchActivity) {
             context.search_swipe?.isRefreshing = false
             subjectCall?.cancel()
             monoCall?.cancel()
-        }else{
+        }else {
             context.search_swipe.visibility = View.VISIBLE
-            searchHistoryModel.addHistory(key)
-            searchHistoryAdapter.setNewData(searchHistoryModel.getHistoryList())
+            SearchHistoryModel.addHistory(key)
+            searchHistoryAdapter.setNewData(SearchHistoryModel.getHistoryList())
 
-            if(loadCount == 0)
+            if (loadCount == 0)
                 context.search_swipe?.isRefreshing = true
             subjectCall?.cancel()
             monoCall?.cancel()
             val page = loadCount
-            if(typeView.subjectTypeList.containsKey(typeView.selectedType)){
-                subjectCall = Bangumi.searchSubject(key, typeView.subjectTypeList[typeView.selectedType]
-                        ?: Subject.TYPE_ANY, page + 1)//api.search(key, SubjectType.ALL, loadCount)
-                subjectCall?.enqueue(ApiHelper.buildCallback({list->
+            if (typeView.subjectTypeList.containsKey(typeView.selectedType)) {
+                subjectCall = Bangumi.searchSubject(
+                    key, typeView.subjectTypeList[typeView.selectedType]
+                        ?: Subject.TYPE_ANY, page + 1
+                )//api.search(key, SubjectType.ALL, loadCount)
+                subjectCall?.enqueue(ApiHelper.buildCallback({ list ->
                     //val list =it.list
                     if(list == null || list.isEmpty())
                         subjectAdapter.loadMoreEnd()

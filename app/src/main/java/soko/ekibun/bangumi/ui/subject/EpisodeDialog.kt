@@ -90,7 +90,7 @@ class EpisodeDialog : BaseDialog(R.layout.base_dialog) {
             field = value
             adapter.setNewData(value?.eps?.find { it.id == episode?.id }?.sites)
         }
-    override val title: String get() = episode?.parseSort(context!!) + " " + if (episode?.name_cn.isNullOrEmpty()) episode?.name else episode?.name_cn
+    override val title: String get() = episode?.parseSort() + " " + if (episode?.name_cn.isNullOrEmpty()) episode?.name else episode?.name_cn
 
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View) {

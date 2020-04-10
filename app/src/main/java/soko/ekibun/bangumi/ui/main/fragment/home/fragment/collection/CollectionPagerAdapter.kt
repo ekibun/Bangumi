@@ -10,13 +10,13 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import kotlinx.android.synthetic.main.fragment_collection.*
 import retrofit2.Call
-import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
+import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.main.MainPresenter
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
@@ -121,8 +121,33 @@ class CollectionPagerAdapter(
 
     @SuppressLint("UseSparseArrays")
     private var collectionCalls = HashMap<Int, Call<List<Subject>>>()
+
     @SuppressLint("UseSparseArrays")
     private val pageIndex = HashMap<Int, Int>()
+
+    fun collectionCallback(list: List<Subject>?, error: Throwable?) {
+        items.keys.forEach { position ->
+            if (!useApi(position)) return@forEach
+            val item = items[position] ?: return@forEach
+            item.second.isRefreshing = false
+            if (list == null) {
+                if (error != null) item.first.loadMoreFail()
+                return@forEach
+            }
+            item.first.isUseEmpty(true)
+            list.filter { it.type == tabList[position] }.let {
+                item.first.setNewData(it.sortedByDescending {
+                    val eps = it.eps?.filter { it.type == Episode.TYPE_MAIN }
+                    val watchTo = eps?.lastOrNull { it.progress == Episode.PROGRESS_WATCH }
+                    val airTo = eps?.lastOrNull { it.isAir }
+                    (if (watchTo != airTo) ":" else "") + (airTo?.airdate ?: "")
+                }.toMutableList())
+            }
+            item.first.loadMoreEnd()
+            (item.second.tag as? RecyclerView)?.tag = true
+            pageIndex[position] = (pageIndex[position] ?: 0) + 1
+        }
+    }
 
     private fun loadCollectionList(position: Int = pager.currentItem) {
         val item = items[position] ?: return
@@ -169,15 +194,11 @@ class CollectionPagerAdapter(
             item.second.isRefreshing = false
             if (it != null) item.first.loadMoreFail()
         }
-        if (useApi) mainPresenter?.updateUserCollection({
-            if (collectionTypeView.getType() == Collection.STATUS_DO) callback(it)
-        }, {
-            if (collectionTypeView.getType() == Collection.STATUS_DO) onError(it)
-        })
+        if (useApi) mainPresenter?.updateUserCollection()
         else {
             collectionCalls[position] = Bangumi.getCollectionList(
                 tabList[position],
-                fragment.activity?.let { App.get(it) }?.userModel?.current()?.username ?: return,
+                UserModel.current()?.username ?: return,
                 collectionTypeView.getType(), page + 1
             )
             collectionCalls[position]?.enqueue(ApiHelper.buildCallback(callback, onError))

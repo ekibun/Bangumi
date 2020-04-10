@@ -5,8 +5,8 @@ import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.content_history.*
-import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
+import soko.ekibun.bangumi.model.HistoryModel
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
 
 class HistoryFragment : DrawerFragment(R.layout.content_history) {
@@ -28,13 +28,13 @@ class HistoryFragment : DrawerFragment(R.layout.content_history) {
         }
 
         adapter.setOnItemChildClickListener { _, _, position ->
-            App.get(view.context).historyModel.removeHistory(adapter.data[position].t)
+            HistoryModel.removeHistory(adapter.data[position].t)
             updateHistory()
         }
         item_clear_history?.setOnClickListener {
             AlertDialog.Builder(view.context).setMessage(R.string.history_dialog_remove)
                 .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
-                    App.get(it.context).historyModel.clearHistory()
+                    HistoryModel.clearHistory()
                     updateHistory()
                 }.show()
 
@@ -50,7 +50,7 @@ class HistoryFragment : DrawerFragment(R.layout.content_history) {
         item_swipe?.isRefreshing = false
         val history = ArrayList<HistoryAdapter.History>()
         var dateString = ""
-        App.get(context ?: return).historyModel.historyList.forEach {
+        HistoryModel.historyList.forEach {
             if (dateString != it.dateString) history.add(HistoryAdapter.History(it.dateString))
             history.add(HistoryAdapter.History(it))
             dateString = it.dateString

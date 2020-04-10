@@ -22,7 +22,7 @@ class LinkedSubjectAdapter(data: MutableList<Subject>? = null) :
         helper.itemView.item_summary.visibility = if (item.category.isNullOrEmpty()) View.GONE else View.VISIBLE
         helper.setText(R.id.item_summary, item.category)
         GlideUtil.with(helper.itemView.item_cover)
-            ?.load(Images.getImage(item.image, helper.itemView.context))
+            ?.load(Images.getImage(item.image))
             ?.apply(RequestOptions.errorOf(R.drawable.err_404).placeholder(R.drawable.placeholder))
                 ?.into(helper.itemView.item_cover)
     }

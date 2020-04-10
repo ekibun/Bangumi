@@ -66,7 +66,7 @@ class SettingsActivity : BaseFragmentActivity(), PreferenceFragmentCompat.OnPref
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        ThemeModel.setTheme(applicationContext, ThemeModel(applicationContext).getTheme())
+        ThemeModel.setTheme(applicationContext, ThemeModel.getTheme())
         super.onCreate(savedInstanceState)
 
         intent?.getStringExtra("pref_screen_title")?.let { title = it }
@@ -101,7 +101,7 @@ class SettingsActivity : BaseFragmentActivity(), PreferenceFragmentCompat.OnPref
             if (this.preferenceScreen.key == "pref_plugin") {
                 val cat = findPreference<PreferenceCategory>("pref_plugin_list") ?: return
                 cat.removeAll()
-                App.get(context!!).pluginInstance.forEach { plugin ->
+                App.app.pluginInstance.forEach { plugin ->
                     cat.addPreference(PluginPreference(context, plugin))
                 }
             }

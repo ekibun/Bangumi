@@ -71,7 +71,7 @@ class TimeLineAdapter(data: MutableList<TimeLine>? = null) :
         //time
         helper.itemView.item_time.text = item.t.time
 
-        val userImage = Images.getImage(item.t.user.avatar, helper.itemView.context)
+        val userImage = Images.getImage(item.t.user.avatar)
         helper.itemView.item_avatar.visibility =
             if (userImage.isEmpty() || data.getOrNull(data.indexOfFirst { it === item } - 1)?.t?.user?.username == item.t.user.username) View.INVISIBLE else View.VISIBLE
         helper.itemView.item_avatar.setOnClickListener {

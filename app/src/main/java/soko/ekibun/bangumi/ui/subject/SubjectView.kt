@@ -306,7 +306,7 @@ class SubjectView(private val context: SubjectActivity) {
 
         if (tag == null || tag == Subject.SaxTag.IMAGES) {
             GlideUtil.with(detail.item_cover)
-                ?.load(Images.getImage(subject.image, context))
+                ?.load(Images.getImage(subject.image))
                 ?.apply(RequestOptions.errorOf(R.drawable.err_404).placeholder(detail.item_cover.drawable))
                 ?.into(detail.item_cover)
             detail.item_cover.setOnClickListener {
@@ -317,7 +317,7 @@ class SubjectView(private val context: SubjectActivity) {
                 )
             }
             GlideUtil.with(context.item_cover_blur)
-                ?.load(Images.getImage(subject.image, context))
+                ?.load(Images.getImage(subject.image))
                 ?.apply(
                     RequestOptions.bitmapTransform(
                         BlurTransformation(
@@ -379,7 +379,7 @@ class SubjectView(private val context: SubjectActivity) {
                 R.string.phrase_full_eps,
                 eps.size
             ) else
-                eps.lastOrNull()?.parseSort(context)?.let { context.getString(R.string.parse_update_to, it) }
+                eps.lastOrNull()?.parseSort()?.let { context.getString(R.string.parse_update_to, it) }
                     ?: context.getString(R.string.hint_air_nothing)
     }
 

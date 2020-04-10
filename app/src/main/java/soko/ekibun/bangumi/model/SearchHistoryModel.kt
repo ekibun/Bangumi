@@ -1,17 +1,12 @@
 package soko.ekibun.bangumi.model
 
-import android.content.Context
-import android.content.SharedPreferences
-import androidx.preference.PreferenceManager
+import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.util.JsonUtil
 
 /**
  * 搜索历史
- * @property sp SharedPreferences
- * @constructor
  */
-class SearchHistoryModel(context: Context){
-    private val sp: SharedPreferences by lazy { PreferenceManager.getDefaultSharedPreferences(context) }
+object SearchHistoryModel {
 
     /**
      * 添加
@@ -20,7 +15,7 @@ class SearchHistoryModel(context: Context){
     fun addHistory(searchKey: String) {
         val newList = getHistoryList().toMutableList()
         newList.add(0, searchKey)
-        sp.edit().putString(PREF_SEARCH_HISTORY, JsonUtil.toJson(newList.distinct())).apply()
+        App.app.sp.edit().putString(PREF_SEARCH_HISTORY, JsonUtil.toJson(newList.distinct())).apply()
     }
 
     /**
@@ -31,7 +26,7 @@ class SearchHistoryModel(context: Context){
     fun removeHistory(searchKey: String): Boolean {
         val newList = getHistoryList().toMutableList()
         val removed = newList.remove(searchKey)
-        sp.edit().putString(PREF_SEARCH_HISTORY, JsonUtil.toJson(newList)).apply()
+        App.app.sp.edit().putString(PREF_SEARCH_HISTORY, JsonUtil.toJson(newList)).apply()
         return removed
     }
 
@@ -39,7 +34,7 @@ class SearchHistoryModel(context: Context){
      * 清除
      */
     fun clearHistory() {
-        sp.edit().putString(PREF_SEARCH_HISTORY, JsonUtil.toJson(ArrayList<String>())).apply()
+        App.app.sp.edit().putString(PREF_SEARCH_HISTORY, JsonUtil.toJson(ArrayList<String>())).apply()
     }
 
     /**
@@ -47,11 +42,11 @@ class SearchHistoryModel(context: Context){
      * @return List<String>
      */
     fun getHistoryList(): List<String> {
-        return JsonUtil.toEntity<List<String>>(sp.getString(PREF_SEARCH_HISTORY, JsonUtil.toJson(ArrayList<String>()))
-                ?: "") ?: ArrayList()
+        return JsonUtil.toEntity<List<String>>(
+            App.app.sp.getString(PREF_SEARCH_HISTORY, JsonUtil.toJson(ArrayList<String>()))
+                ?: ""
+        ) ?: ArrayList()
     }
 
-    companion object {
-        const val PREF_SEARCH_HISTORY="searchHistory"
-    }
+    const val PREF_SEARCH_HISTORY = "searchHistory"
 }

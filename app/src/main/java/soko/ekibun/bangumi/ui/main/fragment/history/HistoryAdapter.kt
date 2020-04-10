@@ -39,7 +39,7 @@ class HistoryAdapter(data: MutableList<History>? = null) :
         helper.setText(R.id.item_title, item.t.title)
         helper.setText(R.id.item_sub_title, item.t.subTitle)
         GlideUtil.with(helper.itemView.item_cover)
-            ?.load(Images.getImage(item.t.thumb, helper.itemView.context))
+            ?.load(Images.getImage(item.t.thumb))
             ?.apply(RequestOptions.errorOf(R.drawable.err_404).placeholder(R.drawable.placeholder))
             ?.into(helper.itemView.item_cover)
         helper.setText(R.id.item_time, item.t.timeString)

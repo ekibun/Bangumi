@@ -17,7 +17,7 @@ interface Jsdelivr {
      * 时间表
      * @return Call<List<BangumiCalendarItem>>
      */
-    @GET("/gh/ekibun/bangumi_onair/calendar.json")
+    @GET("/gh/ekibun/bangumi_onair@master/calendar.json")
     fun bangumiCalendar(): Call<List<BangumiCalendarItem>>
 
     /**
@@ -26,7 +26,7 @@ interface Jsdelivr {
      * @param id Int
      * @return Call<OnAirInfo>
      */
-    @GET("/gh/ekibun/bangumi_onair/onair/{prefix}/{id}.json")
+    @GET("/gh/ekibun/bangumi_onair@master/onair/{prefix}/{id}.json")
     fun onAirInfo(@Path("prefix") prefix: Int,
                   @Path("id") id: Int): Call<OnAirInfo>
 

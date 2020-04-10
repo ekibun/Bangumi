@@ -30,7 +30,7 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
         (R.layout.item_episode, R.layout.item_episode_header, data), FastScrollRecyclerView.MeasurableAdapter,
     FastScrollRecyclerView.SectionedAdapter {
     override fun getSectionName(position: Int): String {
-        return (data[position].t ?: data[position + 1].t)?.parseSort((recyclerView ?: return "").context) ?: ""
+        return (data[position].t ?: data[position + 1].t)?.parseSort() ?: ""
     }
 
     override fun isFullSpan(position: Int): Boolean {
@@ -70,8 +70,8 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
     }
 
     override fun convert(helper: BaseViewHolder, item: SelectableSectionEntity<Episode>) {
-        helper.setText(R.id.item_title, item.t.parseSort(helper.itemView.context))
-        helper.setText(R.id.item_desc, if(item.t.name_cn.isNullOrEmpty()) item.t.name else item.t.name_cn)
+        helper.setText(R.id.item_title, item.t.parseSort())
+        helper.setText(R.id.item_desc, if (item.t.name_cn.isNullOrEmpty()) item.t.name else item.t.name_cn)
         val color = ResourceUtil.resolveColorAttr(helper.itemView.context,
                 when {
                     item.isSelected -> R.attr.colorPrimary

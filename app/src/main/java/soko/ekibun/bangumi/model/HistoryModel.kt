@@ -1,8 +1,7 @@
 package soko.ekibun.bangumi.model
 
 import android.content.Context
-import android.content.SharedPreferences
-import androidx.preference.PreferenceManager
+import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.api.bangumi.bean.Say
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
@@ -16,10 +15,9 @@ import kotlin.collections.ArrayList
 
 /**
  * 浏览历史
- * @property sp SharedPreferences
- * @constructor
  */
-class HistoryModel(context: Context) {
+object HistoryModel {
+    const val PREF_HISTORY = "history"
 
     data class History(
         var type: String,
@@ -50,10 +48,8 @@ class HistoryModel(context: Context) {
         }
     }
 
-    private val sp: SharedPreferences by lazy { PreferenceManager.getDefaultSharedPreferences(context) }
-
     val historyList by lazy {
-        JsonUtil.toEntity<ArrayList<History>>(sp.getString(PREF_HISTORY, null) ?: "[]") ?: ArrayList()
+        JsonUtil.toEntity<ArrayList<History>>(App.app.sp.getString(PREF_HISTORY, null) ?: "[]") ?: ArrayList()
     }
 
     /**
@@ -69,7 +65,8 @@ class HistoryModel(context: Context) {
     }
 
     private fun save() {
-        sp.edit().putString(PREF_HISTORY, JsonUtil.toJson(historyList.subList(0, Math.min(historyList.size, 500))))
+        App.app.sp.edit()
+            .putString(PREF_HISTORY, JsonUtil.toJson(historyList.subList(0, Math.min(historyList.size, 500))))
             .apply()
     }
 
@@ -88,10 +85,6 @@ class HistoryModel(context: Context) {
      * 清除
      */
     fun clearHistory() {
-        sp.edit().putString(PREF_HISTORY, "[]").apply()
-    }
-
-    companion object {
-        const val PREF_HISTORY = "history"
+        App.app.sp.edit().putString(PREF_HISTORY, "[]").apply()
     }
 }

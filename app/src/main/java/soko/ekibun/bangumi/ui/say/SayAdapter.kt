@@ -17,11 +17,11 @@ import com.oubowu.stickyitemdecoration.StickyItemDecoration
 import kotlinx.android.synthetic.main.item_avatar_header.view.*
 import kotlinx.android.synthetic.main.item_say.view.*
 import org.jsoup.Jsoup
-import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Say
+import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.ui.topic.PhotoPagerAdapter
 import soko.ekibun.bangumi.ui.topic.PostAdapter
 import soko.ekibun.bangumi.ui.topic.TopicActivity
@@ -46,7 +46,7 @@ class SayAdapter(data: MutableList<SaySection>? = null) :
 
         container.setDataCallback {
             val item = data[it]
-            val isSelf = item.t.user.username == App.get(recyclerView.context).userModel.current()?.username
+            val isSelf = item.t.user.username == UserModel.current()?.username
             container.item_avatar_left.visibility = View.INVISIBLE
             container.item_avatar_right.visibility = View.INVISIBLE
             val avatar = if (isSelf) container.item_avatar_right else container.item_avatar_left
@@ -82,7 +82,7 @@ class SayAdapter(data: MutableList<SaySection>? = null) :
         )
 
         updateAvatar(helper.itemView.item_avatar, item)
-        val isSelf = item.t.user.username == App.get(helper.itemView.context).userModel.current()?.username
+        val isSelf = item.t.user.username == UserModel.current()?.username
         val showAvatar = item.isHeader
         helper.itemView.item_avatar.visibility =
             if (showAvatar && pinnedIndex != helper.layoutPosition) View.VISIBLE else View.INVISIBLE

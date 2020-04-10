@@ -95,7 +95,7 @@ class SayView(private val context: SayActivity) {
         }
 
         GlideUtil.with(context.item_cover_blur)
-            ?.load(Images.getImage(say.user.avatar, context))
+            ?.load(Images.getImage(say.user.avatar))
             ?.apply(
                 RequestOptions.bitmapTransform(
                     BlurTransformation(

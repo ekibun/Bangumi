@@ -2,12 +2,12 @@ package soko.ekibun.bangumi.ui.main.fragment.calendar
 
 import android.annotation.SuppressLint
 import android.view.View
-import androidx.preference.PreferenceManager
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseSectionQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
 import com.chad.library.adapter.base.entity.SectionEntity
 import kotlinx.android.synthetic.main.item_calendar.view.*
+import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Images
@@ -30,7 +30,7 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
         helper.setText(R.id.item_title, item.t.subject.displayName)
         helper.setText(
             R.id.item_ep_name,
-            item.t.episode?.parseSort(helper.itemView.context) + " " + (if (item.t.episode?.name_cn.isNullOrEmpty()) item.t.episode?.name
+            item.t.episode?.parseSort() + " " + (if (item.t.episode?.name_cn.isNullOrEmpty()) item.t.episode?.name
                 ?: "" else item.t.episode?.name_cn)
         )
         GlideUtil.with(helper.itemView.item_cover)
@@ -40,8 +40,7 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
         helper.itemView.item_time.text = ""
         helper.itemView.item_chase.visibility = if (item.t.subject.collect != null) View.VISIBLE else View.GONE
 
-        val sp = PreferenceManager.getDefaultSharedPreferences(helper.itemView.context)
-        val use30h = sp.getBoolean("calendar_use_30h", false)
+        val use30h = App.app.sp.getBoolean("calendar_use_30h", false)
 
         val past = pastTime(item.date, item.time, use30h)
         val color = ResourceUtil.resolveColorAttr(
@@ -116,15 +115,17 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
          * @return Boolean
          */
         fun pastTime(date: Int, time: String, use_30h: Boolean): Boolean {
+            val nowInt = getNowInt(use_30h)
+            if (nowInt > date) return true
+            else if (nowInt < date) return false
             val match = Regex("""([0-9]*):([0-9]*)""").find(time)
             val hour = match?.groupValues?.get(1)?.toIntOrNull() ?: 0
             val minute = match?.groupValues?.get(2)?.toIntOrNull() ?: 0
             val cal = Calendar.getInstance()
-            val nowInt = getNowInt(use_30h)
             val hourNow = cal.get(Calendar.HOUR_OF_DAY)
             val hourNow30h = if (use_30h) (hourNow - 6 + 24) % 24 + 6 else hourNow
             val minuteNow = cal.get(Calendar.MINUTE)
-            return nowInt > date || (nowInt == date && (hour < hourNow30h || (hour == hourNow30h && minute < minuteNow)))
+            return hour < hourNow30h || (hour == hourNow30h && minute < minuteNow)
         }
 
         /**

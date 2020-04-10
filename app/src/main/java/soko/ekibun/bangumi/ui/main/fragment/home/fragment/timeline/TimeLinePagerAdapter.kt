@@ -6,10 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import retrofit2.Call
-import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.TimeLine
+import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
 import soko.ekibun.bangumi.ui.view.ShadowDecoration
@@ -118,7 +118,7 @@ class TimeLinePagerAdapter(
                 "doujin"
             )[position],
             page + 1,
-            if (fragment.selectedType == R.id.timeline_type_self) fragment.activity?.let { App.get(it) }?.userModel?.current() else null,
+            if (fragment.selectedType == R.id.timeline_type_self) UserModel.current() else null,
             fragment.selectedType == R.id.timeline_type_all
         )
         topicCall[position]?.enqueue(ApiHelper.buildCallback({

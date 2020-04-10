@@ -11,12 +11,9 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.content_calendar.view.*
-import retrofit2.Call
 import soko.ekibun.bangumi.App
-import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
-import soko.ekibun.bangumi.api.github.Jsdelivr
 import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
 import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.main.MainPresenter
@@ -36,7 +33,6 @@ import kotlin.collections.HashMap
  * @property dataCacheModel DataCacheModel
  * @property currentView RecyclerView?
  * @property mainPresenter MainPresenter?
- * @property calendarCall Call<List<BangumiCalendarItem>>?
  * @constructor
  */
 @SuppressLint("ClickableViewAccessibility")
@@ -45,7 +41,7 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
     var windowInsets: WindowInsets? = null
     private val items = SparseArray<CalendarAdapter>()
 
-    private val dataCacheModel by lazy { App.get(view.context).dataCacheModel }
+    private val dataCacheModel by lazy { App.app.dataCacheModel }
 
     init {
 
@@ -101,7 +97,6 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
     }
 
     fun setOnAirList(it: List<BangumiCalendarItem>) {
-        val useCN = sp.getBoolean("calendar_use_cn", false)
         val use30h = sp.getBoolean("calendar_use_30h", false)
 
         val now = CalendarAdapter.getNowInt(use30h)
@@ -113,10 +108,6 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
         calWeek.add(Calendar.DAY_OF_MONTH, +14)
         val maxDate = CalendarAdapter.getCalendarInt(calWeek)
         it.forEach { subject ->
-            val useCNTime = useCN && !subject.timeCN.isNullOrEmpty() // 判断是否使用国内时间
-            val timeInt = (if (useCNTime) subject.timeCN else subject.timeJP)?.toIntOrNull() ?: 0
-            val weekInt = (if (useCNTime) subject.weekDayCN else subject.weekDayJP) ?: 0
-
             val bangumi = Subject(
                 id = subject.id ?: return@forEach,
                 type = Subject.TYPE_ANIME,
@@ -126,39 +117,9 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
             )
             subject.eps?.forEach {
                 val item = CalendarAdapter.OnAir(it, bangumi)
-                val zoneOffset = TimeZone.getDefault().rawOffset / 1000 / 60    // 时差（min）
-                val hourDif = zoneOffset / 60 - 8           // 小时差（源数据是UTC+8，减8）
-                val minuteDif = zoneOffset % 60             // 分钟差
-                val minute = timeInt % 100 + minuteDif      // 分钟 + 分钟差
-                val hour = timeInt / 100 + hourDif + when { // 小时 + 小时差 + 分钟的进位
-                    minute >= 60 -> 1   // 大于60，进1位
-                    minute < 0 -> -1    // 小于0，退1位
-                    else -> 0
-                }
-                val dayCarry = when {               // 日期进位
-                    hour >= if (use30h) 30 else 24 -> 1  // 30小时制大于30进位，否则大于24进位
-                    hour < if (use30h) 6 else 0 -> -1    // 30小时制小于6退位，否则小于0退位
-                    else -> 0
-                }
-                // 格式化日期 -> hh:mm
-                val time = String.format(
-                    "%02d:%02d",
-                    if (use30h) (hour - 6 + 24) % 24 + 6 else (hour + 24) % 24, minute % 60
-                )
-                // 根据airdate创建日期对象
-                val cal = Calendar.getInstance()
-                cal.time = try {
-                    TimeUtil.dateFormat.parse(it.airdate ?: "")
-                } catch (e: Exception) {
-                    null
-                } ?: cal.time
-                val dayDif = dayCarry + if (
-                    timeInt / 100 < (if (useCNTime) 5 else 6) && // 假设airdate按30小时算，且国内放送时间与日本相同，若日本放送时间<6:00，取次日
-                    (CalendarAdapter.getWeek(cal) - weekInt + 7) % 7 > 0 // 若日本放送星期与airdate相同，取0
-                ) 1 else 0
-                cal.add(Calendar.DAY_OF_MONTH, dayDif)   // 加上日期差，计算日期
-                val date = CalendarAdapter.getCalendarInt(cal)
-                if (date in minDate..maxDate) onAir.getOrPut(date) { HashMap() }.getOrPut(time) { ArrayList() }.add(item)
+                val dateTime = subject.getEpisodeDateTime(it)
+                if (dateTime.first in minDate..maxDate) onAir.getOrPut(dateTime.first) { HashMap() }
+                    .getOrPut(dateTime.second) { ArrayList() }.add(item)
             }
         }
         onAir.toList().forEach { date ->
@@ -190,23 +151,21 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
     }
 
     private val mainPresenter: MainPresenter? get() = (view.context as? MainActivity)?.mainPresenter
-    private var calendarCall: Call<List<BangumiCalendarItem>>? = null
+
     /**
      * 加载日历列表
      */
-    @SuppressLint("UseSparseArrays")
-    fun loadCalendarList() {
+    private fun loadCalendarList() {
         view.item_swipe.isRefreshing = true
+        mainPresenter?.updateCalendarList()
+    }
 
-        calendarCall?.cancel()
-        calendarCall = Jsdelivr.createInstance().bangumiCalendar()
-        calendarCall?.enqueue(ApiHelper.buildCallback({
-            mainPresenter?.calendar = it
-            setOnAirList(it ?: return@buildCallback)
-            dataCacheModel.set<List<BangumiCalendarItem>>("calendar", it)
-        }, {
+    fun calendarCallback(data: List<BangumiCalendarItem>?, error: Throwable?) {
+        if (data == null) {
             view.item_swipe.isRefreshing = false
-        }))
+            return
+        }
+        setOnAirList(data)
     }
 
     override fun getItemPosition(`object`: Any): Int {

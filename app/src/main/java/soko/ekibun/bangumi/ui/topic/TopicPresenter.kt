@@ -35,7 +35,7 @@ import kotlin.collections.set
 class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPost: String) {
     val topicView = TopicView(context)
 
-    val dataCacheModel by lazy { App.get(context).dataCacheModel }
+    val dataCacheModel by lazy { App.app.dataCacheModel }
 
     var topic: Topic
 
@@ -55,7 +55,7 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
     }
 
     fun updateHistory() {
-        App.get(context).historyModel.addHistory(
+        HistoryModel.addHistory(
             HistoryModel.History(
                 type = "topic",
                 title = topic.title,

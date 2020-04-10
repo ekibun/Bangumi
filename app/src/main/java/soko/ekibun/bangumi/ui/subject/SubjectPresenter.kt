@@ -45,7 +45,7 @@ import java.util.*
 class SubjectPresenter(private val context: SubjectActivity, var subject: Subject) {
     val subjectView by lazy { SubjectView(context) }
 
-    private val dataCacheModel by lazy { App.get(context).dataCacheModel }
+    private val dataCacheModel by lazy { App.app.dataCacheModel }
 
     var commentPage = 1
 
@@ -152,7 +152,7 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
     }
 
     fun updateHistory() {
-        App.get(context).historyModel.addHistory(
+        HistoryModel.addHistory(
             HistoryModel.History(
                 type = "subject",
                 title = subject.displayName,

@@ -33,7 +33,7 @@ class HomeFragment: DrawerFragment(R.layout.content_home) {
     }
 
     override val titleRes: Int = R.string.home
-    private val collectionFragment by lazy { findOrCreateFragmentByClassName(CollectionFragment::class.java) }
+    val collectionFragment by lazy { findOrCreateFragmentByClassName(CollectionFragment::class.java) }
     private val fragments: List<HomeTabFragment> by lazy {
         listOf(
             findOrCreateFragmentByClassName(TimeLineFragment::class.java),

@@ -61,8 +61,20 @@
             android:textSize="@dimen/textSizeMedium"
             tools:text="Subject Name"
             app:layout_constraintLeft_toRightOf="@+id/item_chase"
-            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintRight_toRightOf="@+id/item_onair"
             app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+            android:id="@+id/item_onair"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textSize="@dimen/textSizeMedium"
+            tools:text="onair"
+            app:layout_constraintLeft_toRightOf="@+id/item_title"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/item_title"/>
 
     <TextView
             android:layout_marginTop="8dp"

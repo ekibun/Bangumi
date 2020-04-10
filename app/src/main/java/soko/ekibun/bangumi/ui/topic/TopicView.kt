@@ -149,7 +149,7 @@ class TopicView(private val context: TopicActivity) {
         })
 
         GlideUtil.with(context.item_cover_blur)
-            ?.load(Images.getImage(topic.image, context))
+            ?.load(Images.getImage(topic.image))
             ?.apply(
                 RequestOptions.bitmapTransform(
                     BlurTransformation(

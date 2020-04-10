@@ -1,21 +1,18 @@
 package soko.ekibun.bangumi.model
 
-import android.content.Context
-import android.content.SharedPreferences
 import android.webkit.CookieManager
-import androidx.preference.PreferenceManager
 import com.umeng.analytics.MobclickAgent
+import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.UserInfo
 import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.JsonUtil
 
-class UserModel(context: Context) {
-    private val sp: SharedPreferences by lazy { PreferenceManager.getDefaultSharedPreferences(context) }
+object UserModel {
 
     val userList by lazy {
         val list = JsonUtil.toEntity<UserStore>(
-            sp.getString(PREF_USER, null) ?: JsonUtil.toJson(UserStore())
+            App.app.sp.getString(PREF_USER, null) ?: JsonUtil.toJson(UserStore())
         ) ?: UserStore()
         list
     }
@@ -55,7 +52,7 @@ class UserModel(context: Context) {
             } ?: {
                 HttpUtil.formhash = ""
             }()
-            sp.edit().putString(PREF_USER, JsonUtil.toJson(userList)).apply()
+            App.app.sp.edit().putString(PREF_USER, JsonUtil.toJson(userList)).apply()
         }
         cookieManager.flush()
     }
@@ -72,7 +69,7 @@ class UserModel(context: Context) {
             ),
             formhash = HttpUtil.formhash
         )
-        sp.edit().putString(PREF_USER, JsonUtil.toJson(userList)).apply()
+        App.app.sp.edit().putString(PREF_USER, JsonUtil.toJson(userList)).apply()
     }
 
     fun current(): UserInfo? {
@@ -88,12 +85,10 @@ class UserModel(context: Context) {
         if (userList.current == user.id) {
             switchToUser(userList.users.values.firstOrNull()?.user)
         }
-        sp.edit().putString(PREF_USER, JsonUtil.toJson(userList)).apply()
+        App.app.sp.edit().putString(PREF_USER, JsonUtil.toJson(userList)).apply()
         return removed != null
     }
 
-    companion object {
-        const val PREF_USER = "user"
-        val XSB_COOKIE_HOST = "tinygrail.com"
-    }
+    const val PREF_USER = "user"
+    val XSB_COOKIE_HOST = "tinygrail.com"
 }

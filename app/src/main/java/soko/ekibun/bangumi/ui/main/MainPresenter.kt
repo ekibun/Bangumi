@@ -19,7 +19,9 @@ import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.bangumi.bean.UserInfo
+import soko.ekibun.bangumi.api.github.Jsdelivr
 import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
+import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.ui.web.WebActivity
 
 /**
@@ -47,13 +49,11 @@ class MainPresenter(private val context: MainActivity) {
         }
     })
 
-    private val userModel = App.get(context).userModel
-
-    private val user get() = userModel.current()
+    private val user get() = UserModel.current()
 
     val drawerView = DrawerView(context) {
         user?.let {
-            userModel.removeUser(it)
+            UserModel.removeUser(it)
             updateUser(user)
             refreshUser()
         }
@@ -97,14 +97,14 @@ class MainPresenter(private val context: MainActivity) {
     init {
         userView.headerView.user_figure.setOnLongClickListener {
             val popup = PopupMenu(context, userView.headerView.user_figure)
-            userModel.userList.users.values.forEach {
+            UserModel.userList.users.values.forEach {
                 popup.menu.add(0, it.user.id, 0, "${it.user.nickname}@${it.user.username}")
             }
             popup.menu.add("添加账号")
             popup.setOnMenuItemClickListener {
-                switchUser = userModel.current()
-                val user = userModel.userList.users[it.itemId]?.user
-                userModel.switchToUser(user)
+                switchUser = UserModel.current()
+                val user = UserModel.userList.users[it.itemId]?.user
+                UserModel.switchToUser(user)
                 if (lastUser?.username != user?.username) collectionCall?.cancel()
                 if (user != null) updateUser(user)
                 else WebActivity.startActivityForAuth(context)
@@ -164,7 +164,7 @@ class MainPresenter(private val context: MainActivity) {
                 val lastUser = switchUser
                 if (resultCode != Activity.RESULT_OK) {
                     userView.setUser(lastUser)
-                    userModel.switchToUser(lastUser)
+                    UserModel.switchToUser(lastUser)
                 }
                 refreshUser()
             }
@@ -178,22 +178,21 @@ class MainPresenter(private val context: MainActivity) {
         drawerView.homeFragment.updateUserCollection()
     }
 
-    var calendar: List<BangumiCalendarItem> = App.get(context).dataCacheModel.get("calendar") ?: ArrayList()
+    var calendar: List<BangumiCalendarItem> = App.app.dataCacheModel.get("calendar") ?: ArrayList()
     var collectionList: List<Subject> = ArrayList()
     private var collectionCall: Call<List<Subject>>? = null
     var notify: Pair<Int, Int>? = null
+
     /**
      * 获取收藏
-     * @param callback Function1<List<Subject>, Unit>
-     * @param onError Function1<Throwable?, Unit>
      */
-    fun updateUserCollection(callback: (List<Subject>) -> Unit = {}, onError: (Throwable?) -> Unit = {}) {
+    fun updateUserCollection() {
         collectionCall?.cancel()
         val callUser = user
         collectionCall = Bangumi.getCollectionSax({ user ->
             if (callUser?.username != this.user?.username) throw Exception("Canceled")
-            userModel.updateUser(user)
-            userModel.switchToUser(user)
+            UserModel.updateUser(user)
+            UserModel.switchToUser(user)
             updateUser(user)
         }, {
             if (callUser?.username != this.user?.username) throw Exception("Canceled")
@@ -209,17 +208,37 @@ class MainPresenter(private val context: MainActivity) {
             collectionList = it
             context.runOnUiThread {
                 drawerView.calendarFragment.onCollectionChange()
-                callback(it)
+                drawerView.homeFragment.collectionFragment.collectionCallback(it, null)
             }
         })
         collectionCall?.enqueue(ApiHelper.buildCallback({}, {
             if (callUser?.username != this.user?.username) return@buildCallback
-            onError(it)
+            drawerView.homeFragment.collectionFragment.collectionCallback(null, it)
             if ((it as? Exception)?.message == "login failed") {
-                user?.let { u -> userModel.removeUser(u) }
-                userModel.switchToUser(null)
+                user?.let { u -> UserModel.removeUser(u) }
+                UserModel.switchToUser(null)
                 updateUser(null)
             }
         }))
+    }
+
+    private var calendarCall: Call<List<BangumiCalendarItem>>? = null
+
+    /**
+     * 加载日历列表
+     */
+    fun updateCalendarList() {
+        calendarCall?.cancel()
+        calendarCall = Jsdelivr.createInstance().bangumiCalendar()
+        calendarCall?.enqueue(ApiHelper.buildCallback({
+            calendar = it
+            drawerView.calendarFragment.calendarCallback(it, null)
+        }, {
+            drawerView.calendarFragment.calendarCallback(null, it)
+        }))
+    }
+
+    init {
+        updateCalendarList()
     }
 }

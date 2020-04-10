@@ -1,7 +1,6 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
-import android.content.Context
-import androidx.preference.PreferenceManager
+import soko.ekibun.bangumi.App
 
 /**
  * bgm.tv图像类
@@ -26,8 +25,8 @@ object Images {
      * @param context Context
      * @return String
      */
-    fun getImage(url: String?, context: Context): String {
-        return when (PreferenceManager.getDefaultSharedPreferences(context).getString("image_quality", "c")) {
+    fun getImage(url: String?): String {
+        return when (App.app.sp.getString("image_quality", "c")) {
             "l" -> large(url)
             "m" -> medium(url)
             "s" -> small(url)

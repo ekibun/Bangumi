@@ -42,9 +42,9 @@ object PluginsModel {
      * @return
      */
     fun setUpPlugins(activity: Activity): Int {
-        val sp = PreferenceManager.getDefaultSharedPreferences(activity)
+        val sp = PreferenceManager.getDefaultSharedPreferences(App.app)
         if (!sp.getBoolean("plugins_enabled", true)) return 0
-        return App.get(activity).pluginInstance.filter {
+        return App.app.pluginInstance.filter {
             if (!sp.getBoolean("use_plugin_${it.key.packageName}", true)) return@filter false
             try {
                 val method =
