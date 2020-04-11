@@ -186,6 +186,13 @@ class MainPresenter(private val context: MainActivity) {
     var collectionList: List<Subject> = ArrayList()
     private var collectionCall: Call<List<Subject>>? = null
     var notify: Pair<Int, Int>? = null
+    var collectionRefreshListener = { _: List<Subject> -> }
+    fun notifyCollectionChange() {
+        context.runOnUiThread {
+            drawerView.calendarFragment.onCollectionChange()
+            drawerView.homeFragment.collectionFragment.collectionCallback(collectionList, null)
+        }
+    }
 
     /**
      * 获取收藏
@@ -210,10 +217,8 @@ class MainPresenter(private val context: MainActivity) {
                 }
             }
             collectionList = it
-            context.runOnUiThread {
-                drawerView.calendarFragment.onCollectionChange()
-                drawerView.homeFragment.collectionFragment.collectionCallback(it, null)
-            }
+            collectionRefreshListener(it)
+            notifyCollectionChange()
         })
         collectionCall?.enqueue(ApiHelper.buildCallback({}, {
             if (callUser?.username != this.user?.username) return@buildCallback

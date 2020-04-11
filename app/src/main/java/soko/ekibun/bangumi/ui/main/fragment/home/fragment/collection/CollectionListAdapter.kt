@@ -51,12 +51,11 @@ class CollectionListAdapter(data: MutableList<Subject>? = null) :
                     (if (item.vol_count != 0) context.getString(
                         R.string.parse_sort_vol,
                         "${item.vol_status}${if (item.vol_count <= 0) "" else "/${item.vol_count}"}"
-                    ) + " " else "") +
-                            context.getString(
-                                R.string.parse_sort_ep,
-                                "${item.ep_status}${if (item.eps_count <= 0) "" else "/${item.eps_count}"}"
-                            )
-                )
+                    ) + " " else "") + context.getString(
+                        R.string.parse_sort_ep,
+                        "${item.ep_status}${if (item.eps_count <= 0) "" else "/${item.eps_count}"}"
+                    )
+                ) + (item.airInfo?.let { ", $it" } ?: "")
             }
             else -> {
                 val eps = (item.eps as? List<*>)?.mapNotNull { it as? Episode }?.filter { it.type == Episode.TYPE_MAIN }

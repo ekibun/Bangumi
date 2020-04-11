@@ -81,6 +81,7 @@ data class Subject(
     var collect: Collection? = null,
     // other
     var season: List<Subject>? = null,
+    var airInfo: String? = null, // 首页放送日期
     var onair: OnAirInfo? = null
 ) {
     val cacheKey get() = "subject_$id"
