@@ -125,6 +125,7 @@ class HtmlTagHandler(view: TextView? = null, private var baseSize: Float = 12f, 
             val atts = attsField.get(element)
             val dataField = atts.javaClass.getDeclaredField("data")
             dataField.isAccessible = true
+            @Suppress("UNCHECKED_CAST")
             val data = dataField.get(atts) as Array<String>
             val lengthField = atts.javaClass.getDeclaredField("length")
             lengthField.isAccessible = true

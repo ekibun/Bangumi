@@ -13,6 +13,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.TimeLine
 import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.HomeTabFragment
 import soko.ekibun.bangumi.ui.topic.ReplyDialog
+import soko.ekibun.bangumi.util.ResourceUtil
 
 /**
  * 时间线
@@ -35,6 +36,9 @@ class TimeLineFragment : HomeTabFragment(R.layout.fragment_timeline) {
         popup.menuInflater.inflate(R.menu.list_timeline, popup.menu)
         item_type?.text = popup.menu.findItem(selectedType)?.title
         item_type?.setOnClickListener {
+            ResourceUtil.checkMenu(view.context, popup.menu) {
+                selectedType == it.itemId
+            }
             popup.setOnMenuItemClickListener {
                 item_type?.text = it.title
                 selectedType = it.itemId

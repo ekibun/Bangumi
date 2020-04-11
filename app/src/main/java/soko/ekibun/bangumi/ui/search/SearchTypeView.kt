@@ -5,6 +5,7 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.appcompat.widget.PopupMenu
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
+import soko.ekibun.bangumi.util.ResourceUtil
 
 /**
  * 搜索类型
@@ -34,7 +35,10 @@ class SearchTypeView(view: TextView, onChange:()->Unit){
         popup.menuInflater.inflate(R.menu.list_search_type, popup.menu)
         view.text = popup.menu.findItem(selectedType)?.title
         view.setOnClickListener {
-            popup.setOnMenuItemClickListener{
+            ResourceUtil.checkMenu(view.context, popup.menu) {
+                selectedType == it.itemId
+            }
+            popup.setOnMenuItemClickListener {
                 selectedType = it.itemId
                 view.text = it.title
                 onChange()

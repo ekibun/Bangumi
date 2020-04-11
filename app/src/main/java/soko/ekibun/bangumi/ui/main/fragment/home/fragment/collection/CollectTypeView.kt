@@ -4,6 +4,7 @@ import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
+import soko.ekibun.bangumi.util.ResourceUtil
 
 /**
  * 收藏类型
@@ -35,8 +36,11 @@ class CollectTypeView(private val view: TextView, private val onChange: () -> Un
         }
         view.text = stringArray[selectedType]
         view.setOnClickListener {
+            ResourceUtil.checkMenu(view.context, popup.menu) {
+                stringArray.indexOf(it.title.toString()) == selectedType
+            }
             popup.setOnMenuItemClickListener {
-                selectedType = stringArray.indexOf(it.title)
+                selectedType = stringArray.indexOf(it.title.toString())
                 true
             }
             popup.show()

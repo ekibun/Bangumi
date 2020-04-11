@@ -23,6 +23,7 @@ import soko.ekibun.bangumi.api.github.Jsdelivr
 import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
 import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.ui.web.WebActivity
+import soko.ekibun.bangumi.util.ResourceUtil
 
 /**
  * 主页Presenter
@@ -99,6 +100,9 @@ class MainPresenter(private val context: MainActivity) {
             val popup = PopupMenu(context, userView.headerView.user_figure)
             UserModel.userList.users.values.forEach {
                 popup.menu.add(0, it.user.id, 0, "${it.user.nickname}@${it.user.username}")
+            }
+            ResourceUtil.checkMenu(context, popup.menu) {
+                it.itemId == UserModel.current()?.id
             }
             popup.menu.add("添加账号")
             popup.setOnMenuItemClickListener {

@@ -17,6 +17,7 @@ import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.ui.view.BaseDialog
+import soko.ekibun.bangumi.ui.view.ShadowDecoration
 import soko.ekibun.bangumi.util.HttpUtil
 
 /**
@@ -76,6 +77,7 @@ class EditSubjectDialog : BaseDialog(R.layout.base_dialog) {
         val myTagAdapter = TagAdapter(null, hasTag)
         myTagAdapter.setNewData(collection.myTag?.map { it to 0 }?.toMutableList())
         view.item_my_tag_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+        ShadowDecoration.set(view.item_my_tag_list, drawEnd = true)
         view.item_my_tag_list.adapter = myTagAdapter
         myTagAdapter.setOnItemClickListener { _, _, position ->
             val tag = myTagAdapter.data[position].first
@@ -85,6 +87,7 @@ class EditSubjectDialog : BaseDialog(R.layout.base_dialog) {
         val userTagAdapter = TagAdapter(null, hasTag)
         userTagAdapter.setNewData(subject.tags?.toMutableList())
         view.item_user_tag_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+        ShadowDecoration.set(view.item_user_tag_list, drawEnd = true)
         view.item_user_tag_list.adapter = userTagAdapter
         userTagAdapter.setOnItemClickListener { _, _, position ->
             val tag = userTagAdapter.data[position].first

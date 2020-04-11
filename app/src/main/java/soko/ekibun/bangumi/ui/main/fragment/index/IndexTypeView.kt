@@ -4,6 +4,7 @@ import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
+import soko.ekibun.bangumi.util.ResourceUtil
 
 /**
  * 索引类型View
@@ -68,8 +69,11 @@ class IndexTypeView(view: TextView, onChange:()->Unit){
         popup.menuInflater.inflate(R.menu.list_browser_type, popup.menu)
         view.text = popup.menu.findItem(selectedType)?.title?.toString()?.replace("全部", "")
         view.setOnClickListener {
-            popup.setOnMenuItemClickListener{
-                if(typeList.containsKey(it.itemId)){
+            ResourceUtil.checkMenu(view.context, popup.menu) {
+                selectedType == it.itemId
+            }
+            popup.setOnMenuItemClickListener {
+                if (typeList.containsKey(it.itemId)) {
                     selectedType = it.itemId
                     view.text = it.title.toString().replace("全部", "")
                     onChange()

@@ -36,11 +36,6 @@ class MainActivity : BaseActivity(R.layout.activity_main) {
         mainPresenter.updateConfiguration()
     }
 
-    override fun onStart() {
-        super.onStart()
-        mainPresenter.refreshUser()
-    }
-
     var notifyMenu: NotifyActionProvider? = null
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.action_main, menu)

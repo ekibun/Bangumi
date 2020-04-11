@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.view.Menu
 import android.view.View
-import android.widget.PopupMenu
+import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -93,12 +93,12 @@ class EpisodeListDialog : BaseDialog(R.layout.dialog_episode_list) {
 
             val popupMenu = PopupMenu(view.context, view.btn_edit_ep)
             epStatus.forEachIndexed { index, s ->
-                popupMenu.menu.add(Menu.NONE, Menu.FIRST + index, index, s)
+                popupMenu.menu.add(Menu.NONE, index, index, s)
             }
             popupMenu.setOnMenuItemClickListener { menu ->
-                val newStatus = progressMap[menu.itemId - Menu.FIRST]
+                val newStatus = progressMap[menu.itemId]
                 presenter.updateProgress(eps.map { it.t }, newStatus)
-                false
+                true
             }
             popupMenu.show()
         }

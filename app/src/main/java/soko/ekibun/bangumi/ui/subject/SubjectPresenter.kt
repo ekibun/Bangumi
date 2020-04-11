@@ -2,8 +2,8 @@ package soko.ekibun.bangumi.ui.subject
 
 import android.view.Menu
 import android.view.View
-import android.widget.PopupMenu
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.PopupMenu
 import kotlinx.android.synthetic.main.activity_subject.*
 import kotlinx.android.synthetic.main.brvah_quick_view_load_more.view.*
 import kotlinx.android.synthetic.main.dialog_subject.view.*
@@ -27,6 +27,7 @@ import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.JsonUtil
+import soko.ekibun.bangumi.util.ResourceUtil
 import java.util.*
 
 /**
@@ -339,18 +340,23 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
             val popupMenu = PopupMenu(context, subjectView.detail.item_collect)
             val statusList = context.resources.getStringArray(Collection.getStatusNamesRes(subject.type))
             statusList.forEachIndexed { index, s ->
-                popupMenu.menu.add(Menu.NONE, Menu.FIRST + index, index, s)
+                popupMenu.menu.add(Menu.NONE, index, index, s)
             }
-            if (status != null)
-                popupMenu.menu.add(Menu.NONE, Menu.FIRST + statusList.size, statusList.size, R.string.delete)
+            if (status != null) {
+                popupMenu.menu.add(Menu.NONE, statusList.size, statusList.size, R.string.delete)
+                ResourceUtil.checkMenu(context, popupMenu.menu) {
+                    it.itemId + 1 == subject.collect?.statusId
+                }
+            }
+
             popupMenu.setOnMenuItemClickListener { menu ->
-                if (menu.itemId == Menu.FIRST + statusList.size) {
+                if (menu.itemId == statusList.size) {
                     removeCollection(subject)
-                    return@setOnMenuItemClickListener false
+                    return@setOnMenuItemClickListener true
                 }
                 Collection.updateStatus(
                     subject, Collection(
-                        status = Collection.getStatusById(menu.itemId - Menu.FIRST + 1),
+                        status = Collection.getStatusById(menu.itemId + 1),
                         rating = body.rating,
                         comment = body.comment,
                         private = body.private,
@@ -360,7 +366,7 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
                     subject.collect = it
                     refreshCollection()
                 }, {}))
-                false
+                true
             }
             popupMenu.show()
         }

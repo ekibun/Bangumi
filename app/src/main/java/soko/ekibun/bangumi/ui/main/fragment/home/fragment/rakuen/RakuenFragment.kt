@@ -12,6 +12,7 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.HomeTabFragment
 import soko.ekibun.bangumi.ui.web.WebActivity
+import soko.ekibun.bangumi.util.ResourceUtil
 
 /**
  * 超展开
@@ -45,8 +46,13 @@ class RakuenFragment: HomeTabFragment(R.layout.fragment_rakuen){
         }
         topicTab.item_filter.text = popup.menu.findItem(selectedFilter)?.title
         topicTab.setOnClickListener {
-            if(item_pager?.currentItem != 1) item_pager?.currentItem = 1
-            else popup.show()
+            if (item_pager?.currentItem != 1) item_pager?.currentItem = 1
+            else {
+                ResourceUtil.checkMenu(view.context, popup.menu) {
+                    selectedFilter == it.itemId
+                }
+                popup.show()
+            }
         }
 
         item_tabs?.getTabAt(1)?.customView = topicTab
