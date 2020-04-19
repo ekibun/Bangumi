@@ -86,14 +86,19 @@ object ResourceUtil{
         return typedValue
     }
 
-    fun checkMenu(context: Context, menu: Menu, isChecked: (MenuItem) -> Boolean) {
+    fun checkMenu(context: Context, menu: Menu?, isChecked: (MenuItem) -> Boolean): Boolean {
+        if (menu == null) return false
+        var hasCheckedItem = false
         menu.forEach {
+            val checked = isChecked(it) || checkMenu(context, it.subMenu, isChecked)
+            hasCheckedItem = hasCheckedItem || checked
             it.title = SpannableString(it.title.toString()).also { span ->
-                if (isChecked(it)) span.setSpan(
+                if (checked) span.setSpan(
                     ForegroundColorSpan(resolveColorAttr(context, R.attr.colorAccent)),
                     0, span.length, Spannable.SPAN_INCLUSIVE_EXCLUSIVE
                 )
             }
         }
+        return hasCheckedItem
     }
 }

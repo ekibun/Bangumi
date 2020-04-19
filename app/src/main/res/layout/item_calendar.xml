@@ -36,6 +36,8 @@
             app:layout_constraintTop_toTopOf="parent"/>
 
     <TextView
+            android:visibility="gone"
+            tools:visibility="visible"
             android:transitionName="title"
             android:id="@+id/item_chase"
             android:layout_width="wrap_content"
