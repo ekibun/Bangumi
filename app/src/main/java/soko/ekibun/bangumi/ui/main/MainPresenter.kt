@@ -17,11 +17,13 @@ import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
+import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.bangumi.bean.UserInfo
 import soko.ekibun.bangumi.api.github.Jsdelivr
 import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
 import soko.ekibun.bangumi.model.UserModel
+import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarAdapter
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.ResourceUtil
 
@@ -186,8 +188,30 @@ class MainPresenter(private val context: MainActivity) {
     var collectionList: List<Subject> = ArrayList()
     private var collectionCall: Call<List<Subject>>? = null
     var notify: Pair<Int, Int>? = null
-    var collectionRefreshListener = { _: List<Subject> -> }
-    fun notifyCollectionChange() {
+    var mergeAirInfo = { list: List<Subject> ->
+        list.forEach { subject ->
+            val cal = calendar.find { cal -> cal.id == subject.id }
+            cal?.eps?.forEach { calEp ->
+                subject.eps?.find { ep -> ep.id == calEp.id }?.merge(calEp)
+            }
+            val eps = (subject.eps as? List<*>)?.mapNotNull { it as? Episode }?.filter { it.type == Episode.TYPE_MAIN }
+            val watchTo = eps?.lastOrNull { it.progress == Episode.PROGRESS_WATCH }
+            eps?.getOrNull(watchTo?.let { eps.indexOf(it) + 1 } ?: 0)?.let { newEp ->
+                if (newEp.airdate == null) return@let
+                val use30h = App.app.sp.getBoolean("calendar_use_30h", false)
+                val dateTime = cal?.getEpisodeDateTime(newEp) ?: return@let
+                val nowInt = CalendarAdapter.getNowInt(use30h)
+                subject.airInfo = if (dateTime.first == nowInt) dateTime.second
+                else if (dateTime.first > nowInt) {
+                    val airDate = CalendarAdapter.getIntCalendar(dateTime.first)
+                    val nowDate = CalendarAdapter.getIntCalendar(nowInt)
+                    if (airDate.timeInMillis - nowDate.timeInMillis > 24 * 60 * 60 * 1000) "" else "明天${dateTime.second}"
+                } else ""
+            }
+        }
+    }
+
+    private fun notifyCollectionChange() {
         context.runOnUiThread {
             drawerView.calendarFragment.onCollectionChange()
             drawerView.homeFragment.collectionFragment.collectionCallback(collectionList, null)
@@ -211,13 +235,8 @@ class MainPresenter(private val context: MainActivity) {
             context.runOnUiThread { context.notifyMenu?.badge = notify?.let { it.first + it.second } ?: 0 }
         }, {
             if (callUser?.username != this.user?.username) throw Exception("Canceled")
-            it.forEach { subject ->
-                calendar.find { cal -> cal.id == subject.id }?.eps?.forEach { calEp ->
-                    subject.eps?.find { ep -> ep.id == calEp.id }?.merge(calEp)
-                }
-            }
             collectionList = it
-            collectionRefreshListener(it)
+            mergeAirInfo(it)
             notifyCollectionChange()
         })
         collectionCall?.enqueue(ApiHelper.buildCallback({}, {

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/item_now_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+    <View
+            android:layout_margin="12dp"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1"
+            android:background="?colorPrimary"
+            android:layout_gravity="center_vertical"/>
+
+    <ImageView
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:layout_gravity="center_vertical"
+            android:tint="?colorAccent"
+            android:layout_marginEnd="6dp"
+            android:src="@drawable/ic_time"
+            tools:ignore="ContentDescription"/>
+
+    <TextView
+            android:id="@+id/item_now_time_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?colorAccent"
+            android:layout_gravity="center_vertical"
+            tools:text="16:33"/>
+
+    <View
+            android:layout_margin="12dp"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1"
+            android:background="?colorAccent"
+            android:layout_gravity="center_vertical"/>
+</LinearLayout>

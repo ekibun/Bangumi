@@ -4,13 +4,10 @@ import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
 import kotlinx.android.synthetic.main.item_subject.view.*
-import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
-import soko.ekibun.bangumi.ui.main.MainActivity
-import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarAdapter
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.ResourceUtil
 
@@ -25,7 +22,7 @@ class CollectionListAdapter(data: MutableList<Subject>? = null) :
         helper.setText(R.id.item_title, item.displayName)
         helper.setText(R.id.item_name_jp, item.name)
 
-        helper.itemView.item_onair.text = ""
+        helper.itemView.item_onair.text = item.airInfo
 
         helper.setText(R.id.item_summary, when {
             item.ep_status == -1 -> {
@@ -42,8 +39,8 @@ class CollectionListAdapter(data: MutableList<Subject>? = null) :
                 helper.itemView.item_summary.setTextColor(
                     ResourceUtil.resolveColorAttr(
                         helper.itemView.context,
-                        if (item.vol_count != 0 && (item.vol_count <= 0 || item.vol_status != item.vol_count) || item.eps_count == 0 || item.ep_status != item.eps_count) R.attr.colorPrimary
-                        else android.R.attr.textColorSecondary
+                        if (item.airInfo.isNullOrEmpty()) android.R.attr.textColorSecondary
+                        else R.attr.colorPrimary
                     )
                 )
                 context.getString(
@@ -55,30 +52,12 @@ class CollectionListAdapter(data: MutableList<Subject>? = null) :
                         R.string.parse_sort_ep,
                         "${item.ep_status}${if (item.eps_count <= 0) "" else "/${item.eps_count}"}"
                     )
-                ) + (item.airInfo?.let { ", $it" } ?: "")
+                )
             }
             else -> {
                 val eps = (item.eps as? List<*>)?.mapNotNull { it as? Episode }?.filter { it.type == Episode.TYPE_MAIN }
                 val watchTo = eps?.lastOrNull { it.progress == Episode.PROGRESS_WATCH }
                 val airTo = eps?.lastOrNull { it.isAir }
-                eps?.getOrNull(watchTo?.let { eps.indexOf(it) + 1 } ?: 0)?.let { newEp ->
-                    if (newEp.airdate == null) return@let
-                    val use30h = App.app.sp.getBoolean("calendar_use_30h", false)
-                    val dateTime =
-                        (helper.itemView.context as MainActivity).mainPresenter.calendar.firstOrNull { it.id == item.id }
-                            ?.getEpisodeDateTime(newEp) ?: return@let
-                    val nowInt = CalendarAdapter.getNowInt(use30h)
-                    helper.itemView.item_onair.text = if (dateTime.first == nowInt) dateTime.second
-                    else if (dateTime.first > nowInt) {
-                        val airDate = CalendarAdapter.getIntCalendar(dateTime.first)
-                        val nowDate = CalendarAdapter.getIntCalendar(nowInt)
-                        if (airDate.timeInMillis - nowDate.timeInMillis > 24 * 60 * 60 * 1000) {
-//                            val week = CalendarAdapter.getWeek(CalendarAdapter.getIntCalendar(dateTime.first))
-//                            TimeUtil.weekList[week] + dateTime.second
-                            ""
-                        } else "明天${dateTime.second}"
-                    } else ""
-                }
                 helper.itemView.item_summary.setTextColor(
                     ResourceUtil.resolveColorAttr(
                         helper.itemView.context,

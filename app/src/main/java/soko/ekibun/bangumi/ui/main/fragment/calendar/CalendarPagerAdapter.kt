@@ -1,18 +1,15 @@
 package soko.ekibun.bangumi.ui.main.fragment.calendar
 
+import am.util.viewpager.adapter.RecyclePagerAdapter
 import android.annotation.SuppressLint
-import android.content.SharedPreferences
 import android.util.SparseArray
 import android.view.MotionEvent
-import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
-import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.content_calendar.view.*
 import soko.ekibun.bangumi.App
-import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
 import soko.ekibun.bangumi.ui.main.MainActivity
@@ -27,19 +24,22 @@ import kotlin.collections.HashMap
 /**
  * 时间表PagerAdapter
  * @property view ViewGroup
- * @property sp SharedPreferences
  * @property windowInsets WindowInsets?
  * @property items SparseArray<CalendarAdapter>
  * @property dataCacheModel DataCacheModel
- * @property currentView RecyclerView?
  * @property mainPresenter MainPresenter?
  * @constructor
  */
-@SuppressLint("ClickableViewAccessibility")
-class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.widget.PagerAdapter() {
-    private val sp: SharedPreferences by lazy { PreferenceManager.getDefaultSharedPreferences(view.context) }
-    var windowInsets: WindowInsets? = null
+class CalendarPagerAdapter(private val view: ViewGroup) : RecyclePagerAdapter<CalendarPagerAdapter.PagerViewHolder>() {
+    val holders = java.util.ArrayList<PagerViewHolder>()
     private val items = SparseArray<CalendarAdapter>()
+    var windowInsets: WindowInsets? = null
+        set(value) {
+            field = value
+            holders.forEach {
+                it.recyclerView.setPadding(0, 0, 0, windowInsets?.systemWindowInsetBottom ?: 0)
+            }
+        }
 
     private val dataCacheModel by lazy { App.app.dataCacheModel }
 
@@ -62,10 +62,12 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
             loadCalendarList()
         }
         view.item_swipe.setOnChildScrollUpCallback { _, _ ->
-            canScroll || currentView?.canScrollVertically(-1) ?: false
+            canScroll || holders.firstOrNull { it.position == view.item_pager.currentItem }?.recyclerView?.canScrollVertically(
+                -1
+            ) ?: false
         }
-        mainPresenter?.calendar?.let { setOnAirList(it) }
         loadCalendarList()
+        mainPresenter?.calendar?.let { setOnAirList(it) }
     }
 
     private fun getItem(position: Int): CalendarAdapter {
@@ -79,29 +81,30 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
         }()
     }
 
-    private val currentView: RecyclerView? get() = view.item_pager.findViewWithTag(view.item_pager.currentItem)
-    override fun instantiateItem(container: ViewGroup, position: Int): Any {
-        val adapter = getItem(CalendarAdapter.getCalendarInt(getPostDate(position)))
+    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): PagerViewHolder {
         val recyclerView = RecyclerView(view.context)
         ShadowDecoration.set(recyclerView)
         recyclerView.setPadding(0, 0, 0, windowInsets?.systemWindowInsetBottom ?: 0)
         recyclerView.clipToPadding = false
-
-        recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(view.context)
         recyclerView.isNestedScrollingEnabled = false
-        recyclerView.tag = position
+        val viewHolder = PagerViewHolder(recyclerView)
+        holders.add(viewHolder)
+        return viewHolder
+    }
 
-        container.addView(recyclerView)
-        return recyclerView
+    override fun onBindViewHolder(holder: PagerViewHolder, position: Int) {
+        holder.recyclerView.adapter = getItem(CalendarAdapter.getCalendarInt(getPostDate(position)))
+        holder.position = position
     }
 
     fun setOnAirList(it: List<BangumiCalendarItem>) {
-        val use30h = sp.getBoolean("calendar_use_30h", false)
+        val use30h = App.app.sp.getBoolean("calendar_use_30h", false)
 
         val now = CalendarAdapter.getNowInt(use30h)
+
         @SuppressLint("UseSparseArrays")
-        val onAir = HashMap<Int, HashMap<String, ArrayList<CalendarAdapter.OnAir>>>()
+        val onAir = HashMap<Int, ArrayList<CalendarAdapter.CalendarSection>>()
         val calWeek = CalendarAdapter.getIntCalendar(now)
         calWeek.add(Calendar.DAY_OF_MONTH, -7)
         val minDate = CalendarAdapter.getCalendarInt(calWeek)
@@ -116,36 +119,34 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
                 image = subject.image
             )
             subject.eps?.forEach {
-                val item = CalendarAdapter.OnAir(it, bangumi)
                 val dateTime = subject.getEpisodeDateTime(it)
-                if (dateTime.first in minDate..maxDate) onAir.getOrPut(dateTime.first) { HashMap() }
-                    .getOrPut(dateTime.second) { ArrayList() }.add(item)
+                if (dateTime.first in minDate..maxDate) onAir.getOrPut(dateTime.first) { ArrayList() }
+                    .add(
+                        CalendarAdapter.CalendarSection(
+                            CalendarAdapter.OnAir(it, bangumi), dateTime.first, dateTime.second
+                        )
+                    )
             }
         }
-        onAir.toList().forEach { date ->
-            var index = -1
-            val item = getItem(date.first)
-            val data = ArrayList<CalendarAdapter.CalendarSection>()
-            date.second.toList().sortedBy { it.first }.forEach { time ->
-                var isHeader = true
-                time.second.forEach {
-                    it.subject.collect =
-                        if (mainPresenter?.collectionList?.find { c -> c.id == it.subject.id } != null)
-                            Collection(Collection.STATUS_DO) else null
-                    if (it.subject.image != null) {
-                        if (index == -1 && !CalendarAdapter.pastTime(date.first, time.first, use30h))
-                            index = item.data.size
-                        data.add(CalendarAdapter.CalendarSection(isHeader, it, date.first, time.first))
-                        isHeader = false
-                    }
-                }
-            }
-            item.setNewData(data)
-            if (date.first == now) {
-                ((view.item_pager.findViewWithTag(7) as? RecyclerView)?.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(
-                    index - 1,
-                    0
+        onAir.forEach { entry ->
+            val item = getItem(entry.key)
+            entry.value.sortBy { it.time }
+            val index = if (entry.key == now) entry.value.indexOfLast {
+                CalendarAdapter.pastTime(
+                    it.date,
+                    it.time,
+                    use30h
                 )
+            } + 1 else -1
+            if (entry.key == now)
+                entry.value.add(
+                    index,
+                    CalendarAdapter.CalendarSection(true)
+                )
+            item.setNewData(entry.value)
+            if (entry.key == now) {
+                (holders.firstOrNull { it.position == 7 }?.recyclerView?.layoutManager as? LinearLayoutManager)
+                    ?.scrollToPositionWithOffset(index - 1, 0)
             }
         }
     }
@@ -168,14 +169,6 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
         setOnAirList(data)
     }
 
-    override fun getItemPosition(`object`: Any): Int {
-        return POSITION_NONE
-    }
-
-    override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
-        container.removeView(`object` as View)
-    }
-
     private fun parseDate(date: Int): String {
         val cal = CalendarAdapter.getIntCalendar(date)
         return "${date / 100 % 100}-${date % 100
@@ -190,7 +183,7 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
      */
     fun getPostDate(pos: Int): Calendar {
         val cal = CalendarAdapter.getIntCalendar(
-            CalendarAdapter.getNowInt(sp.getBoolean("calendar_use_30h", false))
+            CalendarAdapter.getNowInt(App.app.sp.getBoolean("calendar_use_30h", false))
         )
         cal.add(Calendar.DAY_OF_MONTH, pos - 7)
         return cal
@@ -200,11 +193,17 @@ class CalendarPagerAdapter(private val view: ViewGroup) : androidx.viewpager.wid
         return parseDate(CalendarAdapter.getCalendarInt(getPostDate(pos)))//parseDate(old?.toList()?.sortedBy { it.first }?.get(pos)?.first?:0)
     }
 
-    override fun getCount(): Int {
+    override fun getItemCount(): Int {
         return 15
     }
 
-    override fun isViewFromObject(view: View, `object`: Any): Boolean {
-        return view === `object`
+    /**
+     * ViewHolder
+     * @constructor
+     */
+    class PagerViewHolder(
+        val recyclerView: RecyclerView
+    ) : RecyclePagerAdapter.PagerViewHolder(recyclerView) {
+        var position = 0
     }
 }

@@ -20,12 +20,7 @@ class IndexFragment: DrawerFragment(R.layout.content_index){
         val adapter = IndexPagerAdapter(this, item_pager)
         item_pager?.adapter = adapter
         item_pager?.currentItem = savedInstanceState?.getInt("index_select_index") ?: getNowIndex()
-        item_tabs?.post {
-            item_tabs?.setUpWithViewPager(item_pager)
-            item_tabs?.post {
-                item_tabs?.setCurrentItem(item_pager?.currentItem ?: getNowIndex(), true)
-            }
-        }
+        item_tabs?.setUpWithViewPager(item_pager)
 
         root_layout?.setOnApplyWindowInsetsListener { _, insets ->
             adapter.windowInsets = insets

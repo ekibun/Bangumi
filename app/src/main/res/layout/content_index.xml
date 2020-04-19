@@ -22,7 +22,7 @@
             android:backgroundTint="@color/colorTransGrey"
             android:background="@drawable/bg_round_rect"/>
 
-    <com.nshmura.recyclertablayout.RecyclerTabLayout
+    <soko.ekibun.bangumi.ui.view.RecyclerTabLayout
             android:id="@+id/item_tabs"
             android:layout_width="0dp"
             android:layout_height="48dp"

@@ -7,8 +7,8 @@ import com.chad.library.adapter.base.BaseViewHolder
 import com.chad.library.adapter.base.entity.SectionEntity
 import com.oubowu.stickyitemdecoration.StickyHeadContainer
 import com.oubowu.stickyitemdecoration.StickyItemDecoration
+import kotlinx.android.synthetic.main.item_calendar.view.*
 import kotlinx.android.synthetic.main.item_episode_header.view.*
-import kotlinx.android.synthetic.main.item_history.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.model.HistoryModel
@@ -16,7 +16,7 @@ import soko.ekibun.bangumi.util.GlideUtil
 
 class HistoryAdapter(data: MutableList<History>? = null) :
     BaseSectionQuickAdapter<HistoryAdapter.History, BaseViewHolder>
-        (R.layout.item_history, R.layout.item_episode_header, data) {
+        (R.layout.item_calendar, R.layout.item_episode_header, data) {
 
     class History : SectionEntity<HistoryModel.History> {
         constructor(header: String) : super(true, header)
@@ -37,7 +37,7 @@ class HistoryAdapter(data: MutableList<History>? = null) :
 
     override fun convert(helper: BaseViewHolder, item: History) {
         helper.setText(R.id.item_title, item.t.title)
-        helper.setText(R.id.item_sub_title, item.t.subTitle)
+        helper.setText(R.id.item_ep_name, item.t.subTitle)
         GlideUtil.with(helper.itemView.item_cover)
             ?.load(Images.getImage(item.t.thumb))
             ?.apply(RequestOptions.errorOf(R.drawable.err_404).placeholder(R.drawable.placeholder))

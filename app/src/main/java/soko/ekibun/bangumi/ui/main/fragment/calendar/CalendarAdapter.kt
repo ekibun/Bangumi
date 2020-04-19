@@ -7,6 +7,7 @@ import com.chad.library.adapter.base.BaseSectionQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
 import com.chad.library.adapter.base.entity.SectionEntity
 import kotlinx.android.synthetic.main.item_calendar.view.*
+import kotlinx.android.synthetic.main.item_calendar_now.view.*
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
@@ -23,10 +24,14 @@ import java.util.*
  */
 class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
     BaseSectionQuickAdapter<CalendarAdapter.CalendarSection, BaseViewHolder>
-        (R.layout.item_calendar, R.layout.item_calendar, data) {
+        (R.layout.item_calendar, R.layout.item_calendar_now, data) {
     @SuppressLint("SetTextI18n")
     override fun convert(helper: BaseViewHolder, item: CalendarSection) {
         helper.addOnClickListener(R.id.item_layout)
+        helper.setText(
+            R.id.item_time,
+            if (data.getOrNull(helper.adapterPosition - 1)?.time == item.time) "" else item.time
+        )
         helper.setText(R.id.item_title, item.t.subject.displayName)
         helper.setText(
             R.id.item_ep_name,
@@ -37,7 +42,6 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
             ?.load(Images.small(item.t.subject.image))
             ?.apply(RequestOptions.errorOf(R.drawable.err_404).placeholder(R.drawable.placeholder))
             ?.into(helper.itemView.item_cover)
-        helper.itemView.item_time.text = ""
         helper.itemView.item_chase.visibility = if (item.t.subject.collect != null) View.VISIBLE else View.GONE
 
         val use30h = App.app.sp.getBoolean("calendar_use_30h", false)
@@ -50,36 +54,41 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
         helper.itemView.item_ep_name.setTextColor(color)
         helper.itemView.item_time.alpha = if (past) 0.6f else 1.0f
 
-        helper.itemView.item_now_time.visibility = View.GONE
-
-        if (item.date != getNowInt(use30h)) return
-        val index = data.indexOfFirst { it === item }
-        if ((index + 1 == data.size && past) || ((data.getOrNull(index - 1)?.let {
-                pastTime(
-                    it.date,
-                    it.time,
-                    use30h
-                )
-            } != false) != past)) {
-            if (index + 1 == data.size && past) {//最后一个
-                helper.itemView.item_now_time.bringToFront()
-            } else {
-                helper.itemView.item_layout.bringToFront()
-            }
-            helper.itemView.item_now_time.visibility = View.VISIBLE
-
-            val cal = Calendar.getInstance()
-            val hour = cal.get(Calendar.HOUR_OF_DAY)
-            val hourNow = if (use30h) (hour - 6 + 24) % 24 + 6 else hour
-            val minuteNow = cal.get(Calendar.MINUTE)
-            val format = DecimalFormat("00")
-            helper.itemView.item_now_time_text.text = "${format.format(hourNow)}:${format.format(minuteNow)}"
-        }
+//        helper.itemView.item_now_time.visibility = View.GONE
+//
+//        if (item.date != getNowInt(use30h)) return
+//        val index = data.indexOfFirst { it === item }
+//        if ((index + 1 == data.size && past) || ((data.getOrNull(index - 1)?.let {
+//                pastTime(
+//                    it.date,
+//                    it.time,
+//                    use30h
+//                )
+//            } != false) != past)) {
+//            if (index + 1 == data.size && past) {//最后一个
+//                helper.itemView.item_now_time.bringToFront()
+//            } else {
+//                helper.itemView.item_layout.bringToFront()
+//            }
+//            helper.itemView.item_now_time.visibility = View.VISIBLE
+//
+//            val cal = Calendar.getInstance()
+//            val hour = cal.get(Calendar.HOUR_OF_DAY)
+//            val hourNow = if (use30h) (hour - 6 + 24) % 24 + 6 else hour
+//            val minuteNow = cal.get(Calendar.MINUTE)
+//            val format = DecimalFormat("00")
+//            helper.itemView.item_now_time_text.text = "${format.format(hourNow)}:${format.format(minuteNow)}"
+//        }
     }
 
     override fun convertHead(helper: BaseViewHolder, item: CalendarSection) {
-        convert(helper, item)
-        helper.setText(R.id.item_time, item.time)
+        val use30h = App.app.sp.getBoolean("calendar_use_30h", false)
+        val cal = Calendar.getInstance()
+        val hour = cal.get(Calendar.HOUR_OF_DAY)
+        val hourNow = if (use30h) (hour - 6 + 24) % 24 + 6 else hour
+        val minuteNow = cal.get(Calendar.MINUTE)
+        val format = DecimalFormat("00")
+        helper.itemView.item_now_time_text.text = "${format.format(hourNow)}:${format.format(minuteNow)}"
     }
 
     /**
@@ -88,10 +97,15 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
      * @property time String
      * @constructor
      */
-    class CalendarSection(isHeader: Boolean, subject: OnAir, var date: Int, var time: String) :
-        SectionEntity<OnAir>(isHeader, "") {
-        init {
-            t = subject
+    class CalendarSection : SectionEntity<OnAir> {
+        constructor(isHeader: Boolean) : super(isHeader, "")
+
+        var date: Int = 0
+        var time: String = ""
+
+        constructor(subject: OnAir, date: Int, time: String) : super(subject) {
+            this.date = date
+            this.time = time
         }
     }
 

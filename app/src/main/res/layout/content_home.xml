@@ -28,7 +28,7 @@
                 android:background="?selectableItemBackgroundBorderless"
                 tools:drawableTint="@color/color_checkable"
                 android:textColor="@color/color_checkable"
-                android:textAlignment="center"
+                android:gravity="center"
                 android:textAppearance="@android:style/TextAppearance.DeviceDefault.Widget.Button"
                 android:text="@string/timeline"/>
 
@@ -41,7 +41,7 @@
                 tools:drawableTint="@color/color_checkable"
                 android:textColor="@color/color_checkable"
                 tools:checked="true"
-                android:textAlignment="center"
+                android:gravity="center"
                 android:textAppearance="@android:style/TextAppearance.DeviceDefault.Widget.Button"
                 android:text="@string/collect"/>
 
@@ -53,7 +53,7 @@
                 android:background="?selectableItemBackgroundBorderless"
                 tools:drawableTint="@color/color_checkable"
                 android:textColor="@color/color_checkable"
-                android:textAlignment="center"
+                android:gravity="center"
                 android:textAppearance="@android:style/TextAppearance.DeviceDefault.Widget.Button"
                 android:text="@string/rakuen"/>
     </LinearLayout>

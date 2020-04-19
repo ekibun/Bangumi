@@ -21,7 +21,6 @@ import java.util.*
 
 /**
  * 索引PagerAdapter
- * @property pager ViewPager
  * @property windowInsets WindowInsets?
  * @property indexTypeView IndexTypeView
  * @property pageIndex SparseIntArray
@@ -29,7 +28,7 @@ import java.util.*
  * @property holders ArrayList<IndexPagerViewHolder>
  * @constructor
  */
-class IndexPagerAdapter(fragment: IndexFragment, private val pager: androidx.viewpager.widget.ViewPager) :
+class IndexPagerAdapter(fragment: IndexFragment, pager: androidx.viewpager.widget.ViewPager) :
     RecyclePagerAdapter<IndexPagerAdapter.IndexPagerViewHolder>() {
     var windowInsets: WindowInsets? = null
         set(value) {

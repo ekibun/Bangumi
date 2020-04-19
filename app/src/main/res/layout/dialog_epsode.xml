@@ -30,7 +30,7 @@
                 android:text="@string/episode_status_watch"
                 android:button="@null"
                 android:checked="true"
-                android:textAlignment="center"
+                android:gravity="center"
                 android:textColor="@color/color_checkable_white"
                 android:background="@drawable/bg_round_checkable"
                 android:padding="8dp"
@@ -41,7 +41,7 @@
         <RadioButton
                 android:text="@string/episode_status_watch_to"
                 android:button="@null"
-                android:textAlignment="center"
+                android:gravity="center"
                 android:textColor="@color/color_checkable_white"
                 android:background="@drawable/bg_round_checkable"
                 android:padding="8dp"
@@ -52,7 +52,7 @@
         <RadioButton
                 android:text="@string/episode_status_wish"
                 android:button="@null"
-                android:textAlignment="center"
+                android:gravity="center"
                 android:textColor="@color/color_checkable_white"
                 android:background="@drawable/bg_round_checkable"
                 android:padding="8dp"
@@ -63,7 +63,7 @@
         <RadioButton
                 android:text="@string/episode_status_drop"
                 android:button="@null"
-                android:textAlignment="center"
+                android:gravity="center"
                 android:textColor="@color/color_checkable_white"
                 android:background="@drawable/bg_round_checkable"
                 android:padding="8dp"
@@ -74,7 +74,7 @@
         <RadioButton
                 android:text="@string/episode_status_remove"
                 android:button="@null"
-                android:textAlignment="center"
+                android:gravity="center"
                 android:textColor="@color/color_checkable_white"
                 android:background="@drawable/bg_round_checkable"
                 android:padding="8dp"

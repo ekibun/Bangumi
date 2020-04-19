@@ -8,8 +8,8 @@
         android:layout_height="wrap_content"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
+        android:paddingLeft="12dp"
+        android:paddingRight="12dp"
         android:clickable="true"
         android:background="?android:attr/selectableItemBackground"
         android:focusable="true"
@@ -23,7 +23,7 @@
             android:layout_height="72dp"
             android:scaleType="centerCrop"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
             android:src="@drawable/err_404"
             tools:ignore="ContentDescription"/>
 

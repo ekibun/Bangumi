@@ -25,7 +25,7 @@
             android:id="@+id/item_login"
             android:text="@string/login"
             android:layout_width="100dp"
-            android:textAlignment="center"
+            android:gravity="center"
             android:layout_height="wrap_content"
             android:clickable="true"
             android:focusable="true"

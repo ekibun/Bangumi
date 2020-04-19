@@ -125,7 +125,7 @@ class CollectionPagerAdapter(
     @SuppressLint("UseSparseArrays")
     private val pageIndex = HashMap<Int, Int>()
 
-    fun collectionCallback(list: List<Subject>?, error: Throwable?) {
+    fun collectionCallback(list: List<Subject>?, error: Throwable?, fromCache: Boolean = false) {
         items.keys.forEach { position ->
             if (!useApi(position)) return@forEach
             val item = items[position] ?: return@forEach
@@ -134,9 +134,9 @@ class CollectionPagerAdapter(
                 if (error != null) item.first.loadMoreFail()
                 return@forEach
             }
-            item.first.isUseEmpty(true)
+            if (!fromCache) item.first.isUseEmpty(true)
             list.filter { it.type == tabList[position] }.let {
-                item.first.setNewData(it.sortedByDescending {
+                item.first.setNewData(it.sortedBy { it.airInfo.isNullOrEmpty() }.sortedByDescending {
                     val eps = it.eps?.filter { it.type == Episode.TYPE_MAIN }
                     val watchTo = eps?.lastOrNull { it.progress == Episode.PROGRESS_WATCH }
                     val airTo = eps?.lastOrNull { it.isAir }
@@ -158,14 +158,7 @@ class CollectionPagerAdapter(
         val useApi = useApi(position)
         if (page == 0) {
             if (!useApi) item.first.setNewData(null)
-            else mainPresenter?.collectionList?.filter { it.type == tabList[position] }?.let {
-                item.first.setNewData(it.sortedByDescending {
-                    val eps = it.eps?.filter { it.type == Episode.TYPE_MAIN }
-                    val watchTo = eps?.lastOrNull { it.progress == Episode.PROGRESS_WATCH }
-                    val airTo = eps?.lastOrNull { it.isAir }
-                    (if (watchTo != airTo) ":" else "") + (airTo?.airdate ?: "")
-                }.toMutableList())
-            }
+            else collectionCallback(mainPresenter?.collectionList, null, true)
             item.second.isRefreshing = true
         }
         val callback = { list: List<Subject> ->
