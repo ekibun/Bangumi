@@ -2,11 +2,12 @@ package soko.ekibun.bangumi.api.bangumi.bean
 
 import androidx.annotation.StringDef
 import androidx.annotation.StringRes
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import okhttp3.FormBody
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.xmlpull.v1.XmlPullParser
-import retrofit2.Call
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
@@ -200,14 +201,36 @@ data class Subject(
             }
         }
 
+        fun parseChaseCollection(str: String): Subject? {
+            val it = Jsoup.parse(str).selectFirst(".infoWrapper") ?: return null
+            val data = it.selectFirst(".headerInner a.textTip") ?: return null
+            return Subject(
+                id = data.attr("data-subject-id")?.toIntOrNull() ?: return null,
+                type = parseType(it.attr("subject_type")?.toIntOrNull()),
+                name = data.attr("data-subject-name"),
+                name_cn = data.attr("data-subject-name-cn"),
+                image = Bangumi.parseImageUrl(it.selectFirst("img")),
+                eps = Episode.parseProgressList(it),
+                eps_count = it.selectFirst(".prgBatchManagerForm .grey")?.text()?.trim(' ', '/')?.toIntOrNull()
+                    ?: it.selectFirst("input[name=watchedeps]")?.parent()?.ownText()?.trim(' ', '/')?.toIntOrNull()
+                    ?: 0,
+                vol_count = it.selectFirst("input[name=watched_vols]")?.parent()?.let {
+                    it.ownText().trim(' ', '/').toIntOrNull() ?: -1
+                } ?: 0,
+                ep_status = it.selectFirst("input[name=watchedeps]")?.attr("value")?.toIntOrNull() ?: 0,
+                vol_status = it.selectFirst("input[name=watched_vols]")?.attr("value")?.toIntOrNull() ?: 0)
+        }
+
         /**
          * 获取条目信息
          * @param subject Subject
          * @param onUpdate Function2<Subject, SaxTag, Unit>
          * @return Call<Subject>
          */
-        fun getDetail(subject: Subject, onUpdate: (Subject, SaxTag) -> Unit = { _, _ -> }): Call<Subject> {
-            return ApiHelper.buildHttpCall(subject.url) { rsp ->
+        fun getDetail(subject: Subject, onUpdate: (Subject, SaxTag) -> Unit = { _, _ -> }): Observable<Subject> {
+            return ApiHelper.createHttpObservable(
+                subject.url
+            ).subscribeOn(Schedulers.computation()).map { rsp ->
                 var lastTag = SaxTag.NONE
                 var tankobon: List<Subject>? = null
                 val updateSubject = { str: String, newTag: SaxTag ->
@@ -529,12 +552,12 @@ data class Subject(
             id: Int,
             @Episode.EpisodeStatus status: String,
             epIds: String? = null
-        ): Call<Boolean> {
-            return ApiHelper.buildHttpCall(
+        ): Observable<Boolean> {
+            return ApiHelper.createHttpObservable(
                 "${Bangumi.SERVER}/subject/ep/$id/status/$status?gh=${HttpUtil.formhash}&ajax=1",
                 body = FormBody.Builder()
                     .add("ep_id", epIds ?: id.toString()).build()
-            ) { rsp ->
+            ).subscribeOn(Schedulers.computation()).map { rsp ->
                 rsp.body?.string()?.contains("\"status\":\"ok\"") == true
             }
         }
@@ -550,16 +573,16 @@ data class Subject(
             subject: Subject,
             watchedeps: String,
             watched_vols: String
-        ): Call<Boolean> {
+        ): Observable<Boolean> {
             val body = FormBody.Builder()
                 .add("referer", "subject")
                 .add("submit", "更新")
                 .add("watchedeps", watchedeps)
             if (subject.vol_count != 0) body.add("watched_vols", watched_vols)
-            return ApiHelper.buildHttpCall(
+            return ApiHelper.createHttpObservable(
                 "${Bangumi.SERVER}/subject/set/watched/${subject.id}",
                 body = body.build()
-            ) { rsp ->
+            ).subscribeOn(Schedulers.computation()).map { rsp ->
                 rsp.code == 200
             }
         }

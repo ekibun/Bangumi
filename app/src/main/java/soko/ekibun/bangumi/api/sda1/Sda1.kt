@@ -1,10 +1,7 @@
 package soko.ekibun.bangumi.api.sda1
 
-import android.util.Log
+import io.reactivex.rxjava3.core.Observable
 import okhttp3.RequestBody
-import retrofit2.Call
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.http.Query
@@ -26,17 +23,17 @@ interface Sda1 {
     fun upload(
         @Query("filename") fileName: String,
         @Body file: RequestBody
-    ): Call<Response>
+    ): Observable<Response>
 
     companion object {
         private const val SERVER_API = "https://p.sda1.dev"
+
         /**
          * 创建retrofit实例
          * @return Sda1
          */
         fun createInstance(): Sda1 {
-            return Retrofit.Builder().baseUrl(SERVER_API)
-                .addConverterFactory(GsonConverterFactory.create())
+            return ApiHelper.createRetrofitBuilder(SERVER_API)
                 .build().create(Sda1::class.java)
         }
 
@@ -46,9 +43,8 @@ interface Sda1 {
          * @param fileName String
          * @return Call<String>
          */
-        fun uploadImage(requestBody: RequestBody, fileName: String): Call<String> {
-            return ApiHelper.convertCall(createInstance().upload(fileName, requestBody)) {
-                Log.v("rsp", it.toString())
+        fun uploadImage(requestBody: RequestBody, fileName: String): Observable<String> {
+            return createInstance().upload(fileName, requestBody).map {
                 it.data?.url ?: ""
             }
         }

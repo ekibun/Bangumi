@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.base_dialog.view.*
 import kotlinx.android.synthetic.main.dialog_epsode.view.*
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper
+import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
@@ -63,20 +63,17 @@ class EpisodeDialog : BaseDialog(R.layout.base_dialog) {
         fun updateProgress(eps: List<Episode>, newStatus: String, callback: (Boolean) -> Unit) {
             if (newStatus == WATCH_TO) {
                 val epIds = eps.map { it.id.toString() }.reduce { acc, s -> "$acc,$s" }
-                Subject.updateProgress(eps.last().id, Episode.PROGRESS_WATCH, epIds).enqueue(
-                        ApiHelper.buildCallback({
-                            eps.forEach { it.progress = Episode.PROGRESS_WATCH }
-                            callback(true)
-                        }, { if (it != null) callback(false) }))
+                Subject.updateProgress(eps.last().id, Episode.PROGRESS_WATCH, epIds).subscribeOnUiThread({
+                    eps.forEach { it.progress = Episode.PROGRESS_WATCH }
+                    callback(true)
+                }, { callback(false) })
                 return
             }
             eps.forEach { episode ->
-                Subject.updateProgress(episode.id, newStatus).enqueue(
-                        ApiHelper.buildCallback({
-                            episode.progress = newStatus
-                            callback(true)
-                        }, { if (it != null) callback(false) })
-                )
+                Subject.updateProgress(episode.id, newStatus).subscribeOnUiThread({
+                    episode.progress = newStatus
+                    callback(true)
+                }, { callback(false) })
             }
         }
     }

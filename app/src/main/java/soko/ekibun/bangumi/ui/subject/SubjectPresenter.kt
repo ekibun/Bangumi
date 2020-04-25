@@ -4,14 +4,14 @@ import android.view.Menu
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
+import io.reactivex.rxjava3.core.Observable
 import kotlinx.android.synthetic.main.activity_subject.*
 import kotlinx.android.synthetic.main.brvah_quick_view_load_more.view.*
 import kotlinx.android.synthetic.main.dialog_subject.view.*
 import kotlinx.android.synthetic.main.subject_detail.view.*
-import retrofit2.Call
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper
+import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.bangumi.bean.Comment
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
@@ -38,9 +38,7 @@ import java.util.*
  * @property dataCacheModel DataCacheModel
  * @property commentPage Int
  * @property episodeDialog EpisodeDialog?
- * @property subjectCall Call<Unit>?
  * @property subjectRefreshListener Function1<Any?, Unit>
- * @property epCalls Call<List<Episode>>?
  * @constructor
  */
 class SubjectPresenter(private val context: SubjectActivity, var subject: Subject) {
@@ -210,35 +208,31 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
             subject,
             watchedeps = (ep ?: subject.ep_status).toString(),
             watched_vols = (vol ?: subject.vol_status).toString()
-        ).enqueue(ApiHelper.buildCallback({
+        ).subscribeOnUiThread({
             refresh()
-        }, {}))
+        })
     }
 
-    private var subjectCall: Call<Unit>? = null
     var subjectRefreshListener = { _: Any? -> }
     /**
      * 刷新
      */
     fun refresh() {
-        subjectCall?.cancel()
         context.item_swipe.isRefreshing = true
 
-        subjectCall = ApiHelper.buildGroupCall(
-            arrayOf(
-                Jsdelivr.createInstance().onAirInfo(subject.id / 1000, subject.id),
-                Subject.getDetail(subject) { newSubject, tag ->
-                    subject = newSubject
-                    updateHistory()
-                    context.runOnUiThread {
-                        if (tag == Subject.SaxTag.COLLECT) refreshCollection()
-                        subjectView.updateSubject(newSubject, tag)
-                    }
-                },
-                BgmIpViewer.createInstance().subject(subject.id),
-                Episode.getSubjectEps(subject)
-            )
-        ) { _, it ->
+        Observable.merge(
+            Jsdelivr.createInstance().onAirInfo(subject.id / 1000, subject.id).onErrorComplete(),
+            Subject.getDetail(subject) { newSubject, tag ->
+                subject = newSubject
+                updateHistory()
+                context.runOnUiThread {
+                    if (tag == Subject.SaxTag.COLLECT) refreshCollection()
+                    subjectView.updateSubject(newSubject, tag)
+                }
+            },
+            BgmIpViewer.createInstance().subject(subject.id).onErrorComplete(),
+            Episode.getSubjectEps(subject)
+        ).subscribeOnUiThread({
             when (it) {
                 is Subject -> {
                     DataCacheModel.merge(subject, it)
@@ -263,11 +257,9 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
             }
             subjectRefreshListener(it)
             dataCacheModel.set(subject.cacheKey, subject)
-        }
-
-        subjectCall?.enqueue(ApiHelper.buildCallback({}, {
+        }, onComplete = {
             context.item_swipe.isRefreshing = false
-        }))
+        }, key = "subject_group_call")
     }
 
     private fun loadComment(subject: Subject) {
@@ -277,11 +269,11 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
         subjectView.detail.load_more_load_fail_view.visibility = View.GONE
         subjectView.detail.load_more_load_end_view.visibility = View.GONE
 
-        Comment.getSubjectComment(subject, page).enqueue(ApiHelper.buildCallback({
+        Comment.getSubjectComment(subject, page).subscribeOnUiThread({
             commentPage++
             if (page == 1)
                 subjectView.commentAdapter.setNewData(null)
-            if (it?.isEmpty() == true) {
+            if (it.isEmpty()) {
                 subjectView.detail.load_more_loading_view.visibility = View.GONE
                 subjectView.detail.load_more_load_fail_view.visibility = View.GONE
                 subjectView.detail.load_more_load_end_view.visibility = View.VISIBLE
@@ -298,17 +290,17 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
             subjectView.detail.load_more_loading_view.visibility = View.GONE
             subjectView.detail.load_more_load_fail_view.visibility = View.VISIBLE
             subjectView.detail.load_more_load_end_view.visibility = View.GONE
-        }))
+        })
     }
 
     private fun removeCollection(subject: Subject) {
         if (context.isFinishing) return
         AlertDialog.Builder(context).setTitle(R.string.collection_dialog_remove)
             .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
-                Collection.remove(subject).enqueue(ApiHelper.buildCallback({
+                Collection.remove(subject).subscribeOnUiThread({
                     if (it) subject.collect = Collection()
                     refreshCollection()
-                }, {}))
+                })
             }.show()
     }
 
@@ -362,10 +354,10 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
                         private = body.private,
                         tag = body.tag
                     )
-                ).enqueue(ApiHelper.buildCallback({
+                ).subscribeOnUiThread({
                     subject.collect = it
                     refreshCollection()
-                }, {}))
+                })
                 true
             }
             popupMenu.show()
@@ -379,16 +371,13 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
         }
     }
 
-    private var epCalls: Call<List<Episode>>? = null
     private fun refreshProgress() {
-        epCalls?.cancel()
-        epCalls = Episode.getSubjectEps(subject)
-        epCalls?.enqueue(ApiHelper.buildCallback({
+        Episode.getSubjectEps(subject).subscribeOnUiThread({
             val eps = subjectView.updateEpisode(it)
             subjectView.updateEpisodeLabel(eps, subject)
             subject.eps = eps
             dataCacheModel.set(subject.cacheKey, subject)
             subjectRefreshListener(eps)
-        }, {}))
+        }, key = "subject_eps")
     }
 }

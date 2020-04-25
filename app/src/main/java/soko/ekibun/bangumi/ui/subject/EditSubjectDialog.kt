@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.base_dialog.view.*
 import kotlinx.android.synthetic.main.dialog_edit_subject.view.*
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper
+import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.ui.view.BaseDialog
@@ -111,24 +111,27 @@ class EditSubjectDialog : BaseDialog(R.layout.base_dialog) {
         view.item_remove.setOnClickListener {
             AlertDialog.Builder(view.context).setTitle(R.string.collection_dialog_remove)
                     .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
-                        Collection.remove(subject).enqueue(ApiHelper.buildCallback({
-                            if (it) subject.collect = Collection()
-                            dismiss()
-                        }, {}))
+                    Collection.remove(subject).subscribeOnUiThread({
+                        if (it) subject.collect = Collection()
+                        dismiss()
+                    })
                     }.show()
         }
         view.item_submit.setOnClickListener {
-            Collection.updateStatus(subject, Collection(
-                    status = selectMap.toList().first { it.second == view.item_subject_status.checkedRadioButtonId }.first,
+            Collection.updateStatus(
+                subject, Collection(
+                    status = selectMap.toList()
+                        .first { it.second == view.item_subject_status.checkedRadioButtonId }.first,
                     rating = view.item_rating.rating.toInt(),
                     comment = view.item_comment.text.toString(),
                     private = if (view.item_private.isChecked) 1 else 0,
                     tag = view.item_tags.editableText.split(" ")
-            )).enqueue(ApiHelper.buildCallback({
+                )
+            ).subscribeOnUiThread({
                 subject.collect = it
                 callback()
                 dismiss()
-            }, {}))
+            })
         }
 
         val paddingBottom = view.item_buttons.paddingBottom

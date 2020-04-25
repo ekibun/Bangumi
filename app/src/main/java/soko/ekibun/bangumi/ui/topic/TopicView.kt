@@ -14,7 +14,6 @@ import kotlinx.android.synthetic.main.appbar_layout.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
-import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
 import soko.ekibun.bangumi.ui.view.CollapsibleAppBarHelper
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
@@ -167,7 +166,7 @@ class TopicView(private val context: TopicActivity) {
         if (header) return
         adapter.isUseEmpty(!isCache)
         topic.replies.forEach { it.isExpanded = true }
-        setNewData(topic.replies, topic, isCache)
+        setNewData(topic, isCache)
         scrollToPost(scrollPost)
         adapter.loadMoreEnd()
 
@@ -195,37 +194,12 @@ class TopicView(private val context: TopicActivity) {
 
     /**
      * 更新楼层数据
-     * @param data List<TopicPost>
      * @param topic Topic
      * @param isCache Boolean
      */
-    fun setNewData(data: List<TopicPost>, topic: Topic, isCache: Boolean = false) {
-        var floor = 0
-        var subFloor = 0
-        var referPost: TopicPost? = null
-        // 楼层排序
-        val replies = data.filter {
-            if (it.isSub) {
-                subFloor++
-            } else {
-                floor++
-                subFloor = 0
-            }
-            it.floor = floor
-            it.sub_floor = subFloor
-            it.editable = it.is_self
-            if (subFloor == 0) {
-                referPost = it
-                referPost?.subItems?.clear()
-                true
-            } else {
-                referPost?.editable = false
-                referPost?.addSubItem(it)
-                false
-            }
-        }
+    fun setNewData(topic: Topic, isCache: Boolean = false) {
         // 加上blog的正文
-        adapter.setNewData(listOfNotNull(topic.blog).plus(replies))
+        adapter.setNewData(listOfNotNull(topic.blog).plus(topic.replies))
         var i = 0
         while (i < adapter.data.size) {
             val topicPost = adapter.data[i]
@@ -235,8 +209,6 @@ class TopicView(private val context: TopicActivity) {
             }
             i++
         }
-        // 缓存
-        topic.replies = data
         if (!isCache) context.topicPresenter.dataCacheModel.set(topic.cacheKey, topic)
     }
 }

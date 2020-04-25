@@ -10,12 +10,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.GravityCompat
+import io.reactivex.rxjava3.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.nav_header.view.*
-import retrofit2.Call
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper
+import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
@@ -111,7 +111,7 @@ class MainPresenter(private val context: MainActivity) {
                 switchUser = UserModel.current()
                 val user = UserModel.userList.users[it.itemId]?.user
                 UserModel.switchToUser(user)
-                if (lastUser?.username != user?.username) collectionCall?.cancel()
+                if (lastUser?.username != user?.username) collectionCall?.dispose()
                 if (user != null) updateUser(user)
                 else WebActivity.startActivityForAuth(context)
                 true
@@ -177,16 +177,13 @@ class MainPresenter(private val context: MainActivity) {
         }
     }
 
-    /**
-     * 更新用户信息
-     */
-    fun refreshUser() {
+    private fun refreshUser() {
         drawerView.homeFragment.updateUserCollection()
     }
 
     var calendar: List<BangumiCalendarItem> = App.app.dataCacheModel.get("calendar") ?: ArrayList()
     var collectionList: List<Subject> = ArrayList()
-    private var collectionCall: Call<List<Subject>>? = null
+    private var collectionCall: Disposable? = null
     var notify: Pair<Int, Int>? = null
     var mergeAirInfo = { list: List<Subject> ->
         list.forEach { subject ->
@@ -222,7 +219,6 @@ class MainPresenter(private val context: MainActivity) {
      * 获取收藏
      */
     fun updateUserCollection() {
-        collectionCall?.cancel()
         val callUser = user
         collectionCall = Bangumi.getCollectionSax({ user ->
             if (callUser?.username != this.user?.username) throw Exception("Canceled")
@@ -232,38 +228,34 @@ class MainPresenter(private val context: MainActivity) {
         }, {
             if (callUser?.username != this.user?.username) throw Exception("Canceled")
             notify = it
-            context.runOnUiThread { context.notifyMenu?.badge = notify?.let { it.first + it.second } ?: 0 }
-        }, {
+            context.notifyMenu?.badge = notify?.let { it.first + it.second } ?: 0
+        }).subscribeOnUiThread({
             if (callUser?.username != this.user?.username) throw Exception("Canceled")
             collectionList = it
             mergeAirInfo(it)
             notifyCollectionChange()
-        })
-        collectionCall?.enqueue(ApiHelper.buildCallback({}, {
-            if (callUser?.username != this.user?.username) return@buildCallback
+        }, {
+            if (callUser?.username != this.user?.username) return@subscribeOnUiThread
             drawerView.homeFragment.collectionFragment.collectionCallback(null, it)
             if ((it as? Exception)?.message == "login failed") {
                 user?.let { u -> UserModel.removeUser(u) }
                 UserModel.switchToUser(null)
                 updateUser(null)
             }
-        }))
+        }, key = "update_collection")
     }
-
-    private var calendarCall: Call<List<BangumiCalendarItem>>? = null
 
     /**
      * 加载日历列表
      */
     fun updateCalendarList() {
-        calendarCall?.cancel()
-        calendarCall = Jsdelivr.createInstance().bangumiCalendar()
-        calendarCall?.enqueue(ApiHelper.buildCallback({
-            calendar = it
-            drawerView.calendarFragment.calendarCallback(it, null)
-        }, {
-            drawerView.calendarFragment.calendarCallback(null, it)
-        }))
+        Jsdelivr.createInstance().bangumiCalendar()
+            .subscribeOnUiThread({
+                calendar = it
+                drawerView.calendarFragment.calendarCallback(it, null)
+            }, {
+                drawerView.calendarFragment.calendarCallback(null, it)
+            }, key = "bangumi_calendar")
     }
 
     init {

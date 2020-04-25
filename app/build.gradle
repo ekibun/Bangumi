@@ -29,6 +29,12 @@ android {
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         buildConfigField "boolean", "AUTO_UPDATES", "true"
     }
+
+    compileOptions{
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -70,6 +76,9 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp-brotli:4.2.1'
     implementation 'com.squareup.retrofit2:retrofit:2.3.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.3.0'
+    implementation 'com.github.akarnokd:rxjava3-retrofit-adapter:3.0.0'
+    implementation 'io.reactivex.rxjava3:rxjava:3.0.2'
+    implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
     implementation 'jp.wasabeef:glide-transformations:4.0.1'
     implementation 'com.github.siyamed:android-shape-imageview:0.9.3'
     implementation 'com.zhy:base-adapter:3.0.3'

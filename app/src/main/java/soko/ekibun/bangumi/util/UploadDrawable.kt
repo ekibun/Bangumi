@@ -1,13 +1,14 @@
 package soko.ekibun.bangumi.util
 
 import android.net.Uri
-import android.preference.PreferenceManager
 import android.util.Log
 import android.widget.TextView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
+import io.reactivex.rxjava3.core.Observable
 import okhttp3.RequestBody
-import retrofit2.Call
+import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
+import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.sda1.Sda1
 import soko.ekibun.bangumi.api.uploadcc.UploadCC
 import java.lang.ref.WeakReference
@@ -27,7 +28,6 @@ class UploadDrawable(
         this.uri = uri
     }
 
-    var uploadCall: Call<String>? = null
     override fun loadImage() {
         if (url != null) {
             super.loadImage()
@@ -49,47 +49,35 @@ class UploadDrawable(
             update(circularProgressDrawable, textSize.toInt())
             circularProgressDrawable.start()
             val errorDrawable = view.context.getDrawable(R.drawable.ic_broken_image)
-            val callback = object : RetrofitCallback<String>() {
-                override fun onSuccess(call: Call<String>?, response: retrofit2.Response<String>) {
+            val fileRequestBody = FileRequestBody(requestBody) { total, progress ->
+                view.post {
                     if (circularProgressDrawable.isRunning) circularProgressDrawable.stop()
-                    val imgUrl = response.body() ?: ""
-                    Log.v("rspurl", imgUrl)
-                    if (imgUrl.isNotEmpty()) {
-                        url = imgUrl
-                        onUploaded(imgUrl)
-                        loadImage()
-                    } else {
-                        error = true
-                        errorDrawable?.let { update(it, textSize.toInt()) }
-                    }
-                }
-
-                override fun onFailure(call: Call<String>, t: Throwable) {
-                    if (circularProgressDrawable.isRunning) circularProgressDrawable.stop()
-                    error = true
-                    errorDrawable?.let { update(it, textSize.toInt()) }
-                }
-
-                override fun onLoading(total: Long, progress: Long) {
-                    super.onLoading(total, progress)
-                    view.post {
-                        if (circularProgressDrawable.isRunning) circularProgressDrawable.stop()
-                        circularProgressDrawable.setStartEndTrim(0f, progress * 1f / total)
-                        circularProgressDrawable.progressRotation = 0.75f
-                        circularProgressDrawable.invalidateSelf()
-                    }
+                    circularProgressDrawable.setStartEndTrim(0f, progress * 1f / total)
+                    circularProgressDrawable.progressRotation = 0.75f
+                    circularProgressDrawable.invalidateSelf()
                 }
             }
-            val fileRequestBody = FileRequestBody(requestBody, callback)
-            uploadCall?.cancel()
-            uploadCall = when (PreferenceManager.getDefaultSharedPreferences(view.context).getString(
+
+            when (App.app.sp.getString(
                 "image_uploader",
                 "p.sda1.dev"
             )) {
                 "upload.cc" -> UploadCC.uploadImage(fileRequestBody, fileName)
                 else -> Sda1.uploadImage(fileRequestBody, fileName)
-            }
-            uploadCall?.enqueue(callback)
+            }.flatMap {
+                if (it.isNullOrEmpty()) Observable.error(IllegalAccessException("Image Response Empty!"))
+                else Observable.just(it)
+            }.subscribeOnUiThread({ imgUrl ->
+                Log.v("rspurl", imgUrl)
+                url = imgUrl
+                onUploaded(imgUrl)
+                loadImage()
+            }, {
+                error = true
+                errorDrawable?.let { update(it, textSize.toInt()) }
+            }, {
+                if (circularProgressDrawable.isRunning) circularProgressDrawable.stop()
+            })
         }
     }
 }

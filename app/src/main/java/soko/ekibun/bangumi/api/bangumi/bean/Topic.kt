@@ -1,15 +1,17 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.schedulers.Schedulers
+import io.reactivex.rxjava3.subjects.ReplaySubject
 import okhttp3.FormBody
 import org.jsoup.Jsoup
 import org.xmlpull.v1.XmlPullParser
-import retrofit2.Call
 import soko.ekibun.bangumi.api.ApiHelper
+import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.JsonUtil
 import soko.ekibun.bangumi.util.TextUtil
-import java.util.*
 
 /**
  * 帖子
@@ -63,8 +65,10 @@ data class Topic(
          */
         fun getList(
             type: String
-        ): Call<List<Topic>> {
-            return ApiHelper.buildHttpCall("${Bangumi.SERVER}/rakuen/topiclist" + if (type.isEmpty()) "" else "?type=$type") { rsp ->
+        ): Observable<List<Topic>> {
+            return ApiHelper.createHttpObservable(
+                "${Bangumi.SERVER}/rakuen/topiclist" + if (type.isEmpty()) "" else "?type=$type"
+            ).subscribeOn(Schedulers.computation()).map { rsp ->
                 val doc = Jsoup.parse(rsp.body?.string() ?: "")
                 doc.select(".item_list").mapNotNull {
                     val title = it.selectFirst(".title") ?: return@mapNotNull null
@@ -92,20 +96,41 @@ data class Topic(
          * @param onNewPost Function1<[@kotlin.ParameterName] TopicPost, Unit>
          * @return Call<Topic>
          */
-        fun getTopicSax(topic: Topic, onUpdate: (Topic) -> Unit, onNewPost: (post: TopicPost) -> Unit): Call<Topic> {
-            return ApiHelper.buildHttpCall(
+        fun getTopicSax(
+            topic: Topic,
+            onUpdate: (Topic) -> Unit,
+            onNewPost: (post: List<TopicPost>) -> Unit
+        ): Observable<Topic> {
+            return ApiHelper.createHttpObservable(
                 when (topic.model) {
                     "blog" -> "${Bangumi.SERVER}/blog/${topic.id}"
                     else -> "${Bangumi.SERVER}/rakuen/topic/${topic.model}/${topic.id}"
                 }
-            ) { rsp ->
+            ).subscribeOn(Schedulers.computation()).map { rsp ->
                 var beforeData = ""
-                val replies = ArrayList<TopicPost>()
+
+                val replyPub = ReplaySubject.create<String>()
+                val observable = replyPub.observeOn(Schedulers.computation()).buffer(20).flatMap { str ->
+                    Observable.just(0).observeOn(Schedulers.computation()).map {
+                        // Log.v("Thread", Thread.currentThread().name)
+                        val doc = Jsoup.parse(str.joinToString(""))
+                        doc.outputSettings().prettyPrint(false)
+                        doc.select(".re_info").mapNotNull {
+                            TopicPost.parse(it.parent())
+                        }
+                    }
+                }
+
+                observable.subscribeOnUiThread({
+                    onNewPost(it)
+                })
+
                 val updateReply = { str: String ->
-                    val doc = Jsoup.parse(str)
-                    doc.outputSettings().prettyPrint(false)
                     if (beforeData.isEmpty()) {
                         beforeData = str
+                        val doc = Jsoup.parse(str)
+                        doc.outputSettings().prettyPrint(false)
+
                         topic.title = doc.selectFirst("#pageHeader h1")?.ownText()
 
                         topic.links = LinkedHashMap<String, String>().let { links ->
@@ -133,14 +158,11 @@ data class Topic(
                                 editable = doc.selectFirst(".re_info")?.text()?.contains("del") == true,
                                 model = "blog"
                             )
-                            onNewPost(topic.blog!!)
+                            onNewPost(listOf(topic.blog!!))
                         }
                         onUpdate(topic)
                     } else {
-                        TopicPost.parse(doc)?.let {
-                            replies += it
-                            onNewPost(it)
-                        }
+                        replyPub.onNext(str)
                     }
                 }
                 val lastData = ApiHelper.parseWithSax(rsp) { parser, str ->
@@ -157,6 +179,7 @@ data class Topic(
                         else -> ApiHelper.SaxEventType.NOTHING
                     }
                 }
+                replyPub.onComplete()
 
                 val doc = Jsoup.parse(beforeData + lastData)
                 val error = doc.selectFirst("#reply_wrapper")?.selectFirst(".tip")
@@ -165,7 +188,8 @@ data class Topic(
                 topic.error = error?.text()?.let {
                     Pair(it, Bangumi.parseUrl(error.selectFirst("a")?.attr("href") ?: ""))
                 }
-                topic.replies = replies
+                topic.replies = observable.blockingIterable().flatten()
+                    .let { replies -> replies.sortedBy { it.floor + it.sub_floor * 1.0f / replies.size } }
                 topic
             }
         }
@@ -177,13 +201,13 @@ data class Topic(
          */
         fun remove(
             topic: Topic
-        ): Call<Boolean> {
-            return ApiHelper.buildHttpCall(
+        ): Observable<Boolean> {
+            return ApiHelper.createHttpObservable(
                 when (topic.model) {
                     "blog" -> "${Bangumi.SERVER}/erase/entry/${topic.id}"
                     else -> topic.url.replace(Bangumi.SERVER, "${Bangumi.SERVER}/erase")
                 } + "?gh=${HttpUtil.formhash}&ajax=1"
-            ) { rsp ->
+            ).subscribeOn(Schedulers.computation()).map { rsp ->
                 rsp.code == 200
             }
         }
@@ -199,7 +223,7 @@ data class Topic(
             topic: Topic,
             post: TopicPost?,
             content: String
-        ): Call<List<TopicPost>> {
+        ): Observable<List<TopicPost>> {
             val comment = if (post?.isSub == true)
                 "[quote][b]${post.nickname}[/b] 说: ${Jsoup.parse(post.pst_content).let { doc ->
                     doc.select("div.quote").remove()
@@ -219,12 +243,12 @@ data class Topic(
                     .add("post_uid", post.pst_uid)
             }
 
-            return ApiHelper.buildHttpCall(
+            return ApiHelper.createHttpObservable(
                 when (topic.model) {
                     "blog" -> "${Bangumi.SERVER}/blog/entry/${topic.id}"
                     else -> topic.url
                 } + "/new_reply?ajax=1", body = data.build()
-            ) { rsp ->
+            ).subscribeOn(Schedulers.computation()).map { rsp ->
                 val replies = ArrayList(topic.replies)
                 replies.removeAll { it.sub_floor > 0 }
                 replies.sortedBy { it.floor }
@@ -270,14 +294,14 @@ data class Topic(
             topic: Topic,
             title: String,
             content: String
-        ): Call<Boolean> {
-            return ApiHelper.buildHttpCall(
+        ): Observable<Boolean> {
+            return ApiHelper.createHttpObservable(
                 topic.url + "/edit?ajax=1", body = FormBody.Builder()
                     .add("formhash", HttpUtil.formhash)
                     .add("title", title)
                     .add("submit", "改好了")
                     .add("content", content).build()
-            ) { rsp ->
+            ).subscribeOn(Schedulers.computation()).map { rsp ->
                 rsp.code == 200
             }
         }

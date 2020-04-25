@@ -9,11 +9,9 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_search.*
-import retrofit2.Call
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper
+import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.Bangumi
-import soko.ekibun.bangumi.api.bangumi.bean.MonoInfo
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.model.SearchHistoryModel
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
@@ -103,8 +101,6 @@ class SearchPresenter(private val context: SearchActivity) {
         }
     }
 
-    private var subjectCall : Call<List<Subject>>? = null
-    private var monoCall : Call<List<MonoInfo>>? = null
     private var lastKey = ""
     private var loadCount = 0
     /**
@@ -121,8 +117,6 @@ class SearchPresenter(private val context: SearchActivity) {
         }
         if(key.isEmpty()) {
             context.search_swipe?.isRefreshing = false
-            subjectCall?.cancel()
-            monoCall?.cancel()
         }else {
             context.search_swipe.visibility = View.VISIBLE
             SearchHistoryModel.addHistory(key)
@@ -130,44 +124,42 @@ class SearchPresenter(private val context: SearchActivity) {
 
             if (loadCount == 0)
                 context.search_swipe?.isRefreshing = true
-            subjectCall?.cancel()
-            monoCall?.cancel()
             val page = loadCount
             if (typeView.subjectTypeList.containsKey(typeView.selectedType)) {
-                subjectCall = Bangumi.searchSubject(
+                Bangumi.searchSubject(
                     key, typeView.subjectTypeList[typeView.selectedType]
                         ?: Subject.TYPE_ANY, page + 1
-                )//api.search(key, SubjectType.ALL, loadCount)
-                subjectCall?.enqueue(ApiHelper.buildCallback({ list ->
-                    //val list =it.list
-                    if(list == null || list.isEmpty())
+                ).subscribeOnUiThread({ list ->
+                    if (list.isEmpty())
                         subjectAdapter.loadMoreEnd()
-                    else{
+                    else {
                         subjectAdapter.loadMoreComplete()
                         subjectAdapter.addData(list)
                         loadCount = page + 1 //searchAdapter.data.size
                     }
-                },{
+                }, {
                     subjectAdapter.loadMoreFail()
+                }, {
                     context.search_swipe?.isRefreshing = false
-                }))
+                })
                 if(context.search_list.adapter != subjectAdapter) context.search_list.adapter = subjectAdapter
-            }else{
-                monoCall = Bangumi.searchMono(key, typeView.monoTypeList[typeView.selectedType]
-                        ?: "all", page + 1)//api.search(key, SubjectType.ALL, loadCount)
-                monoCall?.enqueue(ApiHelper.buildCallback({list->
-                    //val list =it.list
-                    if(list == null || list.isEmpty())
+            }else {
+                Bangumi.searchMono(
+                    key, typeView.monoTypeList[typeView.selectedType]
+                        ?: "all", page + 1
+                ).subscribeOnUiThread({ list ->
+                    if (list.isEmpty())
                         monoAdapter.loadMoreEnd()
-                    else{
+                    else {
                         monoAdapter.loadMoreComplete()
                         monoAdapter.addData(list)
                         loadCount = page + 1 //searchAdapter.data.size
                     }
-                },{
+                }, {
                     monoAdapter.loadMoreFail()
+                }, {
                     context.search_swipe?.isRefreshing = false
-                }))
+                })
                 if(context.search_list.adapter != monoAdapter) context.search_list.adapter = monoAdapter
             }
         }

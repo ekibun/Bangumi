@@ -1,7 +1,8 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import org.jsoup.Jsoup
-import retrofit2.Call
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 
@@ -29,8 +30,10 @@ data class Comment(
         fun getSubjectComment(
             subject: Subject,
             page: Int
-        ): Call<List<Comment>> {
-            return ApiHelper.buildHttpCall("${Bangumi.SERVER}/subject/${subject.id}/comments?page=$page") { rsp ->
+        ): Observable<List<Comment>> {
+            return ApiHelper.createHttpObservable(
+                "${Bangumi.SERVER}/subject/${subject.id}/comments?page=$page"
+            ).subscribeOn(Schedulers.computation()).map { rsp ->
                 val doc = Jsoup.parse(rsp.body?.string() ?: "")
                 doc.select("#comment_box .item").mapNotNull {
                     val user = it.selectFirst(".text a")

@@ -8,11 +8,9 @@ import android.view.ViewGroup
 import android.view.WindowInsets
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.content_index.*
-import retrofit2.Call
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper
+import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.Bangumi
-import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
@@ -21,12 +19,6 @@ import java.util.*
 
 /**
  * 索引PagerAdapter
- * @property windowInsets WindowInsets?
- * @property indexTypeView IndexTypeView
- * @property pageIndex SparseIntArray
- * @property indexCalls WeakHashMap<Int, Call<List<Subject>>>
- * @property holders ArrayList<IndexPagerViewHolder>
- * @constructor
  */
 class IndexPagerAdapter(fragment: IndexFragment, pager: androidx.viewpager.widget.ViewPager) :
     RecyclePagerAdapter<IndexPagerAdapter.IndexPagerViewHolder>() {
@@ -49,34 +41,34 @@ class IndexPagerAdapter(fragment: IndexFragment, pager: androidx.viewpager.widge
     }
 
     private val pageIndex = SparseIntArray()
-    private var indexCalls = WeakHashMap<Int, Call<List<Subject>>>()
     private fun loadIndex(item: IndexPagerViewHolder){
         val indexType = IndexTypeView.typeList[indexTypeView.selectedType]?:return
 
         val position = item.position
-        val year = position/12 + 1000
+        val year = position / 12 + 1000
         val month = position % 12 + 1
-        val page = pageIndex.get(position,0)
-        indexCalls[position]?.cancel()
-        if(page == 0){
+        val page = pageIndex.get(position, 0)
+        if (page == 0) {
             item.adapter.setNewData(null)
             item.view.isRefreshing = true
         }
-        indexCalls[position] = Bangumi.browserAirTime(indexType.first, year, month, page + 1, indexType.second)
         item.adapter.isUseEmpty(false)
-        indexCalls[position]?.enqueue(ApiHelper.buildCallback({
-            item.adapter.isUseEmpty(true)
-            if(it.isEmpty()){
-                item.adapter.loadMoreEnd()
-            }else{
-                item.adapter.loadMoreComplete()
-                item.adapter.addData(it)
-                pageIndex.put(position, (pageIndex.get(position,0)) + 1)
-            }
-        }, {
-            item.adapter.loadMoreFail()
-            item.view.isRefreshing = false
-        }))
+
+        Bangumi.browserAirTime(indexType.first, year, month, page + 1, indexType.second)
+            .subscribeOnUiThread({
+                item.adapter.isUseEmpty(true)
+                if (it.isEmpty()) {
+                    item.adapter.loadMoreEnd()
+                } else {
+                    item.adapter.loadMoreComplete()
+                    item.adapter.addData(it)
+                    pageIndex.put(position, (pageIndex.get(position, 0)) + 1)
+                }
+            }, {
+                item.adapter.loadMoreFail()
+            }, {
+                item.view.isRefreshing = false
+            }, "bangumi_index_$position")
     }
 
     private fun reset(item: IndexPagerViewHolder){
@@ -85,7 +77,7 @@ class IndexPagerAdapter(fragment: IndexFragment, pager: androidx.viewpager.widge
         loadIndex(item)
     }
 
-    val holders = ArrayList<IndexPagerViewHolder>()
+    private val holders = ArrayList<IndexPagerViewHolder>()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): IndexPagerViewHolder {
         val swipeRefreshLayout = FixSwipeRefreshLayout(parent.context)
         val recyclerView = RecyclerView(parent.context)

@@ -8,10 +8,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
+import io.reactivex.rxjava3.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_collection.*
-import retrofit2.Call
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper
+import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
@@ -115,12 +115,12 @@ class CollectionPagerAdapter(
     fun reset() {
         items.forEach { (it.value.second.tag as? RecyclerView)?.tag = null }
         pageIndex.clear()
-        collectionCalls.forEach { it.value.cancel() }
+        collectionCalls.forEach { it.value.dispose() }
         loadCollectionList()
     }
 
     @SuppressLint("UseSparseArrays")
-    private var collectionCalls = HashMap<Int, Call<List<Subject>>>()
+    private var collectionCalls = HashMap<Int, Disposable>()
 
     @SuppressLint("UseSparseArrays")
     private val pageIndex = HashMap<Int, Int>()
@@ -154,38 +154,12 @@ class CollectionPagerAdapter(
         item.second.isRefreshing = false
         item.first.isUseEmpty(false)
         val page = pageIndex.getOrPut(position) { 0 }
-        collectionCalls[position]?.cancel()
+        collectionCalls[position]?.dispose()
         val useApi = useApi(position)
         if (page == 0) {
             if (!useApi) item.first.setNewData(null)
             else collectionCallback(mainPresenter?.collectionList, null, true)
             item.second.isRefreshing = true
-        }
-        val callback = { list: List<Subject> ->
-            item.first.isUseEmpty(true)
-            list.filter { !useApi || it.type == tabList[position] }.let {
-                if (!useApi) {
-                    it.forEach { it.type = tabList[position] }
-                    item.first.addData(it)
-                } else {
-                    item.first.setNewData(it.sortedByDescending {
-                        val eps = it.eps?.filter { it.type == Episode.TYPE_MAIN }
-                        val watchTo = eps?.lastOrNull { it.progress == Episode.PROGRESS_WATCH }
-                        val airTo = eps?.lastOrNull { it.isAir }
-                        (if (watchTo != airTo) ":" else "") + (airTo?.airdate ?: "")
-                    }.toMutableList())
-                }
-            }
-            if (useApi || list.size < 10)
-                item.first.loadMoreEnd()
-            else
-                item.first.loadMoreComplete()
-            (item.second.tag as? RecyclerView)?.tag = true
-            pageIndex[position] = (pageIndex[position] ?: 0) + 1
-        }
-        val onError = { it: Throwable? ->
-            item.second.isRefreshing = false
-            if (it != null) item.first.loadMoreFail()
         }
         if (useApi) mainPresenter?.updateUserCollection()
         else {
@@ -193,8 +167,32 @@ class CollectionPagerAdapter(
                 tabList[position],
                 UserModel.current()?.username ?: return,
                 collectionTypeView.getType(), page + 1
-            )
-            collectionCalls[position]?.enqueue(ApiHelper.buildCallback(callback, onError))
+            ).subscribeOnUiThread({ list: List<Subject> ->
+                item.first.isUseEmpty(true)
+                list.filter { !useApi || it.type == tabList[position] }.let {
+                    if (!useApi) {
+                        it.forEach { it.type = tabList[position] }
+                        item.first.addData(it)
+                    } else {
+                        item.first.setNewData(it.sortedByDescending {
+                            val eps = it.eps?.filter { it.type == Episode.TYPE_MAIN }
+                            val watchTo = eps?.lastOrNull { it.progress == Episode.PROGRESS_WATCH }
+                            val airTo = eps?.lastOrNull { it.isAir }
+                            (if (watchTo != airTo) ":" else "") + (airTo?.airdate ?: "")
+                        }.toMutableList())
+                    }
+                }
+                if (useApi || list.size < 10)
+                    item.first.loadMoreEnd()
+                else
+                    item.first.loadMoreComplete()
+                (item.second.tag as? RecyclerView)?.tag = true
+                pageIndex[position] = (pageIndex[position] ?: 0) + 1
+            }, {
+                item.first.loadMoreFail()
+            }, {
+                item.second.isRefreshing = false
+            })
         }
     }
 

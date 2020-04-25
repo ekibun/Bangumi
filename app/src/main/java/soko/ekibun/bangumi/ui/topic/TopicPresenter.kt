@@ -6,7 +6,7 @@ import androidx.appcompat.app.AlertDialog
 import kotlinx.android.synthetic.main.activity_topic.*
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper
+import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
@@ -83,8 +83,8 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
                 topicView.processTopic(data, scrollPost, true)
             }
             updateHistory()
-        }, { post ->
-            context.runOnUiThread {
+        }, { posts ->
+            posts.forEach { post ->
                 val related = topicView.adapter.data.find { it.pst_id == post.relate }
                 if (post.sub_floor > related?.subItems?.size ?: 0) {
                     related?.subItems?.add(post)
@@ -101,12 +101,14 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
                     topicView.adapter.addData(post)
                 }
             }
-        }).enqueue(ApiHelper.buildCallback({ topic ->
+
+        }).subscribeOnUiThread({ topic ->
             processTopic(topic, scrollPost)
-        }) {
-            loadMoreFail = it != null
-            context.item_swipe.isRefreshing = false
+        }, {
+            loadMoreFail = true
             topicView.adapter.loadMoreFail()
+        }, {
+            context.item_swipe.isRefreshing = false
         })
     }
 
@@ -127,16 +129,17 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
                     AlertDialog.Builder(context).setMessage(R.string.reply_dialog_remove)
                             .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
                                 if (post.floor == if (topic.blog == null) 1 else 0) {
-                                    Topic.remove(topic).enqueue(ApiHelper.buildCallback<Boolean>({
+                                    Topic.remove(topic).subscribeOnUiThread({
                                         if (it) context.finish()
-                                    }) {})
+                                    })
                                 } else {
-                                    TopicPost.remove(post).enqueue(ApiHelper.buildCallback<Boolean>({
-                                        val data = ArrayList(topic.replies)
-                                        data.removeAll { topicPost -> topicPost.pst_id == post.pst_id }
-                                        topicView.setNewData(data, topic)
-                                        topicView.adapter.loadMoreEnd()
-                                    }) {})
+                                    TopicPost.remove(post).subscribeOnUiThread({
+                                        // TODO
+//                                        val data = ArrayList(topic.replies)
+//                                        data.removeAll { topicPost -> topicPost.pst_id == post.pst_id }
+//                                        topicView.setNewData(data, topic)
+//                                        topicView.adapter.loadMoreEnd()
+                                    })
                                 }
                             }.show()
                 }
@@ -154,9 +157,9 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
                                 Topic.edit(topic, title ?: "", text ?: "")
                             } else {
                                 TopicPost.edit(post, text ?: "")
-                            }.enqueue(ApiHelper.buildCallback({
+                            }.subscribeOnUiThread({
                                 getTopic(post.pst_id)
-                            }))
+                            })
                         }
                     }
                 }
@@ -191,12 +194,13 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
                 ?: context.getString(R.string.parse_hint_reply_topic, topic.title)
         buildPopupWindow(hint, drafts[draftId]) { inputString, _, send ->
             if (send) {
-                Topic.reply(topic, post, inputString ?: "").enqueue(ApiHelper.buildCallback<List<TopicPost>>({
-                    val mypost = it.filter { it.is_self }.maxBy { it.pst_id }
-                    topicView.setNewData(it, topic)
-                    topicView.adapter.loadMoreEnd()
-                    mypost?.let { topicView.scrollToPost(it.pst_id, true) }
-                }) {})
+                Topic.reply(topic, post, inputString ?: "").subscribeOnUiThread({
+                    // TODO
+//                    val mypost = it.filter { it.is_self }.maxBy { it.pst_id }
+//                    topicView.setNewData(it, topic)
+//                    topicView.adapter.loadMoreEnd()
+//                    mypost?.let { topicView.scrollToPost(it.pst_id, true) }
+                })
             } else {
                 inputString?.let { drafts[draftId] = it }
             }

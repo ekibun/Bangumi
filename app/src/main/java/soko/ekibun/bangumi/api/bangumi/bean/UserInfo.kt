@@ -1,8 +1,8 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
 import org.jsoup.nodes.Element
-import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
+import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.JsonUtil
 import java.util.*
 
@@ -61,8 +61,11 @@ data class UserInfo(
         private val userCache = WeakHashMap<String, UserInfo>()
         fun getApiUser(user: UserInfo): UserInfo {
             return userCache.getOrPut(user.username) {
-                JsonUtil.toJsonObject(ApiHelper.buildHttpCall("https://api.bgm.tv/user/${user.username}") { it.body?.string() }
-                    .execute().body() ?: "").let { obj ->
+                JsonUtil.toJsonObject(
+                    HttpUtil.getCall(
+                        "https://api.bgm.tv/user/${user.username}"
+                    ).execute().body?.string() ?: ""
+                ).let { obj ->
                     UserInfo(
                         id = obj.get("id")?.asInt ?: 0,
                         username = obj.get("username")?.asString,

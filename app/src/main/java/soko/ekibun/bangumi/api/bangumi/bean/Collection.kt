@@ -2,8 +2,9 @@ package soko.ekibun.bangumi.api.bangumi.bean
 
 import androidx.annotation.ArrayRes
 import androidx.annotation.StringDef
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import okhttp3.FormBody
-import retrofit2.Call
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
@@ -83,8 +84,8 @@ data class Collection(
         fun updateStatus(
             subject: Subject,
             newCollection: Collection
-        ): Call<Collection> {
-            return ApiHelper.buildHttpCall("${Bangumi.SERVER}/subject/${subject.id}/interest/update?gh=${HttpUtil.formhash}",
+        ): Observable<Collection> {
+            return ApiHelper.createHttpObservable("${Bangumi.SERVER}/subject/${subject.id}/interest/update?gh=${HttpUtil.formhash}",
                 body = FormBody.Builder()
                     .add("referer", "ajax")
                     .add("interest", newCollection.statusId.toString())
@@ -94,7 +95,8 @@ data class Collection(
                         if (newCollection.tag?.isNotEmpty() == true) newCollection.tag.reduce { acc, s -> "$acc $s" } else "")
                     .add("comment", newCollection.comment ?: "")
                     .add("privacy", newCollection.private.toString())
-                    .add("update", "保存").build()) {
+                    .add("update", "保存").build()
+            ).subscribeOn(Schedulers.computation()).map {
                 newCollection
             }
         }
@@ -106,8 +108,10 @@ data class Collection(
          */
         fun remove(
             subject: Subject
-        ): Call<Boolean> {
-            return ApiHelper.buildHttpCall("${Bangumi.SERVER}/subject/${subject.id}/remove?gh=${HttpUtil.formhash}") { rsp ->
+        ): Observable<Boolean> {
+            return ApiHelper.createHttpObservable(
+                "${Bangumi.SERVER}/subject/${subject.id}/remove?gh=${HttpUtil.formhash}"
+            ).subscribeOn(Schedulers.computation()).map { rsp ->
                 rsp.code == 200
             }
         }

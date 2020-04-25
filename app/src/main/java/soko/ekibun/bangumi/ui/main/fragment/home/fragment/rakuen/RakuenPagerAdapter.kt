@@ -5,9 +5,9 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import retrofit2.Call
+import io.reactivex.rxjava3.disposables.Disposable
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper
+import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.ui.topic.TopicActivity
 import soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
@@ -78,13 +78,13 @@ class RakuenPagerAdapter(
      */
     fun reset(position: Int) {
         val item = items[position] ?: return
-        topicCall[position]?.cancel()
+        topicCall[position]?.dispose()
         item.first.isUseEmpty(false)
         item.first.setNewData(null)
     }
 
     @SuppressLint("UseSparseArrays")
-    private var topicCall = HashMap<Int, Call<List<Topic>>>()
+    private var topicCall = HashMap<Int, Disposable>()
 
     /**
      * 加载帖子列表
@@ -93,7 +93,8 @@ class RakuenPagerAdapter(
     fun loadTopicList(position: Int = pager.currentItem) {
         val item = items[position] ?: return
         item.first.isUseEmpty(false)
-        topicCall[position]?.cancel()
+        topicCall[position]?.dispose()
+        item.second.isRefreshing = true
         topicCall[position] = Topic.getList(
             if (position == 1) when (fragment.selectedFilter) {
                 R.id.topic_filter_join -> "my_group"
@@ -101,15 +102,13 @@ class RakuenPagerAdapter(
                 R.id.topic_filter_reply -> "my_group&filter=reply"
                 else -> "group"
             } else listOf("", "group", "subject", "ep", "mono")[position]
-        )
-        item.second.isRefreshing = true
-        topicCall[position]?.enqueue(ApiHelper.buildCallback({
+        ).subscribeOnUiThread({
             item.first.isUseEmpty(true)
             item.first.setNewData(it)
             (item.second.tag as? androidx.recyclerview.widget.RecyclerView)?.tag = true
-        }, {
+        }, onComplete = {
             item.second.isRefreshing = false
-        }))
+        })
     }
 
     override fun getPageTitle(pos: Int): CharSequence {

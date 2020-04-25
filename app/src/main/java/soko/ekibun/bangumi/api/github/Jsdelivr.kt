@@ -1,10 +1,9 @@
 package soko.ekibun.bangumi.api.github
 
-import retrofit2.Call
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Path
+import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
 import soko.ekibun.bangumi.api.github.bean.OnAirInfo
 
@@ -18,7 +17,7 @@ interface Jsdelivr {
      * @return Call<List<BangumiCalendarItem>>
      */
     @GET("/gh/ekibun/bangumi_onair@master/calendar.json")
-    fun bangumiCalendar(): Call<List<BangumiCalendarItem>>
+    fun bangumiCalendar(): Observable<List<BangumiCalendarItem>>
 
     /**
      * 播放源
@@ -27,19 +26,21 @@ interface Jsdelivr {
      * @return Call<OnAirInfo>
      */
     @GET("/gh/ekibun/bangumi_onair@master/onair/{prefix}/{id}.json")
-    fun onAirInfo(@Path("prefix") prefix: Int,
-                  @Path("id") id: Int): Call<OnAirInfo>
+    fun onAirInfo(
+        @Path("prefix") prefix: Int,
+        @Path("id") id: Int
+    ): Observable<OnAirInfo>
 
     companion object {
         private const val SERVER_API = "https://cdn.jsdelivr.net"
+
         /**
          * 创建retrofit实例
          * @return Jsdelivr
          */
         fun createInstance(): Jsdelivr {
-            return Retrofit.Builder().baseUrl(SERVER_API)
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build().create(Jsdelivr::class.java)
+            return ApiHelper.createRetrofitBuilder(SERVER_API)
+                .build().create(Jsdelivr::class.java)
         }
     }
 }

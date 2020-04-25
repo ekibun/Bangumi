@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import retrofit2.Call
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper
+import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.bean.TimeLine
 import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
@@ -102,8 +102,7 @@ class TimeLinePagerAdapter(
             item.second.isRefreshing = true
             item.first.setNewData(null)
         }
-        topicCall[position]?.cancel()
-        topicCall[position] = TimeLine.getList(
+        TimeLine.getList(
             listOf(
                 "all",
                 "say",
@@ -120,8 +119,7 @@ class TimeLinePagerAdapter(
             page + 1,
             if (fragment.selectedType == R.id.timeline_type_self) UserModel.current() else null,
             fragment.selectedType == R.id.timeline_type_all
-        )
-        topicCall[position]?.enqueue(ApiHelper.buildCallback({
+        ).subscribeOnUiThread({
             item.first.isUseEmpty(true)
             val list = it.toMutableList()
             if (it.isNotEmpty() && item.first.data.lastOrNull { it.isHeader }?.header == it.getOrNull(0)?.header)
@@ -131,10 +129,11 @@ class TimeLinePagerAdapter(
             else item.first.loadMoreComplete()
             (item.second.tag as? androidx.recyclerview.widget.RecyclerView)?.tag = true
             pageIndex[position] = (pageIndex[position] ?: 0) + 1
-        },{
-            item.second.isRefreshing = false
+        }, {
             item.first.loadMoreFail()
-        }))
+        }, {
+            item.second.isRefreshing = false
+        })
     }
 
     override fun getPageTitle(pos: Int): CharSequence{

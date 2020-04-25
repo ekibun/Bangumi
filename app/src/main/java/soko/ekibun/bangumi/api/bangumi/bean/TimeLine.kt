@@ -1,11 +1,12 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
 import com.chad.library.adapter.base.entity.SectionEntity
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import okhttp3.FormBody
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.TextNode
-import retrofit2.Call
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.util.HttpUtil
@@ -63,11 +64,11 @@ class TimeLine : SectionEntity<TimeLine.TimeLineItem> {
             page: Int,
             usr: UserInfo?,
             global: Boolean
-        ): Call<List<TimeLine>> {
-            return ApiHelper.buildHttpCall(
+        ): Observable<List<TimeLine>> {
+            return ApiHelper.createHttpObservable(
                 "${Bangumi.SERVER}${if (usr == null) "" else "/user/${usr.username}"}/timeline?type=$type&page=$page&ajax=1",
                 useCookie = !global
-            ) { rsp ->
+            ).subscribeOn(Schedulers.computation()).map { rsp ->
                 val doc = Jsoup.parse(rsp.body?.string() ?: "")
                 val ret = ArrayList<TimeLine>()
                 var user = usr ?: UserInfo()
@@ -129,14 +130,14 @@ class TimeLine : SectionEntity<TimeLine.TimeLineItem> {
          */
         fun addComment(
             say_input: String
-        ): Call<Boolean> {
-            return ApiHelper.buildHttpCall(
+        ): Observable<Boolean> {
+            return ApiHelper.createHttpObservable(
                 "${Bangumi.SERVER}/update/user/say?ajax=1",
                 body = FormBody.Builder()
                     .add("say_input", say_input)
                     .add("formhash", HttpUtil.formhash)
                     .add("submit", "submit").build()
-            ) { rsp ->
+            ).subscribeOn(Schedulers.computation()).map { rsp ->
                 rsp.body?.string()?.contains("\"status\":\"ok\"") == true
             }
         }

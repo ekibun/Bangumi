@@ -1,9 +1,10 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import okhttp3.FormBody
 import org.jsoup.Jsoup
 import org.xmlpull.v1.XmlPullParser
-import retrofit2.Call
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.util.HttpUtil
@@ -55,8 +56,14 @@ data class Say(
          * 加载吐槽
          * @return Call<Say>
          */
-        fun getSaySax(say: Say, onUpdate: (Say) -> Unit, onNewPost: (index: Int, post: SayReply) -> Unit): Call<Say> {
-            return ApiHelper.buildHttpCall(say.url) { rsp ->
+        fun getSaySax(
+            say: Say,
+            onUpdate: (Say) -> Unit,
+            onNewPost: (index: Int, post: SayReply) -> Unit
+        ): Observable<Say> {
+            return ApiHelper.createHttpObservable(
+                say.url
+            ).subscribeOn(Schedulers.computation()).map { rsp ->
                 val avatarCache = HashMap<String, String>()
                 say.user.avatar?.let { avatarCache[say.user.username!!] = it }
                 say.replies?.forEach { reply ->
@@ -70,7 +77,6 @@ data class Say(
                     doc.outputSettings().prettyPrint(false)
                     if (beforeData.isEmpty()) {
                         beforeData = str
-                        val self = doc.selectFirst(".idBadgerNeue a.avatar")
                         say.user = UserInfo.parse(
                             doc.selectFirst(".statusHeader .inner a"),
                             Bangumi.parseImageUrl(doc.selectFirst(".statusHeader .avatar img"))
@@ -114,14 +120,14 @@ data class Say(
             }
         }
 
-        fun reply(say: Say, content: String): Call<Boolean> {
-            return ApiHelper.buildHttpCall(
+        fun reply(say: Say, content: String): Observable<Boolean> {
+            return ApiHelper.createHttpObservable(
                 "${Bangumi.SERVER}/timeline/${say.id}/new_reply?ajax=1",
                 body = FormBody.Builder()
                     .add("content", content)
                     .add("formhash", HttpUtil.formhash)
                     .add("submit", "submit").build()
-            ) { rsp ->
+            ).subscribeOn(Schedulers.computation()).map { rsp ->
                 rsp.body?.string()?.contains("\"status\":\"ok\"") == true
             }
         }

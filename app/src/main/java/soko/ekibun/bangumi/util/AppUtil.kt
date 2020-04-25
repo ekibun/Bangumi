@@ -9,11 +9,11 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.FileProvider
-import androidx.preference.PreferenceManager
 import com.bumptech.glide.load.resource.gif.GifDrawable
+import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.BuildConfig
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper
+import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.github.Github
 import soko.ekibun.bangumi.ui.web.WebActivity
 import java.io.File
@@ -94,29 +94,33 @@ object AppUtil {
     fun checkUpdate(activity: Activity, checkIgnore: Boolean = true, onLatest: () -> Unit = {}) {
         when (BuildConfig.FLAVOR) {
             "github" -> {
-                val sp = PreferenceManager.getDefaultSharedPreferences(activity)
-                Github.createInstance().releases().enqueue(ApiHelper.buildCallback({
-                    if (activity.isFinishing) return@buildCallback
-                    val release = it.firstOrNull() ?: return@buildCallback
+                Github.createInstance().releases().subscribeOnUiThread({ releases ->
+                    if (activity.isFinishing) return@subscribeOnUiThread
+                    val release = releases.firstOrNull() ?: return@subscribeOnUiThread
                     val checkNew = { tag: String? ->
                         val version = tag?.split("-")
                         val versionName = version?.getOrNull(0) ?: ""
                         val versionCode = version?.getOrNull(1)?.toIntOrNull() ?: 0
                         versionName > BuildConfig.VERSION_NAME || versionCode > BuildConfig.VERSION_CODE
                     }
-                    if (checkNew(release.tag_name) && (checkIgnore || sp.getString("ignore_tag", "") != release.tag_name))
+                    if (checkNew(release.tag_name) && (checkIgnore || App.app.sp.getString(
+                            "ignore_tag",
+                            ""
+                        ) != release.tag_name)
+                    )
                         AlertDialog.Builder(activity)
-                                .setTitle(activity.getString(R.string.parse_new_version, release.tag_name))
-                                .setMessage(it.filter { checkNew(it.tag_name) }.map { "${it.tag_name}\n${it.body}" }.reduce { acc, s -> "$acc\n$s" })
-                                .setPositiveButton(R.string.download) { _, _ ->
-                                    WebActivity.launchUrl(activity, release.assets?.firstOrNull()?.browser_download_url, "")
-                                }.setNegativeButton(R.string.ignore) { _, _ ->
-                                    sp.edit().putString("ignore_tag", release.tag_name).apply()
-                                }.show()
+                            .setTitle(activity.getString(R.string.parse_new_version, release.tag_name))
+                            .setMessage(releases.filter { checkNew(it.tag_name) }.map { "${it.tag_name}\n${it.body}" }
+                                .reduce { acc, s -> "$acc\n$s" })
+                            .setPositiveButton(R.string.download) { _, _ ->
+                                WebActivity.launchUrl(activity, release.assets?.firstOrNull()?.browser_download_url, "")
+                            }.setNegativeButton(R.string.ignore) { _, _ ->
+                                App.app.sp.edit().putString("ignore_tag", release.tag_name).apply()
+                            }.show()
                     else {
                         onLatest()
                     }
-                }) {})
+                }, key = "github_release")
             }
             "coolapk" -> {
                 WebActivity.launchUrl(activity, "https://www.coolapk.com/apk/soko.ekibun.bangumi", "")

@@ -5,7 +5,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_topic.*
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper
+import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.bean.Say
 import soko.ekibun.bangumi.model.DataCacheModel
 import soko.ekibun.bangumi.model.HistoryModel
@@ -77,8 +77,7 @@ class SayPresenter(private val context: SayActivity, say: Say) {
                 if (index < sayView.adapter.data.size) sayView.adapter.setData(index, say)
                 else sayView.adapter.addData(say)
             }
-
-        }).enqueue(ApiHelper.buildCallback({ say ->
+        }).subscribeOnUiThread({ say ->
             sayView.processSay(say)
             dataCacheModel.set(say.cacheKey, say)
             updateHistory()
@@ -96,11 +95,12 @@ class SayPresenter(private val context: SayActivity, say: Say) {
                 true
             }
 
-        }) {
-            loadMoreFail = it != null
-            context.item_swipe.isRefreshing = false
+        }, {
+            loadMoreFail = true
             sayView.adapter.loadMoreFail()
-        })
+        }, {
+            context.item_swipe.isRefreshing = false
+        }, "say_sax")
     }
 
     private fun showReply(say: Say, draft: String?, updateDraft: (String?) -> Unit) {
@@ -111,7 +111,7 @@ class SayPresenter(private val context: SayActivity, say: Say) {
             draft = draft
         ) { content, _, send ->
             if (content != null && send) {
-                Say.reply(say, content).enqueue(ApiHelper.buildCallback({
+                Say.reply(say, content).subscribeOnUiThread({
                     if (it) {
                         updateDraft(null)
                         say.replies = (say.replies ?: ArrayList()).plus(
@@ -127,7 +127,7 @@ class SayPresenter(private val context: SayActivity, say: Say) {
                         )
                         getSay()
                     } else Toast.makeText(context, R.string.hint_submit_error, Toast.LENGTH_LONG).show()
-                }) { })
+                })
             } else updateDraft(content)
         }
     }

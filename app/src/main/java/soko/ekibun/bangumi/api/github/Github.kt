@@ -1,33 +1,32 @@
 package soko.ekibun.bangumi.api.github
 
-import retrofit2.Call
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
+import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.github.bean.Release
 
 /**
  * GitHub API
  */
-interface Github{
+interface Github {
 
     /**
      * 获取版本列表
      * @return Call<List<Release>>
      */
     @GET("/repos/ekibun/Bangumi/releases")
-    fun releases(): Call<List<Release>>
+    fun releases(): Observable<List<Release>>
 
     companion object {
         private const val SERVER_API = "https://api.github.com"
+
         /**
          * 创建retrofit实例
          * @return Github
          */
-        fun createInstance(): Github{
-            return Retrofit.Builder().baseUrl(SERVER_API)
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build().create(Github::class.java)
+        fun createInstance(): Github {
+            return ApiHelper.createRetrofitBuilder(SERVER_API)
+                .build().create(Github::class.java)
         }
     }
 }

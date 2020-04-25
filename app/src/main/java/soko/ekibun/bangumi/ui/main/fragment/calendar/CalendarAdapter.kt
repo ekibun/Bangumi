@@ -44,41 +44,12 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
             ?.into(helper.itemView.item_cover)
         helper.itemView.item_chase.visibility = if (item.t.subject.collect != null) View.VISIBLE else View.GONE
 
-        val use30h = App.app.sp.getBoolean("calendar_use_30h", false)
-
-        val past = pastTime(item.date, item.time, use30h)
         val color = ResourceUtil.resolveColorAttr(
             helper.itemView.context,
-            if (past) R.attr.colorPrimary else android.R.attr.textColorSecondary
+            if (item.past) R.attr.colorPrimary else android.R.attr.textColorSecondary
         )
         helper.itemView.item_ep_name.setTextColor(color)
-        helper.itemView.item_time.alpha = if (past) 0.6f else 1.0f
-
-//        helper.itemView.item_now_time.visibility = View.GONE
-//
-//        if (item.date != getNowInt(use30h)) return
-//        val index = data.indexOfFirst { it === item }
-//        if ((index + 1 == data.size && past) || ((data.getOrNull(index - 1)?.let {
-//                pastTime(
-//                    it.date,
-//                    it.time,
-//                    use30h
-//                )
-//            } != false) != past)) {
-//            if (index + 1 == data.size && past) {//最后一个
-//                helper.itemView.item_now_time.bringToFront()
-//            } else {
-//                helper.itemView.item_layout.bringToFront()
-//            }
-//            helper.itemView.item_now_time.visibility = View.VISIBLE
-//
-//            val cal = Calendar.getInstance()
-//            val hour = cal.get(Calendar.HOUR_OF_DAY)
-//            val hourNow = if (use30h) (hour - 6 + 24) % 24 + 6 else hour
-//            val minuteNow = cal.get(Calendar.MINUTE)
-//            val format = DecimalFormat("00")
-//            helper.itemView.item_now_time_text.text = "${format.format(hourNow)}:${format.format(minuteNow)}"
-//        }
+        helper.itemView.item_time.alpha = if (item.past) 0.6f else 1.0f
     }
 
     override fun convertHead(helper: BaseViewHolder, item: CalendarSection) {
@@ -102,6 +73,7 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
 
         var date: Int = 0
         var time: String = ""
+        var past: Boolean = false
 
         constructor(subject: OnAir, date: Int, time: String) : super(subject) {
             this.date = date

@@ -1,17 +1,20 @@
 package soko.ekibun.bangumi.api
 
-import android.os.Handler
-import android.os.Looper
-import android.util.Log
 import android.util.Xml
 import android.widget.Toast
-import okhttp3.Request
+import hu.akarnokd.rxjava3.retrofit.RxJava3CallAdapterFactory
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.exceptions.CompositeException
+import io.reactivex.rxjava3.exceptions.Exceptions
+import io.reactivex.rxjava3.plugins.RxJavaPlugins
 import okhttp3.RequestBody
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.util.HttpUtil
 import java.io.IOException
@@ -21,75 +24,104 @@ import java.io.Reader
  * API工具库
  */
 object ApiHelper {
-    /**
-     * 创建回调
-     * @param callback Function1<T, Unit>
-     * @param finish Function1<Throwable?, Unit>
-     * @return Callback<T>
-     */
-    fun <T> buildCallback(callback: (T) -> Unit, finish: (Throwable?) -> Unit = {}): Callback<T> {
-        return object : Callback<T> {
-            override fun onFailure(call: Call<T>, t: Throwable) {
-                Log.e("errUrl", call.request().url.toString())
-                if (!t.toString().contains("Canceled")) {
-                    Toast.makeText(App.app, t.message, Toast.LENGTH_SHORT).show()
-                    finish(t)
-                    Log.e("call", Log.getStackTraceString(t))
-                }
-            }
 
-            override fun onResponse(call: Call<T>, response: Response<T>) {
-                Log.v("finUrl", call.request()?.url.toString())
-                Log.v("finUrl", response.toString())
-                finish(null)
-                response.body()?.let { callback(it) }
-            }
-        }
+    /**
+     * 包装Retrofit Builder
+     * - 默认带上[GsonConverterFactory]和[RxJava3CallAdapterFactory]
+     */
+    fun createRetrofitBuilder(baseUrl: String): Retrofit.Builder {
+        return Retrofit.Builder().baseUrl(baseUrl)
+            .addConverterFactory(GsonConverterFactory.create())
+            .addCallAdapterFactory(RxJava3CallAdapterFactory.createAsync())
     }
 
     /**
-     * 转换Call返回的数据类型
-     * @param src Call<T>
-     * @param converter Function1<T, U>
-     * @return Call<U>
+     * 在主线程回调
+     * - 加入[observables]便于在[Activity.onDestroy][soko.ekibun.bangumi.ui.view.BaseActivity.onDestroy]中清除所有请求
+     * - `onError`中调用`onComplete`保持协同
+     * - `onError`默认弹出[Toast]:
+     *    ```
+     *    Toast.makeText(App.app, it.message, Toast.LENGTH_SHORT).show()
+     *    ```
      */
-    fun <T, U> convertCall(src: Call<T>, converter: (T) -> U): Call<U> {
-        return object : Call<U> {
-            override fun execute(): Response<U> {
-                val t = src.execute()
-                return if (t.isSuccessful) {
-                    Response.success(converter(t.body()!!))
-                } else
-                    Response.error(t.code(), t.errorBody()!!)
+    fun <T> Observable<T>.subscribeOnUiThread(
+        onNext: (t: T) -> Unit,
+        onError: (t: Throwable) -> Unit = {
+            Toast.makeText(App.app, it.message, Toast.LENGTH_SHORT).show()
+        },
+        onComplete: () -> Unit = {},
+        key: String? = null
+    ): Disposable {
+        if (key != null) observablesWithKeys.remove(key)?.dispose()
+        return this.observeOn(AndroidSchedulers.mainThread())
+            .subscribe(onNext, {
+                onError(it)
+                onComplete()
+            }, onComplete).also {
+                observables.add(it)
+                if (key != null) observablesWithKeys[key] = it
             }
+    }
 
-            override fun enqueue(callback: Callback<U>) {
-                src.enqueue(buildCallback({
-                    callback.onResponse(clone(), Response.success(converter(it)!!))
-                }, {
-                    if (it != null) callback.onFailure(clone(), it)
-                }))
-            }
+    private val observablesWithKeys = HashMap<String, Disposable>()
+    private val observables = CompositeDisposable()
 
-            override fun isExecuted(): Boolean {
-                return src.isExecuted
-            }
+    /**
+     * 清空[observables]
+     */
+    fun clearObservables() {
+        observables.clear()
+    }
 
-            override fun clone(): Call<U> {
-                return this
+    /**
+     * 创建OkHttp的[Observable]
+     */
+    fun createHttpObservable(
+        url: String,
+        header: Map<String, String> = HashMap(),
+        body: RequestBody? = null,
+        useCookie: Boolean = true
+    ): Observable<okhttp3.Response> {
+        return Observable.create { emitter ->
+            val httpCall = HttpUtil.getCall(url, header, body, useCookie)
+            emitter.setCancellable {
+                httpCall.cancel()
             }
+            if (!emitter.isDisposed) httpCall.enqueue(object : okhttp3.Callback {
+                override fun onFailure(call: okhttp3.Call, e: IOException) {
+                    if (httpCall.isCanceled()) return
+                    try {
+                        emitter.onError(e)
+                    } catch (inner: Throwable) {
+                        Exceptions.throwIfFatal(inner)
+                        RxJavaPlugins.onError(CompositeException(e, inner))
+                    }
+                }
 
-            override fun isCanceled(): Boolean {
-                return src.isCanceled
-            }
-
-            override fun cancel() {
-                src.cancel()
-            }
-
-            override fun request(): Request? {
-                return src.request()
-            }
+                override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
+                    if (emitter.isDisposed) return
+                    var terminated = false
+                    try {
+                        emitter.onNext(response)
+                        if (!emitter.isDisposed) {
+                            terminated = true
+                            emitter.onComplete()
+                        }
+                    } catch (t: Throwable) {
+                        Exceptions.throwIfFatal(t)
+                        if (terminated) {
+                            RxJavaPlugins.onError(t)
+                        } else if (!emitter.isDisposed) {
+                            try {
+                                emitter.onError(t)
+                            } catch (inner: Throwable) {
+                                Exceptions.throwIfFatal(inner)
+                                RxJavaPlugins.onError(CompositeException(t, inner))
+                            }
+                        }
+                    }
+                }
+            })
         }
     }
 
@@ -164,123 +196,5 @@ object ApiHelper {
             }
         }
         return charList.toString()
-    }
-
-    /**
-     * 创建http请求
-     * @param url String
-     * @param header Map<String, String>
-     * @param body RequestBody?
-     * @param useCookie Boolean
-     * @param converter Function1<Response, T>
-     * @return Call<T>
-     */
-    fun <T> buildHttpCall(
-        url: String,
-        header: Map<String, String> = HashMap(),
-        body: RequestBody? = null,
-        useCookie: Boolean = true,
-        converter: (okhttp3.Response) -> T
-    ): Call<T> {
-        val uiHandler = Handler(Looper.getMainLooper())
-        return object : Call<T> {
-            private val retrofitCall = this
-            val okHttpCall = HttpUtil.getCall(url, header, body, useCookie)
-            fun createResponse(response: okhttp3.Response): Response<T> {
-                return Response.success(converter(response))
-            }
-
-            override fun enqueue(callback: Callback<T>) {
-                okHttpCall.enqueue(object : okhttp3.Callback {
-                    override fun onFailure(call: okhttp3.Call, e: IOException) {
-                        uiHandler.post { callback.onFailure(retrofitCall, e) }
-                    }
-
-                    override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
-                        val t = try {
-                            createResponse(response)
-                        } catch (e: Exception) {
-                            uiHandler.post { callback.onFailure(retrofitCall, e) }
-                            return
-                        }
-                        uiHandler.post { callback.onResponse(retrofitCall, t) }
-                    }
-                })
-            }
-
-            override fun isExecuted(): Boolean {
-                return okHttpCall.isExecuted()
-            }
-
-            override fun clone(): Call<T> {
-                return this
-            }
-
-            override fun isCanceled(): Boolean {
-                return okHttpCall.isCanceled()
-            }
-
-            override fun cancel() {
-                okHttpCall.cancel()
-            }
-
-            override fun execute(): Response<T> {
-                return createResponse(okHttpCall.execute())
-            }
-
-            override fun request(): Request {
-                return okHttpCall.request()
-            }
-
-        }
-    }
-
-    /**
-     * 并行请求
-     * @param calls Array<Call<*>>
-     * @param onIndexResponse Function2<Int, Any?, Unit>
-     * @return Call<Unit>
-     */
-    fun buildGroupCall(calls: Array<Call<*>>, onIndexResponse: (Int, Any?) -> Unit): Call<Unit> {
-        return object : Call<Unit> {
-            override fun enqueue(callback: Callback<Unit>) {
-                var rspCount = 0
-                calls.forEachIndexed { index, call ->
-                    @Suppress("UNCHECKED_CAST")
-                    (call as Call<Any>).enqueue(buildCallback({
-                        onIndexResponse(index, it)
-                    }, {
-                        rspCount++
-                        if (rspCount == calls.size) callback.onResponse(this, Response.success(null))
-                    }))
-                }
-            }
-
-            override fun isExecuted(): Boolean {
-                return calls.count { it.isExecuted } == calls.size
-            }
-
-            override fun clone(): Call<Unit> {
-                return this
-            }
-
-            override fun isCanceled(): Boolean {
-                return calls.any { it.isCanceled }
-            }
-
-            override fun cancel() {
-                calls.forEach { it.cancel() }
-            }
-
-            override fun execute(): Response<Unit>? {
-                calls.forEach { it.execute()?.body() }
-                return null
-            }
-
-            override fun request(): Request? {
-                return null
-            }
-
-        }
     }
 }
