@@ -1,96 +1,78 @@
 package soko.ekibun.bangumi.api.trim21
 
-import android.os.Build
 import io.reactivex.rxjava3.core.Observable
-import retrofit2.http.GET
-import retrofit2.http.Header
-import retrofit2.http.Path
-import soko.ekibun.bangumi.BuildConfig
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.trim21.bean.IpView
+import soko.ekibun.bangumi.util.JsonUtil
 import java.util.*
 
 /**
  * 条目关联api（via @Trim21）
  */
-interface BgmIpViewer {
+object BgmIpViewer {
 
     /**
-     * 获取条目关联的条目链
-     * @param id Int
-     * @param ua String
-     * @return Call<IpView>
+     * 套一层，防止泛型丢失
      */
-    @GET("/api.v1/view_ip/subject/{id}")
-    fun subject(
-        @Path("id") id: Int,
-        @Header("user-agent") ua: String = "Bangumi-ekibun/${BuildConfig.VERSION_NAME} (${Build.MODEL}; Android:${Build.VERSION.RELEASE})"
-    ): Observable<IpView>
+    data class SeasonData(
+        val ipView: IpView,
+        val seasons: List<Subject>
+    )
 
-    companion object {
-        private const val SERVER_API = "https://www.trim21.cn/"
-
-        /**
-         * 创建retrofit实例
-         * @return BgmIpViewer
-         */
-        fun createInstance(): BgmIpViewer {
-            return ApiHelper.createRetrofitBuilder(SERVER_API)
-                .build().create(BgmIpViewer::class.java)
-        }
-
-        /**
-         * 获取条目的季度条目链（OVA & 续集）
-         * @param it IpView
-         * @param subject Subject
-         * @return List<Subject>
-         */
-        fun getSeason(it: IpView, subject: Subject): List<Subject> {
-            return getSeasonNode(it, subject).map {
+    /**
+     * 获取季度数据
+     * @param id [Subject.id]
+     */
+    fun getSeason(id: Int): Observable<SeasonData> {
+        return ApiHelper.createHttpObservable(
+            "https://www.trim21.cn/api.v1/view_ip/subject/$id"
+        ).map { rsp ->
+            val ipView = JsonUtil.toEntity<IpView>(rsp.body?.string() ?: "")!!
+            SeasonData(ipView, getSeasonNode(ipView, id).map {
                 Subject(
                     it.subject_id,
                     name = it.name, name_cn = it.name_cn,
                     image = it.image
                 )
-            }
+            })
         }
+    }
 
-        /**
-         * 解析季度数据
-         * @param it IpView
-         * @param subject Subject
-         * @return List<IpView.Node>
-         */
-        private fun getSeasonNode(it: IpView, subject: Subject): List<IpView.Node> {
-            val ret = ArrayList<IpView.Node>()
+    /**
+     * 解析季度数据
+     * @param it [IpView]
+     * @param subjectId [Subject.id]
+     * @return List<IpView.Node>
+     */
+    private fun getSeasonNode(it: IpView, subjectId: Int): List<IpView.Node> {
+        val ret = ArrayList<IpView.Node>()
 
-            val bgmIp = it.nodes?.firstOrNull { it.subject_id == subject.id } ?: return ret
-            val id =
-                it.edges?.firstOrNull { edge -> edge.source == bgmIp.id && edge.relation == "主线故事" }?.target ?: bgmIp.id
+        val bgmIp = it.nodes?.firstOrNull { it.subject_id == subjectId } ?: return ret
+        val id =
+            it.edges?.firstOrNull { edge -> edge.source == bgmIp.id && edge.relation == "主线故事" }?.target ?: bgmIp.id
 
-            for (edge in it.edges?.filter { edge -> edge.target == id && edge.relation == "主线故事" }?.reversed()
-                ?: ArrayList()) {
+        for (edge in it.edges?.filter { edge -> edge.target == id && edge.relation == "主线故事" }?.reversed()
+            ?: ArrayList()) {
+            ret.add(0, it.nodes.firstOrNull { it.id == edge.source } ?: continue)
+        }
+        ret.add(0, it.nodes.firstOrNull { it.id == id } ?: return ret)
+        var prevId = id
+        while (true) {
+            prevId = it.edges?.firstOrNull { it.source == prevId && it.relation == "前传" }?.target ?: break
+            for (edge in it.edges.filter { edge -> edge.target == prevId && edge.relation == "主线故事" }.reversed()) {
                 ret.add(0, it.nodes.firstOrNull { it.id == edge.source } ?: continue)
             }
-            ret.add(0, it.nodes.firstOrNull { it.id == id } ?: return ret)
-            var prevId = id
-            while (true) {
-                prevId = it.edges?.firstOrNull { it.source == prevId && it.relation == "前传" }?.target ?: break
-                for (edge in it.edges.filter { edge -> edge.target == prevId && edge.relation == "主线故事" }.reversed()) {
-                    ret.add(0, it.nodes.firstOrNull { it.id == edge.source } ?: continue)
-                }
-                ret.add(0, it.nodes.firstOrNull { it.id == prevId } ?: break)
-            }
-            var nextId = id
-            while (true) {
-                nextId = it.edges?.firstOrNull { it.source == nextId && it.relation == "续集" }?.target ?: break
-                ret.add(it.nodes.firstOrNull { it.id == nextId } ?: break)
-                for (edge in it.edges.filter { edge -> edge.target == nextId && edge.relation == "主线故事" }) {
-                    ret.add(it.nodes.firstOrNull { it.id == edge.source } ?: continue)
-                }
-            }
-            return ret.distinct()
+            ret.add(0, it.nodes.firstOrNull { it.id == prevId } ?: break)
         }
+        var nextId = id
+        while (true) {
+            nextId = it.edges?.firstOrNull { it.source == nextId && it.relation == "续集" }?.target ?: break
+            ret.add(it.nodes.firstOrNull { it.id == nextId } ?: break)
+            for (edge in it.edges.filter { edge -> edge.target == nextId && edge.relation == "主线故事" }) {
+                ret.add(it.nodes.firstOrNull { it.id == edge.source } ?: continue)
+            }
+        }
+        return ret.distinct()
     }
 }

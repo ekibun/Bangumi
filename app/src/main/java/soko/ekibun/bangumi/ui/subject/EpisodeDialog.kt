@@ -85,7 +85,7 @@ class EpisodeDialog : BaseDialog(R.layout.base_dialog) {
     var info: OnAirInfo? = null
         set(value) {
             field = value
-            adapter.setNewData(value?.eps?.find { it.id == episode?.id }?.sites)
+            adapter.setNewInstance(value?.eps?.find { it.id == episode?.id }?.sites?.toMutableList())
         }
     override val title: String get() = episode?.parseSort() + " " + if (episode?.name_cn.isNullOrEmpty()) episode?.name else episode?.name_cn
 
@@ -110,7 +110,7 @@ class EpisodeDialog : BaseDialog(R.layout.base_dialog) {
         val dp4 = (view.context.resources.displayMetrics.density * 4 + 0.5f).toInt()
         emptyTextView.setPadding(dp4, dp4, dp4, dp4)
         emptyTextView.setText(R.string.hint_no_play_source)
-        adapter.emptyView = emptyTextView
+        adapter.setEmptyView(emptyTextView)
         adapter.setOnItemClickListener { _, _, position ->
             WebActivity.launchUrl(view.context, adapter.data[position].url(), "")
         }

@@ -35,6 +35,21 @@
             tools:src="@drawable/err_404"
             app:layout_constraintTop_toTopOf="parent"/>
 
+    <ImageView
+            android:id="@+id/item_del"
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:padding="4dp"
+            android:clickable="true"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:focusable="true"
+            android:src="@drawable/ic_clear"
+            android:contentDescription="@string/delete"/>
+
     <TextView
             android:visibility="gone"
             tools:visibility="visible"
@@ -70,7 +85,7 @@
             android:textSize="@dimen/textSizeMedium"
             tools:text="Subject Name"
             app:layout_constraintLeft_toRightOf="@+id/item_chase"
-            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/item_del"
             app:layout_constraintTop_toTopOf="parent"/>
 
     <TextView

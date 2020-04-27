@@ -2,39 +2,27 @@ package soko.ekibun.bangumi.api
 
 import android.util.Xml
 import android.widget.Toast
-import hu.akarnokd.rxjava3.retrofit.RxJava3CallAdapterFactory
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.exceptions.CompositeException
 import io.reactivex.rxjava3.exceptions.Exceptions
 import io.reactivex.rxjava3.plugins.RxJavaPlugins
+import io.reactivex.rxjava3.schedulers.Schedulers
 import okhttp3.RequestBody
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.util.HttpUtil
 import java.io.IOException
 import java.io.Reader
+import java.util.*
+import kotlin.collections.HashMap
 
 /**
  * API工具库
  */
 object ApiHelper {
-
-    /**
-     * 包装Retrofit Builder
-     * - 默认带上[GsonConverterFactory]和[RxJava3CallAdapterFactory]
-     */
-    fun createRetrofitBuilder(baseUrl: String): Retrofit.Builder {
-        return Retrofit.Builder().baseUrl(baseUrl)
-            .addConverterFactory(GsonConverterFactory.create())
-            .addCallAdapterFactory(RxJava3CallAdapterFactory.createAsync())
-    }
-
     /**
      * 在主线程回调
      * - 加入[observables]便于在[Activity.onDestroy][soko.ekibun.bangumi.ui.view.BaseActivity.onDestroy]中清除所有请求
@@ -47,34 +35,29 @@ object ApiHelper {
     fun <T> Observable<T>.subscribeOnUiThread(
         onNext: (t: T) -> Unit,
         onError: (t: Throwable) -> Unit = {
-            Toast.makeText(App.app, it.message, Toast.LENGTH_SHORT).show()
+            it.printStackTrace()
         },
         onComplete: () -> Unit = {},
         key: String? = null
     ): Disposable {
-        if (key != null) observablesWithKeys.remove(key)?.dispose()
+        if (key != null) observables.remove(key)?.dispose()
         return this.observeOn(AndroidSchedulers.mainThread())
             .subscribe(onNext, {
-                onError(it)
+                if (!it.toString().toLowerCase(Locale.ROOT).contains("canceled")) {
+                    Toast.makeText(App.app, it.message, Toast.LENGTH_SHORT).show()
+                    onError(it)
+                }
                 onComplete()
             }, onComplete).also {
-                observables.add(it)
-                if (key != null) observablesWithKeys[key] = it
+                if (key != null) observables[key] = it
             }
     }
 
-    private val observablesWithKeys = HashMap<String, Disposable>()
-    private val observables = CompositeDisposable()
-
-    /**
-     * 清空[observables]
-     */
-    fun clearObservables() {
-        observables.clear()
-    }
+    private val observables = HashMap<String, Disposable>()
 
     /**
      * 创建OkHttp的[Observable]
+     * - 运行在[Schedulers.computation]
      */
     fun createHttpObservable(
         url: String,
@@ -82,7 +65,7 @@ object ApiHelper {
         body: RequestBody? = null,
         useCookie: Boolean = true
     ): Observable<okhttp3.Response> {
-        return Observable.create { emitter ->
+        return Observable.create<okhttp3.Response> { emitter ->
             val httpCall = HttpUtil.getCall(url, header, body, useCookie)
             emitter.setCancellable {
                 httpCall.cancel()
@@ -122,7 +105,7 @@ object ApiHelper {
                     }
                 }
             })
-        }
+        }.subscribeOn(Schedulers.computation())
     }
 
     /**

@@ -52,8 +52,8 @@ class RakuenPagerAdapter(
             val recyclerView = androidx.recyclerview.widget.RecyclerView(container.context)
             ShadowDecoration.set(recyclerView)
             val adapter = RakuenAdapter()
-            adapter.emptyView = LayoutInflater.from(container.context).inflate(R.layout.view_empty, container, false)
-            adapter.isUseEmpty(false)
+            adapter.setEmptyView(LayoutInflater.from(container.context).inflate(R.layout.view_empty, container, false))
+            adapter.isUseEmpty = false
             adapter.setOnItemClickListener { _, v, position ->
                 TopicActivity.startActivity(v.context, adapter.data[position])
                 //WebActivity.launchUrl(v.context, adapter.data[position].url)
@@ -79,8 +79,8 @@ class RakuenPagerAdapter(
     fun reset(position: Int) {
         val item = items[position] ?: return
         topicCall[position]?.dispose()
-        item.first.isUseEmpty(false)
-        item.first.setNewData(null)
+        item.first.isUseEmpty = false
+        item.first.setNewInstance(null)
     }
 
     @SuppressLint("UseSparseArrays")
@@ -92,7 +92,7 @@ class RakuenPagerAdapter(
      */
     fun loadTopicList(position: Int = pager.currentItem) {
         val item = items[position] ?: return
-        item.first.isUseEmpty(false)
+        item.first.isUseEmpty = false
         topicCall[position]?.dispose()
         item.second.isRefreshing = true
         topicCall[position] = Topic.getList(
@@ -103,8 +103,8 @@ class RakuenPagerAdapter(
                 else -> "group"
             } else listOf("", "group", "subject", "ep", "mono")[position]
         ).subscribeOnUiThread({
-            item.first.isUseEmpty(true)
-            item.first.setNewData(it)
+            item.first.isUseEmpty = true
+            item.first.setNewInstance(it.toMutableList())
             (item.second.tag as? androidx.recyclerview.widget.RecyclerView)?.tag = true
         }, onComplete = {
             item.second.isRefreshing = false

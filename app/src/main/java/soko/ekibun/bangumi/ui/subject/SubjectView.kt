@@ -232,10 +232,10 @@ class SubjectView(private val context: SubjectActivity) {
     fun updateSubject(subject: Subject, tag: Subject.SaxTag? = null) {
         if (context.isDestroyed || tag == Subject.SaxTag.NONE) return
 
-        if (tag == null || tag == Subject.SaxTag.ONAIR) sitesAdapter.setNewData(subject.onair?.sites)
+        if (tag == null || tag == Subject.SaxTag.ONAIR) sitesAdapter.setNewInstance(subject.onair?.sites?.toMutableList())
 
         if ((tag == null || tag == Subject.SaxTag.SEASON) && subject.season?.size ?: 0 > 1) {
-            seasonAdapter.setNewData(subject.season)
+            seasonAdapter.setNewInstance(subject.season?.toMutableList())
             seasonAdapter.currentId = subject.id
             seasonLayoutManager.scrollToPositionWithOffset(seasonAdapter.data.indexOfFirst { it.id == subject.id }, 0)
         }
@@ -337,26 +337,26 @@ class SubjectView(private val context: SubjectActivity) {
             }
         if (tag == null || tag == Subject.SaxTag.TOPIC) {
             detail.item_topics.visibility = if (subject.topic?.isNotEmpty() == true) View.VISIBLE else View.GONE
-            topicAdapter.setNewData(subject.topic)
+            topicAdapter.setNewInstance(subject.topic?.toMutableList())
         }
         if (tag == null || tag == Subject.SaxTag.BLOG) {
             detail.item_blogs.visibility = if (subject.blog?.isNotEmpty() == true) View.VISIBLE else View.GONE
-            blogAdapter.setNewData(subject.blog)
+            blogAdapter.setNewInstance(subject.blog?.toMutableList())
         }
         if (tag == null || tag == Subject.SaxTag.CHARACTOR) {
             detail.item_character.visibility = if (subject.crt?.isNotEmpty() == true) View.VISIBLE else View.GONE
-            characterAdapter.setNewData(subject.crt)
+            characterAdapter.setNewInstance(subject.crt?.toMutableList())
         }
         if (tag == null || tag == Subject.SaxTag.LINKED) {
             detail.item_linked.visibility = if (subject.linked?.isNotEmpty() == true) View.VISIBLE else View.GONE
-            linkedSubjectsAdapter.setNewData(subject.linked)
+            linkedSubjectsAdapter.setNewInstance(subject.linked?.toMutableList())
         }
         if (tag == null || tag == Subject.SaxTag.RECOMMEND) {
             detail.item_commend.visibility = if (subject.recommend?.isNotEmpty() == true) View.VISIBLE else View.GONE
-            recommendSubjectsAdapter.setNewData(subject.recommend)
+            recommendSubjectsAdapter.setNewInstance(subject.recommend?.toMutableList())
         }
         if (tag == null || tag == Subject.SaxTag.TAGS) {
-            tagAdapter.setNewData(subject.tags?.toMutableList())
+            tagAdapter.setNewInstance(subject.tags?.toMutableList())
             tagAdapter.setOnItemClickListener { _, _, position ->
                 WebActivity.startActivity(
                     context,
@@ -401,10 +401,10 @@ class SubjectView(private val context: SubjectActivity) {
             maps[key] = (maps[key] ?: ArrayList()).plus(it)
         }
         val lastEpisodeSize = episodeDetailAdapter.data.size
-        episodeAdapter.setNewData(null)
-        episodeDetailAdapter.setNewData(null)
+        episodeAdapter.setNewInstance(null)
+        episodeDetailAdapter.setNewInstance(null)
         maps.forEach {
-            episodeDetailAdapter.addData(EpisodeAdapter.SelectableSectionEntity(true, it.key))
+            episodeDetailAdapter.addData(EpisodeAdapter.SelectableSectionEntity(it.key))
             it.value.forEach { ep ->
                 if (ep.isAir)
                     episodeAdapter.addData(ep)

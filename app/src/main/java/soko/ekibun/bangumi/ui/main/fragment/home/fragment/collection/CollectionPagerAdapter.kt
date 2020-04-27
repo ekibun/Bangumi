@@ -20,7 +20,6 @@ import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.main.MainPresenter
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
-import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
 import soko.ekibun.bangumi.ui.view.ShadowDecoration
 
@@ -84,14 +83,12 @@ class CollectionPagerAdapter(
             val recyclerView = RecyclerView(container.context)
             ShadowDecoration.set(recyclerView)
             val adapter = CollectionListAdapter()
-            adapter.emptyView = LayoutInflater.from(container.context).inflate(R.layout.view_empty, container, false)
-            adapter.isUseEmpty(false)
-            adapter.setEnableLoadMore(true)
-            adapter.setLoadMoreView(BrvahLoadMoreView())
-            adapter.setOnLoadMoreListener({
+            adapter.setEmptyView(LayoutInflater.from(container.context).inflate(R.layout.view_empty, container, false))
+            adapter.isUseEmpty = false
+            adapter.loadMoreModule.setOnLoadMoreListener {
                 val useApi = useApi(position)
                 if (!swipeRefreshLayout.isRefreshing && !useApi) loadCollectionList(position)
-            }, recyclerView)
+            }
             adapter.setOnItemClickListener { _, v, position ->
                 SubjectActivity.startActivity(v.context, adapter.data[position])
             }
@@ -131,19 +128,19 @@ class CollectionPagerAdapter(
             val item = items[position] ?: return@forEach
             item.second.isRefreshing = false
             if (list == null) {
-                if (error != null) item.first.loadMoreFail()
+                if (error != null) item.first.loadMoreModule.loadMoreFail()
                 return@forEach
             }
-            if (!fromCache) item.first.isUseEmpty(true)
+            if (!fromCache) item.first.isUseEmpty = true
             list.filter { it.type == tabList[position] }.let {
-                item.first.setNewData(it.sortedBy { it.airInfo.isNullOrEmpty() }.sortedByDescending {
+                item.first.setNewInstance(it.sortedBy { it.airInfo.isNullOrEmpty() }.sortedByDescending {
                     val eps = it.eps?.filter { it.type == Episode.TYPE_MAIN }
                     val watchTo = eps?.lastOrNull { it.progress == Episode.PROGRESS_WATCH }
                     val airTo = eps?.lastOrNull { it.isAir }
                     (if (watchTo != airTo) ":" else "") + (airTo?.airdate ?: "")
                 }.toMutableList())
             }
-            item.first.loadMoreEnd()
+            item.first.loadMoreModule.loadMoreEnd()
             (item.second.tag as? RecyclerView)?.tag = true
             pageIndex[position] = (pageIndex[position] ?: 0) + 1
         }
@@ -152,12 +149,12 @@ class CollectionPagerAdapter(
     private fun loadCollectionList(position: Int = pager.currentItem) {
         val item = items[position] ?: return
         item.second.isRefreshing = false
-        item.first.isUseEmpty(false)
+        item.first.isUseEmpty = false
         val page = pageIndex.getOrPut(position) { 0 }
         collectionCalls[position]?.dispose()
         val useApi = useApi(position)
         if (page == 0) {
-            if (!useApi) item.first.setNewData(null)
+            if (!useApi) item.first.setNewInstance(null)
             else collectionCallback(mainPresenter?.collectionList, null, true)
             item.second.isRefreshing = true
         }
@@ -168,28 +165,17 @@ class CollectionPagerAdapter(
                 UserModel.current()?.username ?: return,
                 collectionTypeView.getType(), page + 1
             ).subscribeOnUiThread({ list: List<Subject> ->
-                item.first.isUseEmpty(true)
-                list.filter { !useApi || it.type == tabList[position] }.let {
-                    if (!useApi) {
-                        it.forEach { it.type = tabList[position] }
-                        item.first.addData(it)
-                    } else {
-                        item.first.setNewData(it.sortedByDescending {
-                            val eps = it.eps?.filter { it.type == Episode.TYPE_MAIN }
-                            val watchTo = eps?.lastOrNull { it.progress == Episode.PROGRESS_WATCH }
-                            val airTo = eps?.lastOrNull { it.isAir }
-                            (if (watchTo != airTo) ":" else "") + (airTo?.airdate ?: "")
-                        }.toMutableList())
-                    }
-                }
-                if (useApi || list.size < 10)
-                    item.first.loadMoreEnd()
+                item.first.isUseEmpty = true
+                list.forEach { it.type = tabList[position] }
+                item.first.addData(list)
+                if (list.size < 10)
+                    item.first.loadMoreModule.loadMoreEnd()
                 else
-                    item.first.loadMoreComplete()
+                    item.first.loadMoreModule.loadMoreComplete()
                 (item.second.tag as? RecyclerView)?.tag = true
                 pageIndex[position] = (pageIndex[position] ?: 0) + 1
             }, {
-                item.first.loadMoreFail()
+                item.first.loadMoreModule.loadMoreFail()
             }, {
                 item.second.isRefreshing = false
             })

@@ -97,7 +97,7 @@ class EpisodeListDialog : BaseDialog(R.layout.dialog_episode_list) {
             }
             popupMenu.setOnMenuItemClickListener { menu ->
                 val newStatus = progressMap[menu.itemId]
-                presenter.updateProgress(eps.map { it.t }, newStatus)
+                presenter.updateProgress(eps.mapNotNull { it.t }, newStatus)
                 true
             }
             popupMenu.show()

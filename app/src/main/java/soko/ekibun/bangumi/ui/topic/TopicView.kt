@@ -14,6 +14,7 @@ import kotlinx.android.synthetic.main.appbar_layout.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
+import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
 import soko.ekibun.bangumi.ui.view.CollapsibleAppBarHelper
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
@@ -64,12 +65,11 @@ class TopicView(private val context: TopicActivity) {
                 return false
             }
         }
-        adapter.emptyView = LayoutInflater.from(context).inflate(R.layout.view_empty, context.item_list, false)
-        adapter.isUseEmpty(false)
-        adapter.setEnableLoadMore(true)
+        adapter.setEmptyView(LayoutInflater.from(context).inflate(R.layout.view_empty, context.item_list, false))
+        adapter.isUseEmpty = false
 
         var canScroll = false
-        collapsibleAppBarHelper.appbar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
+        collapsibleAppBarHelper.appbar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { _, _ ->
             canScroll = canScroll || collapsibleAppBarHelper.appBarOffset != 0
             context.item_list.invalidate()
         })
@@ -98,7 +98,7 @@ class TopicView(private val context: TopicActivity) {
 
     fun scrollToPost(scrollPost: String, smooth: Boolean = false) {
         (context.item_list?.layoutManager as? LinearLayoutManager)?.let { layoutManager ->
-            val scrollIndex = adapter.data.indexOfFirst { it.pst_id == scrollPost }
+            val scrollIndex = adapter.data.indexOfFirst { (it as? TopicPost)?.pst_id == scrollPost }
             if (scrollIndex <= 0) return@let
             if (smooth) {
                 if (scrollIndex + 1 < layoutManager.findFirstVisibleItemPosition())
@@ -164,11 +164,10 @@ class TopicView(private val context: TopicActivity) {
         }
 
         if (header) return
-        adapter.isUseEmpty(!isCache)
-        topic.replies.forEach { it.isExpanded = true }
+        adapter.isUseEmpty = !isCache
         setNewData(topic, isCache)
         scrollToPost(scrollPost)
-        adapter.loadMoreEnd()
+        adapter.loadMoreModule.loadMoreEnd()
 
         if (isCache) return
 
@@ -192,23 +191,10 @@ class TopicView(private val context: TopicActivity) {
         )
     }
 
-    /**
-     * 更新楼层数据
-     * @param topic Topic
-     * @param isCache Boolean
-     */
-    fun setNewData(topic: Topic, isCache: Boolean = false) {
+    private fun setNewData(topic: Topic, isCache: Boolean = false) {
         // 加上blog的正文
-        adapter.setNewData(listOfNotNull(topic.blog).plus(topic.replies))
-        var i = 0
-        while (i < adapter.data.size) {
-            val topicPost = adapter.data[i]
-            if (topicPost.isExpanded) {
-                topicPost.isExpanded = false
-                adapter.expand(i, false, false)
-            }
-            i++
-        }
+        adapter.setNewInstance(listOfNotNull(topic.blog).plus(topic.replies).toMutableList())
         if (!isCache) context.topicPresenter.dataCacheModel.set(topic.cacheKey, topic)
     }
+
 }

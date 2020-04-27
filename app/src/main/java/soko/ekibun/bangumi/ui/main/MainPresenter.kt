@@ -20,7 +20,7 @@ import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.bangumi.bean.UserInfo
-import soko.ekibun.bangumi.api.github.Jsdelivr
+import soko.ekibun.bangumi.api.github.Github
 import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
 import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarAdapter
@@ -29,17 +29,6 @@ import soko.ekibun.bangumi.util.ResourceUtil
 
 /**
  * 主页Presenter
- * @property context MainActivity
- * @property userView UserView
- * @property drawerView DrawerView
- * @property user UserInfo?
- * @property nav_view (com.google.android.material.navigation.NavigationView..com.google.android.material.navigation.NavigationView?)
- * @property nav_lp (android.view.ViewGroup.LayoutParams..android.view.ViewGroup.LayoutParams?)
- * @property calendar List<BangumiCalendarItem>
- * @property collectionList List<Subject>
- * @property collectionCall Call<List<Subject>>?
- * @property notify Pair<Int, Int>?
- * @constructor
  */
 class MainPresenter(private val context: MainActivity) {
     private val userView = UserView(context, View.OnClickListener {
@@ -87,7 +76,7 @@ class MainPresenter(private val context: MainActivity) {
             Log.v("updateUser", "${lastUser?.username}->${user?.username}")
             if (lastUser?.username != user?.username) {
                 collectionList = ArrayList()
-                if (lastUser?.username != "/") drawerView.homeFragment.onUserChange()
+                if (lastUser?.username != "/" || user == null) drawerView.homeFragment.onUserChange()
             }
             lastUser = user
             context.nav_view.menu.findItem(R.id.nav_logout).isVisible = user != null
@@ -225,12 +214,12 @@ class MainPresenter(private val context: MainActivity) {
             UserModel.updateUser(user)
             UserModel.switchToUser(user)
             updateUser(user)
-        }, {
+        }, { notify ->
             if (callUser?.username != this.user?.username) throw Exception("Canceled")
-            notify = it
-            context.notifyMenu?.badge = notify?.let { it.first + it.second } ?: 0
+            this.notify = notify
+            context.notifyMenu?.badge = notify.let { it.first + it.second }
         }).subscribeOnUiThread({
-            if (callUser?.username != this.user?.username) throw Exception("Canceled")
+            if (callUser?.username != this.user?.username) return@subscribeOnUiThread
             collectionList = it
             mergeAirInfo(it)
             notifyCollectionChange()
@@ -242,20 +231,19 @@ class MainPresenter(private val context: MainActivity) {
                 UserModel.switchToUser(null)
                 updateUser(null)
             }
-        }, key = "update_collection")
+        }, key = "bangumi_collection")
     }
 
     /**
      * 加载日历列表
      */
     fun updateCalendarList() {
-        Jsdelivr.createInstance().bangumiCalendar()
-            .subscribeOnUiThread({
-                calendar = it
-                drawerView.calendarFragment.calendarCallback(it, null)
-            }, {
-                drawerView.calendarFragment.calendarCallback(null, it)
-            }, key = "bangumi_calendar")
+        Github.bangumiCalendar().subscribeOnUiThread({
+            calendar = it
+            drawerView.calendarFragment.calendarCallback(it, null)
+        }, {
+            drawerView.calendarFragment.calendarCallback(null, it)
+        }, key = "bangumi_calendar")
     }
 
     init {

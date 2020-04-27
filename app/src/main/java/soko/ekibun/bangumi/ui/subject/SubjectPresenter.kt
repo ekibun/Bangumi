@@ -16,14 +16,11 @@ import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.bangumi.bean.Comment
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
-import soko.ekibun.bangumi.api.github.Jsdelivr
-import soko.ekibun.bangumi.api.github.bean.OnAirInfo
+import soko.ekibun.bangumi.api.github.Github
 import soko.ekibun.bangumi.api.trim21.BgmIpViewer
-import soko.ekibun.bangumi.api.trim21.bean.IpView
 import soko.ekibun.bangumi.model.DataCacheModel
 import soko.ekibun.bangumi.model.HistoryModel
 import soko.ekibun.bangumi.ui.topic.TopicActivity
-import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.JsonUtil
@@ -62,11 +59,7 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
             WebActivity.launchUrl(context, subjectView.sitesAdapter.data[position].url(), "")
         }
 
-        subjectView.commentAdapter.setEnableLoadMore(true)
-        subjectView.commentAdapter.setLoadMoreView(BrvahLoadMoreView())
-        subjectView.commentAdapter.setOnLoadMoreListener({
-            loadComment(subject)
-        }, context.item_list)
+        subjectView.commentAdapter.loadMoreModule.setOnLoadMoreListener { loadComment(subject) }
         loadComment(subject)
         subjectView.detail.load_more_load_fail_view.setOnClickListener {
             loadComment(subject)
@@ -220,8 +213,14 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
     fun refresh() {
         context.item_swipe.isRefreshing = true
 
+        // 作为
+        Github.onAirInfo(subject.id).onErrorComplete().subscribeOnUiThread({
+            subject.onair = it
+            subjectView.updateSubject(subject, Subject.SaxTag.ONAIR)
+            episodeDialog?.info = it
+        }, key = "subject_on_air_info")
+
         Observable.merge(
-            Jsdelivr.createInstance().onAirInfo(subject.id / 1000, subject.id).onErrorComplete(),
             Subject.getDetail(subject) { newSubject, tag ->
                 subject = newSubject
                 updateHistory()
@@ -230,7 +229,7 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
                     subjectView.updateSubject(newSubject, tag)
                 }
             },
-            BgmIpViewer.createInstance().subject(subject.id).onErrorComplete(),
+            BgmIpViewer.getSeason(subject.id).onErrorComplete(),
             Episode.getSubjectEps(subject)
         ).subscribeOnUiThread({
             when (it) {
@@ -239,14 +238,8 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
                     refreshCollection()
                     subjectView.updateSubject(it)
                 }
-                is OnAirInfo -> {
-                    subject.onair = it
-                    subjectView.updateSubject(subject, Subject.SaxTag.ONAIR)
-                    episodeDialog?.info = it
-                }
-                is IpView -> {
-                    val season = BgmIpViewer.getSeason(it, subject)
-                    subject.season = season
+                is BgmIpViewer.SeasonData -> {
+                    subject.season = it.seasons
                     subjectView.updateSubject(subject, Subject.SaxTag.SEASON)
                 }
                 is List<*> -> {
@@ -272,20 +265,20 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
         Comment.getSubjectComment(subject, page).subscribeOnUiThread({
             commentPage++
             if (page == 1)
-                subjectView.commentAdapter.setNewData(null)
+                subjectView.commentAdapter.setNewInstance(null)
             if (it.isEmpty()) {
                 subjectView.detail.load_more_loading_view.visibility = View.GONE
                 subjectView.detail.load_more_load_fail_view.visibility = View.GONE
                 subjectView.detail.load_more_load_end_view.visibility = View.VISIBLE
-                subjectView.commentAdapter.loadMoreEnd()
+                subjectView.commentAdapter.loadMoreModule.loadMoreEnd()
             } else {
                 subjectView.detail.comment_load_info.visibility = View.GONE
-                subjectView.commentAdapter.loadMoreComplete()
+                subjectView.commentAdapter.loadMoreModule.loadMoreComplete()
                 subjectView.commentAdapter.addData(it)
             }
         }, {
             subjectView.detail.item_comment_header.visibility = View.VISIBLE
-            subjectView.commentAdapter.loadMoreFail()
+            subjectView.commentAdapter.loadMoreModule.loadMoreFail()
 
             subjectView.detail.load_more_loading_view.visibility = View.GONE
             subjectView.detail.load_more_load_fail_view.visibility = View.VISIBLE
@@ -325,7 +318,7 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
         subjectView.tagAdapter.hasTag = {
             body.tag?.contains(it) ?: false
         }
-        subjectView.tagAdapter.setNewData(subjectView.tagAdapter.data)
+        subjectView.tagAdapter.setNewInstance(subjectView.tagAdapter.data)
 
         subjectView.detail.item_collect.setOnClickListener {
             if (HttpUtil.formhash.isEmpty()) return@setOnClickListener

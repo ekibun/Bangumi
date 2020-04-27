@@ -4,7 +4,6 @@ import androidx.annotation.IntDef
 import androidx.annotation.StringDef
 import androidx.annotation.StringRes
 import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.schedulers.Schedulers
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import soko.ekibun.bangumi.App
@@ -240,7 +239,7 @@ data class Episode(
         ): Observable<List<Episode>> {
             return ApiHelper.createHttpObservable(
                 "${Bangumi.SERVER}/subject/${subject.id}/ep"
-            ).subscribeOn(Schedulers.computation()).map { rsp ->
+            ).map { rsp ->
                 parseLineList(Jsoup.parse(rsp.body?.string() ?: ""))
             }
         }

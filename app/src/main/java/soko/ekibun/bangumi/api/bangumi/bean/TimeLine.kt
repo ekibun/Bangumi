@@ -2,7 +2,6 @@ package soko.ekibun.bangumi.api.bangumi.bean
 
 import com.chad.library.adapter.base.entity.SectionEntity
 import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.schedulers.Schedulers
 import okhttp3.FormBody
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
@@ -15,9 +14,17 @@ import java.util.*
 /**
  * 时间线
  */
-class TimeLine : SectionEntity<TimeLine.TimeLineItem> {
-    constructor(isHeader: Boolean, header: String) : super(isHeader, header)
-    constructor(t: TimeLineItem) : super(t)
+class TimeLine(override val isHeader: Boolean) : SectionEntity {
+    var header = ""
+    var t: TimeLineItem? = null
+
+    constructor(header: String) : this(true) {
+        this.header = header
+    }
+
+    constructor(t: TimeLineItem) : this(false) {
+        this.t = t
+    }
 
     /**
      * 时间线条目
@@ -68,14 +75,14 @@ class TimeLine : SectionEntity<TimeLine.TimeLineItem> {
             return ApiHelper.createHttpObservable(
                 "${Bangumi.SERVER}${if (usr == null) "" else "/user/${usr.username}"}/timeline?type=$type&page=$page&ajax=1",
                 useCookie = !global
-            ).subscribeOn(Schedulers.computation()).map { rsp ->
+            ).map { rsp ->
                 val doc = Jsoup.parse(rsp.body?.string() ?: "")
                 val ret = ArrayList<TimeLine>()
                 var user = usr ?: UserInfo()
                 val cssInfo = if (usr == null) ".info" else ".info_full"
                 doc.selectFirst("#timeline")?.children()?.forEach { timeline ->
                     if (timeline.hasClass("Header")) {
-                        ret += TimeLine(true, timeline.text())
+                        ret += TimeLine(timeline.text())
                     } else timeline.select(".tml_item")?.forEach { item ->
                         item.selectFirst("a.avatar")?.let {
                             user = UserInfo.parse(
@@ -137,7 +144,7 @@ class TimeLine : SectionEntity<TimeLine.TimeLineItem> {
                     .add("say_input", say_input)
                     .add("formhash", HttpUtil.formhash)
                     .add("submit", "submit").build()
-            ).subscribeOn(Schedulers.computation()).map { rsp ->
+            ).map { rsp ->
                 rsp.body?.string()?.contains("\"status\":\"ok\"") == true
             }
         }

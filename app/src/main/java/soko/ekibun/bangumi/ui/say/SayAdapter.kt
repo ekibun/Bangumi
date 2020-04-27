@@ -10,8 +10,9 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseSectionQuickAdapter
-import com.chad.library.adapter.base.BaseViewHolder
 import com.chad.library.adapter.base.entity.SectionEntity
+import com.chad.library.adapter.base.module.LoadMoreModule
+import com.chad.library.adapter.base.viewholder.BaseViewHolder
 import com.oubowu.stickyitemdecoration.StickyHeadContainer
 import com.oubowu.stickyitemdecoration.StickyItemDecoration
 import kotlinx.android.synthetic.main.item_avatar_header.view.*
@@ -33,7 +34,7 @@ import java.util.*
 
 class SayAdapter(data: MutableList<SaySection>? = null) :
     BaseSectionQuickAdapter<SayAdapter.SaySection, BaseViewHolder>(R.layout.item_say, R.layout.item_say, data),
-    FastScrollRecyclerView.SectionedAdapter {
+    FastScrollRecyclerView.SectionedAdapter, LoadMoreModule {
     private var pinnedIndex = 0
 
     /**
@@ -42,7 +43,7 @@ class SayAdapter(data: MutableList<SaySection>? = null) :
      * @return DragSelectTouchListener
      */
     fun setUpWithRecyclerView(container: StickyHeadContainer, recyclerView: androidx.recyclerview.widget.RecyclerView) {
-        bindToRecyclerView(recyclerView)
+        recyclerView.adapter = this
 
         container.setDataCallback {
             val item = data[it]
@@ -57,67 +58,68 @@ class SayAdapter(data: MutableList<SaySection>? = null) :
             pinnedIndex = it
             container.visibility = View.VISIBLE
             avatar.setOnClickListener { v ->
-                onItemChildClickListener?.onItemChildClick(this, v, it)
+//                onItemChildClickListener?.onItemChildClick(this, v, it)
             }
             avatar.setOnLongClickListener { v ->
-                onItemChildLongClickListener?.onItemChildLongClick(this, v, it) ?: false
+//                onItemChildLongClickListener?.onItemChildLongClick(this, v, it) ?: false
+                false
             }
             updateAvatar(avatar, item)
         }
 
-        recyclerView.addItemDecoration(StickyItemDecoration(container, SECTION_HEADER_VIEW))
+        recyclerView.addItemDecoration(StickyItemDecoration(container, SectionEntity.HEADER_TYPE))
     }
 
     private val imageSizes = HashMap<String, Size>()
     private val largeContent = WeakHashMap<String, Spanned>()
-    override fun convert(helper: BaseViewHolder, item: SaySection) {
-        helper.addOnClickListener(R.id.item_avatar)
-        helper.addOnLongClickListener(R.id.item_avatar)
-        helper.itemView.item_user.text = item.t.user.name
+    override fun convert(holder: BaseViewHolder, item: SaySection) {
+//        holder.addOnClickListener(R.id.item_avatar)
+//        holder.addOnLongClickListener(R.id.item_avatar)
+        holder.itemView.item_user.text = item.t.user.name
 
-        if (data.indexOf(item) == 0) helper.setBackgroundRes(R.id.item_layout, R.drawable.bg_round_dialog)
-        else helper.setBackgroundColor(
+        if (holder.adapterPosition == 0) holder.setBackgroundResource(R.id.item_layout, R.drawable.bg_round_dialog)
+        else holder.setBackgroundColor(
             R.id.item_layout,
-            ResourceUtil.resolveColorAttr(helper.itemView.context, android.R.attr.colorBackground)
+            ResourceUtil.resolveColorAttr(holder.itemView.context, android.R.attr.colorBackground)
         )
 
-        updateAvatar(helper.itemView.item_avatar, item)
+        updateAvatar(holder.itemView.item_avatar, item)
         val isSelf = item.t.user.username == UserModel.current()?.username
         val showAvatar = item.isHeader
-        helper.itemView.item_avatar.visibility =
-            if (showAvatar && pinnedIndex != helper.layoutPosition) View.VISIBLE else View.INVISIBLE
-        (helper.itemView.item_avatar.layoutParams as ConstraintLayout.LayoutParams).let {
+        holder.itemView.item_avatar.visibility =
+            if (showAvatar && pinnedIndex != holder.layoutPosition) View.VISIBLE else View.INVISIBLE
+        (holder.itemView.item_avatar.layoutParams as ConstraintLayout.LayoutParams).let {
             it.horizontalBias = if (isSelf) 1f else 0f
         }
 
-        (helper.itemView.item_user.layoutParams as ConstraintLayout.LayoutParams).let {
-            it.startToStart = if (isSelf) ConstraintLayout.LayoutParams.UNSET else helper.itemView.item_message.id
-            it.endToEnd = if (isSelf) helper.itemView.item_message.id else ConstraintLayout.LayoutParams.UNSET
+        (holder.itemView.item_user.layoutParams as ConstraintLayout.LayoutParams).let {
+            it.startToStart = if (isSelf) ConstraintLayout.LayoutParams.UNSET else holder.itemView.item_message.id
+            it.endToEnd = if (isSelf) holder.itemView.item_message.id else ConstraintLayout.LayoutParams.UNSET
         }
 
-        val dpStart = ResourceUtil.toPixels(helper.itemView.resources, 56f)
-        val dpEnd = ResourceUtil.toPixels(helper.itemView.resources, 64f)
-        (helper.itemView.item_message.layoutParams as ConstraintLayout.LayoutParams).let {
+        val dpStart = ResourceUtil.toPixels(holder.itemView.resources, 56f)
+        val dpEnd = ResourceUtil.toPixels(holder.itemView.resources, 64f)
+        (holder.itemView.item_message.layoutParams as ConstraintLayout.LayoutParams).let {
             it.horizontalBias = if (isSelf) 1f else 0f
             it.marginEnd = if (isSelf) dpStart else dpEnd
             it.marginStart = if (isSelf) dpEnd else dpStart
         }
-        helper.itemView.item_message.setBackgroundResource(if (isSelf) R.drawable.bg_say_right else R.drawable.bg_say_left)
+        holder.itemView.item_message.setBackgroundResource(if (isSelf) R.drawable.bg_say_right else R.drawable.bg_say_left)
 
-        helper.itemView.item_user.visibility = if (item.isHeader && !isSelf) View.VISIBLE else View.GONE
+        holder.itemView.item_user.visibility = if (item.isHeader && !isSelf) View.VISIBLE else View.GONE
 
         val drawables = ArrayList<String>()
-        helper.itemView.item_message.let { item_message ->
+        holder.itemView.item_message.let { item_message ->
             val makeSpan = {
                 @Suppress("DEPRECATION")
                 TextUtil.setTextUrlCallback(
                     Html.fromHtml(
                         parseHtml(item.t.message),
                         HtmlHttpImageGetter(item_message, drawables, imageSizes) {
-                            helper.itemView.width.toFloat() - dpStart - dpEnd
+                            holder.itemView.width.toFloat() - dpStart - dpEnd
                         },
                         HtmlTagHandler(item_message) { imageSpan ->
-                            helper.itemView.item_message?.let { itemView ->
+                            holder.itemView.item_message?.let { itemView ->
                                 val imageList =
                                     drawables.filter { (it.startsWith("http") || !it.contains("smile")) }.toList()
                                 val index = imageList.indexOfFirst { d -> d == imageSpan.source }
@@ -130,22 +132,22 @@ class SayAdapter(data: MutableList<SaySection>? = null) :
                             }
                         })
                 ) {
-                    (helper.itemView.context as? TopicActivity)?.processUrl(Bangumi.parseUrl(it))
-                        ?: WebActivity.launchUrl(helper.itemView.context, Bangumi.parseUrl(it), "")
+                    (holder.itemView.context as? TopicActivity)?.processUrl(Bangumi.parseUrl(it))
+                        ?: WebActivity.launchUrl(holder.itemView.context, Bangumi.parseUrl(it), "")
                 }
             }
             item_message.text =
                 TextUtil.updateTextViewRef(largeContent.getOrPut(item.t.message, makeSpan), WeakReference(item_message))
         }
 
-        helper.itemView.item_message.onFocusChangeListener = View.OnFocusChangeListener { view, focus ->
+        holder.itemView.item_message.onFocusChangeListener = View.OnFocusChangeListener { view, focus ->
             if (!focus) {
                 view.tag = null
                 (view as TextView).text = view.text
             }
         }
-        helper.itemView.item_message.movementMethod = LinkMovementMethod.getInstance()
-        helper.itemView.item_message.requestLayout()
+        holder.itemView.item_message.movementMethod = LinkMovementMethod.getInstance()
+        holder.itemView.item_message.requestLayout()
     }
 
     private fun updateAvatar(view: ImageView, item: SaySection) {
@@ -165,19 +167,14 @@ class SayAdapter(data: MutableList<SaySection>? = null) :
      * 对话项目（带section）
      * @constructor
      */
-    class SaySection(isHeader: Boolean, reply: Say.SayReply) :
-        SectionEntity<Say.SayReply>(isHeader, "") {
-        init {
-            t = reply
-        }
-    }
+    class SaySection(override val isHeader: Boolean, val t: Say.SayReply) : SectionEntity
 
-    override fun convertHead(helper: BaseViewHolder, item: SaySection) {
+    override fun convertHeader(helper: BaseViewHolder, item: SaySection) {
         convert(helper, item)
     }
 
     fun setNewData(say: Say) {
-        super.setNewData(listOfNotNull(
+        super.setNewInstance(listOfNotNull(
             Say.SayReply(
                 user = say.user,
                 message = say.message ?: ""
@@ -186,7 +183,8 @@ class SayAdapter(data: MutableList<SaySection>? = null) :
             it.mapIndexed { index, sayReply ->
                 SaySection(it.getOrNull(index - 1)?.user?.username != sayReply.user.username, sayReply)
             }
-        })
+        }.toMutableList()
+        )
     }
 
     companion object {

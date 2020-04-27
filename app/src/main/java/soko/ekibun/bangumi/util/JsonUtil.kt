@@ -30,7 +30,6 @@ object JsonUtil {
         return try {
             GSON.fromJson(json, object : TypeToken<T>() {}.type)
         } catch (e: Exception) {
-            e.printStackTrace()
             null
         }
     }

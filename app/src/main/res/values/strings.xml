@@ -221,7 +221,7 @@
         <item>s</item>
     </string-array>
     <string-array name="pref_image_uploader">
-        <item>upload.cc</item>
+        <item>lain.bgm.tv</item>
         <item>p.sda1.dev</item>
     </string-array>
 
@@ -249,7 +249,8 @@
     <string name="search_dialog_history_clear">清空搜索历史?</string>
     <string name="collection_dialog_remove">删除这个条目收藏?</string>
     <string name="timeline_dialog_remove">删除这条时间线?</string>
-    <string name="history_dialog_remove">清空历史记录?</string>
+    <string name="history_dialog_remove">删除这条历史记录?</string>
+    <string name="history_dialog_clear">清空历史记录?</string>
     <string name="reply_dialog_remove">删除这条回复?</string>
     <string name="timeline_dialog_add">添加动态</string>
 

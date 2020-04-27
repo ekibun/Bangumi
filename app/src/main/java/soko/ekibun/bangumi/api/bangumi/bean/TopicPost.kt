@@ -1,34 +1,17 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
-import com.chad.library.adapter.base.entity.AbstractExpandableItem
-import com.chad.library.adapter.base.entity.MultiItemEntity
+import com.chad.library.adapter.base.entity.node.BaseExpandNode
+import com.chad.library.adapter.base.entity.node.BaseNode
 import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.schedulers.Schedulers
 import okhttp3.FormBody
 import org.jsoup.nodes.Element
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
+import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.util.HttpUtil
 
 /**
  * 帖子回复
- * @property pst_id String
- * @property pst_mid String
- * @property pst_uid String
- * @property pst_content String
- * @property username String
- * @property nickname String
- * @property sign String
- * @property avatar String
- * @property dateline String
- * @property is_self Boolean
- * @property isSub Boolean
- * @property editable Boolean
- * @property relate String
- * @property model String
- * @property floor Int
- * @property sub_floor Int
- * @property badge String?
  * @constructor
  */
 data class TopicPost(
@@ -41,21 +24,23 @@ data class TopicPost(
     var sign: String = "",
     var avatar: String = "",
     var dateline: String = "",
-    var is_self: Boolean = false,
-    var isSub: Boolean = false,
-    var editable: Boolean = false,
     var relate: String = "",
     val model: String = "",
     var floor: Int = 0,
     var sub_floor: Int = 0,
-    var badge: String? = null,
-    var rawData: String? = null
-):  AbstractExpandableItem<TopicPost>(), MultiItemEntity{
-    override fun getItemType(): Int {
-        return if(isSub) 1 else 0
+    var badge: String? = null
+) : BaseExpandNode() {
+    init {
+        isExpanded = true
     }
 
-    override fun getLevel(): Int { return itemType }
+    val editable get() = UserModel.current()?.username == username && children.size == 0
+
+    val isSub get() = sub_floor > 0
+
+    val children = ArrayList<TopicPost>()
+
+    override val childNode: MutableList<BaseNode>? get() = children as MutableList<BaseNode>
 
     companion object {
         /**
@@ -85,9 +70,6 @@ data class TopicPost(
                     dateline = if (!badge.isNullOrEmpty()) it.selectFirst(".inner .tip_j")?.text()
                             ?: "" else it.selectFirst(".re_info")?.text()?.split("/")?.get(0)?.trim()?.substringAfter(" - ")
                             ?: "",
-                    is_self = it.selectFirst(".re_info")?.text()?.contains("/") == true,
-                    isSub = it.selectFirst(".re_info a")?.text()?.contains("-") ?: false,
-                    editable = it.selectFirst(".re_info")?.text()?.contains("/") == true,
                     relate = relate.toString(),
                     model = Regex("'([^']*)'").find(data.getOrNull(0) ?: "")?.groupValues?.get(1) ?: "",
                     floor = floor?.getOrNull(1)?.toIntOrNull() ?: 1,
@@ -114,7 +96,7 @@ data class TopicPost(
                     "blog" -> "/erase/reply/blog/"
                     else -> ""
                 } + "${post.pst_id}?gh=${HttpUtil.formhash}&ajax=1"
-            ).subscribeOn(Schedulers.computation()).map { rsp ->
+            ).map { rsp ->
                 rsp.body?.string()?.contains("\"status\":\"ok\"") == true
             }
         }
@@ -142,7 +124,7 @@ data class TopicPost(
                     .add("formhash", HttpUtil.formhash)
                     .add("submit", "改好了")
                     .add("content", content).build()
-            ).subscribeOn(Schedulers.computation()).map { rsp ->
+            ).map { rsp ->
                 rsp.code == 200
             }
         }

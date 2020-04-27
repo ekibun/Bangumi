@@ -3,7 +3,6 @@ package soko.ekibun.bangumi.api.bangumi.bean
 import androidx.annotation.ArrayRes
 import androidx.annotation.StringDef
 import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.schedulers.Schedulers
 import okhttp3.FormBody
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
@@ -96,9 +95,7 @@ data class Collection(
                     .add("comment", newCollection.comment ?: "")
                     .add("privacy", newCollection.private.toString())
                     .add("update", "保存").build()
-            ).subscribeOn(Schedulers.computation()).map {
-                newCollection
-            }
+            ).map { newCollection }
         }
 
         /**
@@ -111,7 +108,7 @@ data class Collection(
         ): Observable<Boolean> {
             return ApiHelper.createHttpObservable(
                 "${Bangumi.SERVER}/subject/${subject.id}/remove?gh=${HttpUtil.formhash}"
-            ).subscribeOn(Schedulers.computation()).map { rsp ->
+            ).map { rsp ->
                 rsp.code == 200
             }
         }

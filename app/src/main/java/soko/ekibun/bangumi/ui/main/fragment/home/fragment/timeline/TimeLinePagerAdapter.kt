@@ -5,12 +5,10 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import retrofit2.Call
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.bean.TimeLine
 import soko.ekibun.bangumi.model.UserModel
-import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
 import soko.ekibun.bangumi.ui.view.ShadowDecoration
 
@@ -19,7 +17,6 @@ import soko.ekibun.bangumi.ui.view.ShadowDecoration
  * @property fragment TimeLineFragment
  * @property pager ViewPager
  * @property tabList (kotlin.Array<(kotlin.String..kotlin.String?)>..kotlin.Array<out (kotlin.String..kotlin.String?)>?)
- * @property topicCall HashMap<Int, Call<List<TimeLine>>>
  * @property pageIndex HashMap<Int, Int>
  * @property items HashMap<Int, Pair<TimeLineAdapter, FixSwipeRefreshLayout>>
  * @constructor
@@ -30,8 +27,6 @@ class TimeLinePagerAdapter(
     private val pager: androidx.viewpager.widget.ViewPager
 ) : androidx.viewpager.widget.PagerAdapter() {
     private val tabList = context.resources.getStringArray(R.array.timeline_list)
-    @SuppressLint("UseSparseArrays")
-    private var topicCall = HashMap<Int, Call<List<TimeLine>>>()
     @SuppressLint("UseSparseArrays")
     val pageIndex = HashMap<Int, Int>()
 
@@ -66,13 +61,11 @@ class TimeLinePagerAdapter(
             val recyclerView = androidx.recyclerview.widget.RecyclerView(container.context)
             ShadowDecoration.set(recyclerView)
             val adapter = TimeLineAdapter()
-            adapter.emptyView = LayoutInflater.from(container.context).inflate(R.layout.view_empty, container, false)
-            adapter.isUseEmpty(false)
-            adapter.setEnableLoadMore(true)
-            adapter.setLoadMoreView(BrvahLoadMoreView())
-            adapter.setOnLoadMoreListener({
+            adapter.setEmptyView(LayoutInflater.from(container.context).inflate(R.layout.view_empty, container, false))
+            adapter.isUseEmpty = false
+            adapter.loadMoreModule.setOnLoadMoreListener {
                 loadTopicList(position)
-            }, recyclerView)
+            }
             recyclerView.adapter = adapter
             recyclerView.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(container.context)
             recyclerView.isNestedScrollingEnabled = false
@@ -96,11 +89,11 @@ class TimeLinePagerAdapter(
      */
     fun loadTopicList(position: Int = pager.currentItem) {
         val item = items[position] ?: return
-        item.first.isUseEmpty(false)
+        item.first.isUseEmpty = false
         val page = pageIndex.getOrPut(position) { 0 }
         if (page == 0) {
             item.second.isRefreshing = true
-            item.first.setNewData(null)
+            item.first.setNewInstance(null)
         }
         TimeLine.getList(
             listOf(
@@ -119,18 +112,18 @@ class TimeLinePagerAdapter(
             page + 1,
             if (fragment.selectedType == R.id.timeline_type_self) UserModel.current() else null,
             fragment.selectedType == R.id.timeline_type_all
-        ).subscribeOnUiThread({
-            item.first.isUseEmpty(true)
-            val list = it.toMutableList()
-            if (it.isNotEmpty() && item.first.data.lastOrNull { it.isHeader }?.header == it.getOrNull(0)?.header)
+        ).subscribeOnUiThread({ _list ->
+            item.first.isUseEmpty = true
+            val list = _list.toMutableList()
+            if (list.isNotEmpty() && item.first.data.lastOrNull { it.isHeader }?.header == list.getOrNull(0)?.header)
                 list.removeAt(0)
             item.first.addData(list)
-            if (it.isEmpty() || fragment.selectedType == R.id.timeline_type_all) item.first.loadMoreEnd()
-            else item.first.loadMoreComplete()
+            if (list.isEmpty() || fragment.selectedType == R.id.timeline_type_all) item.first.loadMoreModule.loadMoreEnd()
+            else item.first.loadMoreModule.loadMoreComplete()
             (item.second.tag as? androidx.recyclerview.widget.RecyclerView)?.tag = true
             pageIndex[position] = (pageIndex[position] ?: 0) + 1
         }, {
-            item.first.loadMoreFail()
+            item.first.loadMoreModule.loadMoreFail()
         }, {
             item.second.isRefreshing = false
         })

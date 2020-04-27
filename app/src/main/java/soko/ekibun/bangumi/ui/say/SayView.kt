@@ -56,11 +56,11 @@ class SayView(private val context: SayActivity) {
                 return false
             }
         }
-        adapter.emptyView = LayoutInflater.from(context).inflate(R.layout.view_empty, context.item_list, false)
-        adapter.isUseEmpty(false)
+        adapter.setEmptyView(LayoutInflater.from(context).inflate(R.layout.view_empty, context.item_list, false))
+        adapter.isUseEmpty = false
 
         var canScroll = false
-        collapsibleAppBarHelper.appbar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
+        collapsibleAppBarHelper.appbar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { _, _ ->
             canScroll = canScroll || collapsibleAppBarHelper.appBarOffset != 0
             context.item_list.invalidate()
         })
@@ -108,9 +108,9 @@ class SayView(private val context: SayActivity) {
 
         if (header) return
 
-        adapter.isUseEmpty(true)
+        adapter.isUseEmpty = true
         adapter.setNewData(say)
-        adapter.loadMoreEnd()
+        adapter.loadMoreModule.loadMoreEnd()
 
         if (isCache) return
 

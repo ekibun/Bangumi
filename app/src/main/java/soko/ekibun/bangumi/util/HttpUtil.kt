@@ -7,6 +7,7 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.brotli.BrotliInterceptor
 import okhttp3.internal.http.BridgeInterceptor
+import okhttp3.logging.HttpLoggingInterceptor
 
 /**
  * Http请求工具类
@@ -17,6 +18,7 @@ object HttpUtil {
     private val httpCookieClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
             .addInterceptor(BrotliInterceptor)
+            .addNetworkInterceptor(HttpLoggingInterceptor().apply { this.level = HttpLoggingInterceptor.Level.BASIC })
             .addInterceptor(BridgeInterceptor(WebViewCookieHandler())).build()
     }
 

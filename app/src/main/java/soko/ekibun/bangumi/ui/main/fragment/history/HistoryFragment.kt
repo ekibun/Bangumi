@@ -16,23 +16,28 @@ class HistoryFragment : DrawerFragment(R.layout.content_history) {
         super.onViewCreated(view, savedInstanceState)
 
         val adapter = HistoryAdapter()
-        adapter.setEmptyView(R.layout.view_empty, item_swipe)
         list_item?.layoutManager = LinearLayoutManager(view.context)
         adapter.setUpWithRecyclerView(shc, list_item)
+        adapter.setEmptyView(R.layout.view_empty)
         updateHistory()
         item_swipe?.setOnRefreshListener {
             updateHistory()
         }
         adapter.setOnItemClickListener { _, _, position ->
-            adapter.data[position].t?.startActivity(view.context)
+            adapter.data[position].let {
+                if (!it.isHeader) adapter.data[position].t?.startActivity(view.context)
+            }
         }
 
         adapter.setOnItemChildClickListener { _, _, position ->
-            HistoryModel.removeHistory(adapter.data[position].t)
-            updateHistory()
+            AlertDialog.Builder(view.context).setMessage(R.string.history_dialog_remove)
+                .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
+                    HistoryModel.removeHistory(adapter.data[position].t!!)
+                    updateHistory()
+                }.show()
         }
         item_clear_history?.setOnClickListener {
-            AlertDialog.Builder(view.context).setMessage(R.string.history_dialog_remove)
+            AlertDialog.Builder(view.context).setMessage(R.string.history_dialog_clear)
                 .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
                     HistoryModel.clearHistory()
                     updateHistory()
@@ -55,7 +60,7 @@ class HistoryFragment : DrawerFragment(R.layout.content_history) {
             history.add(HistoryAdapter.History(it))
             dateString = it.dateString
         }
-        (list_item?.adapter as? HistoryAdapter)?.setNewData(history)
+        (list_item?.adapter as? HistoryAdapter)?.setNewInstance(history)
         item_clear_history?.visibility = if (history.size > 0) View.VISIBLE else View.INVISIBLE
     }
 }

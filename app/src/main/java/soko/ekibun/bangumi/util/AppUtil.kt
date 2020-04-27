@@ -94,7 +94,7 @@ object AppUtil {
     fun checkUpdate(activity: Activity, checkIgnore: Boolean = true, onLatest: () -> Unit = {}) {
         when (BuildConfig.FLAVOR) {
             "github" -> {
-                Github.createInstance().releases().subscribeOnUiThread({ releases ->
+                Github.releases().subscribeOnUiThread({ releases ->
                     if (activity.isFinishing) return@subscribeOnUiThread
                     val release = releases.firstOrNull() ?: return@subscribeOnUiThread
                     val checkNew = { tag: String? ->

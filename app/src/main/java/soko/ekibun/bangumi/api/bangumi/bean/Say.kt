@@ -1,7 +1,6 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
 import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.schedulers.Schedulers
 import okhttp3.FormBody
 import org.jsoup.Jsoup
 import org.xmlpull.v1.XmlPullParser
@@ -61,9 +60,7 @@ data class Say(
             onUpdate: (Say) -> Unit,
             onNewPost: (index: Int, post: SayReply) -> Unit
         ): Observable<Say> {
-            return ApiHelper.createHttpObservable(
-                say.url
-            ).subscribeOn(Schedulers.computation()).map { rsp ->
+            return ApiHelper.createHttpObservable(say.url).map { rsp ->
                 val avatarCache = HashMap<String, String>()
                 say.user.avatar?.let { avatarCache[say.user.username!!] = it }
                 say.replies?.forEach { reply ->
@@ -127,7 +124,7 @@ data class Say(
                     .add("content", content)
                     .add("formhash", HttpUtil.formhash)
                     .add("submit", "submit").build()
-            ).subscribeOn(Schedulers.computation()).map { rsp ->
+            ).map { rsp ->
                 rsp.body?.string()?.contains("\"status\":\"ok\"") == true
             }
         }

@@ -8,7 +8,6 @@ import android.view.MenuItem
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AppCompatActivity
 import com.umeng.analytics.MobclickAgent
-import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.model.PluginsModel
 import soko.ekibun.bangumi.model.ThemeModel
 
@@ -51,7 +50,6 @@ abstract class BaseActivity(@LayoutRes private val resId: Int) : AppCompatActivi
     var onDestroyListener = {}
     override fun onDestroy() {
         super.onDestroy()
-        ApiHelper.clearObservables()
         Log.v("destroy", "${this.javaClass}")
         onDestroyListener()
     }

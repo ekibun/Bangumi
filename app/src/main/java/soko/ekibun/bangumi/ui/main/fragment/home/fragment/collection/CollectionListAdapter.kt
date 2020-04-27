@@ -2,7 +2,8 @@ package soko.ekibun.bangumi.ui.main.fragment.home.fragment.collection
 
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseQuickAdapter
-import com.chad.library.adapter.base.BaseViewHolder
+import com.chad.library.adapter.base.module.LoadMoreModule
+import com.chad.library.adapter.base.viewholder.BaseViewHolder
 import kotlinx.android.synthetic.main.item_subject.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
@@ -16,29 +17,29 @@ import soko.ekibun.bangumi.util.ResourceUtil
  * @constructor
  */
 class CollectionListAdapter(data: MutableList<Subject>? = null) :
-        BaseQuickAdapter<Subject, BaseViewHolder>(R.layout.item_subject, data) {
+    BaseQuickAdapter<Subject, BaseViewHolder>(R.layout.item_subject, data), LoadMoreModule {
 
-    override fun convert(helper: BaseViewHolder, item: Subject) {
-        helper.setText(R.id.item_title, item.displayName)
-        helper.setText(R.id.item_name_jp, item.name)
+    override fun convert(holder: BaseViewHolder, item: Subject) {
+        holder.setText(R.id.item_title, item.displayName)
+        holder.setText(R.id.item_name_jp, item.name)
 
-        helper.itemView.item_onair.text = item.airInfo
+        holder.itemView.item_onair.text = item.airInfo
 
-        helper.setText(R.id.item_summary, when {
+        holder.setText(R.id.item_summary, when {
             item.ep_status == -1 -> {
-                helper.itemView.item_summary.setTextColor(
+                holder.itemView.item_summary.setTextColor(
                     ResourceUtil.resolveColorAttr(
-                        helper.itemView.context,
+                        holder.itemView.context,
                         android.R.attr.textColorSecondary
                     )
                 )
                 item.summary
             }
             item.type == Subject.TYPE_BOOK -> {
-                val context = helper.itemView.context
-                helper.itemView.item_summary.setTextColor(
+                val context = holder.itemView.context
+                holder.itemView.item_summary.setTextColor(
                     ResourceUtil.resolveColorAttr(
-                        helper.itemView.context,
+                        holder.itemView.context,
                         if (item.airInfo.isNullOrEmpty()) android.R.attr.textColorSecondary
                         else R.attr.colorPrimary
                     )
@@ -58,19 +59,19 @@ class CollectionListAdapter(data: MutableList<Subject>? = null) :
                 val eps = (item.eps as? List<*>)?.mapNotNull { it as? Episode }?.filter { it.type == Episode.TYPE_MAIN }
                 val watchTo = eps?.lastOrNull { it.progress == Episode.PROGRESS_WATCH }
                 val airTo = eps?.lastOrNull { it.isAir }
-                helper.itemView.item_summary.setTextColor(
+                holder.itemView.item_summary.setTextColor(
                     ResourceUtil.resolveColorAttr(
-                        helper.itemView.context,
+                        holder.itemView.context,
                         if (watchTo != airTo) R.attr.colorPrimary
                         else android.R.attr.textColorSecondary
                     )
                 )
-                (watchTo?.parseSort()?.let { helper.itemView.context.getString(R.string.parse_watch_to, it) }
-                    ?: helper.itemView.context.getString(R.string.hint_watch_nothing)) +
+                (watchTo?.parseSort()?.let { holder.itemView.context.getString(R.string.parse_watch_to, it) }
+                    ?: holder.itemView.context.getString(R.string.hint_watch_nothing)) +
                         when {
                             eps?.any { !it.isAir } == true -> airTo?.parseSort()
-                                ?.let { " / " + helper.itemView.context.getString(R.string.parse_update_to, it) } ?: ""
-                            item.eps_count > 0 -> " / " + helper.itemView.context.getString(
+                                ?.let { " / " + holder.itemView.context.getString(R.string.parse_update_to, it) } ?: ""
+                            item.eps_count > 0 -> " / " + holder.itemView.context.getString(
                                 R.string.phrase_full_eps,
                                 item.eps_count
                             )
@@ -78,9 +79,9 @@ class CollectionListAdapter(data: MutableList<Subject>? = null) :
                         }
             }
         })
-        GlideUtil.with(helper.itemView.item_cover)
+        GlideUtil.with(holder.itemView.item_cover)
             ?.load(Images.getImage(item.image))
             ?.apply(RequestOptions.errorOf(R.drawable.err_404).placeholder(R.drawable.placeholder))
-            ?.into(helper.itemView.item_cover)
+            ?.into(holder.itemView.item_cover)
     }
 }

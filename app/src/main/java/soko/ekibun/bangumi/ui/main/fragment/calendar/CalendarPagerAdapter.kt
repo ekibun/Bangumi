@@ -12,6 +12,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.android.synthetic.main.content_calendar.view.*
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
+import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
 import soko.ekibun.bangumi.ui.main.MainActivity
@@ -75,7 +76,7 @@ class CalendarPagerAdapter(private val view: ViewGroup) : RecyclePagerAdapter<Ca
     private fun getItem(position: Int): CalendarAdapter {
         return items.get(position) ?: {
             val adapter = CalendarAdapter()
-            adapter.setOnItemChildClickListener { _, v, pos ->
+            adapter.setOnItemClickListener { _, v, pos ->
                 SubjectActivity.startActivity(v.context, adapter.data[pos].t.subject)
             }
             items.put(position, adapter)
@@ -101,6 +102,7 @@ class CalendarPagerAdapter(private val view: ViewGroup) : RecyclePagerAdapter<Ca
     }
 
     fun setOnAirList(it: List<BangumiCalendarItem>) {
+        val collectionList = mainPresenter?.collectionList ?: ArrayList()
         Observable.just(it).subscribeOn(Schedulers.computation()).map { raw ->
             val use30h = App.app.sp.getBoolean("calendar_use_30h", false)
             val now = CalendarAdapter.getNowInt(use30h)
@@ -117,7 +119,8 @@ class CalendarPagerAdapter(private val view: ViewGroup) : RecyclePagerAdapter<Ca
                     type = Subject.TYPE_ANIME,
                     name = subject.name,
                     name_cn = subject.name_cn,
-                    image = subject.image
+                    image = subject.image,
+                    collect = collectionList.find { it.id == subject.id }?.let { Collection() }
                 )
                 subject.eps?.forEach {
                     val dateTime = subject.getEpisodeDateTime(it)
@@ -141,21 +144,20 @@ class CalendarPagerAdapter(private val view: ViewGroup) : RecyclePagerAdapter<Ca
                 entry.value.forEachIndexed { i, calendarSection ->
                     calendarSection.past = entry.key < now || (entry.key == now && i < index)
                 }
+                if (index >= 0) entry.value.add(index, CalendarAdapter.CalendarSection(true))
                 entry.value to index
             }
         }.subscribeOnUiThread({ onAir ->
             onAir.forEach { entry ->
                 val item = getItem(entry.key)
                 val (data, index) = entry.value
-                if (index >= 0)
-                    data.add(index, CalendarAdapter.CalendarSection(true))
-                item.setNewData(data)
+                item.setNewInstance(data)
                 if (index >= 0) {
                     (holders.firstOrNull { it.position == 7 }?.recyclerView?.layoutManager as? LinearLayoutManager)
                         ?.scrollToPositionWithOffset(index - 1, 0)
                 }
             }
-        }, key = "setOnAirList")
+        }, key = "calendar_set_on_air")
     }
 
     private val mainPresenter: MainPresenter? get() = (view.context as? MainActivity)?.mainPresenter

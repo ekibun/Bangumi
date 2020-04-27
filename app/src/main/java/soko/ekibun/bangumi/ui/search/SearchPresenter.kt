@@ -15,7 +15,7 @@ import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.model.SearchHistoryModel
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
-import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
+import soko.ekibun.bangumi.ui.view.ShadowDecoration
 import soko.ekibun.bangumi.ui.web.WebActivity
 
 /**
@@ -31,45 +31,40 @@ class SearchPresenter(private val context: SearchActivity) {
     val subjectAdapter = SearchAdapter()
     val searchHistoryAdapter = SearchHistoryAdapter()
 
-    init{
+    init {
         context.search_history.layoutManager = LinearLayoutManager(context)
         context.search_history.adapter = searchHistoryAdapter
+        ShadowDecoration.set(context.search_history)
         val emptyTextView = TextView(context)
         emptyTextView.text = context.getString(R.string.search_hint_no_history)
         emptyTextView.gravity = Gravity.CENTER
-        searchHistoryAdapter.emptyView = emptyTextView
-        searchHistoryAdapter.setNewData(SearchHistoryModel.getHistoryList())
+        searchHistoryAdapter.setEmptyView(emptyTextView)
+        searchHistoryAdapter.setNewInstance(SearchHistoryModel.getHistoryList().toMutableList())
         searchHistoryAdapter.setOnItemClickListener { _, _, position ->
             context.search_box.setText(searchHistoryAdapter.data[position])
             search(context.search_box.text.toString())
         }
         searchHistoryAdapter.setOnItemChildClickListener { _, _, position ->
             SearchHistoryModel.removeHistory(searchHistoryAdapter.data[position])
-            searchHistoryAdapter.remove(position)
+            searchHistoryAdapter.removeAt(position)
         }
         context.search_history_remove.setOnClickListener {
-            AlertDialog.Builder(context).setMessage(R.string.search_dialog_history_clear).setNegativeButton(R.string.cancel){ _, _ -> }.setPositiveButton(R.string.ok){ _, _ ->
+            AlertDialog.Builder(context).setMessage(R.string.search_dialog_history_clear)
+                .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
                 SearchHistoryModel.clearHistory()
-                searchHistoryAdapter.setNewData(null)
+                searchHistoryAdapter.setNewInstance(null)
             }.show()
         }
 
+        ShadowDecoration.set(context.search_list)
         context.search_list.layoutManager = LinearLayoutManager(context)
-        subjectAdapter.setEnableLoadMore(true)
-        subjectAdapter.setLoadMoreView(BrvahLoadMoreView())
-        subjectAdapter.setOnLoadMoreListener({
-            search()
-        },context.search_list)
+        subjectAdapter.loadMoreModule.setOnLoadMoreListener { search() }
         subjectAdapter.setOnItemClickListener { _, _, position ->
             SubjectActivity.startActivity(context, subjectAdapter.data[position])
         }
-        monoAdapter.setEnableLoadMore(true)
-        monoAdapter.setLoadMoreView(BrvahLoadMoreView())
-        monoAdapter.setOnLoadMoreListener({
-            search()
-        },context.search_list)
+        monoAdapter.loadMoreModule.setOnLoadMoreListener { search() }
         monoAdapter.setOnItemClickListener { _, _, position ->
-            WebActivity.launchUrl(context, monoAdapter.data[position]?.url, "")
+            WebActivity.launchUrl(context, monoAdapter.data[position].url, "")
         }
 
         context.search_box.setOnKeyListener { _, keyCode, _ ->
@@ -90,9 +85,10 @@ class SearchPresenter(private val context: SearchActivity) {
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
                 lastKey = ""
                 context.search_swipe.visibility = View.INVISIBLE
-                searchHistoryAdapter.setNewData(
-                    SearchHistoryModel.getHistoryList().filter { s.isEmpty() || it.contains(s) })
-                context.search_history_remove.visibility = if(s.isEmpty()) View.VISIBLE else View.INVISIBLE
+                searchHistoryAdapter.setNewInstance(
+                    SearchHistoryModel.getHistoryList().filter { s.isEmpty() || it.contains(s) }.toMutableList()
+                )
+                context.search_history_remove.visibility = if (s.isEmpty()) View.VISIBLE else View.INVISIBLE
             }
         })
 
@@ -109,10 +105,10 @@ class SearchPresenter(private val context: SearchActivity) {
      * @param refresh Boolean
      */
     fun search(key: String = lastKey, refresh: Boolean = false){
-        if(refresh || lastKey != key){
+        if(refresh || lastKey != key) {
             lastKey = key
-            subjectAdapter.setNewData(null)
-            monoAdapter.setNewData(null)
+            subjectAdapter.setNewInstance(null)
+            monoAdapter.setNewInstance(null)
             loadCount = 0
         }
         if(key.isEmpty()) {
@@ -120,7 +116,7 @@ class SearchPresenter(private val context: SearchActivity) {
         }else {
             context.search_swipe.visibility = View.VISIBLE
             SearchHistoryModel.addHistory(key)
-            searchHistoryAdapter.setNewData(SearchHistoryModel.getHistoryList())
+            searchHistoryAdapter.setNewInstance(SearchHistoryModel.getHistoryList().toMutableList())
 
             if (loadCount == 0)
                 context.search_swipe?.isRefreshing = true
@@ -131,14 +127,14 @@ class SearchPresenter(private val context: SearchActivity) {
                         ?: Subject.TYPE_ANY, page + 1
                 ).subscribeOnUiThread({ list ->
                     if (list.isEmpty())
-                        subjectAdapter.loadMoreEnd()
+                        subjectAdapter.loadMoreModule.loadMoreEnd()
                     else {
-                        subjectAdapter.loadMoreComplete()
+                        subjectAdapter.loadMoreModule.loadMoreComplete()
                         subjectAdapter.addData(list)
                         loadCount = page + 1 //searchAdapter.data.size
                     }
                 }, {
-                    subjectAdapter.loadMoreFail()
+                    subjectAdapter.loadMoreModule.loadMoreFail()
                 }, {
                     context.search_swipe?.isRefreshing = false
                 })
@@ -149,14 +145,14 @@ class SearchPresenter(private val context: SearchActivity) {
                         ?: "all", page + 1
                 ).subscribeOnUiThread({ list ->
                     if (list.isEmpty())
-                        monoAdapter.loadMoreEnd()
+                        monoAdapter.loadMoreModule.loadMoreEnd()
                     else {
-                        monoAdapter.loadMoreComplete()
+                        monoAdapter.loadMoreModule.loadMoreComplete()
                         monoAdapter.addData(list)
                         loadCount = page + 1 //searchAdapter.data.size
                     }
                 }, {
-                    monoAdapter.loadMoreFail()
+                    monoAdapter.loadMoreModule.loadMoreFail()
                 }, {
                     context.search_swipe?.isRefreshing = false
                 })

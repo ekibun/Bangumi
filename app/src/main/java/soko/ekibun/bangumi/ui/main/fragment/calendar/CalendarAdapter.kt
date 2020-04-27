@@ -4,8 +4,8 @@ import android.annotation.SuppressLint
 import android.view.View
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseSectionQuickAdapter
-import com.chad.library.adapter.base.BaseViewHolder
 import com.chad.library.adapter.base.entity.SectionEntity
+import com.chad.library.adapter.base.viewholder.BaseViewHolder
 import kotlinx.android.synthetic.main.item_calendar.view.*
 import kotlinx.android.synthetic.main.item_calendar_now.view.*
 import soko.ekibun.bangumi.App
@@ -24,35 +24,34 @@ import java.util.*
  */
 class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
     BaseSectionQuickAdapter<CalendarAdapter.CalendarSection, BaseViewHolder>
-        (R.layout.item_calendar, R.layout.item_calendar_now, data) {
+        (R.layout.item_calendar_now, R.layout.item_calendar, data) {
     @SuppressLint("SetTextI18n")
-    override fun convert(helper: BaseViewHolder, item: CalendarSection) {
-        helper.addOnClickListener(R.id.item_layout)
-        helper.setText(
+    override fun convert(holder: BaseViewHolder, item: CalendarSection) {
+        holder.setText(
             R.id.item_time,
-            if (data.getOrNull(helper.adapterPosition - 1)?.time == item.time) "" else item.time
+            if (getItemOrNull(holder.adapterPosition - 1)?.time == item.time) "" else item.time
         )
-        helper.setText(R.id.item_title, item.t.subject.displayName)
-        helper.setText(
+        holder.setText(R.id.item_title, item.t.subject.displayName)
+        holder.setText(
             R.id.item_ep_name,
             item.t.episode?.parseSort() + " " + (if (item.t.episode?.name_cn.isNullOrEmpty()) item.t.episode?.name
                 ?: "" else item.t.episode?.name_cn)
         )
-        GlideUtil.with(helper.itemView.item_cover)
+        GlideUtil.with(holder.itemView.item_cover)
             ?.load(Images.small(item.t.subject.image))
             ?.apply(RequestOptions.errorOf(R.drawable.err_404).placeholder(R.drawable.placeholder))
-            ?.into(helper.itemView.item_cover)
-        helper.itemView.item_chase.visibility = if (item.t.subject.collect != null) View.VISIBLE else View.GONE
+            ?.into(holder.itemView.item_cover)
+        holder.itemView.item_chase.visibility = if (item.t.subject.collect != null) View.VISIBLE else View.GONE
 
         val color = ResourceUtil.resolveColorAttr(
-            helper.itemView.context,
+            holder.itemView.context,
             if (item.past) R.attr.colorPrimary else android.R.attr.textColorSecondary
         )
-        helper.itemView.item_ep_name.setTextColor(color)
-        helper.itemView.item_time.alpha = if (item.past) 0.6f else 1.0f
+        holder.itemView.item_ep_name.setTextColor(color)
+        holder.itemView.item_time.alpha = if (item.past) 0.6f else 1.0f
     }
 
-    override fun convertHead(helper: BaseViewHolder, item: CalendarSection) {
+    override fun convertHeader(helper: BaseViewHolder, item: CalendarSection) {
         val use30h = App.app.sp.getBoolean("calendar_use_30h", false)
         val cal = Calendar.getInstance()
         val hour = cal.get(Calendar.HOUR_OF_DAY)
@@ -68,14 +67,14 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
      * @property time String
      * @constructor
      */
-    class CalendarSection : SectionEntity<OnAir> {
-        constructor(isHeader: Boolean) : super(isHeader, "")
-
+    class CalendarSection(override val isHeader: Boolean) : SectionEntity {
         var date: Int = 0
         var time: String = ""
         var past: Boolean = false
+        lateinit var t: OnAir
 
-        constructor(subject: OnAir, date: Int, time: String) : super(subject) {
+        constructor(subject: OnAir, date: Int, time: String) : this(false) {
+            this.t = subject
             this.date = date
             this.time = time
         }

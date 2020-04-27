@@ -12,7 +12,6 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
-import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
 import soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
 import soko.ekibun.bangumi.ui.view.ShadowDecoration
 import java.util.*
@@ -49,23 +48,23 @@ class IndexPagerAdapter(fragment: IndexFragment, pager: androidx.viewpager.widge
         val month = position % 12 + 1
         val page = pageIndex.get(position, 0)
         if (page == 0) {
-            item.adapter.setNewData(null)
+            item.adapter.setNewInstance(null)
             item.view.isRefreshing = true
         }
-        item.adapter.isUseEmpty(false)
+        item.adapter.isUseEmpty = false
 
         Bangumi.browserAirTime(indexType.first, year, month, page + 1, indexType.second)
             .subscribeOnUiThread({
-                item.adapter.isUseEmpty(true)
+                item.adapter.isUseEmpty = true
                 if (it.isEmpty()) {
-                    item.adapter.loadMoreEnd()
+                    item.adapter.loadMoreModule.loadMoreEnd()
                 } else {
-                    item.adapter.loadMoreComplete()
+                    item.adapter.loadMoreModule.loadMoreComplete()
                     item.adapter.addData(it)
                     pageIndex.put(position, (pageIndex.get(position, 0)) + 1)
                 }
             }, {
-                item.adapter.loadMoreFail()
+                item.adapter.loadMoreModule.loadMoreFail()
             }, {
                 item.view.isRefreshing = false
             }, "bangumi_index_$position")
@@ -87,13 +86,11 @@ class IndexPagerAdapter(fragment: IndexFragment, pager: androidx.viewpager.widge
         val adapter = SubjectAdapter()
         val viewHolder = IndexPagerViewHolder(swipeRefreshLayout, adapter, recyclerView)
 
-        adapter.emptyView = LayoutInflater.from(parent.context).inflate(R.layout.view_empty, parent, false)
-        adapter.isUseEmpty(false)
-        adapter.setEnableLoadMore(true)
-        adapter.setLoadMoreView(BrvahLoadMoreView())
-        adapter.setOnLoadMoreListener({
+        adapter.setEmptyView(LayoutInflater.from(parent.context).inflate(R.layout.view_empty, parent, false))
+        adapter.isUseEmpty = false
+        adapter.loadMoreModule.setOnLoadMoreListener {
             loadIndex(viewHolder)
-        }, recyclerView)
+        }
         adapter.setOnItemClickListener { _, v, pos ->
             SubjectActivity.startActivity(v.context, adapter.data[pos])
         }

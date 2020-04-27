@@ -9,8 +9,8 @@ import okhttp3.RequestBody
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
+import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.sda1.Sda1
-import soko.ekibun.bangumi.api.uploadcc.UploadCC
 import java.lang.ref.WeakReference
 
 /**
@@ -62,7 +62,7 @@ class UploadDrawable(
                 "image_uploader",
                 "p.sda1.dev"
             )) {
-                "upload.cc" -> UploadCC.uploadImage(fileRequestBody, fileName)
+                "lain.bgm.tv" -> Bangumi.uploadImage(fileRequestBody, fileName)
                 else -> Sda1.uploadImage(fileRequestBody, fileName)
             }.flatMap {
                 if (it.isNullOrEmpty()) Observable.error(IllegalAccessException("Image Response Empty!"))
@@ -74,6 +74,7 @@ class UploadDrawable(
                 loadImage()
             }, {
                 error = true
+                it.printStackTrace()
                 errorDrawable?.let { update(it, textSize.toInt()) }
             }, {
                 if (circularProgressDrawable.isRunning) circularProgressDrawable.stop()

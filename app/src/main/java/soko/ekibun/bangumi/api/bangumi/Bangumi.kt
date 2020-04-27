@@ -1,17 +1,17 @@
 package soko.ekibun.bangumi.api.bangumi
 
+import android.util.Log
 import android.webkit.CookieManager
 import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.schedulers.Schedulers
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.xmlpull.v1.XmlPullParser
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
+import soko.ekibun.bangumi.api.bangumi.bean.*
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
-import soko.ekibun.bangumi.api.bangumi.bean.MonoInfo
-import soko.ekibun.bangumi.api.bangumi.bean.Subject
-import soko.ekibun.bangumi.api.bangumi.bean.UserInfo
 import soko.ekibun.bangumi.util.HttpUtil
 import java.net.URI
 import java.util.*
@@ -69,26 +69,27 @@ object Bangumi {
         @Collection.CollectionStatus collection_status: String,
         page: Int = 1
     ): Observable<List<Subject>> {
-        return ApiHelper.createHttpObservable("$SERVER/$subject_type/list/$username/$collection_status?page=$page")
-            .subscribeOn(Schedulers.computation()).map { rsp ->
-                val doc = Jsoup.parse(rsp.body?.string() ?: "")
-                val ret = ArrayList<Subject>()
-                for (item in doc.select(".item")) {
-                    val id = item.attr("id").split('_').getOrNull(1)?.toIntOrNull() ?: continue
-                    val nameCN = item.selectFirst("h3 a")?.text()
-                    val name = item.selectFirst("h3 small")?.text() ?: nameCN
-                    ret += Subject(
-                        id = id,
-                        type = Subject.TYPE_ANY,
-                        name = name,
-                        name_cn = nameCN,
-                        summary = item.selectFirst(".info")?.text(),
-                        image = parseImageUrl(item.selectFirst("img")),
-                        ep_status = -1
-                    )
-                }
-                ret
+        return ApiHelper.createHttpObservable(
+            "$SERVER/$subject_type/list/$username/$collection_status?page=$page"
+        ).map { rsp ->
+            val doc = Jsoup.parse(rsp.body?.string() ?: "")
+            val ret = ArrayList<Subject>()
+            for (item in doc.select(".item")) {
+                val id = item.attr("id").split('_').getOrNull(1)?.toIntOrNull() ?: continue
+                val nameCN = item.selectFirst("h3 a")?.text()
+                val name = item.selectFirst("h3 small")?.text() ?: nameCN
+                ret += Subject(
+                    id = id,
+                    type = Subject.TYPE_ANY,
+                    name = name,
+                    name_cn = nameCN,
+                    summary = item.selectFirst(".info")?.text(),
+                    image = parseImageUrl(item.selectFirst("img")),
+                    ep_status = -1
+                )
             }
+            ret
+        }
     }
 
     /**
@@ -110,27 +111,26 @@ object Bangumi {
                 keywords,
                 "utf-8"
             )}?cat=${Subject.parseTypeInt(type)}&page=$page"
-        )
-            .subscribeOn(Schedulers.computation()).map { rsp ->
-                val doc = Jsoup.parse(rsp.body?.string() ?: "")
-                if (doc.select("#colunmNotice") == null) throw error("search error")
-                doc.select(".item").mapNotNull { item ->
-                    val nameCN = item.selectFirst("h3")?.selectFirst("a")?.text()
-                    Subject(
-                        id = item.attr("id").split('_').last().toIntOrNull() ?: return@mapNotNull null,
-                        type = Subject.parseType(item.selectFirst(".ico_subject_type")?.classNames()?.mapNotNull {
-                            it.split('_').last().toIntOrNull()
-                        }?.firstOrNull()),
-                        name = item.selectFirst("h3")?.selectFirst("small")?.text() ?: nameCN,
-                        name_cn = nameCN,
-                        summary = item.selectFirst(".info")?.text(),
-                        image = parseImageUrl(item.selectFirst("img")),
-                        collect = if (item.selectFirst(".collectBlock")?.text()
-                                ?.contains("修改") == true
-                        ) Collection() else null
-                    )
-                }
+        ).map { rsp ->
+            val doc = Jsoup.parse(rsp.body?.string() ?: "")
+            if (doc.select("#colunmNotice") == null) throw error("search error")
+            doc.select(".item").mapNotNull { item ->
+                val nameCN = item.selectFirst("h3")?.selectFirst("a")?.text()
+                Subject(
+                    id = item.attr("id").split('_').last().toIntOrNull() ?: return@mapNotNull null,
+                    type = Subject.parseType(item.selectFirst(".ico_subject_type")?.classNames()?.mapNotNull {
+                        it.split('_').last().toIntOrNull()
+                    }?.firstOrNull()),
+                    name = item.selectFirst("h3")?.selectFirst("small")?.text() ?: nameCN,
+                    name_cn = nameCN,
+                    summary = item.selectFirst(".info")?.text(),
+                    image = parseImageUrl(item.selectFirst("img")),
+                    collect = if (item.selectFirst(".collectBlock")?.text()
+                            ?.contains("修改") == true
+                    ) Collection() else null
+                )
             }
+        }
     }
 
     /**
@@ -148,25 +148,21 @@ object Bangumi {
         CookieManager.getInstance()
             .setCookie(COOKIE_HOST, "chii_searchDateLine=${System.currentTimeMillis() / 1000 - 10};")
         return ApiHelper.createHttpObservable(
-            "$SERVER/mono_search/${java.net.URLEncoder.encode(
-                keywords,
-                "utf-8"
-            )}?cat=$type&page=$page"
-        )
-            .subscribeOn(Schedulers.computation()).map { rsp ->
-                val doc = Jsoup.parse(rsp.body?.string() ?: "")
-                if (doc.select("#colunmNotice") == null) throw Exception("search error")
-                doc.select(".light_odd").map {
-                    val a = it.selectFirst("h2 a")
-                    MonoInfo(
-                        name = a?.ownText()?.trim('/', ' '),
-                        name_cn = a?.selectFirst("span.tip")?.text(),
-                        image = parseImageUrl(it.selectFirst("img")),
-                        summary = it.selectFirst(".prsn_info")?.text(),
-                        url = parseUrl(a?.attr("href") ?: "")
-                    )
-                }
+            "$SERVER/mono_search/${java.net.URLEncoder.encode(keywords, "utf-8")}?cat=$type&page=$page"
+        ).map { rsp ->
+            val doc = Jsoup.parse(rsp.body?.string() ?: "")
+            if (doc.select("#colunmNotice") == null) throw Exception("search error")
+            doc.select(".light_odd").map {
+                val a = it.selectFirst("h2 a")
+                MonoInfo(
+                    name = a?.ownText()?.trim('/', ' '),
+                    name_cn = a?.selectFirst("span.tip")?.text(),
+                    image = parseImageUrl(it.selectFirst("img")),
+                    summary = it.selectFirst(".prsn_info")?.text(),
+                    url = parseUrl(a?.attr("href") ?: "")
+                )
             }
+        }
     }
 
     /**
@@ -185,23 +181,24 @@ object Bangumi {
         page: Int,
         sub_cat: String
     ): Observable<List<Subject>> {
-        return ApiHelper.createHttpObservable("$SERVER/$subject_type/browser${if (sub_cat.isEmpty()) "" else "/$sub_cat"}/airtime/$year-$month?page=$page")
-            .subscribeOn(Schedulers.computation()).map { rsp ->
-                val doc = Jsoup.parse(rsp.body?.string() ?: "")
-                doc.select(".item").mapNotNull {
-                    val nameCN = it.selectFirst("h3 a")?.text()
-                    Subject(
-                        id = it.attr("id").split('_').last().toIntOrNull() ?: return@mapNotNull null,
-                        name = it.selectFirst("h3 small")?.text() ?: nameCN,
-                        name_cn = nameCN,
-                        summary = it.selectFirst(".info")?.text(),
-                        image = parseImageUrl(it.selectFirst("img")),
-                        collect = if (it.selectFirst(".collectBlock")?.text()
-                                ?.contains("修改") == true
-                        ) Collection() else null
-                    )
-                }
+        return ApiHelper.createHttpObservable(
+            "$SERVER/$subject_type/browser${if (sub_cat.isEmpty()) "" else "/$sub_cat"}/airtime/$year-$month?page=$page"
+        ).map { rsp ->
+            val doc = Jsoup.parse(rsp.body?.string() ?: "")
+            doc.select(".item").mapNotNull {
+                val nameCN = it.selectFirst("h3 a")?.text()
+                Subject(
+                    id = it.attr("id").split('_').last().toIntOrNull() ?: return@mapNotNull null,
+                    name = it.selectFirst("h3 small")?.text() ?: nameCN,
+                    name_cn = nameCN,
+                    summary = it.selectFirst(".info")?.text(),
+                    image = parseImageUrl(it.selectFirst("img")),
+                    collect = if (it.selectFirst(".collectBlock")?.text()
+                            ?.contains("修改") == true
+                    ) Collection() else null
+                )
             }
+        }
     }
 
     /**
@@ -246,13 +243,11 @@ object Bangumi {
                         )
                         ApiHelper.SaxEventType.BEGIN
                     }
-                    parser.getAttributeValue("", "id")?.startsWith("subjectPanel_") == true -> {
-                        Subject.parseChaseCollection(str())?.let { ret += it }
-                        ApiHelper.SaxEventType.BEGIN
-                    }
                     parser.getAttributeValue("", "id")?.startsWith("home_") == true && !subjectLoaded -> {
                         subjectLoaded = true
-                        Subject.parseChaseCollection(str())?.let { ret += it }
+                        ret += Jsoup.parse(str()).select(".infoWrapper").mapNotNull {
+                            Subject.parseChaseCollection(it)
+                        }
                         ApiHelper.SaxEventType.BEGIN
                     }
                     parser.getAttributeValue("", "id")?.contains("subject_prg_content") == true -> {
@@ -267,13 +262,36 @@ object Bangumi {
                             )
                         ).subscribeOnUiThread({
                             onNotify(it)
-                        })
+                        }, key = "bangumi_notify")
                         ApiHelper.SaxEventType.END
                     }
                     else -> ApiHelper.SaxEventType.NOTHING
                 }
             }
             ret
+        }
+    }
+
+    /**
+     * 上传图片
+     * @param requestBody RequestBody
+     * @param fileName String
+     * @return Call<String>
+     */
+    fun uploadImage(requestBody: RequestBody, fileName: String): Observable<String> {
+        return ApiHelper.createHttpObservable("$SERVER/blog/create").flatMap {
+            val sid = Regex("""CHOBITS_SID = '(.*?)';""").find(it.body!!.string())?.groupValues?.get(1)!!
+            Log.v("sid", sid)
+            ApiHelper.createHttpObservable(
+                "$SERVER/blog/upload_photo?folder=/blog/files&sid=$sid",
+                body = MultipartBody.Builder().setType(MultipartBody.FORM)
+                    .addFormDataPart("Filename", fileName)
+                    .addFormDataPart("Filedata", fileName, requestBody)
+                    .addFormDataPart("Upload", "Submit Query")
+                    .build()
+            ).map { rsp ->
+                Images.large("https:" + Jsoup.parse(rsp.body!!.string()).selectFirst("img").attr("src"))
+            }
         }
     }
 }

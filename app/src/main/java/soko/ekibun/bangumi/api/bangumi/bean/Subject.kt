@@ -3,7 +3,6 @@ package soko.ekibun.bangumi.api.bangumi.bean
 import androidx.annotation.StringDef
 import androidx.annotation.StringRes
 import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.schedulers.Schedulers
 import okhttp3.FormBody
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
@@ -201,8 +200,7 @@ data class Subject(
             }
         }
 
-        fun parseChaseCollection(str: String): Subject? {
-            val it = Jsoup.parse(str).selectFirst(".infoWrapper") ?: return null
+        fun parseChaseCollection(it: Element): Subject? {
             val data = it.selectFirst(".headerInner a.textTip") ?: return null
             return Subject(
                 id = data.attr("data-subject-id")?.toIntOrNull() ?: return null,
@@ -228,9 +226,7 @@ data class Subject(
          * @return Call<Subject>
          */
         fun getDetail(subject: Subject, onUpdate: (Subject, SaxTag) -> Unit = { _, _ -> }): Observable<Subject> {
-            return ApiHelper.createHttpObservable(
-                subject.url
-            ).subscribeOn(Schedulers.computation()).map { rsp ->
+            return ApiHelper.createHttpObservable(subject.url).map { rsp ->
                 var lastTag = SaxTag.NONE
                 var tankobon: List<Subject>? = null
                 val updateSubject = { str: String, newTag: SaxTag ->
@@ -557,7 +553,7 @@ data class Subject(
                 "${Bangumi.SERVER}/subject/ep/$id/status/$status?gh=${HttpUtil.formhash}&ajax=1",
                 body = FormBody.Builder()
                     .add("ep_id", epIds ?: id.toString()).build()
-            ).subscribeOn(Schedulers.computation()).map { rsp ->
+            ).map { rsp ->
                 rsp.body?.string()?.contains("\"status\":\"ok\"") == true
             }
         }
@@ -582,7 +578,7 @@ data class Subject(
             return ApiHelper.createHttpObservable(
                 "${Bangumi.SERVER}/subject/set/watched/${subject.id}",
                 body = body.build()
-            ).subscribeOn(Schedulers.computation()).map { rsp ->
+            ).map { rsp ->
                 rsp.code == 200
             }
         }

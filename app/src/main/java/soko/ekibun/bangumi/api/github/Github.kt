@@ -1,32 +1,52 @@
 package soko.ekibun.bangumi.api.github
 
 import io.reactivex.rxjava3.core.Observable
-import retrofit2.http.GET
 import soko.ekibun.bangumi.api.ApiHelper
+import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
+import soko.ekibun.bangumi.api.github.bean.OnAirInfo
 import soko.ekibun.bangumi.api.github.bean.Release
+import soko.ekibun.bangumi.util.JsonUtil
 
 /**
  * GitHub API
  */
-interface Github {
+object Github {
+
+    private const val GITHUB_SERVER_API = "https://api.github.com"
 
     /**
      * 获取版本列表
-     * @return Call<List<Release>>
      */
-    @GET("/repos/ekibun/Bangumi/releases")
-    fun releases(): Observable<List<Release>>
+    fun releases(): Observable<List<Release>> {
+        return ApiHelper.createHttpObservable(
+            "$GITHUB_SERVER_API/repos/ekibun/Bangumi/releases"
+        ).map {
+            JsonUtil.toEntity<List<Release>>(it.body!!.string())
+        }
+    }
 
-    companion object {
-        private const val SERVER_API = "https://api.github.com"
+    private const val JSDELIVR_SERVER_API = "https://cdn.jsdelivr.net"
 
-        /**
-         * 创建retrofit实例
-         * @return Github
-         */
-        fun createInstance(): Github {
-            return ApiHelper.createRetrofitBuilder(SERVER_API)
-                .build().create(Github::class.java)
+    /**
+     * 时间表
+     */
+    fun bangumiCalendar(): Observable<List<BangumiCalendarItem>> {
+        return ApiHelper.createHttpObservable(
+            "$JSDELIVR_SERVER_API/gh/ekibun/bangumi_onair@master/calendar.json"
+        ).map {
+            JsonUtil.toEntity<List<BangumiCalendarItem>>(it.body!!.string())
+        }
+    }
+
+    /**
+     * 播放源
+     * @param id Int
+     */
+    fun onAirInfo(id: Int): Observable<OnAirInfo> {
+        return ApiHelper.createHttpObservable(
+            "$JSDELIVR_SERVER_API/gh/ekibun/bangumi_onair@master/onair/${id / 1000}/$id.json"
+        ).map {
+            JsonUtil.toEntity<OnAirInfo>(it.body!!.string())
         }
     }
 }

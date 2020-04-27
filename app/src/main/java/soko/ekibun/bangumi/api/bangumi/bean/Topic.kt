@@ -68,7 +68,7 @@ data class Topic(
         ): Observable<List<Topic>> {
             return ApiHelper.createHttpObservable(
                 "${Bangumi.SERVER}/rakuen/topiclist" + if (type.isEmpty()) "" else "?type=$type"
-            ).subscribeOn(Schedulers.computation()).map { rsp ->
+            ).map { rsp ->
                 val doc = Jsoup.parse(rsp.body?.string() ?: "")
                 doc.select(".item_list").mapNotNull {
                     val title = it.selectFirst(".title") ?: return@mapNotNull null
@@ -106,24 +106,35 @@ data class Topic(
                     "blog" -> "${Bangumi.SERVER}/blog/${topic.id}"
                     else -> "${Bangumi.SERVER}/rakuen/topic/${topic.model}/${topic.id}"
                 }
-            ).subscribeOn(Schedulers.computation()).map { rsp ->
+            ).map { rsp ->
                 var beforeData = ""
 
                 val replyPub = ReplaySubject.create<String>()
-                val observable = replyPub.observeOn(Schedulers.computation()).buffer(20).flatMap { str ->
+                val observable = replyPub.observeOn(Schedulers.computation()).buffer(10).flatMap { str ->
                     Observable.just(0).observeOn(Schedulers.computation()).map {
-                        // Log.v("Thread", Thread.currentThread().name)
                         val doc = Jsoup.parse(str.joinToString(""))
                         doc.outputSettings().prettyPrint(false)
+                        var relate: TopicPost? = null
                         doc.select(".re_info").mapNotNull {
-                            TopicPost.parse(it.parent())
+                            val post = TopicPost.parse(it.parent())
+                            when {
+                                post == null -> null
+                                post.isSub -> {
+                                    relate?.children?.add(post)
+                                    null
+                                }
+                                else -> {
+                                    relate = post
+                                    post
+                                }
+                            }
                         }
                     }
                 }
 
                 observable.subscribeOnUiThread({
                     onNewPost(it)
-                })
+                }, key = "topic_new_post_emitter")
 
                 val updateReply = { str: String ->
                     if (beforeData.isEmpty()) {
@@ -154,8 +165,6 @@ data class Topic(
                                 pst_content = doc.selectFirst("#entry_content")?.html() ?: "",
                                 dateline = doc.selectFirst(".re_info")?.text()?.substringBefore('/')?.trim(' ')
                                     ?: "",
-                                is_self = doc.selectFirst(".re_info")?.text()?.contains("del") == true,
-                                editable = doc.selectFirst(".re_info")?.text()?.contains("del") == true,
                                 model = "blog"
                             )
                             onNewPost(listOf(topic.blog!!))
@@ -168,7 +177,7 @@ data class Topic(
                 val lastData = ApiHelper.parseWithSax(rsp) { parser, str ->
                     when {
                         parser.eventType != XmlPullParser.START_TAG -> ApiHelper.SaxEventType.NOTHING
-                        parser.getAttributeValue("", "id")?.startsWith("post_") == true -> {
+                        parser.getAttributeValue("", "class")?.contains(Regex("row_reply|postTopic")) == true -> {
                             updateReply(str())
                             ApiHelper.SaxEventType.BEGIN
                         }
@@ -189,7 +198,7 @@ data class Topic(
                     Pair(it, Bangumi.parseUrl(error.selectFirst("a")?.attr("href") ?: ""))
                 }
                 topic.replies = observable.blockingIterable().flatten()
-                    .let { replies -> replies.sortedBy { it.floor + it.sub_floor * 1.0f / replies.size } }
+                    .let { replies -> replies.sortedBy { it.floor } }
                 topic
             }
         }
@@ -207,9 +216,19 @@ data class Topic(
                     "blog" -> "${Bangumi.SERVER}/erase/entry/${topic.id}"
                     else -> topic.url.replace(Bangumi.SERVER, "${Bangumi.SERVER}/erase")
                 } + "?gh=${HttpUtil.formhash}&ajax=1"
-            ).subscribeOn(Schedulers.computation()).map { rsp ->
+            ).map { rsp ->
                 rsp.code == 200
             }
+        }
+
+
+        data class ReplyData(
+            val posts: ReplyPost
+        ) {
+            data class ReplyPost(
+                val main: Map<String, TopicPost>?,
+                val sub: Map<String, List<TopicPost>>?
+            )
         }
 
         /**
@@ -223,7 +242,7 @@ data class Topic(
             topic: Topic,
             post: TopicPost?,
             content: String
-        ): Observable<List<TopicPost>> {
+        ): Observable<ReplyData.ReplyPost> {
             val comment = if (post?.isSub == true)
                 "[quote][b]${post.nickname}[/b] 说: ${Jsoup.parse(post.pst_content).let { doc ->
                     doc.select("div.quote").remove()
@@ -248,38 +267,8 @@ data class Topic(
                     "blog" -> "${Bangumi.SERVER}/blog/entry/${topic.id}"
                     else -> topic.url
                 } + "/new_reply?ajax=1", body = data.build()
-            ).subscribeOn(Schedulers.computation()).map { rsp ->
-                val replies = ArrayList(topic.replies)
-                replies.removeAll { it.sub_floor > 0 }
-                replies.sortedBy { it.floor }
-                val posts = JsonUtil.toJsonObject(rsp.body?.string() ?: "").getAsJsonObject("posts")
-                val main = JsonUtil.toEntity<Map<String, TopicPost>>(posts.get("main")?.toString() ?: "") ?: HashMap()
-                main.forEach {
-                    it.value.floor = (replies.lastOrNull()?.floor ?: 0) + 1
-                    it.value.relate = it.key
-                    it.value.isExpanded = replies.firstOrNull { o -> o.pst_id == it.value.pst_id }?.isExpanded ?: true
-                    replies.removeAll { o -> o.pst_id == it.value.pst_id }
-                    replies.add(it.value)
-                }
-                replies.toTypedArray().forEach { replies.addAll(it.subItems ?: return@forEach) }
-                replies.sortedBy { it.floor + it.sub_floor * 1.0f / replies.size }
-                val sub = JsonUtil.toEntity<Map<String, List<TopicPost>>>(posts.get("sub")?.toString() ?: "")
-                    ?: HashMap()
-                sub.forEach {
-                    replies.lastOrNull { old -> old.pst_id == it.key }?.isExpanded = true
-                    var relate = replies.lastOrNull { old -> old.relate == it.key } ?: return@forEach
-                    it.value.forEach { topicPost ->
-                        topicPost.isSub = true
-                        topicPost.floor = relate.floor
-                        topicPost.sub_floor = relate.sub_floor + 1
-                        topicPost.editable = topicPost.is_self
-                        topicPost.relate = relate.relate
-                        replies.removeAll { o -> o.pst_id == topicPost.pst_id }
-                        replies.add(topicPost)
-                        relate = topicPost
-                    }
-                }
-                replies.sortedBy { it.floor + it.sub_floor * 1.0f / replies.size }
+            ).map { rsp ->
+                JsonUtil.toEntity<ReplyData>(rsp.body?.string() ?: "")?.posts
             }
         }
 
@@ -301,7 +290,7 @@ data class Topic(
                     .add("title", title)
                     .add("submit", "改好了")
                     .add("content", content).build()
-            ).subscribeOn(Schedulers.computation()).map { rsp ->
+            ).map { rsp ->
                 rsp.code == 200
             }
         }

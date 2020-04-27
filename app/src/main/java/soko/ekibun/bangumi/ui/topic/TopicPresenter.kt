@@ -12,13 +12,12 @@ import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
 import soko.ekibun.bangumi.model.DataCacheModel
 import soko.ekibun.bangumi.model.HistoryModel
-import soko.ekibun.bangumi.ui.view.BrvahLoadMoreView
+import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.HtmlTagHandler
 import soko.ekibun.bangumi.util.JsonUtil
 import soko.ekibun.bangumi.util.TextUtil
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.collections.set
 
@@ -50,8 +49,9 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
         context.item_swipe.setOnRefreshListener {
             getTopic()
         }
-        topicView.adapter.setLoadMoreView(BrvahLoadMoreView())
-        topicView.adapter.setOnLoadMoreListener({ if (loadMoreFail == true) getTopic() }, context.item_list)
+        topicView.adapter.loadMoreModule.setOnLoadMoreListener {
+            if (loadMoreFail == true) getTopic()
+        }
     }
 
     fun updateHistory() {
@@ -74,7 +74,7 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
      * @param scrollPost String
      */
     fun getTopic(scrollPost: String = "") {
-        topicView.adapter.loadMoreComplete()
+        topicView.adapter.loadMoreModule.loadMoreComplete()
         loadMoreFail = null
         context.item_swipe.isRefreshing = true
 
@@ -85,28 +85,17 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
             updateHistory()
         }, { posts ->
             posts.forEach { post ->
-                val related = topicView.adapter.data.find { it.pst_id == post.relate }
-                if (post.sub_floor > related?.subItems?.size ?: 0) {
-                    related?.subItems?.add(post)
-                } else if (post.sub_floor > 0) {
-                    related?.subItems?.set(post.sub_floor - 1, post)
-                }
-                val oldPostIndex = topicView.adapter.data.indexOfFirst { it.pst_id == post.pst_id }
-                if (oldPostIndex >= 0) {
-                    val oldPost = topicView.adapter.data.getOrNull(oldPostIndex)
-                    post.isExpanded = oldPost?.isExpanded ?: true
-                    post.subItems = oldPost?.subItems ?: post.subItems ?: ArrayList()
-                    topicView.adapter.setData(oldPostIndex, post)
-                } else {
-                    topicView.adapter.addData(post)
-                }
+                val index = topicView.adapter.data.indexOfFirst { (it as TopicPost).pst_id == post.pst_id }
+                if (index < 0) {
+                    val insertIndex = topicView.adapter.data.indexOfLast { (it as TopicPost).floor < post.floor }
+                    topicView.adapter.addData(insertIndex + 1, post)
+                } else topicView.adapter.setData(index, post)
             }
-
         }).subscribeOnUiThread({ topic ->
             processTopic(topic, scrollPost)
         }, {
             loadMoreFail = true
-            topicView.adapter.loadMoreFail()
+            topicView.adapter.loadMoreModule.loadMoreFail()
         }, {
             context.item_swipe.isRefreshing = false
         })
@@ -118,7 +107,7 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
             else if (topic.error != null) WebActivity.launchUrl(context, topic.error?.second, "")
         }
         topicView.processTopic(topic, scrollPost, isCache = isCache) { v, position ->
-            val post = topicView.adapter.data[position]
+            val post = topicView.adapter.data[position] as TopicPost
             when (v.id) {
                 R.id.item_avatar ->
                     WebActivity.startActivity(v.context, "${Bangumi.SERVER}/user/${post.username}")
@@ -134,11 +123,13 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
                                     })
                                 } else {
                                     TopicPost.remove(post).subscribeOnUiThread({
-                                        // TODO
-//                                        val data = ArrayList(topic.replies)
-//                                        data.removeAll { topicPost -> topicPost.pst_id == post.pst_id }
-//                                        topicView.setNewData(data, topic)
-//                                        topicView.adapter.loadMoreEnd()
+                                        if (!post.isSub) {
+                                            topicView.adapter.removeAt(position)
+                                        } else {
+                                            val parentPos = topicView.adapter.findParentNode(position)
+                                            topicView.adapter.nodeRemoveData(topicView.adapter.getItem(parentPos), post)
+                                            topicView.adapter.notifyItemChanged(parentPos)
+                                        }
                                     })
                                 }
                             }.show()
@@ -194,12 +185,46 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
                 ?: context.getString(R.string.parse_hint_reply_topic, topic.title)
         buildPopupWindow(hint, drafts[draftId]) { inputString, _, send ->
             if (send) {
-                Topic.reply(topic, post, inputString ?: "").subscribeOnUiThread({
-                    // TODO
-//                    val mypost = it.filter { it.is_self }.maxBy { it.pst_id }
-//                    topicView.setNewData(it, topic)
-//                    topicView.adapter.loadMoreEnd()
-//                    mypost?.let { topicView.scrollToPost(it.pst_id, true) }
+                Topic.reply(topic, post, inputString ?: "").subscribeOnUiThread({ reply ->
+                    var lastFloor = (topicView.adapter.data.lastOrNull() as? TopicPost)?.floor ?: 0
+                    reply.main?.values?.forEach { newPost ->
+                        val oldPostIndex =
+                            topicView.adapter.data.indexOfFirst { (it as TopicPost).pst_id == newPost.pst_id }
+                        newPost.relate = newPost.pst_id
+                        if (oldPostIndex < 0) {
+                            lastFloor += 1
+                            newPost.floor = lastFloor
+                            topicView.adapter.addData(newPost)
+                        } else {
+                            val oldPost = topicView.adapter.data[oldPostIndex] as TopicPost
+                            newPost.floor = oldPost.floor
+                            newPost.children += oldPost.children
+                            topicView.adapter.setData(oldPostIndex, newPost)
+                        }
+                    }
+                    reply.sub?.forEach { (key, posts) ->
+                        val parentIndex = topicView.adapter.data.indexOfFirst { (it as TopicPost).pst_id == key }
+                        val parent = (topicView.adapter.data.getOrNull(parentIndex) as? TopicPost) ?: return@forEach
+                        var lastSubFloor = parent.children.size
+                        posts.forEach { subPost ->
+                            val oldPostIndex = parent.children.indexOfFirst { it.pst_id == subPost.pst_id }
+                            subPost.relate = key
+                            if (oldPostIndex < 0) {
+                                lastSubFloor += 1
+                                subPost.floor = parent.floor
+                                subPost.sub_floor = lastSubFloor
+                                topicView.adapter.nodeAddData(parent, subPost)
+                            } else {
+                                subPost.sub_floor = oldPostIndex + 1
+                                topicView.adapter.nodeSetData(parent, oldPostIndex, subPost)
+                            }
+                        }
+                        topicView.adapter.notifyItemChanged(parentIndex)
+                    }
+                    UserModel.current()?.username?.let { username ->
+                        if (post != null) reply.sub?.get(post.pst_id)?.lastOrNull { it.username == username }
+                        else reply.main?.values?.lastOrNull { it.username == username }
+                    }?.let { topicView.scrollToPost(it.pst_id, true) }
                 })
             } else {
                 inputString?.let { drafts[draftId] = it }
