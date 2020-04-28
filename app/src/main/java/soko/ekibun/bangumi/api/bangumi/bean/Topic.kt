@@ -7,7 +7,6 @@ import okhttp3.FormBody
 import org.jsoup.Jsoup
 import org.xmlpull.v1.XmlPullParser
 import soko.ekibun.bangumi.api.ApiHelper
-import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.util.HtmlUtil
 import soko.ekibun.bangumi.util.HttpUtil
@@ -132,9 +131,7 @@ data class Topic(
                     }
                 }
 
-                observable.subscribeOnUiThread({
-                    onNewPost(it)
-                }, key = "topic_new_post_emitter")
+                observable.subscribe { onNewPost(it) }
 
                 val updateReply = { str: String ->
                     if (beforeData.isEmpty()) {

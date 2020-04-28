@@ -198,7 +198,7 @@ class SayAdapter(data: MutableList<SaySection>? = null) :
      * [url=...]...[/url] -> [url=<a href="...">...</a>]...[/url]
      * ```
      */
-    fun wrapHtmlBBCode(html: String): String {
+    private fun wrapHtmlBBCode(html: String): String {
         val wrap = html.replace(
             Regex("""\[(img|url)]<a href="([^"]+)".*?</a>\[/\1]"""), "[$1]$2[/$1]"
         ).replace(Regex("""\[url=<a ([^>]*)>.*?</a>](.*?)\[/url]"""), "[url=$1]$2[/url]")

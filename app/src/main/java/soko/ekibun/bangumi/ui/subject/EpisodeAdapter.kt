@@ -37,7 +37,7 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
         return getItemViewType(position) == SectionEntity.HEADER_TYPE
     }
 
-    private var headerHeight: Int = 0
+    private val headerHeight: Int = ResourceUtil.toPixels(48f)
     private var itemHeight: Int = 0
     override fun getItemHeight(position: Int): Int {
         return when (getItemViewType(position)) {
@@ -69,11 +69,6 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
     override fun convertHeader(helper: BaseViewHolder, item: SelectableSectionEntity<Episode>) {
         //helper.getView<TextView>(R.id.item_header).visibility = if(data.indexOf(item) == 0) View.GONE else View.VISIBLE
         helper.setText(R.id.item_header, item.header)
-        if (headerHeight == 0) {
-//            helper.itemView.measure(0, 0)
-//            headerHeight = helper.itemView.measuredHeight + ((helper.itemView.layoutParams as? ViewGroup.MarginLayoutParams)?.let { it.topMargin + it.bottomMargin }?:0)
-            headerHeight = ResourceUtil.toPixels(48f)
-        }
     }
 
     override fun convert(holder: BaseViewHolder, item: SelectableSectionEntity<Episode>) {
@@ -111,8 +106,12 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
         )[item.t?.progress ?: ""]?.let { holder.itemView.context.getString(it) } ?: ""
         holder.itemView.ep_box.backgroundTintList = ColorStateList.valueOf(color)
         holder.itemView.ep_box.alpha = if ((item.t?.status ?: "") in listOf("Air")) 1f else 0.6f
-//        holder.addOnClickListener(R.id.ep_box)
-//        holder.addOnLongClickListener(R.id.ep_box)
+        holder.itemView.ep_box.setOnClickListener {
+            setOnItemChildClick(it, holder.layoutPosition)
+        }
+        holder.itemView.ep_box.setOnLongClickListener {
+            setOnItemChildLongClick(it, holder.layoutPosition)
+        }
 
         if (itemHeight == 0) {
             holder.itemView.measure(0, 0)

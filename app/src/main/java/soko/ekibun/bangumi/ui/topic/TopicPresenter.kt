@@ -82,13 +82,16 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
             }
             updateHistory()
         }, { posts ->
-            posts.forEach { post ->
-                val index = topicView.adapter.data.indexOfFirst { (it as TopicPost).pst_id == post.pst_id }
-                if (index < 0) {
-                    val insertIndex = topicView.adapter.data.indexOfLast { (it as TopicPost).floor < post.floor }
-                    topicView.adapter.addData(insertIndex + 1, post)
-                } else topicView.adapter.setData(index, post)
+            context.runOnUiThread {
+                posts.forEach { post ->
+                    val index = topicView.adapter.data.indexOfFirst { (it as TopicPost).pst_id == post.pst_id }
+                    if (index < 0) {
+                        val insertIndex = topicView.adapter.data.indexOfLast { (it as TopicPost).floor < post.floor }
+                        topicView.adapter.addData(insertIndex + 1, post)
+                    } else topicView.adapter.setData(index, post)
+                }
             }
+
         }).subscribeOnUiThread({ topic ->
             processTopic(topic, scrollPost)
         }, {
