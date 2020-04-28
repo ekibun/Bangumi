@@ -73,6 +73,7 @@
             android:layout_height="wrap_content"
             android:textSize="@dimen/textSizeMedium"
             android:textIsSelectable="true"
+            android:lineSpacingExtra="5sp"
             tools:text="Reply Content"
             app:layout_constraintTop_toBottomOf="@+id/item_user"
             app:layout_constraintStart_toStartOf="@+id/item_user"

@@ -1,6 +1,5 @@
 package soko.ekibun.bangumi.ui.topic
 
-import android.text.Html
 import android.text.Spanned
 import android.text.method.LinkMovementMethod
 import android.util.Size
@@ -12,7 +11,6 @@ import com.chad.library.adapter.base.module.LoadMoreModule
 import com.chad.library.adapter.base.provider.BaseNodeProvider
 import com.chad.library.adapter.base.viewholder.BaseViewHolder
 import kotlinx.android.synthetic.main.item_reply.view.*
-import org.jsoup.Jsoup
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Images
@@ -20,10 +18,11 @@ import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
 import soko.ekibun.bangumi.ui.view.BaseNodeAdapter
 import soko.ekibun.bangumi.ui.view.FastScrollRecyclerView
 import soko.ekibun.bangumi.ui.web.WebActivity
-import soko.ekibun.bangumi.util.*
-import java.lang.ref.WeakReference
+import soko.ekibun.bangumi.util.GlideUtil
+import soko.ekibun.bangumi.util.HtmlUtil
+import soko.ekibun.bangumi.util.ResourceUtil
+import soko.ekibun.bangumi.util.span.ClickableUrlSpan
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
 /**
@@ -105,39 +104,22 @@ class PostAdapter() :
             }
 
             if (item.badge.isNullOrEmpty()) {
-                val drawables = ArrayList<String>()
                 helper.itemView.item_message.let { item_message ->
                     val makeSpan = {
-                        @Suppress("DEPRECATION")
-                        TextUtil.setTextUrlCallback(
-                            Html.fromHtml(
-                                parseHtml(item.pst_content),
-                                HtmlHttpImageGetter(item_message, drawables, imageSizes, {
-                                    item_message.width.toFloat()
-                                }),
-                                HtmlTagHandler(item_message) { imageSpan ->
-                                    helper.itemView.item_message?.let { itemView ->
-                                        val imageList =
-                                            drawables.filter { (it.startsWith("http") || !it.contains("smile")) }
-                                                .toList()
-                                        val index = imageList.indexOfFirst { d -> d == imageSpan.source }
-                                        if (index < 0) return@HtmlTagHandler
-                                        PhotoPagerAdapter.showWindow(
-                                            itemView,
-                                            imageList.map { Bangumi.parseUrl(it) },
-                                            index = index
-                                        )
-                                    }
-                                })
-                        ) {
-                            (helper.itemView.context as? TopicActivity)?.processUrl(Bangumi.parseUrl(it))
-                                ?: WebActivity.launchUrl(helper.itemView.context, Bangumi.parseUrl(it), "")
+                        HtmlUtil.html2span(item.pst_content,
+                            HtmlUtil.ImageGetter(imageSizes) {
+                                Math.min(item_message.width.toFloat(), Math.max(item_message.textSize, it))
+                            }
+                        ).also {
+                            it.getSpans(0, it.length, ClickableUrlSpan::class.java).forEach {
+                                it.onClick = { v, url ->
+                                    (v.context as? TopicActivity)?.processUrl(Bangumi.parseUrl(url))
+                                        ?: WebActivity.launchUrl(helper.itemView.context, Bangumi.parseUrl(url), "")
+                                }
+                            }
                         }
                     }
-                    item_message.text = TextUtil.updateTextViewRef(
-                        largeContent.getOrPut(item.pst_content, makeSpan),
-                        WeakReference(item_message)
-                    )
+                    HtmlUtil.attachToTextView(largeContent.getOrPut(item.pst_content, makeSpan), item_message)
                 }
                 helper.itemView.item_message.onFocusChangeListener = View.OnFocusChangeListener { view, focus ->
                     if (!focus) {
@@ -158,53 +140,5 @@ class PostAdapter() :
         // https://code.google.com/p/android/issues/detail?id=208169
         holder.itemView.item_message?.isEnabled = false
         holder.itemView.item_message?.isEnabled = true
-    }
-
-    companion object {
-        /**
-         * 转换Html
-         * @param html String
-         * @return String
-         */
-        fun parseHtml(html: String): String {
-            val doc = Jsoup.parse(html.replace(Regex("</?noscript>"), ""), Bangumi.SERVER)
-            doc.outputSettings().indentAmount(0).prettyPrint(false)
-            doc.select("script").remove()
-            doc.select("img").forEach {
-                if (!it.hasAttr("src")) it.remove()
-            }
-            doc.body().children().forEach {
-                var appendBefore = ""
-                var appendEnd = ""
-                val style = it.attr("style")
-                if (style.contains("font-weight:bold")) {
-                    appendBefore = "$appendBefore<b>"
-                    appendEnd = "</b>$appendEnd"
-                } //it.html("<b>${parseHtml(it.html())}</b>")
-                if (style.contains("font-style:italic")) {
-                    appendBefore = "$appendBefore<i>"
-                    appendEnd = "</i>$appendEnd"
-                } //it.html("<i>${parseHtml(it.html())}</i>")
-                if (style.contains("text-decoration: underline")) {
-                    appendBefore = "$appendBefore<u>"
-                    appendEnd = "</u>$appendEnd"
-                } //it.html("<u>${parseHtml(it.html())}</u>")
-                if (style.contains("font-size:")) {
-                    Regex("""font-size:([0-9]*)px""").find(style)?.groupValues?.get(1)?.let { size ->
-                        appendBefore = "$appendBefore<size size='${size}px'>"
-                        appendEnd = "</size>$appendEnd"
-                    }
-                }//it.html("<size size='${size}px'>${parseHtml(it.html())}</size>")
-                if (style.contains("background-color:")) {
-                    appendBefore = "$appendBefore<mask>"
-                    appendEnd = "</mask>$appendEnd"
-                } //it.html("<mask>${parseHtml(it.html())}</mask>")
-                it.html("$appendBefore${parseHtml(it.html())}$appendEnd")
-            }
-            doc.select("div.quote").forEach {
-                it.html("“${it.html()}”")
-            }
-            return doc.body().html()
-        }
     }
 }

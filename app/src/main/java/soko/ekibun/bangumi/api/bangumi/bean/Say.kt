@@ -1,14 +1,14 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.schedulers.Schedulers
+import io.reactivex.rxjava3.subjects.ReplaySubject
 import okhttp3.FormBody
 import org.jsoup.Jsoup
 import org.xmlpull.v1.XmlPullParser
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.util.HttpUtil
-import java.util.*
-import kotlin.collections.HashMap
 import kotlin.collections.set
 
 data class Say(
@@ -24,7 +24,8 @@ data class Say(
 
     data class SayReply(
         val user: UserInfo,
-        val message: String
+        val message: String,
+        val index: Int
     )
 
     companion object {
@@ -58,13 +59,33 @@ data class Say(
         fun getSaySax(
             say: Say,
             onUpdate: (Say) -> Unit,
-            onNewPost: (index: Int, post: SayReply) -> Unit
+            onNewPost: (post: SayReply) -> Unit
         ): Observable<Say> {
             return ApiHelper.createHttpObservable(say.url).map { rsp ->
                 val avatarCache = HashMap<String, String>()
                 say.user.avatar?.let { avatarCache[say.user.username!!] = it }
                 say.replies?.forEach { reply ->
                     reply.user.avatar?.let { avatarCache[reply.user.username!!] = it }
+                }
+                val unresolvedReplies = HashMap<String, ArrayList<SayReply>>()
+
+                val replyPub = ReplaySubject.create<String>()
+                val observable = replyPub.flatMap { username ->
+                    Observable.just(0).observeOn(Schedulers.computation()).map {
+                        UserInfo.getApiUser(username)
+                    }
+                }
+
+                observable.subscribe { user ->
+                    if (!user.avatar.isNullOrEmpty()) synchronized(avatarCache) {
+                        user.let { avatarCache[it.username!!] = it.avatar!! }
+                    }
+                    synchronized(unresolvedReplies) {
+                        unresolvedReplies.remove(user.username)?.forEach {
+                            it.user.avatar = user.avatar
+                            onNewPost(it)
+                        }
+                    }
                 }
 
                 var beforeData = ""
@@ -81,20 +102,27 @@ data class Say(
                         say.message = doc.selectFirst(".statusContent .text")?.html()
                         say.time = doc.selectFirst(".statusContent .date")?.text()
                         onUpdate(say)
-                        onNewPost(0, SayReply(say.user, say.message ?: ""))
+                        onNewPost(SayReply(say.user, say.message ?: "", 0))
                     } else {
                         val user = UserInfo.parse(doc.selectFirst("a.l"))
-                        user.avatar = avatarCache[user.username] ?: user.avatar ?: UserInfo.getApiUser(user).avatar
-                        user.avatar?.let { avatarCache[user.username!!] = it }
-                        val reply = SayReply(
+                        user.avatar = user.avatar ?: synchronized(avatarCache) {
+                            avatarCache[user.username]
+                        }
+                        val sayReply = SayReply(
                             user = user,
                             message = doc.selectFirst(".reply_item").childNodes()?.let { it.subList(6, it.size) }
                                 ?.joinToString("") {
                                     it.outerHtml()
-                                } ?: ""
+                                } ?: "",
+                            index = replies.size + 1
                         )
-                        replies += reply
-                        onNewPost(replies.size, reply)
+                        replies += sayReply
+                        if (user.avatar.isNullOrEmpty()) {
+                            synchronized(unresolvedReplies) {
+                                if (!unresolvedReplies.containsKey(user.username)) replyPub.onNext(user.username)
+                                unresolvedReplies.getOrPut(user.username!!) { ArrayList() }.add(sayReply)
+                            }
+                        }
                     }
                 }
 
@@ -112,6 +140,8 @@ data class Say(
                         else -> ApiHelper.SaxEventType.NOTHING
                     }
                 }
+                replyPub.onComplete()
+                observable.blockingSubscribe()
                 say.replies = replies
                 say
             }

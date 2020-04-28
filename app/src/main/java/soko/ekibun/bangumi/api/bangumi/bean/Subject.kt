@@ -11,8 +11,8 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.github.bean.OnAirInfo
+import soko.ekibun.bangumi.util.HtmlUtil
 import soko.ekibun.bangumi.util.HttpUtil
-import soko.ekibun.bangumi.util.TextUtil
 import java.util.*
 
 /**
@@ -87,7 +87,7 @@ data class Subject(
     val cacheKey get() = "subject_$id"
 
     val url get() = "${Bangumi.SERVER}/subject/$id"
-    val displayName get() = TextUtil.html2text((if (name_cn.isNullOrEmpty()) name else name_cn) ?: "")
+    val displayName get() = HtmlUtil.html2text((if (name_cn.isNullOrEmpty()) name else name_cn) ?: "")
 
     /**
      * 条目评分
@@ -248,7 +248,7 @@ data class Subject(
                             subject.category = doc.selectFirst(".nameSingle small")?.text() ?: subject.category
                         }
                         SaxTag.SUMMARY -> subject.summary =
-                            doc.selectFirst("#subject_summary")?.let { TextUtil.html2text(it.html()) }
+                            doc.selectFirst("#subject_summary")?.let { HtmlUtil.html2text(it.html()) }
                                 ?: subject.summary
                         SaxTag.IMAGES -> subject.image =
                             doc.selectFirst(".infobox img.cover")?.let { Bangumi.parseImageUrl(it) }

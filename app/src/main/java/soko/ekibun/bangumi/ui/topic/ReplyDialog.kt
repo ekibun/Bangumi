@@ -6,9 +6,8 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.graphics.drawable.Drawable
 import android.provider.OpenableColumns
-import android.text.Html
+import android.text.Spanned
 import android.text.style.ImageSpan
 import android.view.KeyEvent
 import android.view.MenuItem
@@ -17,6 +16,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.forEach
 import androidx.fragment.app.FragmentManager
@@ -26,11 +26,15 @@ import com.awarmisland.android.richedittext.view.RichEditText
 import kotlinx.android.synthetic.main.dialog_reply.view.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
-import org.jsoup.Jsoup
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.ui.view.BaseDialog
-import soko.ekibun.bangumi.util.*
+import soko.ekibun.bangumi.util.HtmlUtil
+import soko.ekibun.bangumi.util.ResourceUtil
+import soko.ekibun.bangumi.util.span.ClickableImageSpan
+import soko.ekibun.bangumi.util.span.ClickableUrlSpan
+import soko.ekibun.bangumi.util.span.CollapseUrlDrawable
+import soko.ekibun.bangumi.util.span.UploadDrawable
 import java.lang.ref.WeakReference
 
 /**
@@ -128,12 +132,32 @@ class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
         popup.show()
     }
 
+    private fun setHtml(html: String, view: TextView, collapseImageGetter: CollapseUrlDrawable.CollapseImageGetter) {
+        val span = HtmlUtil.html2span(
+            html, collapseImageGetter
+        ).also {
+            it.getSpans(0, it.length, ClickableUrlSpan::class.java)
+                .forEach { span ->
+                    span.onClick = { v, url ->
+                        Toast.makeText(v.context, url, Toast.LENGTH_LONG).show()
+                    }
+                }
+        }
+        HtmlUtil.attachToTextView(span, view)
+        view.post { view.text = view.text }
+    }
+
+    lateinit var collapseImageGetter: CollapseUrlDrawable.CollapseImageGetter
+
     override val title = ""
     override fun onViewCreated(view: View) {
         bbCode = PreferenceManager.getDefaultSharedPreferences(view.context).getBoolean("use_bbcode", false)
+        collapseImageGetter = CollapseUrlDrawable.CollapseImageGetter(view.item_input)
+        val weakRef: WeakReference<TextView> = WeakReference(view.item_input)
 
         view.item_title_container.visibility = if (postTitle == null) View.GONE else View.VISIBLE
         view.item_title.setText(postTitle)
+
 
         view.item_expand.setOnClickListener {
             it.rotation = -it.rotation
@@ -142,7 +166,7 @@ class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
                 lp.height = if (isExpand) ViewGroup.LayoutParams.MATCH_PARENT else ViewGroup.LayoutParams.WRAP_CONTENT
             }
             view.item_input.maxHeight =
-                if (it.rotation > 0) Int.MAX_VALUE else ResourceUtil.toPixels(view.context.resources, 200f)
+                if (it.rotation > 0) Int.MAX_VALUE else ResourceUtil.toPixels(200f)
             view.item_input.layoutParams = view.item_input.layoutParams.also { lp ->
                 lp.height = if (isExpand) 0 else ViewGroup.LayoutParams.WRAP_CONTENT
             }
@@ -153,18 +177,12 @@ class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
             bbCode = !bbCode
             view.item_bbcode.isSelected = bbCode
             if (bbCode) {
-                view.item_input.setText(TextUtil.span2bbcode(view.item_input.editableText))
+                view.item_input.setText(HtmlUtil.span2bbcode(view.item_input.editableText))
             } else {
-                view.item_input.setText(
-                    TextUtil.setTextUrlCallback(
-                        Html.fromHtml(
-                            parseHtml(TextUtil.bbcode2html(view.item_input.editableText.toString())),
-                            CollapseHtmlHttpImageGetter(view.item_input),
-                            HtmlTagHandler(view.item_input, onClick = onClickImage)
-                        ), onClickUrl
-                    )
+                setHtml(
+                    HtmlUtil.bbcode2html(view.item_input.editableText.toString()),
+                    view.item_input, collapseImageGetter
                 )
-                view.item_input.post { view.item_input.text = view.item_input.text }
             }
         }
 
@@ -176,12 +194,16 @@ class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
                     view.item_input.selectionEnd,
                     emojiList[position].first
                 )
-                return@setOnItemChildClickListener
+            } else {
+                val drawable = collapseImageGetter.createDrawable()
+                drawable.url = emojiList[position].second
+                drawable.container = weakRef
+                drawable.loadImage()
+                view.item_input.editableText.insert(
+                    view.item_input.selectionStart,
+                    HtmlUtil.createImageSpan(ImageSpan(drawable, emojiList[position].first, ImageSpan.ALIGN_BASELINE))
+                )
             }
-            val drawable = CollapseUrlDrawable(WeakReference(view.item_input))
-            drawable.url = emojiList[position].second
-            drawable.loadImage()
-            view.item_input.setImage(HtmlTagHandler.ClickableImage(ImageSpan(drawable, emojiList[position].first)) {})
         }
         view.item_btn_format.setOnClickListener { v ->
             showFormatPop(view.item_input, v)
@@ -213,7 +235,7 @@ class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
             startActivityForResult(Intent.createChooser(intent, "选择图片"), 1)
         }
         view.item_btn_send.setOnClickListener {
-            callback(TextUtil.span2bbcode(view.item_input.editableText), view.item_title.editableText.toString(), true)
+            callback(HtmlUtil.span2bbcode(view.item_input.editableText), view.item_title.editableText.toString(), true)
             callback = { _, _, _ -> }
             dismiss()
         }
@@ -259,21 +281,12 @@ class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
             if (bbCode) {
                 view.item_input.setText(draft)
             } else {
-                view.item_input.setText(
-                    TextUtil.setTextUrlCallback(
-                        Html.fromHtml(
-                            parseHtml(TextUtil.bbcode2html(draft!!)),
-                            CollapseHtmlHttpImageGetter(view.item_input),
-                            HtmlTagHandler(view.item_input, onClick = onClickImage)
-                        ), onClickUrl
-                    )
-                )
-                view.item_input.post { view.item_input.text = view.item_input.text }
+                setHtml(HtmlUtil.bbcode2html(draft!!), view.item_input, collapseImageGetter)
             }
         }
     }
 
-    val onClickImage = { _: ImageSpan ->
+    val onClickImage = { view: View, _: ImageSpan ->
         //Toast.makeText(context?:return@click, (it.drawable as? UrlDrawable)?.url?:"", Toast.LENGTH_LONG).show()
     }
 
@@ -284,7 +297,7 @@ class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
         callback(
-            contentView?.item_input?.editableText?.let { TextUtil.span2bbcode(it) },
+            contentView?.item_input?.editableText?.let { HtmlUtil.span2bbcode(it) },
             contentView?.item_title?.text?.toString(),
             false
         )
@@ -313,8 +326,11 @@ class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
             cursor.getString(nameIndex)
         } ?: "image.jpg"
         val requestBody = RequestBody.create(mimeType.toMediaTypeOrNull(), inputStream.readBytes())
-        var span: HtmlTagHandler.ClickableImage? = null
-        val drawable = UploadDrawable(requestBody, fileName, WeakReference(item_input), data?.data ?: return) {
+        var span: ClickableImageSpan? = null
+        val drawable = UploadDrawable(
+            requestBody, fileName, data?.data ?: return,
+            collapseImageGetter.wrapWidth, collapseImageGetter.sizeCache
+        ) {
             if (bbCode) {
                 val start = item_input.editableText.getSpanStart(span)
                 val end = item_input.editableText.getSpanEnd(span)
@@ -324,24 +340,16 @@ class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
                 item_input.editableText.replace(start, end, "[img]$it[/img]")
             }
         }
+        val imageSpan = ImageSpan(drawable, "", ImageSpan.ALIGN_BASELINE)
+        span = ClickableImageSpan(imageSpan, collapseImageGetter.onClick)
+        item_input.editableText.insert(
+            item_input.selectionStart,
+            HtmlUtil.createImageSpan(imageSpan).also {
+                it.setSpan(span, 0, it.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+        )
+        drawable.container = WeakReference(item_input)
         drawable.loadImage()
-        span = HtmlTagHandler.ClickableImage(ImageSpan(drawable), onClickImage)
-        item_input.setImage(span)
-    }
-
-    /**
-     * 限制最大高度url drawable ImageGetter
-     * @property container WeakReference<(android.widget.TextView..android.widget.TextView?)>
-     * @constructor
-     */
-    class CollapseHtmlHttpImageGetter(container: TextView) : Html.ImageGetter {
-        private val container = WeakReference(container)
-        override fun getDrawable(source: String): Drawable {
-            val urlDrawable = CollapseUrlDrawable(container)
-            urlDrawable.url = Bangumi.parseUrl(source)
-            urlDrawable.loadImage()
-            return urlDrawable
-        }
     }
 
     companion object {
@@ -366,55 +374,6 @@ class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
             dialog.postTitle = title
             dialog.callback = callback
             dialog.show(fragmentManager, "reply")
-        }
-
-        /**
-         * 转换html
-         * @param html String
-         * @return String
-         */
-        fun parseHtml(html: String): String {
-            val doc = Jsoup.parse(html.replace(Regex("</?noscript>"), ""), Bangumi.SERVER)
-            doc.outputSettings().indentAmount(0).prettyPrint(false)
-            doc.select("script").remove()
-            doc.select("img").forEach {
-                if (!it.hasAttr("src")) it.remove()
-            }
-            doc.body().children().forEach {
-                var appendBefore = ""
-                var appendEnd = ""
-                val style = it.attr("style")
-                if (style.contains("font-weight:bold")) {
-                    appendBefore = "$appendBefore<b>"
-                    appendEnd = "</b>$appendEnd"
-                } //it.html("<b>${parseHtml(it.html())}</b>")
-                if (style.contains("font-style:italic")) {
-                    appendBefore = "$appendBefore<i>"
-                    appendEnd = "</i>$appendEnd"
-                } //it.html("<i>${parseHtml(it.html())}</i>")
-                if (style.contains("text-decoration: underline")) {
-                    appendBefore = "$appendBefore<u>"
-                    appendEnd = "</u>$appendEnd"
-                } //it.html("<u>${parseHtml(it.html())}</u>")
-                if (style.contains("font-size:")) {
-                    Regex("""font-size:([0-9]*)px""").find(style)?.groupValues?.get(1)?.let { size ->
-                        appendBefore = "$appendBefore[size=$size]"
-                        appendEnd = "[/size]$appendEnd"
-                    }
-                }//it.html("<size size='${size}px'>${parseHtml(it.html())}</size>")
-                if (style.contains("background-color:")) {
-                    appendBefore = "$appendBefore<mask>"
-                    appendEnd = "</mask>$appendEnd"
-                } //it.html("<mask>${parseHtml(it.html())}</mask>")
-                it.html("$appendBefore${parseHtml(it.html())}$appendEnd")
-            }
-            doc.select("div.quote").forEach {
-                it.html("[quote]${it.html()}[/quote]")
-            }
-            doc.select("div.codeHighlight").forEach {
-                it.html("[code]${it.html()}[/code]")
-            }
-            return doc.body().html()
         }
 
         val emojiList by lazy {

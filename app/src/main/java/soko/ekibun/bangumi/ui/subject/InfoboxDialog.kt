@@ -1,7 +1,6 @@
 package soko.ekibun.bangumi.ui.subject
 
 import android.annotation.SuppressLint
-import android.text.Html
 import android.text.method.LinkMovementMethod
 import android.view.View
 import android.widget.TableRow
@@ -10,12 +9,10 @@ import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.android.synthetic.main.dialog_infobox.view.*
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.ui.view.BaseDialog
-import soko.ekibun.bangumi.ui.web.WebActivity
-import soko.ekibun.bangumi.util.TextUtil
+import soko.ekibun.bangumi.util.HtmlUtil
 
 /**
  * 条目信息对话框
@@ -52,10 +49,9 @@ class InfoboxDialog : BaseDialog(R.layout.dialog_infobox) {
             txtCat.text = cat
             val txtInfo = TextView(context)
             @Suppress("DEPRECATION")
-            txtInfo.text =
-                TextUtil.setTextUrlCallback(Html.fromHtml(subject.infobox?.filter { it.first == cat }?.map { it.second }?.reduce { acc, s -> "$acc<br>$s" })) {
-                    WebActivity.launchUrl(view.context, Bangumi.parseUrl(it), "")
-            }
+            txtInfo.text = HtmlUtil.html2span(
+                subject.infobox?.filter { it.first == cat }?.map { it.second }?.reduce { acc, s -> "$acc<br>$s" } ?: ""
+            )
             txtInfo.movementMethod = LinkMovementMethod.getInstance()
             val dp = view.context.resources.displayMetrics.density
             txtInfo.setLineSpacing(4 * dp, 1f)

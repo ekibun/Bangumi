@@ -66,7 +66,7 @@ class ShadowDecoration(val color: Int, val size: Int, val drawEnd: Boolean) : Re
             recyclerView.addItemDecoration(
                 ShadowDecoration(
                     color = ResourceUtil.resolveColorAttr(recyclerView.context, android.R.attr.colorBackground),
-                    size = ResourceUtil.toPixels(recyclerView.resources, 32f),
+                    size = ResourceUtil.toPixels(32f),
                     drawEnd = drawEnd
                 )
             )

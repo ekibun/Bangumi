@@ -1,7 +1,6 @@
 package soko.ekibun.bangumi.ui.topic
 
 import android.annotation.SuppressLint
-import android.text.Html
 import androidx.appcompat.app.AlertDialog
 import kotlinx.android.synthetic.main.activity_topic.*
 import soko.ekibun.bangumi.App
@@ -14,9 +13,8 @@ import soko.ekibun.bangumi.model.DataCacheModel
 import soko.ekibun.bangumi.model.HistoryModel
 import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.ui.web.WebActivity
-import soko.ekibun.bangumi.util.HtmlTagHandler
+import soko.ekibun.bangumi.util.HtmlUtil
 import soko.ekibun.bangumi.util.JsonUtil
-import soko.ekibun.bangumi.util.TextUtil
 import java.util.*
 import kotlin.collections.HashMap
 import kotlin.collections.set
@@ -169,9 +167,7 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
         ReplyDialog.showDialog(
             context.supportFragmentManager,
             hint = hint,
-            draft = draft ?: {
-                TextUtil.span2bbcode(Html.fromHtml(ReplyDialog.parseHtml(html), null, HtmlTagHandler()))
-            }(),
+            draft = draft ?: { HtmlUtil.span2bbcode(HtmlUtil.html2span(html)) }(),
             title = title,
             callback = callback
         )

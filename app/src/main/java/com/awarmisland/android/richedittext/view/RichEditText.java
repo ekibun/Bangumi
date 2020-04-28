@@ -5,8 +5,6 @@ import android.content.Context;
 import android.graphics.Typeface;
 import android.text.Layout;
 import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.Spanned;
 import android.text.style.*;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -15,8 +13,7 @@ import android.widget.TextView;
 import androidx.appcompat.widget.AppCompatEditText;
 import com.awarmisland.android.richedittext.bean.FontStyle;
 import com.awarmisland.android.richedittext.bean.SpanPart;
-import soko.ekibun.bangumi.util.HtmlTagHandler;
-import soko.ekibun.bangumi.util.ResourceUtil;
+import soko.ekibun.bangumi.util.span.MaskSpan;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -113,13 +110,13 @@ public class RichEditText extends AppCompatEditText implements View.OnClickListe
         setMaskSpan(isMask);
     }
 
-    public void setImage(HtmlTagHandler.ClickableImage clickSpan) {
-        int start = getSelectionStart();
-        SpannableString ss = new SpannableString("￼");
-        ss.setSpan(clickSpan.getImage(), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        ss.setSpan(clickSpan, 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        getEditableText().insert(start, ss);// 设置ss要添加的位置
-    }
+//    public void setImage(HtmlTagHandler.ClickableImage clickSpan) {
+//        int start = getSelectionStart();
+//        SpannableString ss = new SpannableString("￼");
+//        ss.setSpan(clickSpan.getImage(), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+//        ss.setSpan(clickSpan, 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+//        getEditableText().insert(start, ss);// 设置ss要添加的位置
+//    }
 
     /**
      * bold italic
@@ -155,7 +152,7 @@ public class RichEditText extends AppCompatEditText implements View.OnClickListe
     private void setMaskSpan(boolean isSet) {
         FontStyle fontStyle = new FontStyle();
         fontStyle.isMask = true;
-        setSpan(fontStyle, isSet, HtmlTagHandler.MaskSpan.class);
+        setSpan(fontStyle, isSet, MaskSpan.class);
     }
 
     /**
@@ -227,9 +224,9 @@ public class RichEditText extends AppCompatEditText implements View.OnClickListe
         } else if (fontStyle.isStrike) {
             return new StrikethroughSpan();
         } else if (fontStyle.isMask) {
-            int bgColor = ResourceUtil.INSTANCE.resolveColorAttr(getContext(), android.R.attr.textColorPrimary);
-            int colorInv = ResourceUtil.INSTANCE.resolveColorAttr(getContext(), android.R.attr.textColorPrimaryInverse);
-            return new HtmlTagHandler.MaskSpan(bgColor, colorInv, new WeakReference<TextView>(this));
+            MaskSpan span = new MaskSpan();
+            span.setTextView(new WeakReference<TextView>(this));
+            return span;
         }
         return null;
     }
@@ -252,7 +249,7 @@ public class RichEditText extends AppCompatEditText implements View.OnClickListe
                 fontStyle.isUnderline = true;
             } else if (style instanceof StrikethroughSpan) {
                 fontStyle.isStrike = true;
-            } else if (style instanceof HtmlTagHandler.MaskSpan) {
+            } else if (style instanceof MaskSpan) {
                 fontStyle.isMask = true;
             }
         }

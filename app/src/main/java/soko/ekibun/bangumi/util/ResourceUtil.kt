@@ -27,23 +27,21 @@ object ResourceUtil{
     /**
      * Converts dp to px
      *
-     * @param res Resources
      * @param dp  the value in dp
      * @return int
      */
-    fun toPixels(res: Resources, dp: Float): Int {
-        return (dp * res.displayMetrics.density).toInt()
+    fun toPixels(dp: Float): Int {
+        return (dp * Resources.getSystem().displayMetrics.density).toInt()
     }
 
     /**
      * Converts sp to px
      *
-     * @param res Resources
      * @param sp  the value in sp
      * @return int
      */
-    fun toScreenPixels(res: Resources, sp: Float): Int {
-        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, res.displayMetrics).toInt()
+    fun toScreenPixels(sp: Float): Int {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, Resources.getSystem().displayMetrics).toInt()
     }
 
     /**

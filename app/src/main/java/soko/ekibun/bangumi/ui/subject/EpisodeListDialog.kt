@@ -76,7 +76,7 @@ class EpisodeListDialog : BaseDialog(R.layout.dialog_episode_list) {
             (nestedScrollRange() * (1 - offset)).toInt()
         }
         view.bottom_sheet_container.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
-        view.bottom_sheet_container.scrollTopMargin = ResourceUtil.toPixels(view.context.resources, 36f)
+        view.bottom_sheet_container.scrollTopMargin = ResourceUtil.toPixels(36f)
         view.bottom_sheet_container.nestedScrollDistance = {
             (nestedScrollRange() * offset).toInt()
         }

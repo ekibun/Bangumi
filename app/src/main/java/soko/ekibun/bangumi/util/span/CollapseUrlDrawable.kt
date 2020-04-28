@@ -1,48 +1,51 @@
-package soko.ekibun.bangumi.util
+package soko.ekibun.bangumi.util.span
 
 import android.graphics.*
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.Drawable
 import android.text.style.ImageSpan
 import android.util.Size
+import android.view.View
 import android.widget.TextView
-import java.lang.ref.WeakReference
+import android.widget.Toast
+import soko.ekibun.bangumi.util.HtmlUtil
 
 /**
  * 限制最大高度的 url drawable
  * @property gradientPaint Paint
  * @constructor
  */
-open class CollapseUrlDrawable(container: WeakReference<TextView>) : UrlDrawable(container, {
-    container.get()?.width?.toFloat() ?: 0f
-}) {
+open class CollapseUrlDrawable(
+    wrapWidth: (Float) -> Float,
+    sizeCache: HashMap<String, Size>
+) : UrlDrawable(wrapWidth, sizeCache) {
 
-    override fun update(drawable: Drawable, defSize: Int) {
-        val width = Math.max(textSize, Math.min(drawable.intrinsicWidth.toFloat(), maxWidth()))
-        val size = if (defSize > 0) Size(defSize, defSize) else Size(
-            width.toInt(),
-            (drawable.intrinsicHeight * width / drawable.intrinsicWidth).toInt()
-        )
+    override fun update(drawable: Drawable) {
+        val size = {
+            val width = wrapWidth(if (error == false) drawable.intrinsicWidth.toFloat() else -1f)
+            Size(width.toInt(), (drawable.intrinsicHeight * width / drawable.intrinsicWidth).toInt())
+        }()
         (this.drawable as? Animatable)?.stop()
         this.drawable?.callback = null
         this.drawable = drawable
-        this.drawable?.callback = drawableCallback
+        this.drawable?.callback = this.drawableCallback
         (drawable as? Animatable)?.start()
-
         setBounds(0, 0, size.width, Math.min(size.height, 250))
-        drawable.setBounds(0, 0, size.width, size.height)
         mBuffer = Bitmap.createBitmap(bounds.width(), bounds.height(), Bitmap.Config.ARGB_8888)
         this.drawable?.setBounds(0, 0, size.width, size.height)
         updateBuffer()
 
-        container.get()?.let {
-            it.editableText.getSpans(0, it.editableText.length, ImageSpan::class.java).filter { it.drawable == this }.forEach { span ->
+        container?.get()?.let {
+            it.editableText.getSpans(0, it.editableText.length, ClickableImageSpan::class.java).filter { span ->
+                span.image.drawable == this
+            }.forEach { span ->
                 val start = it.editableText.getSpanStart(span)
                 val end = it.editableText.getSpanEnd(span)
                 val flags = it.editableText.getSpanFlags(span)
 
-                it.editableText.removeSpan(span)
-                it.editableText.setSpan(span, start, end, flags)
+                it.editableText.removeSpan(span.image)
+                span.image = ImageSpan(this, url ?: "", ImageSpan.ALIGN_BASELINE)
+                it.editableText.setSpan(span.image, start, end, flags)
             }
             it.invalidate()
         }
@@ -65,5 +68,20 @@ open class CollapseUrlDrawable(container: WeakReference<TextView>) : UrlDrawable
             canvas.drawRect(bounds, gradientPaint)
         }
         invalidateSelf()
+    }
+
+    /**
+     * 限制最大高度url drawable ImageGetter
+     */
+    class CollapseImageGetter(container: TextView) : HtmlUtil.ImageGetter(wrapWidth = {
+        Math.min(container.width.toFloat(), Math.max(container.textSize, it))
+    }) {
+        override val onClick: (View, ImageSpan) -> Unit = { itemView, span ->
+            Toast.makeText(itemView.context, span.source, Toast.LENGTH_LONG).show()
+        }
+
+        override fun createDrawable(): UrlDrawable {
+            return CollapseUrlDrawable(wrapWidth, sizeCache)
+        }
     }
 }

@@ -59,11 +59,11 @@ data class UserInfo(
         }
 
         private val userCache = WeakHashMap<String, UserInfo>()
-        fun getApiUser(user: UserInfo): UserInfo {
-            return userCache.getOrPut(user.username) {
+        fun getApiUser(username: String): UserInfo {
+            return userCache.getOrPut(username) {
                 JsonUtil.toJsonObject(
                     HttpUtil.getCall(
-                        "https://api.bgm.tv/user/${user.username}"
+                        "https://api.bgm.tv/user/${username}"
                     ).execute().body?.string() ?: ""
                 ).let { obj ->
                     UserInfo(

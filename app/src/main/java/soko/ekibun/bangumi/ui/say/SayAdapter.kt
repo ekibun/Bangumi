@@ -1,6 +1,5 @@
 package soko.ekibun.bangumi.ui.say
 
-import android.text.Html
 import android.text.Spanned
 import android.text.method.LinkMovementMethod
 import android.util.Size
@@ -17,19 +16,15 @@ import com.oubowu.stickyitemdecoration.StickyHeadContainer
 import com.oubowu.stickyitemdecoration.StickyItemDecoration
 import kotlinx.android.synthetic.main.item_avatar_header.view.*
 import kotlinx.android.synthetic.main.item_say.view.*
-import org.jsoup.Jsoup
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Say
 import soko.ekibun.bangumi.model.UserModel
-import soko.ekibun.bangumi.ui.topic.PhotoPagerAdapter
-import soko.ekibun.bangumi.ui.topic.PostAdapter
-import soko.ekibun.bangumi.ui.topic.TopicActivity
 import soko.ekibun.bangumi.ui.view.FastScrollRecyclerView
-import soko.ekibun.bangumi.ui.web.WebActivity
-import soko.ekibun.bangumi.util.*
-import java.lang.ref.WeakReference
+import soko.ekibun.bangumi.util.GlideUtil
+import soko.ekibun.bangumi.util.HtmlUtil
+import soko.ekibun.bangumi.util.ResourceUtil
 import java.util.*
 
 class SayAdapter(data: MutableList<SaySection>? = null) :
@@ -97,8 +92,8 @@ class SayAdapter(data: MutableList<SaySection>? = null) :
             it.endToEnd = if (isSelf) holder.itemView.item_message.id else ConstraintLayout.LayoutParams.UNSET
         }
 
-        val dpStart = ResourceUtil.toPixels(holder.itemView.resources, 56f)
-        val dpEnd = ResourceUtil.toPixels(holder.itemView.resources, 64f)
+        val dpStart = ResourceUtil.toPixels(56f)
+        val dpEnd = ResourceUtil.toPixels(64f)
         (holder.itemView.item_message.layoutParams as ConstraintLayout.LayoutParams).let {
             it.horizontalBias = if (isSelf) 1f else 0f
             it.marginEnd = if (isSelf) dpStart else dpEnd
@@ -108,36 +103,15 @@ class SayAdapter(data: MutableList<SaySection>? = null) :
 
         holder.itemView.item_user.visibility = if (item.isHeader && !isSelf) View.VISIBLE else View.GONE
 
-        val drawables = ArrayList<String>()
         holder.itemView.item_message.let { item_message ->
             val makeSpan = {
-                @Suppress("DEPRECATION")
-                TextUtil.setTextUrlCallback(
-                    Html.fromHtml(
-                        parseHtml(item.t.message),
-                        HtmlHttpImageGetter(item_message, drawables, imageSizes) {
-                            holder.itemView.width.toFloat() - dpStart - dpEnd
-                        },
-                        HtmlTagHandler(item_message) { imageSpan ->
-                            holder.itemView.item_message?.let { itemView ->
-                                val imageList =
-                                    drawables.filter { (it.startsWith("http") || !it.contains("smile")) }.toList()
-                                val index = imageList.indexOfFirst { d -> d == imageSpan.source }
-                                if (index < 0) return@HtmlTagHandler
-                                PhotoPagerAdapter.showWindow(
-                                    itemView,
-                                    imageList.map { Bangumi.parseUrl(it) },
-                                    index = index
-                                )
-                            }
-                        })
-                ) {
-                    (holder.itemView.context as? TopicActivity)?.processUrl(Bangumi.parseUrl(it))
-                        ?: WebActivity.launchUrl(holder.itemView.context, Bangumi.parseUrl(it), "")
-                }
+                HtmlUtil.html2span(wrapHtmlBBCode(item.t.message),
+                    HtmlUtil.ImageGetter(imageSizes) {
+                        Math.min(holder.itemView.width.toFloat() - dpStart - dpEnd, Math.max(item_message.textSize, it))
+                    }
+                )
             }
-            item_message.text =
-                TextUtil.updateTextViewRef(largeContent.getOrPut(item.t.message, makeSpan), WeakReference(item_message))
+            HtmlUtil.attachToTextView(largeContent.getOrPut(item.t.message, makeSpan), item_message)
         }
 
         holder.itemView.item_message.onFocusChangeListener = View.OnFocusChangeListener { view, focus ->
@@ -167,53 +141,67 @@ class SayAdapter(data: MutableList<SaySection>? = null) :
      * 对话项目（带section）
      * @constructor
      */
-    class SaySection(override val isHeader: Boolean, val t: Say.SayReply) : SectionEntity
+    class SaySection(override var isHeader: Boolean, val t: Say.SayReply) : SectionEntity
+
+    override fun addData(position: Int, data: SaySection) {
+        data.isHeader = !(position > 0 && getItemOrNull(position - 1)?.t?.let {
+            it.index == data.t.index - 1 && it.user.username == data.t.user.username
+        } == true)
+        super.addData(position, data)
+        getItemOrNull(position + 1)?.let {
+            if (it.isHeader && it.t.index == data.t.index + 1 && it.t.user.username == data.t.user.username) {
+                it.isHeader = false
+                notifyItemChanged(position + 1)
+            }
+        }
+    }
+
+    override fun setData(index: Int, data: SaySection) {
+        data.isHeader = !(index > 0 && getItemOrNull(index - 1)?.t?.let {
+            it.index == data.t.index - 1 && it.user.username == data.t.user.username
+        } == true)
+        super.setData(index, data)
+        getItemOrNull(index + 1)?.let {
+            if (it.isHeader && it.t.index == data.t.index + 1 && it.t.user.username == data.t.user.username) {
+                it.isHeader = false
+                notifyItemChanged(index + 1)
+            }
+        }
+    }
 
     override fun convertHeader(helper: BaseViewHolder, item: SaySection) {
         convert(helper, item)
     }
 
     fun setNewData(say: Say) {
-        super.setNewInstance(listOfNotNull(
-            Say.SayReply(
-                user = say.user,
-                message = say.message ?: ""
-            )
-        ).plus(say.replies ?: ArrayList()).let {
-            it.mapIndexed { index, sayReply ->
-                SaySection(it.getOrNull(index - 1)?.user?.username != sayReply.user.username, sayReply)
-            }
-        }.toMutableList()
+        super.setNewInstance(
+            listOfNotNull(
+                Say.SayReply(
+                    user = say.user,
+                    message = say.message ?: "",
+                    index = 0
+                )
+            ).plus(say.replies ?: ArrayList()).let {
+                it.mapIndexed { index, sayReply ->
+                    SaySection(it.getOrNull(index - 1)?.user?.username != sayReply.user.username, sayReply)
+                }
+            }.toMutableList()
         )
     }
 
-    companion object {
-        /**
-         * 转换Html
-         * @param html String
-         * @return String
-         */
-        fun parseHtml(html: String): String {
-            val doc = Jsoup.parse(
-                html
-                    .replace("[img]<a ", "<aimg ").replace("</a>[/img]", "</aimg>")
-                    .replace(Regex("""\[url=<a ([^>]*)>(.*?)<\/a>]"""), "<a $1>").replace("[/url]", "</a>")
-                , Bangumi.SERVER
-            )
-            doc.outputSettings().indentAmount(0).prettyPrint(false)
-            doc.select("aimg").map {
-                it.html("[img]${it.attr("href")}[/img]")
-            }
-            @Suppress("DEPRECATION")
-            return PostAdapter.parseHtml(
-                TextUtil.bbcode2html(
-                    TextUtil.span2bbcode(
-                        Html.fromHtml(
-                            doc.body().html().trim()
-                        )
-                    )
-                )
-            )
-        }
+    /**
+     * 时间线不支持BBCode，把如下的转换转回来
+     * - 不直接用htmlToText是因为url会被重新处理：
+     * ```
+     * [img]...[/img] -> [img]<a href="...">...</a>[/img]
+     * [url]...[/url] -> [url]<a href="...">...</a>[/url]
+     * [url=...]...[/url] -> [url=<a href="...">...</a>]...[/url]
+     * ```
+     */
+    fun wrapHtmlBBCode(html: String): String {
+        val wrap = html.replace(
+            Regex("""\[(img|url)]<a href="([^"]+)".*?</a>\[/\1]"""), "[$1]$2[/$1]"
+        ).replace(Regex("""\[url=<a ([^>]*)>.*?</a>](.*?)\[/url]"""), "[url=$1]$2[/url]")
+        return HtmlUtil.bbcode2html(HtmlUtil.span2bbcode(HtmlUtil.html2span(wrap)))
     }
 }

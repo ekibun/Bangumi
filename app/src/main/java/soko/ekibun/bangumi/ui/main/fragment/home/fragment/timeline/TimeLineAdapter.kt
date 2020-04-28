@@ -1,6 +1,5 @@
 package soko.ekibun.bangumi.ui.main.fragment.home.fragment.timeline
 
-import android.text.Html
 import android.text.method.LinkMovementMethod
 import android.view.View
 import androidx.appcompat.app.AlertDialog
@@ -12,13 +11,12 @@ import kotlinx.android.synthetic.main.item_timeline.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
-import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.TimeLine
 import soko.ekibun.bangumi.ui.say.SayActivity
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
-import soko.ekibun.bangumi.util.TextUtil
+import soko.ekibun.bangumi.util.HtmlUtil
 
 /**
  * 时间线Adapter
@@ -38,10 +36,7 @@ class TimeLineAdapter(data: MutableList<TimeLine>? = null) :
         }
         holder.itemView.item_layout.isClickable = item.t?.say != null
         //action
-        @Suppress("DEPRECATION")
-        holder.itemView.item_action.text = TextUtil.setTextUrlCallback(Html.fromHtml(item.t?.action)) {
-            WebActivity.launchUrl(holder.itemView.context, Bangumi.parseUrl(it), "")
-        }
+        holder.itemView.item_action.text = HtmlUtil.html2span(item.t?.action ?: "")
         holder.itemView.item_action.movementMethod =
             if (holder.itemView.item_layout.isClickable) null else LinkMovementMethod.getInstance()
         //del

@@ -72,7 +72,7 @@ class EpisodeAdapter(data: MutableList<SelectableSectionEntity<Episode>>? = null
         if (headerHeight == 0) {
 //            helper.itemView.measure(0, 0)
 //            headerHeight = helper.itemView.measuredHeight + ((helper.itemView.layoutParams as? ViewGroup.MarginLayoutParams)?.let { it.topMargin + it.bottomMargin }?:0)
-            headerHeight = ResourceUtil.toPixels(helper.itemView.context.resources, 48f)
+            headerHeight = ResourceUtil.toPixels(48f)
         }
     }
 

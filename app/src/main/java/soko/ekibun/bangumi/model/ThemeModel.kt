@@ -3,12 +3,14 @@ package soko.ekibun.bangumi.model
 import android.app.Activity
 import android.content.Context
 import android.graphics.Color
+import android.graphics.Paint
 import android.os.Build
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatDelegate
 import soko.ekibun.bangumi.App
+import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.util.ResourceUtil
 
 
@@ -16,6 +18,9 @@ import soko.ekibun.bangumi.util.ResourceUtil
  * 主题模块
  */
 object ThemeModel {
+    val BackgroundPaint = Paint()
+    val ForegroundPaint = Paint()
+    val TranslucentPaint = Paint()
 
     /**
      * 获取主题
@@ -45,6 +50,10 @@ object ThemeModel {
      */
     fun updateNavigationTheme(activity: Activity) {
         updateNavigationTheme(activity.window, activity)
+
+        BackgroundPaint.color = ResourceUtil.resolveColorAttr(activity, android.R.attr.colorBackground)
+        ForegroundPaint.color = ResourceUtil.resolveColorAttr(activity, android.R.attr.textColorSecondary)
+        TranslucentPaint.color = activity.getColor(R.color.colorTransGrey)
     }
 
     /**

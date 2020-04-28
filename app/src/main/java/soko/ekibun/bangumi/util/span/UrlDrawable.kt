@@ -1,4 +1,4 @@
-package soko.ekibun.bangumi.util
+package soko.ekibun.bangumi.util.span
 
 import android.graphics.*
 import android.graphics.drawable.Animatable
@@ -11,55 +11,50 @@ import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import soko.ekibun.bangumi.R
+import soko.ekibun.bangumi.util.GlideUtil
+import soko.ekibun.bangumi.util.ResourceUtil
 import java.lang.ref.WeakReference
 
 /**
  * url图片Drawable
- * @property container WeakReference<TextView>
- * @property updateSize Function1<Size, Unit>
- * @property drawable Drawable?
- * @property error Boolean?
- * @property size Size?
- * @property url String?
- * @property uri Uri?
- * @property textSize Float
- * @property maxWidth Float
- * @property mBuffer Bitmap
- * @property mPaint Paint
- * @property drawableCallback Callback
  * @constructor
  */
 open class UrlDrawable(
-    var container: WeakReference<TextView>,
-    val maxWidth: () -> Float,
-    val updateSize: (Size) -> Unit = {}
+    val wrapWidth: (Float) -> Float,
+    val sizeCache: HashMap<String, Size>
 ) : AnimationDrawable() {
-    var drawable: Drawable? = null
+    var container: WeakReference<TextView>? = null
+
+    private var target: Target<Drawable>? = null
+    fun cancel() {
+        container?.get()?.let { GlideUtil.with(it) }?.clear(target)
+    }
+
+    internal var drawable: Drawable? = null
+
+    /**
+     * 加载状态
+     * - true: 加载失败
+     * - false：加载成功
+     * - null：加载中
+     */
     var error: Boolean? = null
-    var size: Size? = null
     var url: String? = null
     var uri: Uri? = null
-    val textSize get() = container.get()?.textSize ?: 10f
 
-    protected var mBuffer: Bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
-    private val mPaint = Paint(Paint.FILTER_BITMAP_FLAG or Paint.DITHER_FLAG)
-
-    private fun addTarget(target: Target<Drawable>) {
-        container.get()?.let { v -> v.tag = (v.tag as? ArrayList<*>)?.toMutableList()?.add(target) }
-    }
+    internal var mBuffer: Bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+    internal val mPaint = Paint(Paint.FILTER_BITMAP_FLAG or Paint.DITHER_FLAG)
 
     /**
      * 更新Drawable
-     * @param drawable Drawable
-     * @param defSize Int
      */
-    open fun update(drawable: Drawable, defSize: Int) {
-        val width = Math.max(textSize, Math.min(drawable.intrinsicWidth.toFloat(), maxWidth()))
-
-        val size = if (defSize > 0) this.size
-                ?: Size(defSize, defSize) else Size(width.toInt(), (drawable.intrinsicHeight * width / drawable.intrinsicWidth).toInt())
-        this.size = size
-        updateSize(size)
+    open fun update(drawable: Drawable) {
+        val size = sizeCache[url] ?: {
+            val width = wrapWidth(if (error == false) drawable.intrinsicWidth.toFloat() else -1f)
+            val size = Size(width.toInt(), (drawable.intrinsicHeight * width / drawable.intrinsicWidth).toInt())
+            if (error == false) url?.let { sizeCache[it] = size }
+            size
+        }()
         (this.drawable as? Animatable)?.stop()
         this.drawable?.callback = null
         this.drawable = drawable
@@ -70,8 +65,8 @@ open class UrlDrawable(
         this.drawable?.bounds = bounds
         updateBuffer()
 
-        container.get()?.text = container.get()?.text
-        container.get()?.invalidate()
+        container?.get()?.text = container?.get()?.text
+        container?.get()?.invalidate()
     }
 
     /**
@@ -79,22 +74,33 @@ open class UrlDrawable(
      */
     open fun loadImage() {
         val url = this.url ?: return
-        val view = container.get()
+        val view = container?.get()
         view?.post {
             val textSize = view.textSize
             val circularProgressDrawable = CircularProgressDrawable(view.context)
-            circularProgressDrawable.setColorSchemeColors(ResourceUtil.resolveColorAttr(view.context, android.R.attr.textColorSecondary))
+            circularProgressDrawable.setColorSchemeColors(
+                ResourceUtil.resolveColorAttr(
+                    view.context,
+                    android.R.attr.textColorSecondary
+                )
+            )
             circularProgressDrawable.strokeWidth = textSize / 8f
             circularProgressDrawable.centerRadius = textSize / 2 - circularProgressDrawable.strokeWidth - 1f
             circularProgressDrawable.progressRotation = 0.75f
-            GlideUtil.loadWithProgress(url, view, RequestOptions().placeholder(circularProgressDrawable).error(R.drawable.ic_broken_image), circularProgressDrawable, uri) { type, drawable ->
+            target = GlideUtil.loadWithProgress(
+                url,
+                view,
+                RequestOptions().placeholder(circularProgressDrawable).error(R.drawable.ic_broken_image),
+                circularProgressDrawable,
+                uri
+            ) { type, drawable ->
                 error = when (type) {
                     GlideUtil.TYPE_RESOURCE -> false
                     GlideUtil.TYPE_ERROR -> true
                     else -> null
                 }
-                drawable?.let { update(it, if (type == GlideUtil.TYPE_RESOURCE) 0 else textSize.toInt()) }
-            }?.let { addTarget(it) }
+                drawable?.let { update(it) }
+            }
         }
     }
 
@@ -108,18 +114,18 @@ open class UrlDrawable(
         invalidateSelf()
     }
 
-    val drawableCallback = object : Callback {
+    internal val drawableCallback = object : Callback {
         override fun invalidateDrawable(who: Drawable) {
             updateBuffer()
-            container.get()?.invalidate()
+            container?.get()?.invalidate()
         }
 
         override fun scheduleDrawable(who: Drawable, what: Runnable, `when`: Long) {
-            container.get()?.postDelayed(what, `when`)
+            container?.get()?.postDelayed(what, `when`)
         }
 
         override fun unscheduleDrawable(who: Drawable, what: Runnable) {
-            container.get()?.removeCallbacks(what)
+            container?.get()?.removeCallbacks(what)
         }
     }
 

@@ -12,9 +12,9 @@ import soko.ekibun.bangumi.model.HistoryModel
 import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.ui.topic.ReplyDialog
 import soko.ekibun.bangumi.ui.web.WebActivity
+import soko.ekibun.bangumi.util.HtmlUtil
 import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.JsonUtil
-import soko.ekibun.bangumi.util.TextUtil
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -40,7 +40,7 @@ class SayPresenter(private val context: SayActivity, say: Say) {
         HistoryModel.addHistory(
             HistoryModel.History(
                 type = "say",
-                title = TextUtil.html2text(say.message ?: ""),
+                title = HtmlUtil.html2text(say.message ?: ""),
                 subTitle = say.user.nickname,
                 thumb = say.user.avatar,
                 data = JsonUtil.toJson(
@@ -66,14 +66,13 @@ class SayPresenter(private val context: SayActivity, say: Say) {
             context.runOnUiThread {
                 sayView.processSay(data, true)
             }
-        }, { index, post ->
+        }, { post ->
             context.runOnUiThread {
-                val say = SayAdapter.SaySection(
-                    isHeader = sayView.adapter.getItemOrNull(index - 1)?.t?.user?.username != post.user.username,
-                    t = post
-                )
-                if (index < sayView.adapter.data.size) sayView.adapter.setData(index, say)
-                else sayView.adapter.addData(say)
+                val index = sayView.adapter.data.indexOfFirst { it.t.index == post.index }
+                if (index < 0) {
+                    val insertIndex = sayView.adapter.data.indexOfLast { it.t.index < post.index }
+                    sayView.adapter.addData(insertIndex + 1, SayAdapter.SaySection(false, post))
+                } else sayView.adapter.setData(index, SayAdapter.SaySection(false, post))
             }
         }).subscribeOnUiThread({ say ->
             sayView.processSay(say)
@@ -112,12 +111,15 @@ class SayPresenter(private val context: SayActivity, say: Say) {
                 Say.reply(say, content).subscribeOnUiThread({
                     if (it) {
                         updateDraft(null)
-                        say.replies = (say.replies ?: ArrayList()).plus(
-                            Say.SayReply(
-                                user = self,
-                                message = content
+                        say.replies = (say.replies ?: ArrayList()).let { replies ->
+                            replies.plus(
+                                Say.SayReply(
+                                    user = self,
+                                    message = content,
+                                    index = replies.size
+                                )
                             )
-                        )
+                        }
                         sayView.processSay(say)
                         (context.item_list.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                             sayView.adapter.itemCount,

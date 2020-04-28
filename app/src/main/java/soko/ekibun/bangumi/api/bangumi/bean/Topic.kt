@@ -9,9 +9,9 @@ import org.xmlpull.v1.XmlPullParser
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.Bangumi
+import soko.ekibun.bangumi.util.HtmlUtil
 import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.JsonUtil
-import soko.ekibun.bangumi.util.TextUtil
 
 /**
  * 帖子
@@ -246,7 +246,7 @@ data class Topic(
             val comment = if (post?.isSub == true)
                 "[quote][b]${post.nickname}[/b] 说: ${Jsoup.parse(post.pst_content).let { doc ->
                     doc.select("div.quote").remove()
-                    TextUtil.html2text(doc.html()).let {
+                    HtmlUtil.html2text(doc.html()).let {
                         if (it.length > 100) it.substring(0, 100) + "..." else it
                     }
                 }}[/quote]\n" else ""

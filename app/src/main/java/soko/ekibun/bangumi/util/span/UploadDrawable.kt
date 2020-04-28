@@ -1,8 +1,8 @@
-package soko.ekibun.bangumi.util
+package soko.ekibun.bangumi.util.span
 
 import android.net.Uri
 import android.util.Log
-import android.widget.TextView
+import android.util.Size
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import io.reactivex.rxjava3.core.Observable
 import okhttp3.RequestBody
@@ -11,19 +11,17 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.sda1.Sda1
-import java.lang.ref.WeakReference
+import soko.ekibun.bangumi.util.FileRequestBody
+import soko.ekibun.bangumi.util.ResourceUtil
 
-/**
- * 上传图片 drawable
- */
 class UploadDrawable(
-        private val requestBody: RequestBody,
-        private val fileName: String,
-        container: WeakReference<TextView>,
-        uri: Uri,
-        private val onUploaded: (String) -> Unit
-) : CollapseUrlDrawable(container) {
-
+    private val requestBody: RequestBody,
+    private val fileName: String,
+    uri: Uri,
+    wrapWidth: (Float) -> Float,
+    sizeCache: HashMap<String, Size>,
+    private val onUploaded: (String) -> Unit
+) : CollapseUrlDrawable(wrapWidth, sizeCache) {
     init {
         this.uri = uri
     }
@@ -33,7 +31,7 @@ class UploadDrawable(
             super.loadImage()
             return
         }
-        val view = container.get()
+        val view = container?.get()
         view?.post {
             val textSize = view.textSize
             val circularProgressDrawable = CircularProgressDrawable(view.context)
@@ -46,7 +44,7 @@ class UploadDrawable(
             circularProgressDrawable.strokeWidth = textSize / 8f
             circularProgressDrawable.centerRadius = textSize / 2 - circularProgressDrawable.strokeWidth - 1f
             circularProgressDrawable.progressRotation = 0.75f
-            update(circularProgressDrawable, textSize.toInt())
+            update(circularProgressDrawable)
             circularProgressDrawable.start()
             val errorDrawable = view.context.getDrawable(R.drawable.ic_broken_image)
             val fileRequestBody = FileRequestBody(requestBody) { total, progress ->
@@ -75,7 +73,7 @@ class UploadDrawable(
             }, {
                 error = true
                 it.printStackTrace()
-                errorDrawable?.let { update(it, textSize.toInt()) }
+                errorDrawable?.let { drawable -> update(drawable) }
             }, {
                 if (circularProgressDrawable.isRunning) circularProgressDrawable.stop()
             })
