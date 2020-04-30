@@ -34,7 +34,8 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
         holder.setText(R.id.item_title, item.t.subject.displayName)
         holder.setText(
             R.id.item_ep_name,
-            item.t.episode?.parseSort() + " " + (if (item.t.episode?.name_cn.isNullOrEmpty()) item.t.episode?.name
+            (if (item.t.episode?.id != 0) item.t.episode?.parseSort() + " " else "")
+                    + (if (item.t.episode?.name_cn.isNullOrEmpty()) item.t.episode?.name
                 ?: "" else item.t.episode?.name_cn)
         )
         GlideUtil.with(holder.itemView.item_cover)
@@ -43,11 +44,18 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
             ?.into(holder.itemView.item_cover)
         holder.itemView.item_chase.visibility = if (item.t.subject.collect != null) View.VISIBLE else View.GONE
 
+        holder.itemView.item_title.setTextColor(
+            ResourceUtil.resolveColorAttr(
+                holder.itemView.context,
+                if (item.t.episode?.id != 0) android.R.attr.textColorPrimary else android.R.attr.textColorSecondary
+            )
+        )
+        holder.itemView.item_cover.alpha = if (item.t.episode?.id != 0) 1.0f else 0.6f
+
         val color = ResourceUtil.resolveColorAttr(
             holder.itemView.context,
-            if (item.past) R.attr.colorPrimary else android.R.attr.textColorSecondary
+            if (item.t.episode?.id != 0 && item.past) R.attr.colorPrimary else android.R.attr.textColorSecondary
         )
-        holder.itemView.alpha = if (item.t.episode?.id == 0) 0.6f else 1.0f
         holder.itemView.item_ep_name.setTextColor(color)
         holder.itemView.item_time.alpha = if (item.past) 0.6f else 1.0f
     }

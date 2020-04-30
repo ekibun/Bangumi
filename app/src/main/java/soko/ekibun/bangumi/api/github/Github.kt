@@ -32,7 +32,7 @@ object Github {
      */
     fun bangumiCalendar(): Observable<List<BangumiCalendarItem>> {
         return ApiHelper.createHttpObservable(
-            "https://raw.githubusercontent.com/ekibun/bangumi_onair/master/calendar.json"
+            "$JSDELIVR_SERVER_API/gh/ekibun/bangumi_onair@master/calendar.json"
         ).map {
             JsonUtil.toEntity<List<BangumiCalendarItem>>(it.body!!.string())
         }
