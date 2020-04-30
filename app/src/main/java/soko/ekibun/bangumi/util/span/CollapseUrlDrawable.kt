@@ -4,6 +4,7 @@ import android.graphics.*
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.Drawable
 import android.text.style.ImageSpan
+import android.util.Log
 import android.util.Size
 import android.view.View
 import android.widget.TextView
@@ -25,6 +26,7 @@ open class CollapseUrlDrawable(
             val width = wrapWidth(if (error == false) drawable.intrinsicWidth.toFloat() else -1f)
             Size(width.toInt(), (drawable.intrinsicHeight * width / drawable.intrinsicWidth).toInt())
         }()
+        Log.v("update", "$drawable size: $size")
         (this.drawable as? Animatable)?.stop()
         this.drawable?.callback = null
         this.drawable = drawable
@@ -46,6 +48,15 @@ open class CollapseUrlDrawable(
                 it.editableText.removeSpan(span.image)
                 span.image = ImageSpan(this, url ?: "", ImageSpan.ALIGN_BASELINE)
                 it.editableText.setSpan(span.image, start, end, flags)
+            }
+            it.editableText.getSpans(0, it.editableText.length, ImageSpan::class.java).filter { span ->
+                span.drawable == this
+            }.forEach { span ->
+                val start = it.editableText.getSpanStart(span)
+                val end = it.editableText.getSpanEnd(span)
+                val flags = it.editableText.getSpanFlags(span)
+                it.editableText.removeSpan(span)
+                it.editableText.setSpan(span, start, end, flags)
             }
             it.invalidate()
         }

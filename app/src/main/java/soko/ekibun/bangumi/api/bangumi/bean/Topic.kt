@@ -88,6 +88,26 @@ data class Topic(
             }
         }
 
+        private fun parsePost(str: String): List<TopicPost> {
+            val doc = Jsoup.parse(str)
+            doc.outputSettings().prettyPrint(false)
+            var relate: TopicPost? = null
+            return doc.select(".re_info").mapNotNull {
+                val post = TopicPost.parse(it.parent())
+                when {
+                    post == null -> null
+                    post.isSub -> {
+                        relate?.children?.add(post)
+                        null
+                    }
+                    else -> {
+                        relate = post
+                        post
+                    }
+                }
+            }
+        }
+
         /**
          * 加载帖子（Sax）
          * @param topic Topic
@@ -108,23 +128,7 @@ data class Topic(
                         Observable.just(0).observeOn(Schedulers.computation()).takeWhile {
                             !emitter.isDisposed
                         }.map {
-                            val doc = Jsoup.parse(str.joinToString(""))
-                            doc.outputSettings().prettyPrint(false)
-                            var relate: TopicPost? = null
-                            doc.select(".re_info").mapNotNull {
-                                val post = TopicPost.parse(it.parent())
-                                when {
-                                    post == null -> null
-                                    post.isSub -> {
-                                        relate?.children?.add(post)
-                                        null
-                                    }
-                                    else -> {
-                                        relate = post
-                                        post
-                                    }
-                                }
-                            }
+                            parsePost(str.joinToString(""))
                         }
                     }
 
@@ -134,6 +138,7 @@ data class Topic(
                         if (!emitter.isDisposed) emitter.onError(it)
                     })
 
+                    val firstReplies = ArrayList<TopicPost>()
                     val updateReply = { str: String ->
                         if (beforeData.isEmpty()) {
                             beforeData = str
@@ -167,6 +172,10 @@ data class Topic(
                                 )
                             }
                             if (!emitter.isDisposed) emitter.onNext(true)
+                        } else if (firstReplies.isEmpty()) {
+                            val posts = parsePost(str)
+                            firstReplies.addAll(posts)
+                            emitter.onNext(posts)
                         } else {
                             replyPub.onNext(str)
                         }
@@ -194,8 +203,7 @@ data class Topic(
                     topic.error = error?.text()?.let {
                         Pair(it, Bangumi.parseUrl(error.selectFirst("a")?.attr("href") ?: ""))
                     }
-                    topic.replies = observable.blockingIterable().flatten()
-                        .let { replies -> replies.sortedBy { it.floor } }
+                    topic.replies = firstReplies.plus(observable.blockingIterable().flatten()).sortedBy { it.floor }
                     if (!emitter.isDisposed) {
                         emitter.onNext(false)
                         emitter.onComplete()

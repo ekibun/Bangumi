@@ -5,6 +5,8 @@ import android.graphics.drawable.Animatable
 import android.graphics.drawable.AnimationDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
+import android.text.Spannable
+import android.text.style.ImageSpan
 import android.util.Size
 import android.widget.TextView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
@@ -65,8 +67,19 @@ open class UrlDrawable(
         this.drawable?.bounds = bounds
         updateBuffer()
 
-        container?.get()?.text = container?.get()?.text
-        container?.get()?.invalidate()
+        container?.get()?.let {
+            val text = (it.text as? Spannable) ?: return@let
+            text.getSpans(0, text.length, ImageSpan::class.java)?.filter { span ->
+                span.drawable == this
+            }?.forEach { span ->
+                val start = text.getSpanStart(span)
+                val end = text.getSpanEnd(span)
+                val flags = text.getSpanFlags(span)
+                text.removeSpan(span)
+                text.setSpan(span, start, end, flags)
+            }
+            it.invalidate()
+        }
     }
 
     /**

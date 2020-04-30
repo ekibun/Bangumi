@@ -53,11 +53,10 @@ class SayAdapter(data: MutableList<SaySection>? = null) :
             pinnedIndex = it
             container.visibility = View.VISIBLE
             avatar.setOnClickListener { v ->
-//                onItemChildClickListener?.onItemChildClick(this, v, it)
+                setOnItemChildClick(v, it)
             }
             avatar.setOnLongClickListener { v ->
-//                onItemChildLongClickListener?.onItemChildLongClick(this, v, it) ?: false
-                false
+                setOnItemChildLongClick(v, it)
             }
             updateAvatar(avatar, item)
         }
@@ -68,8 +67,12 @@ class SayAdapter(data: MutableList<SaySection>? = null) :
     private val imageSizes = HashMap<String, Size>()
     private val largeContent = WeakHashMap<String, Spanned>()
     override fun convert(holder: BaseViewHolder, item: SaySection) {
-//        holder.addOnClickListener(R.id.item_avatar)
-//        holder.addOnLongClickListener(R.id.item_avatar)
+        holder.itemView.item_avatar.setOnClickListener {
+            setOnItemChildClick(it, holder.layoutPosition)
+        }
+        holder.itemView.item_avatar.setOnLongClickListener {
+            setOnItemChildLongClick(it, holder.layoutPosition)
+        }
         holder.itemView.item_user.text = item.t.user.name
 
         if (holder.adapterPosition == 0) holder.setBackgroundResource(R.id.item_layout, R.drawable.bg_round_dialog)

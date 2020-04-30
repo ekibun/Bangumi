@@ -45,8 +45,6 @@ import java.lang.ref.WeakReference
  * @property postTitle String?
  * @property bbCode Boolean
  * @property title String
- * @property onClickImage Function1<ImageSpan, Unit>
- * @property onClickUrl Function1<String, Unit>
  */
 class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
 
@@ -153,7 +151,6 @@ class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
     override fun onViewCreated(view: View) {
         bbCode = PreferenceManager.getDefaultSharedPreferences(view.context).getBoolean("use_bbcode", false)
         collapseImageGetter = CollapseUrlDrawable.CollapseImageGetter(view.item_input)
-        val weakRef: WeakReference<TextView> = WeakReference(view.item_input)
 
         view.item_title_container.visibility = if (postTitle == null) View.GONE else View.VISIBLE
         view.item_title.setText(postTitle)
@@ -197,12 +194,12 @@ class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
             } else {
                 val drawable = collapseImageGetter.createDrawable()
                 drawable.url = emojiList[position].second
-                drawable.container = weakRef
-                drawable.loadImage()
                 view.item_input.editableText.insert(
                     view.item_input.selectionStart,
                     HtmlUtil.createImageSpan(ImageSpan(drawable, emojiList[position].first, ImageSpan.ALIGN_BASELINE))
                 )
+                drawable.container = WeakReference(view.item_input)
+                drawable.loadImage()
             }
         }
         view.item_btn_format.setOnClickListener { v ->
@@ -284,14 +281,6 @@ class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
                 setHtml(HtmlUtil.bbcode2html(draft!!), view.item_input, collapseImageGetter)
             }
         }
-    }
-
-    val onClickImage = { view: View, _: ImageSpan ->
-        //Toast.makeText(context?:return@click, (it.drawable as? UrlDrawable)?.url?:"", Toast.LENGTH_LONG).show()
-    }
-
-    val onClickUrl = { _: String ->
-        //Toast.makeText(context?:return@click, url, Toast.LENGTH_LONG).show()
     }
 
     override fun onDismiss(dialog: DialogInterface) {

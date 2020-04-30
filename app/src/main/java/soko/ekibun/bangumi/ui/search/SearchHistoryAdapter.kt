@@ -2,6 +2,7 @@ package soko.ekibun.bangumi.ui.search
 
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.viewholder.BaseViewHolder
+import kotlinx.android.synthetic.main.item_search_history.view.*
 import soko.ekibun.bangumi.R
 
 /**
@@ -13,6 +14,8 @@ class SearchHistoryAdapter(data: MutableList<String>? = null) :
 
     override fun convert(holder: BaseViewHolder, item: String) {
         holder.setText(R.id.item_search_key, item)
-//        holder.addOnClickListener(R.id.item_remove_key)
+        holder.itemView.item_remove_key.setOnClickListener {
+            setOnItemChildClick(it, holder.layoutPosition)
+        }
     }
 }
