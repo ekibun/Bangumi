@@ -1,6 +1,6 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
-import io.reactivex.rxjava3.core.Observable
+import io.reactivex.Observable
 import org.jsoup.Jsoup
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi

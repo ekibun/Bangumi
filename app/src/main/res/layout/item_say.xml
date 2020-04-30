@@ -49,6 +49,7 @@
             android:textIsSelectable="true"
             android:padding="12dp"
             tools:text="Reply Content\nLongLongLONG22222222222222222222222222222222222222222"
+            android:lineSpacingExtra="5sp"
             app:layout_constraintWidth_max="wrap"
             app:layout_constraintHorizontal_bias="0"
             android:layout_marginStart="56dp"

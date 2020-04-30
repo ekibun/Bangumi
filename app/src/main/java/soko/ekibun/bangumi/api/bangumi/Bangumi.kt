@@ -2,19 +2,17 @@ package soko.ekibun.bangumi.api.bangumi
 
 import android.util.Log
 import android.webkit.CookieManager
-import io.reactivex.rxjava3.core.Observable
+import io.reactivex.Observable
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.xmlpull.v1.XmlPullParser
 import soko.ekibun.bangumi.api.ApiHelper
-import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.bean.*
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.util.HttpUtil
 import java.net.URI
-import java.util.*
 
 /**
  * Bangumi API
@@ -203,72 +201,73 @@ object Bangumi {
 
     /**
      * 进度管理 + 用户信息
-     * @param onUser Function1<UserInfo, Unit>
-     * @param onNotify Function1<Pair<Int, Int>, Unit>
-     * @return Call<List<Subject>>
+     * @return Observable<Pair<Int, Int>|UserInfo|List<Subject>>
      */
-    fun getCollectionSax(
-        onUser: (UserInfo) -> Unit = {},
-        onNotify: (Pair<Int, Int>) -> Unit = {}
-    ): Observable<List<Subject>> {
+    fun getCollectionSax(): Observable<Any> {
         val cookieManager = CookieManager.getInstance()
 
-        return ApiHelper.createHttpObservable(SERVER).map { rsp ->
-            val ret = ArrayList<Subject>()
-            var subjectLoaded = false
-            ApiHelper.parseWithSax(rsp) { parser, str ->
-                when {
-                    parser.eventType != XmlPullParser.START_TAG -> ApiHelper.SaxEventType.NOTHING
-                    parser.getAttributeValue("", "id")?.contains("columnHomeA") == true -> {
-                        val s = str()
-                        val doc = Jsoup.parse(s)
-                        val user = doc.selectFirst(".idBadgerNeue a.avatar") ?: throw Exception("login failed")
-                        val username = UserInfo.getUserName(user.attr("href"))
-                        rsp.headers("set-cookie").forEach {
-                            cookieManager.setCookie(COOKIE_HOST, it)
-                        }
-                        cookieManager.flush()
-                        HttpUtil.formhash = Regex("""//bgm.tv/logout/([^"]+)""").find(s)?.groupValues?.getOrNull(1)
-                            ?: HttpUtil.formhash
-                        onUser(
-                            UserInfo(
-                                id = Regex("""CHOBITS_UID = (\d+)""").find(
-                                    doc.select("script").html()
-                                )?.groupValues?.get(1)?.toIntOrNull() ?: username?.toIntOrNull() ?: 0,
-                                username = username,
-                                nickname = doc.selectFirst("#header a")?.text(),
-                                avatar = parseImageUrl(user.selectFirst("span.avatarNeue")),
-                                sign = doc.selectFirst("input[name=sign_input]")?.attr("value")
+        return ApiHelper.createHttpObservable(SERVER).flatMap { rsp ->
+
+            Observable.create<Any> { emitter ->
+                val ret = ArrayList<Subject>()
+                var subjectLoaded = false
+
+                ApiHelper.parseWithSax(rsp) { parser, str ->
+                    if (emitter.isDisposed) return@parseWithSax ApiHelper.SaxEventType.END
+                    when {
+                        parser.eventType != XmlPullParser.START_TAG -> ApiHelper.SaxEventType.NOTHING
+                        parser.getAttributeValue("", "id")?.contains("columnHomeA") == true -> {
+                            val s = str()
+                            val doc = Jsoup.parse(s)
+                            val user = doc.selectFirst(".idBadgerNeue a.avatar") ?: throw Exception("login failed")
+                            val username = UserInfo.getUserName(user.attr("href"))
+                            rsp.headers("set-cookie").forEach {
+                                cookieManager.setCookie(COOKIE_HOST, it)
+                            }
+                            cookieManager.flush()
+                            HttpUtil.formhash = Regex("""//bgm.tv/logout/([^"]+)""").find(s)?.groupValues?.getOrNull(1)
+                                ?: HttpUtil.formhash
+                            emitter.onNext(
+                                UserInfo(
+                                    id = Regex("""CHOBITS_UID = (\d+)""").find(
+                                        doc.select("script").html()
+                                    )?.groupValues?.get(1)?.toIntOrNull() ?: username?.toIntOrNull() ?: 0,
+                                    username = username,
+                                    nickname = doc.selectFirst("#header a")?.text(),
+                                    avatar = parseImageUrl(user.selectFirst("span.avatarNeue")),
+                                    sign = doc.selectFirst("input[name=sign_input]")?.attr("value")
+                                )
                             )
-                        )
-                        ApiHelper.SaxEventType.BEGIN
-                    }
-                    parser.getAttributeValue("", "id")?.startsWith("home_") == true && !subjectLoaded -> {
-                        subjectLoaded = true
-                        ret += Jsoup.parse(str()).select(".infoWrapper").mapNotNull {
-                            Subject.parseChaseCollection(it)
+                            ApiHelper.SaxEventType.BEGIN
                         }
-                        ApiHelper.SaxEventType.BEGIN
-                    }
-                    parser.getAttributeValue("", "id")?.contains("subject_prg_content") == true -> {
-                        val doc = Jsoup.parse(str())
-                        Observable.just(
-                            Pair(
-                                Regex("叮咚叮咚～你有 ([0-9]+) 条新信息!").find(
-                                    doc.selectFirst("#robot_speech_js")?.text()
-                                        ?: ""
-                                )?.groupValues?.get(1)?.toIntOrNull() ?: 0,
-                                doc.selectFirst("#notify_count")?.text()?.toIntOrNull() ?: 0
+                        parser.getAttributeValue("", "id")?.startsWith("home_") == true && !subjectLoaded -> {
+                            subjectLoaded = true
+                            ret += Jsoup.parse(str()).select(".infoWrapper").mapNotNull {
+                                Subject.parseChaseCollection(it)
+                            }
+                            ApiHelper.SaxEventType.BEGIN
+                        }
+                        parser.getAttributeValue("", "id")?.contains("subject_prg_content") == true -> {
+                            val doc = Jsoup.parse(str())
+                            emitter.onNext(
+                                Pair(
+                                    Regex("叮咚叮咚～你有 ([0-9]+) 条新信息!").find(
+                                        doc.selectFirst("#robot_speech_js")?.text()
+                                            ?: ""
+                                    )?.groupValues?.get(1)?.toIntOrNull() ?: 0,
+                                    doc.selectFirst("#notify_count")?.text()?.toIntOrNull() ?: 0
+                                )
                             )
-                        ).subscribeOnUiThread({
-                            onNotify(it)
-                        }, key = "bangumi_notify")
-                        ApiHelper.SaxEventType.END
+                            ApiHelper.SaxEventType.END
+                        }
+                        else -> ApiHelper.SaxEventType.NOTHING
                     }
-                    else -> ApiHelper.SaxEventType.NOTHING
+                }
+                if (!emitter.isDisposed) {
+                    emitter.onNext(ret)
+                    emitter.onComplete()
                 }
             }
-            ret
         }
     }
 

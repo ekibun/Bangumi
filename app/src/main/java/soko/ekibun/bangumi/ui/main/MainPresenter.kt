@@ -10,12 +10,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.GravityCompat
-import io.reactivex.rxjava3.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.nav_header.view.*
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
@@ -72,16 +70,14 @@ class MainPresenter(private val context: MainActivity) {
 
     var lastUser: UserInfo? = UserInfo(username = "/")
     private fun updateUser(user: UserInfo?) {
-        context.runOnUiThread {
-            Log.v("updateUser", "${lastUser?.username}->${user?.username}")
-            if (lastUser?.username != user?.username) {
-                collectionList = ArrayList()
-                if (lastUser?.username != "/" || user == null) drawerView.homeFragment.onUserChange()
-            }
-            lastUser = user
-            context.nav_view.menu.findItem(R.id.nav_logout).isVisible = user != null
-            userView.setUser(user)
+        Log.v("updateUser", "${lastUser?.username}->${user?.username}")
+        if (lastUser?.username != user?.username) {
+            collectionList = ArrayList()
+            if (lastUser?.username != "/" || user == null) drawerView.homeFragment.onUserChange()
         }
+        lastUser = user
+        context.nav_view.menu.findItem(R.id.nav_logout).isVisible = user != null
+        userView.setUser(user)
     }
 
     var switchUser: UserInfo? = null
@@ -100,7 +96,7 @@ class MainPresenter(private val context: MainActivity) {
                 switchUser = UserModel.current()
                 val user = UserModel.userList.users[it.itemId]?.user
                 UserModel.switchToUser(user)
-                if (lastUser?.username != user?.username) collectionCall?.dispose()
+                if (lastUser?.username != user?.username) context.disposeContainer.dispose(COLLECTION_CALL)
                 if (user != null) updateUser(user)
                 else WebActivity.startActivityForAuth(context)
                 true
@@ -170,9 +166,8 @@ class MainPresenter(private val context: MainActivity) {
         drawerView.homeFragment.updateUserCollection()
     }
 
-    var calendar: List<BangumiCalendarItem> = App.app.dataCacheModel.get("calendar") ?: ArrayList()
+    var calendar: List<BangumiCalendarItem> = App.app.dataCacheModel.get(CALENDAR_CACHE_KEY) ?: ArrayList()
     var collectionList: List<Subject> = ArrayList()
-    private var collectionCall: Disposable? = null
     var notify: Pair<Int, Int>? = null
     var mergeAirInfo = { list: List<Subject> ->
         list.forEach { subject ->
@@ -198,10 +193,8 @@ class MainPresenter(private val context: MainActivity) {
     }
 
     private fun notifyCollectionChange() {
-        context.runOnUiThread {
-            drawerView.calendarFragment.onCollectionChange()
-            drawerView.homeFragment.collectionFragment.collectionCallback(collectionList, null)
-        }
+        drawerView.calendarFragment.onCollectionChange()
+        drawerView.homeFragment.collectionFragment.collectionCallback(collectionList, null)
     }
 
     /**
@@ -209,44 +202,68 @@ class MainPresenter(private val context: MainActivity) {
      */
     fun updateUserCollection() {
         val callUser = user
-        collectionCall = Bangumi.getCollectionSax({ user ->
-            if (callUser?.username != this.user?.username) throw Exception("Canceled")
-            UserModel.updateUser(user)
-            UserModel.switchToUser(user)
-            updateUser(user)
-        }, { notify ->
-            if (callUser?.username != this.user?.username) throw Exception("Canceled")
-            this.notify = notify
-            context.notifyMenu?.badge = notify.let { it.first + it.second }
-        }).subscribeOnUiThread({
-            if (callUser?.username != this.user?.username) return@subscribeOnUiThread
-            collectionList = it
-            mergeAirInfo(it)
-            notifyCollectionChange()
-        }, {
-            if (callUser?.username != this.user?.username) return@subscribeOnUiThread
-            drawerView.homeFragment.collectionFragment.collectionCallback(null, it)
-            if ((it as? Exception)?.message == "login failed") {
-                user?.let { u -> UserModel.removeUser(u) }
-                UserModel.switchToUser(null)
-                updateUser(null)
-            }
-        }, key = "bangumi_collection")
+
+        context.disposeContainer.subscribeOnUiThread(
+            Bangumi.getCollectionSax(),
+            { data ->
+                if (callUser?.username != this.user?.username) return@subscribeOnUiThread
+                when (data) {
+                    is UserInfo -> {
+                        UserModel.updateUser(data)
+                        UserModel.switchToUser(data)
+                        updateUser(data)
+                    }
+                    is Pair<*, *> -> {
+                        val notify = Pair(data.first as Int, data.second as Int)
+                        this.notify = notify
+                        context.notifyMenu?.badge = notify.let { it.first + it.second }
+                    }
+                    is List<*> -> {
+                        val collection = data.map { it as Subject }
+                        collectionList = collection
+                        mergeAirInfo(collection)
+                        notifyCollectionChange()
+                    }
+                }
+            }, {
+                if (callUser?.username != this.user?.username) return@subscribeOnUiThread
+                drawerView.homeFragment.collectionFragment.collectionCallback(null, it)
+                if ((it as? Exception)?.message == "login failed") {
+                    user?.let { u -> UserModel.removeUser(u) }
+                    UserModel.switchToUser(null)
+                    updateUser(null)
+                }
+            },
+            key = COLLECTION_CALL
+        )
     }
 
     /**
      * 加载日历列表
      */
     fun updateCalendarList() {
-        Github.bangumiCalendar().subscribeOnUiThread({
-            calendar = it
-            drawerView.calendarFragment.calendarCallback(it, null)
-        }, {
-            drawerView.calendarFragment.calendarCallback(null, it)
-        }, key = "bangumi_calendar")
+        context.disposeContainer.subscribeOnUiThread(
+            Github.bangumiCalendar(),
+            {
+                calendar = it
+                App.app.dataCacheModel.set(CALENDAR_CACHE_KEY, it)
+                drawerView.calendarFragment.calendarCallback(it, null)
+            }, {
+                drawerView.calendarFragment.calendarCallback(null, it)
+            },
+            key = CALENDAR_CALL
+        )
     }
 
     init {
         updateCalendarList()
     }
+
+    companion object {
+        const val COLLECTION_CALL = "bangumi_collection"
+        const val CALENDAR_CALL = "bangumi_calendar"
+
+        const val CALENDAR_CACHE_KEY = "calendar"
+    }
+
 }

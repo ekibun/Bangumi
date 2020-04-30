@@ -1,6 +1,6 @@
 package soko.ekibun.bangumi.api.github
 
-import io.reactivex.rxjava3.core.Observable
+import io.reactivex.Observable
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
 import soko.ekibun.bangumi.api.github.bean.OnAirInfo
@@ -32,7 +32,7 @@ object Github {
      */
     fun bangumiCalendar(): Observable<List<BangumiCalendarItem>> {
         return ApiHelper.createHttpObservable(
-            "$JSDELIVR_SERVER_API/gh/ekibun/bangumi_onair@master/calendar.json"
+            "https://raw.githubusercontent.com/ekibun/bangumi_onair/master/calendar.json"
         ).map {
             JsonUtil.toEntity<List<BangumiCalendarItem>>(it.body!!.string())
         }

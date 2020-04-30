@@ -8,10 +8,9 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
-import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_collection.*
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
@@ -20,6 +19,7 @@ import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.main.MainPresenter
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
+import soko.ekibun.bangumi.ui.view.BaseActivity
 import soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
 import soko.ekibun.bangumi.ui.view.ShadowDecoration
 
@@ -148,6 +148,7 @@ class CollectionPagerAdapter(
 
     private fun loadCollectionList(position: Int = pager.currentItem) {
         val item = items[position] ?: return
+        val disposeContainer = (fragment.activity as? BaseActivity)?.disposeContainer ?: return
         item.second.isRefreshing = false
         item.first.isUseEmpty = false
         val page = pageIndex.getOrPut(position) { 0 }
@@ -160,25 +161,29 @@ class CollectionPagerAdapter(
         }
         if (useApi) mainPresenter?.updateUserCollection()
         else {
-            collectionCalls[position] = Bangumi.getCollectionList(
-                tabList[position],
-                UserModel.current()?.username ?: return,
-                collectionTypeView.getType(), page + 1
-            ).subscribeOnUiThread({ list: List<Subject> ->
-                item.first.isUseEmpty = true
-                list.forEach { it.type = tabList[position] }
-                item.first.addData(list)
-                if (list.size < 10)
-                    item.first.loadMoreModule.loadMoreEnd()
-                else
-                    item.first.loadMoreModule.loadMoreComplete()
-                (item.second.tag as? RecyclerView)?.tag = true
-                pageIndex[position] = (pageIndex[position] ?: 0) + 1
-            }, {
-                item.first.loadMoreModule.loadMoreFail()
-            }, {
-                item.second.isRefreshing = false
-            })
+            disposeContainer.subscribeOnUiThread(
+                Bangumi.getCollectionList(
+                    tabList[position],
+                    UserModel.current()?.username ?: return,
+                    collectionTypeView.getType(), page + 1
+                ),
+                { list: List<Subject> ->
+                    item.first.isUseEmpty = true
+                    list.forEach { it.type = tabList[position] }
+                    item.first.addData(list)
+                    if (list.size < 10)
+                        item.first.loadMoreModule.loadMoreEnd()
+                    else
+                        item.first.loadMoreModule.loadMoreComplete()
+                    (item.second.tag as? RecyclerView)?.tag = true
+                    pageIndex[position] = (pageIndex[position] ?: 0) + 1
+                }, {
+                    item.first.loadMoreModule.loadMoreFail()
+                }, {
+                    item.second.isRefreshing = false
+                },
+                key = COLLECTION_CALL_PREFIX + position
+            )
         }
     }
 
@@ -196,5 +201,9 @@ class CollectionPagerAdapter(
 
     override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
         container.removeView(`object` as View)
+    }
+
+    companion object {
+        private const val COLLECTION_CALL_PREFIX = "bangumi_collection_"
     }
 }

@@ -174,7 +174,7 @@ object HtmlUtil {
         }
         val style = element.attr("style")
             .toLowerCase(Locale.ROOT).split(";").filterNot { it.isEmpty() }
-            .map { style -> style.split(":").let { it[0].trim() to it[1].trim() } }.toMap()
+            .map { style -> style.split(":").let { it[0].trim() to it.getOrNull(1)?.trim() } }.toMap()
         if (style["font-weight"] == "bold") setSpan(StyleSpan(Typeface.BOLD), span)
         if (style["font-style"] == "italic") setSpan(StyleSpan(Typeface.ITALIC), span)
         if (style["text-decoration"] == "underline") setSpan(UnderlineSpan(), span)

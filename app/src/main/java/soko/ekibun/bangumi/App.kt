@@ -16,7 +16,6 @@ import soko.ekibun.bangumi.model.PluginsModel
 import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.util.HttpUtil
-import java.util.concurrent.Executors
 
 /**
  * App entry
@@ -65,7 +64,6 @@ class App : Application() {
     }
 
     companion object {
-        val executor = Executors.newCachedThreadPool()
         lateinit var app: App
 
         /**

@@ -1,8 +1,8 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.schedulers.Schedulers
-import io.reactivex.rxjava3.subjects.ReplaySubject
+import io.reactivex.Observable
+import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.ReplaySubject
 import okhttp3.FormBody
 import org.jsoup.Jsoup
 import org.xmlpull.v1.XmlPullParser
@@ -54,96 +54,103 @@ data class Say(
 
         /**
          * 加载吐槽
-         * @return Call<Say>
+         * @return Call<SayReply|List<SayReply>|Say>
          */
-        fun getSaySax(
-            say: Say,
-            onUpdate: (Say) -> Unit,
-            onNewPost: (post: SayReply) -> Unit
-        ): Observable<Say> {
-            return ApiHelper.createHttpObservable(say.url).map { rsp ->
-                val avatarCache = HashMap<String, String>()
-                say.user.avatar?.let { avatarCache[say.user.username!!] = it }
-                say.replies?.forEach { reply ->
-                    reply.user.avatar?.let { avatarCache[reply.user.username!!] = it }
-                }
-                val unresolvedReplies = HashMap<String, ArrayList<SayReply>>()
-
-                val replyPub = ReplaySubject.create<String>()
-                val observable = replyPub.flatMap { username ->
-                    Observable.just(0).observeOn(Schedulers.computation()).map {
-                        UserInfo.getApiUser(username)
+        fun getSaySax(say: Say): Observable<Any> {
+            return ApiHelper.createHttpObservable(say.url).flatMap { rsp ->
+                Observable.create<Any> { emitter ->
+                    val avatarCache = HashMap<String, String>()
+                    say.user.avatar?.let { avatarCache[say.user.username!!] = it }
+                    say.replies?.forEach { reply ->
+                        reply.user.avatar?.let { avatarCache[reply.user.username!!] = it }
                     }
-                }
+                    val unresolvedReplies = HashMap<String, ArrayList<SayReply>>()
 
-                observable.subscribe { user ->
-                    if (!user.avatar.isNullOrEmpty()) synchronized(avatarCache) {
-                        user.let { avatarCache[it.username!!] = it.avatar!! }
-                    }
-                    synchronized(unresolvedReplies) {
-                        unresolvedReplies.remove(user.username)?.forEach {
-                            it.user.avatar = user.avatar
-                            onNewPost(it)
+                    val replyPub = ReplaySubject.create<String>()
+                    val observable = replyPub.flatMap { username ->
+                        Observable.just(0).observeOn(Schedulers.computation()).takeWhile {
+                            !emitter.isDisposed
+                        }.map {
+                            UserInfo.getApiUser(username)
                         }
-                    }
-                }
+                    }.subscribeOn(Schedulers.newThread())
 
-                var beforeData = ""
-                val replies = ArrayList<SayReply>()
-                val updateReply = { str: String ->
-                    val doc = Jsoup.parse(str)
-                    doc.outputSettings().prettyPrint(false)
-                    if (beforeData.isEmpty()) {
-                        beforeData = str
-                        say.user = UserInfo.parse(
-                            doc.selectFirst(".statusHeader .inner a"),
-                            Bangumi.parseImageUrl(doc.selectFirst(".statusHeader .avatar img"))
-                        )
-                        say.message = doc.selectFirst(".statusContent .text")?.html()
-                        say.time = doc.selectFirst(".statusContent .date")?.text()
-                        onUpdate(say)
-                        onNewPost(SayReply(say.user, say.message ?: "", 0))
-                    } else {
-                        val user = UserInfo.parse(doc.selectFirst("a.l"))
-                        user.avatar = user.avatar ?: synchronized(avatarCache) {
-                            avatarCache[user.username]
+                    observable.subscribe({ user ->
+                        if (emitter.isDisposed) return@subscribe
+                        if (!user.avatar.isNullOrEmpty()) synchronized(avatarCache) {
+                            user.let { avatarCache[it.username!!] = it.avatar!! }
                         }
-                        val sayReply = SayReply(
-                            user = user,
-                            message = doc.selectFirst(".reply_item").childNodes()?.let { it.subList(6, it.size) }
-                                ?.joinToString("") {
-                                    it.outerHtml()
-                                } ?: "",
-                            index = replies.size + 1
-                        )
-                        replies += sayReply
-                        if (user.avatar.isNullOrEmpty()) {
-                            synchronized(unresolvedReplies) {
-                                if (!unresolvedReplies.containsKey(user.username)) replyPub.onNext(user.username)
-                                unresolvedReplies.getOrPut(user.username!!) { ArrayList() }.add(sayReply)
+                        synchronized(unresolvedReplies) {
+                            unresolvedReplies.remove(user.username)?.apply {
+                                this.forEach {
+                                    it.user.avatar = user.avatar
+                                }
+                            }
+                        }?.let { if (!emitter.isDisposed) emitter.onNext(it) }
+                    }, {
+                        if (!emitter.isDisposed) emitter.onError(it)
+                    })
+
+                    var beforeData = ""
+                    val replies = ArrayList<SayReply>()
+                    val updateReply = { str: String ->
+                        val doc = Jsoup.parse(str)
+                        doc.outputSettings().prettyPrint(false)
+                        if (beforeData.isEmpty()) {
+                            beforeData = str
+                            say.user = UserInfo.parse(
+                                doc.selectFirst(".statusHeader .inner a"),
+                                Bangumi.parseImageUrl(doc.selectFirst(".statusHeader .avatar img"))
+                            )
+                            say.message = doc.selectFirst(".statusContent .text")?.html()
+                            say.time = doc.selectFirst(".statusContent .date")?.text()
+                            if (!emitter.isDisposed) emitter.onNext(SayReply(say.user, say.message ?: "", 0))
+                        } else {
+                            val user = UserInfo.parse(doc.selectFirst("a.l"))
+                            user.avatar = user.avatar ?: synchronized(avatarCache) {
+                                avatarCache[user.username]
+                            }
+                            val sayReply = SayReply(
+                                user = user,
+                                message = doc.selectFirst(".reply_item").childNodes()?.let { it.subList(6, it.size) }
+                                    ?.joinToString("") {
+                                        it.outerHtml()
+                                    }?.trim() ?: "",
+                                index = replies.size + 1
+                            )
+                            replies += sayReply
+                            if (user.avatar.isNullOrEmpty()) {
+                                synchronized(unresolvedReplies) {
+                                    if (!unresolvedReplies.containsKey(user.username)) replyPub.onNext(user.username!!)
+                                    unresolvedReplies.getOrPut(user.username!!) { ArrayList() }.add(sayReply)
+                                }
                             }
                         }
                     }
-                }
 
-                ApiHelper.parseWithSax(rsp) { parser, str ->
-                    when {
-                        parser.eventType != XmlPullParser.START_TAG -> ApiHelper.SaxEventType.NOTHING
-                        parser.getAttributeValue("", "class")?.contains("reply_item") == true -> {
-                            updateReply(str())
-                            ApiHelper.SaxEventType.BEGIN
+                    ApiHelper.parseWithSax(rsp) { parser, str ->
+                        if (emitter.isDisposed) return@parseWithSax ApiHelper.SaxEventType.END
+                        when {
+                            parser.eventType != XmlPullParser.START_TAG -> ApiHelper.SaxEventType.NOTHING
+                            parser.getAttributeValue("", "class")?.contains("reply_item") == true -> {
+                                updateReply(str())
+                                ApiHelper.SaxEventType.BEGIN
+                            }
+                            parser.getAttributeValue("", "id") == "footer" -> {
+                                updateReply(str())
+                                ApiHelper.SaxEventType.END
+                            }
+                            else -> ApiHelper.SaxEventType.NOTHING
                         }
-                        parser.getAttributeValue("", "id") == "footer" -> {
-                            updateReply(str())
-                            ApiHelper.SaxEventType.END
-                        }
-                        else -> ApiHelper.SaxEventType.NOTHING
+                    }
+                    replyPub.onComplete()
+                    observable.blockingSubscribe()
+                    say.replies = replies
+                    if (!emitter.isDisposed) {
+                        emitter.onNext(say)
+                        emitter.onComplete()
                     }
                 }
-                replyPub.onComplete()
-                observable.blockingSubscribe()
-                say.replies = replies
-                say
             }
         }
 

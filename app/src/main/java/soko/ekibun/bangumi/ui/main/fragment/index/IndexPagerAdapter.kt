@@ -9,9 +9,9 @@ import android.view.WindowInsets
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.content_index.*
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.ui.subject.SubjectActivity
+import soko.ekibun.bangumi.ui.view.BaseActivity
 import soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
 import soko.ekibun.bangumi.ui.view.ShadowDecoration
 import java.util.*
@@ -19,7 +19,7 @@ import java.util.*
 /**
  * 索引PagerAdapter
  */
-class IndexPagerAdapter(fragment: IndexFragment, pager: androidx.viewpager.widget.ViewPager) :
+class IndexPagerAdapter(val fragment: IndexFragment, pager: androidx.viewpager.widget.ViewPager) :
     RecyclePagerAdapter<IndexPagerAdapter.IndexPagerViewHolder>() {
     var windowInsets: WindowInsets? = null
         set(value) {
@@ -41,7 +41,8 @@ class IndexPagerAdapter(fragment: IndexFragment, pager: androidx.viewpager.widge
 
     private val pageIndex = SparseIntArray()
     private fun loadIndex(item: IndexPagerViewHolder){
-        val indexType = IndexTypeView.typeList[indexTypeView.selectedType]?:return
+        val indexType = IndexTypeView.typeList[indexTypeView.selectedType] ?: return
+        val disposeContainer = (fragment.activity as? BaseActivity)?.disposeContainer ?: return
 
         val position = item.position
         val year = position / 12 + 1000
@@ -53,8 +54,9 @@ class IndexPagerAdapter(fragment: IndexFragment, pager: androidx.viewpager.widge
         }
         item.adapter.isUseEmpty = false
 
-        Bangumi.browserAirTime(indexType.first, year, month, page + 1, indexType.second)
-            .subscribeOnUiThread({
+        disposeContainer.subscribeOnUiThread(
+            Bangumi.browserAirTime(indexType.first, year, month, page + 1, indexType.second),
+            {
                 item.adapter.isUseEmpty = true
                 if (it.isEmpty()) {
                     item.adapter.loadMoreModule.loadMoreEnd()
@@ -67,7 +69,9 @@ class IndexPagerAdapter(fragment: IndexFragment, pager: androidx.viewpager.widge
                 item.adapter.loadMoreModule.loadMoreFail()
             }, {
                 item.view.isRefreshing = false
-            }, "bangumi_index_$position")
+            },
+            key = INDEX_CALL_PREFIX + position
+        )
     }
 
     private fun reset(item: IndexPagerViewHolder){
@@ -130,5 +134,9 @@ class IndexPagerAdapter(fragment: IndexFragment, pager: androidx.viewpager.widge
     ) :
         RecyclePagerAdapter.PagerViewHolder(view) {
         var position = 0
+    }
+
+    companion object {
+        private const val INDEX_CALL_PREFIX = "bangumi_index_"
     }
 }

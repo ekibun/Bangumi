@@ -2,13 +2,14 @@ package soko.ekibun.bangumi.api
 
 import android.util.Xml
 import android.widget.Toast
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.disposables.Disposable
-import io.reactivex.rxjava3.exceptions.CompositeException
-import io.reactivex.rxjava3.exceptions.Exceptions
-import io.reactivex.rxjava3.plugins.RxJavaPlugins
-import io.reactivex.rxjava3.schedulers.Schedulers
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
+import io.reactivex.exceptions.CompositeException
+import io.reactivex.exceptions.Exceptions
+import io.reactivex.plugins.RxJavaPlugins
+import io.reactivex.schedulers.Schedulers
 import okhttp3.RequestBody
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
@@ -23,37 +24,48 @@ import kotlin.collections.HashMap
  * API工具库
  */
 object ApiHelper {
-    /**
-     * 在主线程回调
-     * - 加入[observables]便于在[Activity.onDestroy][soko.ekibun.bangumi.ui.view.BaseActivity.onDestroy]中清除所有请求
-     * - `onError`中调用`onComplete`保持协同
-     * - `onError`默认弹出[Toast]:
-     *    ```
-     *    Toast.makeText(App.app, it.message, Toast.LENGTH_SHORT).show()
-     *    ```
-     */
-    fun <T> Observable<T>.subscribeOnUiThread(
-        onNext: (t: T) -> Unit,
-        onError: (t: Throwable) -> Unit = {
-            it.printStackTrace()
-        },
-        onComplete: () -> Unit = {},
-        key: String? = null
-    ): Disposable {
-        if (key != null) observables.remove(key)?.dispose()
-        return this.observeOn(AndroidSchedulers.mainThread())
-            .subscribe(onNext, {
-                if (!it.toString().toLowerCase(Locale.ROOT).contains("canceled")) {
-                    Toast.makeText(App.app, it.message, Toast.LENGTH_SHORT).show()
-                    onError(it)
-                }
-                onComplete()
-            }, onComplete).also {
-                if (key != null) observables[key] = it
-            }
-    }
+    class DisposeContainer {
+        private val disposables = CompositeDisposable()
+        private val keyDisposable = HashMap<String, Disposable>()
 
-    private val observables = HashMap<String, Disposable>()
+        /**
+         * 在主线程回调
+         * - `onError`中调用`onComplete`保持协同
+         * - `onError`默认弹出[Toast]:
+         *    ```
+         *    Toast.makeText(App.app, it.message, Toast.LENGTH_SHORT).show()
+         *    ```
+         */
+        fun <T> subscribeOnUiThread(
+            observable: Observable<T>, onNext: (t: T) -> Unit,
+            onError: (t: Throwable) -> Unit = {
+                it.printStackTrace()
+            },
+            onComplete: () -> Unit = {},
+            key: String? = null
+        ): Disposable {
+            if (!key.isNullOrEmpty()) keyDisposable[key]?.dispose()
+            return observable.observeOn(AndroidSchedulers.mainThread())
+                .subscribe(onNext, {
+                    if (!it.toString().toLowerCase(Locale.ROOT).contains("canceled")) {
+                        Toast.makeText(App.app, it.message, Toast.LENGTH_SHORT).show()
+                        onError(it)
+                    }
+                    onComplete()
+                }, onComplete).also {
+                    if (!key.isNullOrEmpty()) keyDisposable[key] = it
+                    disposables.add(it)
+                }
+        }
+
+        fun dispose() {
+            disposables.dispose()
+        }
+
+        fun dispose(key: String) {
+            keyDisposable.remove(key)?.dispose()
+        }
+    }
 
     /**
      * 创建OkHttp的[Observable]

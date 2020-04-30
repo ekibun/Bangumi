@@ -10,10 +10,10 @@ import com.chad.library.adapter.base.viewholder.BaseViewHolder
 import kotlinx.android.synthetic.main.item_timeline.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
-import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.TimeLine
 import soko.ekibun.bangumi.ui.say.SayActivity
+import soko.ekibun.bangumi.ui.view.BaseActivity
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.HtmlUtil
@@ -44,18 +44,22 @@ class TimeLineAdapter(data: MutableList<TimeLine>? = null) :
         holder.itemView.item_del.setOnClickListener {
             AlertDialog.Builder(holder.itemView.context).setMessage(R.string.timeline_dialog_remove)
                 .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
-                    ApiHelper.createHttpObservable(
-                        "${item.t?.delUrl}&ajax=1"
-                    ).map { rsp ->
-                        rsp.body?.string()?.contains("\"status\":\"ok\"") == true
-                    }.subscribeOnUiThread({ success ->
-                        if (!success) return@subscribeOnUiThread
-                        val index = holder.layoutPosition
-                        val removeHeader =
-                            getItemOrNull(index - 1)?.isHeader == true && getItemOrNull(index + 1)?.isHeader == true
-                        removeAt(index)
-                        if (removeHeader) removeAt(index - 1)
-                    })
+                    (holder.itemView.context as? BaseActivity)?.disposeContainer?.subscribeOnUiThread(
+                        ApiHelper.createHttpObservable(
+                            "${item.t?.delUrl}&ajax=1"
+                        ).map { rsp ->
+                            rsp.body?.string()?.contains("\"status\":\"ok\"") == true
+                        },
+                        { success ->
+                            if (!success) return@subscribeOnUiThread
+                            val index = holder.layoutPosition
+                            val removeHeader =
+                                getItemOrNull(index - 1)?.isHeader == true && getItemOrNull(index + 1)?.isHeader == true
+                            removeAt(index)
+                            if (removeHeader) removeAt(index - 1)
+                        },
+                        key = item.t?.delUrl
+                    )
                 }.show()
         }
         //collectStar

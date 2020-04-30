@@ -3,7 +3,7 @@ package soko.ekibun.bangumi.api.bangumi.bean
 import androidx.annotation.IntDef
 import androidx.annotation.StringDef
 import androidx.annotation.StringRes
-import io.reactivex.rxjava3.core.Observable
+import io.reactivex.Observable
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import soko.ekibun.bangumi.App

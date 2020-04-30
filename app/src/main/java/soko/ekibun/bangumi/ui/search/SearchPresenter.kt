@@ -10,7 +10,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_search.*
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.model.SearchHistoryModel
@@ -122,42 +121,54 @@ class SearchPresenter(private val context: SearchActivity) {
                 context.search_swipe?.isRefreshing = true
             val page = loadCount
             if (typeView.subjectTypeList.containsKey(typeView.selectedType)) {
-                Bangumi.searchSubject(
-                    key, typeView.subjectTypeList[typeView.selectedType]
-                        ?: Subject.TYPE_ANY, page + 1
-                ).subscribeOnUiThread({ list ->
-                    if (list.isEmpty())
-                        subjectAdapter.loadMoreModule.loadMoreEnd()
-                    else {
-                        subjectAdapter.loadMoreModule.loadMoreComplete()
-                        subjectAdapter.addData(list)
-                        loadCount = page + 1 //searchAdapter.data.size
-                    }
-                }, {
-                    subjectAdapter.loadMoreModule.loadMoreFail()
-                }, {
-                    context.search_swipe?.isRefreshing = false
-                })
-                if(context.search_list.adapter != subjectAdapter) context.search_list.adapter = subjectAdapter
+                context.disposeContainer.subscribeOnUiThread(
+                    Bangumi.searchSubject(
+                        key, typeView.subjectTypeList[typeView.selectedType]
+                            ?: Subject.TYPE_ANY, page + 1
+                    ),
+                    { list ->
+                        if (list.isEmpty())
+                            subjectAdapter.loadMoreModule.loadMoreEnd()
+                        else {
+                            subjectAdapter.loadMoreModule.loadMoreComplete()
+                            subjectAdapter.addData(list)
+                            loadCount = page + 1 //searchAdapter.data.size
+                        }
+                    }, {
+                        subjectAdapter.loadMoreModule.loadMoreFail()
+                    }, {
+                        context.search_swipe?.isRefreshing = false
+                    },
+                    key = SEARCH_CALL
+                )
+                if (context.search_list.adapter != subjectAdapter) context.search_list.adapter = subjectAdapter
             }else {
-                Bangumi.searchMono(
-                    key, typeView.monoTypeList[typeView.selectedType]
-                        ?: "all", page + 1
-                ).subscribeOnUiThread({ list ->
-                    if (list.isEmpty())
-                        monoAdapter.loadMoreModule.loadMoreEnd()
-                    else {
-                        monoAdapter.loadMoreModule.loadMoreComplete()
-                        monoAdapter.addData(list)
-                        loadCount = page + 1 //searchAdapter.data.size
-                    }
-                }, {
-                    monoAdapter.loadMoreModule.loadMoreFail()
-                }, {
-                    context.search_swipe?.isRefreshing = false
-                })
-                if(context.search_list.adapter != monoAdapter) context.search_list.adapter = monoAdapter
+                context.disposeContainer.subscribeOnUiThread(
+                    Bangumi.searchMono(
+                        key, typeView.monoTypeList[typeView.selectedType]
+                            ?: "all", page + 1
+                    ),
+                    { list ->
+                        if (list.isEmpty())
+                            monoAdapter.loadMoreModule.loadMoreEnd()
+                        else {
+                            monoAdapter.loadMoreModule.loadMoreComplete()
+                            monoAdapter.addData(list)
+                            loadCount = page + 1 //searchAdapter.data.size
+                        }
+                    }, {
+                        monoAdapter.loadMoreModule.loadMoreFail()
+                    }, {
+                        context.search_swipe?.isRefreshing = false
+                    },
+                    key = SEARCH_CALL
+                )
+                if (context.search_list.adapter != monoAdapter) context.search_list.adapter = monoAdapter
             }
         }
+    }
+
+    companion object {
+        const val SEARCH_CALL = "bangumi_search"
     }
 }

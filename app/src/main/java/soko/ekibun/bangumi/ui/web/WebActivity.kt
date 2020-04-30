@@ -123,6 +123,10 @@ class WebActivity : BaseActivity(R.layout.activity_web) {
                     } else false
                 }
             }
+            webview.shouldInterceptRequest = { view: WebView, url: String ->
+                Say.parse(url)?.let { startActivity(SayActivity.parseIntent(view.context, it)) }
+                null
+            }
         } else {
             title = getString(R.string.login)
             val authUrl = "${Bangumi.SERVER}/login"

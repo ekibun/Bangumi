@@ -1,6 +1,6 @@
 package soko.ekibun.bangumi.api.trim21
 
-import io.reactivex.rxjava3.core.Observable
+import io.reactivex.Observable
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.trim21.bean.IpView

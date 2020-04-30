@@ -47,6 +47,7 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
             holder.itemView.context,
             if (item.past) R.attr.colorPrimary else android.R.attr.textColorSecondary
         )
+        holder.itemView.alpha = if (item.t.episode?.id == 0) 0.6f else 1.0f
         holder.itemView.item_ep_name.setTextColor(color)
         holder.itemView.item_time.alpha = if (item.past) 0.6f else 1.0f
     }

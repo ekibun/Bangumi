@@ -1,73 +1,78 @@
 package soko.ekibun.bangumi.model
 
-import android.content.Context
+import androidx.room.Room
+import io.reactivex.Single
+import io.reactivex.schedulers.Schedulers
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.api.bangumi.bean.Say
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
-import soko.ekibun.bangumi.ui.say.SayActivity
-import soko.ekibun.bangumi.ui.subject.SubjectActivity
-import soko.ekibun.bangumi.ui.topic.TopicActivity
+import soko.ekibun.bangumi.model.history.History
+import soko.ekibun.bangumi.model.history.HistoryDatabase
+import soko.ekibun.bangumi.util.HtmlUtil
 import soko.ekibun.bangumi.util.JsonUtil
-import soko.ekibun.bangumi.util.TimeUtil
 import java.util.*
-import kotlin.collections.ArrayList
 
 /**
  * 浏览历史
  */
 object HistoryModel {
-    const val PREF_HISTORY = "history"
+    private val historyDao by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+        Room.databaseBuilder(App.app, HistoryDatabase::class.java, "history.sqlite").build().historyDao()
+    }
 
-    data class History(
-        var type: String,
-        var thumb: String?,
-        var title: String?,
-        var subTitle: String?,
-        var data: String,
-        var timestamp: Long
-    ) {
-        val timeString: String get() = TimeUtil.timeFormat.format(Date(timestamp))
-        val dateString: String get() = TimeUtil.dateFormat.format(Date(timestamp))
-
-        fun getCacheKey(): String {
-            return when (type) {
-                "subject" -> JsonUtil.toEntity<Subject>(data)!!.cacheKey
-                "topic" -> JsonUtil.toEntity<Topic>(data)!!.cacheKey
-                "say" -> JsonUtil.toEntity<Say>(data)!!.cacheKey
-                else -> ""
-            }
-        }
-
-        fun startActivity(context: Context) {
-            when (type) {
-                "subject" -> SubjectActivity.startActivity(context, JsonUtil.toEntity(data)!!)
-                "topic" -> TopicActivity.startActivity(context, JsonUtil.toEntity(data)!!)
-                "say" -> SayActivity.startActivity(context, JsonUtil.toEntity(data)!!)
-            }
+    private fun createHistory(obj: Any): History? {
+        val timestamp = Calendar.getInstance().timeInMillis
+        return when (obj) {
+            is Say -> History(
+                obj.cacheKey,
+                timestamp,
+                "say",
+                obj.user.avatar,
+                HtmlUtil.html2text(obj.message ?: ""),
+                obj.user.nickname,
+                JsonUtil.toJson(
+                    Say(
+                        id = obj.id,
+                        user = obj.user,
+                        message = obj.message,
+                        time = obj.time
+                    )
+                )
+            )
+            is Subject -> History(
+                obj.cacheKey,
+                timestamp,
+                "subject",
+                obj.image,
+                obj.displayName,
+                obj.name_cn,
+                JsonUtil.toJson(Subject(obj.id))
+            )
+            is Topic -> History(
+                obj.cacheKey,
+                timestamp,
+                "topic",
+                obj.image,
+                obj.title,
+                obj.links?.keys?.firstOrNull(),
+                JsonUtil.toJson(Topic(obj.model, obj.id))
+            )
+            else -> null
         }
     }
 
-    val historyList by lazy {
-        JsonUtil.toEntity<ArrayList<History>>(App.app.sp.getString(PREF_HISTORY, null) ?: "[]") ?: ArrayList()
+    private const val PAGE_SIZE = 50
+    fun getHistoryList(page: Int): Single<List<History>> {
+        return historyDao.getListOffset(PAGE_SIZE, page * PAGE_SIZE).subscribeOn(Schedulers.io())
     }
 
     /**
      * 添加
-     * @param data History
+     * @param obj History
      */
-    fun addHistory(data: History) {
-        val cacheKey = data.getCacheKey()
-        historyList.removeAll { it.getCacheKey() == cacheKey }
-        historyList.add(0, data)
-        historyList.sortByDescending { it.timestamp }
-        save()
-    }
-
-    private fun save() {
-        App.app.sp.edit()
-            .putString(PREF_HISTORY, JsonUtil.toJson(historyList.subList(0, Math.min(historyList.size, 500))))
-            .apply()
+    fun addHistory(obj: Any) {
+        createHistory(obj)?.let { historyDao.insert(it).subscribeOn(Schedulers.io()).subscribe() }
     }
 
     /**
@@ -75,16 +80,14 @@ object HistoryModel {
      * @param data String
      * @return Boolean
      */
-    fun removeHistory(data: History): Boolean {
-        val removed = historyList.removeAll { it.timestamp == data.timestamp }
-        save()
-        return removed
+    fun removeHistory(data: History) {
+        historyDao.delete(data).subscribeOn(Schedulers.io()).subscribe()
     }
 
     /**
      * 清除
      */
     fun clearHistory() {
-        App.app.sp.edit().putString(PREF_HISTORY, "[]").apply()
+        historyDao.deleteAll().subscribeOn(Schedulers.io()).subscribe()
     }
 }

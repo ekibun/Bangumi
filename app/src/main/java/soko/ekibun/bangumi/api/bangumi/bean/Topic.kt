@@ -1,8 +1,8 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.schedulers.Schedulers
-import io.reactivex.rxjava3.subjects.ReplaySubject
+import io.reactivex.Observable
+import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.ReplaySubject
 import okhttp3.FormBody
 import org.jsoup.Jsoup
 import org.xmlpull.v1.XmlPullParser
@@ -91,112 +91,116 @@ data class Topic(
         /**
          * 加载帖子（Sax）
          * @param topic Topic
-         * @param onUpdate Function1<Topic, Unit>
-         * @param onNewPost Function1<[@kotlin.ParameterName] TopicPost, Unit>
-         * @return Call<Topic>
+         * @return Observable<Boolean|List<TopicPost>>
          */
-        fun getTopicSax(
-            topic: Topic,
-            onUpdate: (Topic) -> Unit,
-            onNewPost: (post: List<TopicPost>) -> Unit
-        ): Observable<Topic> {
+        fun getTopicSax(topic: Topic): Observable<Any> {
             return ApiHelper.createHttpObservable(
                 when (topic.model) {
                     "blog" -> "${Bangumi.SERVER}/blog/${topic.id}"
                     else -> "${Bangumi.SERVER}/rakuen/topic/${topic.model}/${topic.id}"
                 }
-            ).map { rsp ->
-                var beforeData = ""
+            ).flatMap { rsp ->
+                Observable.create<Any> { emitter ->
+                    var beforeData = ""
 
-                val replyPub = ReplaySubject.create<String>()
-                val observable = replyPub.observeOn(Schedulers.computation()).buffer(10).flatMap { str ->
-                    Observable.just(0).observeOn(Schedulers.computation()).map {
-                        val doc = Jsoup.parse(str.joinToString(""))
-                        doc.outputSettings().prettyPrint(false)
-                        var relate: TopicPost? = null
-                        doc.select(".re_info").mapNotNull {
-                            val post = TopicPost.parse(it.parent())
-                            when {
-                                post == null -> null
-                                post.isSub -> {
-                                    relate?.children?.add(post)
-                                    null
-                                }
-                                else -> {
-                                    relate = post
-                                    post
+                    val replyPub = ReplaySubject.create<String>()
+                    val observable = replyPub.subscribeOn(Schedulers.newThread()).buffer(20).flatMap { str ->
+                        Observable.just(0).observeOn(Schedulers.computation()).takeWhile {
+                            !emitter.isDisposed
+                        }.map {
+                            val doc = Jsoup.parse(str.joinToString(""))
+                            doc.outputSettings().prettyPrint(false)
+                            var relate: TopicPost? = null
+                            doc.select(".re_info").mapNotNull {
+                                val post = TopicPost.parse(it.parent())
+                                when {
+                                    post == null -> null
+                                    post.isSub -> {
+                                        relate?.children?.add(post)
+                                        null
+                                    }
+                                    else -> {
+                                        relate = post
+                                        post
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                observable.subscribe { onNewPost(it) }
+                    observable.subscribe({
+                        if (!emitter.isDisposed) emitter.onNext(it)
+                    }, {
+                        if (!emitter.isDisposed) emitter.onError(it)
+                    })
 
-                val updateReply = { str: String ->
-                    if (beforeData.isEmpty()) {
-                        beforeData = str
-                        val doc = Jsoup.parse(str)
-                        doc.outputSettings().prettyPrint(false)
+                    val updateReply = { str: String ->
+                        if (beforeData.isEmpty()) {
+                            beforeData = str
+                            val doc = Jsoup.parse(str)
+                            doc.outputSettings().prettyPrint(false)
 
-                        topic.title = doc.selectFirst("#pageHeader h1")?.ownText()
+                            topic.title = doc.selectFirst("#pageHeader h1")?.ownText()
 
-                        topic.links = LinkedHashMap<String, String>().let { links ->
-                            doc.select("#pageHeader a")?.filter { !it.text().isNullOrEmpty() }?.forEach {
-                                links[it.text()] = Bangumi.parseUrl(it.attr("href") ?: "")
+                            topic.links = LinkedHashMap<String, String>().let { links ->
+                                doc.select("#pageHeader a")?.filter { !it.text().isNullOrEmpty() }?.forEach {
+                                    links[it.text()] = Bangumi.parseUrl(it.attr("href") ?: "")
+                                }
+                                links
                             }
-                            links
-                        }
 
-                        val image = Bangumi.parseImageUrl(doc.selectFirst("#pageHeader img"))
-                        topic.image = image
-                        if (topic.model == "blog") {
-                            val userInfo = doc.selectFirst("#pageHeader a.avatar")
-                            val userName = UserInfo.getUserName(userInfo?.attr("href")) ?: ""
-                            topic.blog = TopicPost(
-                                "", "",
-                                pst_uid = userName,
-                                username = userName,
-                                nickname = userInfo?.text() ?: "",
-                                avatar = image,
-                                pst_content = doc.selectFirst("#entry_content")?.html() ?: "",
-                                dateline = doc.selectFirst(".re_info")?.text()?.substringBefore('/')?.trim(' ')
-                                    ?: "",
-                                model = "blog"
-                            )
-                            onNewPost(listOf(topic.blog!!))
+                            val image = Bangumi.parseImageUrl(doc.selectFirst("#pageHeader img"))
+                            topic.image = image
+                            if (topic.model == "blog") {
+                                val userInfo = doc.selectFirst("#pageHeader a.avatar")
+                                val userName = UserInfo.getUserName(userInfo?.attr("href")) ?: ""
+                                topic.blog = TopicPost(
+                                    "", "",
+                                    pst_uid = userName,
+                                    username = userName,
+                                    nickname = userInfo?.text() ?: "",
+                                    avatar = image,
+                                    pst_content = doc.selectFirst("#entry_content")?.html() ?: "",
+                                    dateline = doc.selectFirst(".re_info")?.text()?.substringBefore('/')?.trim(' ')
+                                        ?: "",
+                                    model = "blog"
+                                )
+                            }
+                            if (!emitter.isDisposed) emitter.onNext(true)
+                        } else {
+                            replyPub.onNext(str)
                         }
-                        onUpdate(topic)
-                    } else {
-                        replyPub.onNext(str)
+                    }
+                    val lastData = ApiHelper.parseWithSax(rsp) { parser, str ->
+                        when {
+                            parser.eventType != XmlPullParser.START_TAG -> ApiHelper.SaxEventType.NOTHING
+                            parser.getAttributeValue("", "class")?.contains(Regex("row_reply|postTopic")) == true -> {
+                                updateReply(str())
+                                ApiHelper.SaxEventType.BEGIN
+                            }
+                            parser.getAttributeValue("", "id")?.contains("reply_wrapper") == true -> {
+                                updateReply(str())
+                                ApiHelper.SaxEventType.BEGIN
+                            }
+                            else -> ApiHelper.SaxEventType.NOTHING
+                        }
+                    }
+                    replyPub.onComplete()
+
+                    val doc = Jsoup.parse(beforeData + lastData)
+                    val error = doc.selectFirst("#reply_wrapper")?.selectFirst(".tip")
+                    val form = doc.selectFirst("#ReplyForm")
+                    topic.lastview = form?.selectFirst("input[name=lastview]")?.attr("value")
+                    topic.error = error?.text()?.let {
+                        Pair(it, Bangumi.parseUrl(error.selectFirst("a")?.attr("href") ?: ""))
+                    }
+                    topic.replies = observable.blockingIterable().flatten()
+                        .let { replies -> replies.sortedBy { it.floor } }
+                    if (!emitter.isDisposed) {
+                        emitter.onNext(false)
+                        emitter.onComplete()
                     }
                 }
-                val lastData = ApiHelper.parseWithSax(rsp) { parser, str ->
-                    when {
-                        parser.eventType != XmlPullParser.START_TAG -> ApiHelper.SaxEventType.NOTHING
-                        parser.getAttributeValue("", "class")?.contains(Regex("row_reply|postTopic")) == true -> {
-                            updateReply(str())
-                            ApiHelper.SaxEventType.BEGIN
-                        }
-                        parser.getAttributeValue("", "id")?.contains("reply_wrapper") == true -> {
-                            updateReply(str())
-                            ApiHelper.SaxEventType.BEGIN
-                        }
-                        else -> ApiHelper.SaxEventType.NOTHING
-                    }
-                }
-                replyPub.onComplete()
-
-                val doc = Jsoup.parse(beforeData + lastData)
-                val error = doc.selectFirst("#reply_wrapper")?.selectFirst(".tip")
-                val form = doc.selectFirst("#ReplyForm")
-                topic.lastview = form?.selectFirst("input[name=lastview]")?.attr("value")
-                topic.error = error?.text()?.let {
-                    Pair(it, Bangumi.parseUrl(error.selectFirst("a")?.attr("href") ?: ""))
-                }
-                topic.replies = observable.blockingIterable().flatten()
-                    .let { replies -> replies.sortedBy { it.floor } }
-                topic
             }
         }
 

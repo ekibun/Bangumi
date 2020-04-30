@@ -13,9 +13,9 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.base_dialog.view.*
 import kotlinx.android.synthetic.main.dialog_edit_subject.view.*
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
+import soko.ekibun.bangumi.ui.view.BaseActivity
 import soko.ekibun.bangumi.ui.view.BaseDialog
 import soko.ekibun.bangumi.ui.view.ShadowDecoration
 import soko.ekibun.bangumi.util.HttpUtil
@@ -50,6 +50,7 @@ class EditSubjectDialog : BaseDialog(R.layout.base_dialog) {
     lateinit var subject: Subject
     lateinit var collection: Collection
     lateinit var callback: () -> Unit
+
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View) {
         LayoutInflater.from(context).inflate(R.layout.dialog_edit_subject, view.layout_content)
@@ -63,9 +64,10 @@ class EditSubjectDialog : BaseDialog(R.layout.base_dialog) {
         val selectMap = mapOf(
             Collection.STATUS_WISH to R.id.radio_wish,
             Collection.STATUS_COLLECT to R.id.radio_collect,
-                Collection.STATUS_DO to R.id.radio_do,
-                Collection.STATUS_ON_HOLD to R.id.radio_hold,
-                Collection.STATUS_DROPPED to R.id.radio_dropped)
+            Collection.STATUS_DO to R.id.radio_do,
+            Collection.STATUS_ON_HOLD to R.id.radio_hold,
+            Collection.STATUS_DROPPED to R.id.radio_dropped
+        )
         view.findViewById<RadioButton>(selectMap[collection.status] ?: R.id.radio_collect)?.isChecked = true
         view.item_rating.rating = collection.rating.toFloat()
         view.item_tags.setText(collection.tag?.joinToString(" "))
@@ -75,24 +77,28 @@ class EditSubjectDialog : BaseDialog(R.layout.base_dialog) {
             view.item_tags.editableText.split(" ").contains(tag)
         }
         val myTagAdapter = TagAdapter(null, hasTag)
-        myTagAdapter.setNewData(collection.myTag?.map { it to 0 }?.toMutableList())
+        myTagAdapter.setNewInstance(collection.myTag?.map { it to 0 }?.toMutableList())
         view.item_my_tag_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
         ShadowDecoration.set(view.item_my_tag_list, drawEnd = true)
         view.item_my_tag_list.adapter = myTagAdapter
         myTagAdapter.setOnItemClickListener { _, _, position ->
             val tag = myTagAdapter.data[position].first
             if (!hasTag(tag)) view.item_tags.setText("${view.item_tags.editableText.trim()} $tag".trim())
-            else view.item_tags.setText(view.item_tags.editableText.trim().toString().replace(tag, "").replace("  ", " "))
+            else view.item_tags.setText(
+                view.item_tags.editableText.trim().toString().replace(tag, "").replace("  ", " ")
+            )
         }
         val userTagAdapter = TagAdapter(null, hasTag)
-        userTagAdapter.setNewData(subject.tags?.toMutableList())
+        userTagAdapter.setNewInstance(subject.tags?.toMutableList())
         view.item_user_tag_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
         ShadowDecoration.set(view.item_user_tag_list, drawEnd = true)
         view.item_user_tag_list.adapter = userTagAdapter
         userTagAdapter.setOnItemClickListener { _, _, position ->
             val tag = userTagAdapter.data[position].first
             if (!hasTag(tag)) view.item_tags.setText("${view.item_tags.editableText.trim()} $tag".trim())
-            else view.item_tags.setText(view.item_tags.editableText.trim().toString().replace(tag, "").replace("  ", " "))
+            else view.item_tags.setText(
+                view.item_tags.editableText.trim().toString().replace(tag, "").replace("  ", " ")
+            )
         }
         view.item_tags.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
@@ -110,28 +116,34 @@ class EditSubjectDialog : BaseDialog(R.layout.base_dialog) {
         view.item_remove.visibility = if (HttpUtil.formhash.isEmpty()) View.INVISIBLE else View.VISIBLE
         view.item_remove.setOnClickListener {
             AlertDialog.Builder(view.context).setTitle(R.string.collection_dialog_remove)
-                    .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
-                    Collection.remove(subject).subscribeOnUiThread({
-                        if (it) subject.collect = Collection()
-                        dismiss()
-                    })
-                    }.show()
+                .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
+                    (view.context as? BaseActivity)?.disposeContainer?.subscribeOnUiThread(
+                        Collection.remove(subject),
+                        {
+                            if (it) subject.collect = Collection()
+                            dismiss()
+                        }
+                    )
+                }.show()
         }
         view.item_submit.setOnClickListener {
-            Collection.updateStatus(
-                subject, Collection(
-                    status = selectMap.toList()
-                        .first { it.second == view.item_subject_status.checkedRadioButtonId }.first,
-                    rating = view.item_rating.rating.toInt(),
-                    comment = view.item_comment.text.toString(),
-                    private = if (view.item_private.isChecked) 1 else 0,
-                    tag = view.item_tags.editableText.split(" ")
-                )
-            ).subscribeOnUiThread({
-                subject.collect = it
-                callback()
-                dismiss()
-            })
+            (view.context as? BaseActivity)?.disposeContainer?.subscribeOnUiThread(
+                Collection.updateStatus(
+                    subject, Collection(
+                        status = selectMap.toList()
+                            .first { it.second == view.item_subject_status.checkedRadioButtonId }.first,
+                        rating = view.item_rating.rating.toInt(),
+                        comment = view.item_comment.text.toString(),
+                        private = if (view.item_private.isChecked) 1 else 0,
+                        tag = view.item_tags.editableText.split(" ")
+                    )
+                ),
+                {
+                    subject.collect = it
+                    callback()
+                    dismiss()
+                }
+            )
         }
 
         val paddingBottom = view.item_buttons.paddingBottom

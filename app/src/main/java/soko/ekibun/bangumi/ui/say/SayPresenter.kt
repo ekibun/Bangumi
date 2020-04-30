@@ -5,18 +5,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_topic.*
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.bean.Say
 import soko.ekibun.bangumi.model.DataCacheModel
 import soko.ekibun.bangumi.model.HistoryModel
 import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.ui.topic.ReplyDialog
 import soko.ekibun.bangumi.ui.web.WebActivity
-import soko.ekibun.bangumi.util.HtmlUtil
 import soko.ekibun.bangumi.util.HttpUtil
-import soko.ekibun.bangumi.util.JsonUtil
-import java.util.*
-import kotlin.collections.ArrayList
 
 class SayPresenter(private val context: SayActivity, say: Say) {
     val sayView = SayView(context)
@@ -34,26 +29,23 @@ class SayPresenter(private val context: SayActivity, say: Say) {
             getSay()
         }
         sayView.adapter.loadMoreModule.setOnLoadMoreListener { if (loadMoreFail == true) getSay() }
+
+        var draft: String? = null
+        context.btn_reply.setOnClickListener {
+            if (HttpUtil.formhash.isNotEmpty()) showReply(say, draft) { draft = it }
+            else WebActivity.launchUrl(context, say.url, "")
+        }
+        sayView.adapter.setOnItemChildClickListener { _, _, position ->
+            WebActivity.launchUrl(context, sayView.adapter.data[position].t.user.url, "")
+        }
+        sayView.adapter.setOnItemChildLongClickListener { _, _, position ->
+            showReply(say, "@${sayView.adapter.data[position].t.user.username} ") { draft = it }
+            true
+        }
     }
 
     fun updateHistory() {
-        HistoryModel.addHistory(
-            HistoryModel.History(
-                type = "say",
-                title = HtmlUtil.html2text(say.message ?: ""),
-                subTitle = say.user.nickname,
-                thumb = say.user.avatar,
-                data = JsonUtil.toJson(
-                    Say(
-                        id = say.id,
-                        user = say.user,
-                        message = say.message,
-                        time = say.time
-                    )
-                ),
-                timestamp = Calendar.getInstance().timeInMillis
-            )
-        )
+        HistoryModel.addHistory(say)
     }
 
     private var loadMoreFail: Boolean? = null
@@ -62,42 +54,37 @@ class SayPresenter(private val context: SayActivity, say: Say) {
         sayView.adapter.loadMoreModule.loadMoreComplete()
         loadMoreFail = null
         context.item_swipe.isRefreshing = true
-        Say.getSaySax(say, { data ->
-            context.runOnUiThread {
-                sayView.processSay(data, true)
-            }
-        }, { post ->
-            context.runOnUiThread {
-                val index = sayView.adapter.data.indexOfFirst { it.t.index == post.index }
-                if (index < 0) {
-                    val insertIndex = sayView.adapter.data.indexOfLast { it.t.index < post.index }
-                    sayView.adapter.addData(insertIndex + 1, SayAdapter.SaySection(false, post))
-                } else sayView.adapter.setData(index, SayAdapter.SaySection(false, post))
-            }
-        }).subscribeOnUiThread({ say ->
-            sayView.processSay(say)
-            dataCacheModel.set(say.cacheKey, say)
-            updateHistory()
-
-            var draft: String? = null
-            context.btn_reply.setOnClickListener {
-                if (HttpUtil.formhash.isNotEmpty()) showReply(say, draft) { draft = it }
-                else WebActivity.launchUrl(context, say.url, "")
-            }
-            sayView.adapter.setOnItemChildClickListener { _, _, position ->
-                WebActivity.launchUrl(context, sayView.adapter.data[position].t.user.url, "")
-            }
-            sayView.adapter.setOnItemChildLongClickListener { _, _, position ->
-                showReply(say, "@${sayView.adapter.data[position].t.user.username} ") { draft = it }
-                true
-            }
-
-        }, {
-            loadMoreFail = true
-            sayView.adapter.loadMoreModule.loadMoreFail()
-        }, {
-            context.item_swipe.isRefreshing = false
-        }, "say_sax")
+        context.disposeContainer.subscribeOnUiThread(
+            Say.getSaySax(say),
+            { data ->
+                when (data) {
+                    is Say.SayReply -> {
+                        sayView.processSay(say, true)
+                        listOf(data)
+                    }
+                    is List<*> -> data.map { it as Say.SayReply }
+                    is Say -> {
+                        sayView.processSay(say)
+                        dataCacheModel.set(say.cacheKey, say)
+                        updateHistory()
+                        null
+                    }
+                    else -> null
+                }?.forEach { post ->
+                    val index = sayView.adapter.data.indexOfFirst { it.t.index == post.index }
+                    if (index < 0) {
+                        val insertIndex = sayView.adapter.data.indexOfLast { it.t.index < post.index }
+                        sayView.adapter.addData(insertIndex + 1, SayAdapter.SaySection(false, post))
+                    } else sayView.adapter.setData(index, SayAdapter.SaySection(false, post))
+                }
+            }, {
+                loadMoreFail = true
+                sayView.adapter.loadMoreModule.loadMoreFail()
+            }, {
+                context.item_swipe.isRefreshing = false
+            },
+            key = SAY_CALL
+        )
     }
 
     private fun showReply(say: Say, draft: String?, updateDraft: (String?) -> Unit) {
@@ -108,27 +95,36 @@ class SayPresenter(private val context: SayActivity, say: Say) {
             draft = draft
         ) { content, _, send ->
             if (content != null && send) {
-                Say.reply(say, content).subscribeOnUiThread({
-                    if (it) {
-                        updateDraft(null)
-                        say.replies = (say.replies ?: ArrayList()).let { replies ->
-                            replies.plus(
-                                Say.SayReply(
-                                    user = self,
-                                    message = content,
-                                    index = replies.size
+                context.disposeContainer.subscribeOnUiThread(
+                    Say.reply(say, content),
+                    {
+                        if (it) {
+                            updateDraft(null)
+                            say.replies = (say.replies ?: ArrayList()).let { replies ->
+                                replies.plus(
+                                    Say.SayReply(
+                                        user = self,
+                                        message = content,
+                                        index = replies.size
+                                    )
                                 )
+                            }
+                            sayView.processSay(say)
+                            (context.item_list.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                                sayView.adapter.itemCount,
+                                0
                             )
-                        }
-                        sayView.processSay(say)
-                        (context.item_list.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-                            sayView.adapter.itemCount,
-                            0
-                        )
-                        getSay()
-                    } else Toast.makeText(context, R.string.hint_submit_error, Toast.LENGTH_LONG).show()
-                })
+                            getSay()
+                        } else Toast.makeText(context, R.string.hint_submit_error, Toast.LENGTH_LONG).show()
+                    },
+                    key = SAY_REPLY_CALL
+                )
             } else updateDraft(content)
         }
+    }
+
+    companion object {
+        const val SAY_CALL = "bangumi_say"
+        const val SAY_REPLY_CALL = "bangumi_say_reply"
     }
 }

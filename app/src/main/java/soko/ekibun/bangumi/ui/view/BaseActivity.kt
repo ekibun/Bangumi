@@ -8,8 +8,10 @@ import android.view.MenuItem
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AppCompatActivity
 import com.umeng.analytics.MobclickAgent
+import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.model.PluginsModel
 import soko.ekibun.bangumi.model.ThemeModel
+
 
 /**
  * 基础Activity
@@ -25,6 +27,8 @@ import soko.ekibun.bangumi.model.ThemeModel
  * @constructor
  */
 abstract class BaseActivity(@LayoutRes private val resId: Int) : AppCompatActivity() {
+    val disposeContainer = ApiHelper.DisposeContainer()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(resId)
@@ -50,6 +54,7 @@ abstract class BaseActivity(@LayoutRes private val resId: Int) : AppCompatActivi
     var onDestroyListener = {}
     override fun onDestroy() {
         super.onDestroy()
+        disposeContainer.dispose()
         Log.v("destroy", "${this.javaClass}")
         onDestroyListener()
     }

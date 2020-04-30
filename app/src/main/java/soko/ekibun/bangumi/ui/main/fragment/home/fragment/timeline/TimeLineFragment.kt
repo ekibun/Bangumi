@@ -8,11 +8,11 @@ import android.widget.Toast
 import androidx.appcompat.widget.PopupMenu
 import kotlinx.android.synthetic.main.fragment_timeline.*
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.bean.TimeLine
 import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.HomeTabFragment
 import soko.ekibun.bangumi.ui.topic.ReplyDialog
+import soko.ekibun.bangumi.ui.view.BaseActivity
 import soko.ekibun.bangumi.util.ResourceUtil
 
 /**
@@ -101,14 +101,17 @@ class TimeLineFragment : HomeTabFragment(R.layout.fragment_timeline) {
                     draft = draft
                 ) { content, _, send ->
                     if (content != null && send) {
-                        TimeLine.addComment(content).subscribeOnUiThread({
-                            if (it) {
-                                draft = null
-                                if (item_pager?.currentItem ?: 2 !in 0..1) item_pager?.currentItem = 1
-                                adapter.pageIndex[item_pager?.currentItem ?: 0] = 0
-                                adapter.loadTopicList()
-                            } else Toast.makeText(activity, R.string.hint_submit_error, Toast.LENGTH_LONG).show()
-                        })
+                        (activity as? BaseActivity)?.disposeContainer?.subscribeOnUiThread(
+                            TimeLine.addComment(content),
+                            {
+                                if (it) {
+                                    draft = null
+                                    if (item_pager?.currentItem ?: 2 !in 0..1) item_pager?.currentItem = 1
+                                    adapter.pageIndex[item_pager?.currentItem ?: 0] = 0
+                                    adapter.loadTopicList()
+                                } else Toast.makeText(activity, R.string.hint_submit_error, Toast.LENGTH_LONG).show()
+                            }
+                        )
                     } else draft = content
                 }
                 true

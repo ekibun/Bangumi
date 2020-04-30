@@ -4,6 +4,7 @@ import android.view.View
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseSectionQuickAdapter
 import com.chad.library.adapter.base.entity.SectionEntity
+import com.chad.library.adapter.base.module.LoadMoreModule
 import com.chad.library.adapter.base.viewholder.BaseViewHolder
 import com.oubowu.stickyitemdecoration.StickyHeadContainer
 import com.oubowu.stickyitemdecoration.StickyItemDecoration
@@ -11,27 +12,27 @@ import kotlinx.android.synthetic.main.item_calendar.view.*
 import kotlinx.android.synthetic.main.item_episode_header.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Images
-import soko.ekibun.bangumi.model.HistoryModel
+import soko.ekibun.bangumi.model.history.History
 import soko.ekibun.bangumi.util.GlideUtil
 
-class HistoryAdapter(data: MutableList<History>? = null) :
-    BaseSectionQuickAdapter<HistoryAdapter.History, BaseViewHolder>
-        (R.layout.item_episode_header, R.layout.item_calendar, data) {
+class HistoryAdapter(data: MutableList<HistorySection>? = null) :
+    BaseSectionQuickAdapter<HistoryAdapter.HistorySection, BaseViewHolder>
+        (R.layout.item_episode_header, R.layout.item_calendar, data), LoadMoreModule {
 
-    class History(override val isHeader: Boolean) : SectionEntity {
+    class HistorySection(override val isHeader: Boolean) : SectionEntity {
         var header = ""
-        var t: HistoryModel.History? = null
+        var t: History? = null
 
         constructor(header: String) : this(true) {
             this.header = header
         }
 
-        constructor(t: HistoryModel.History) : this(false) {
+        constructor(t: History) : this(false) {
             this.t = t
         }
     }
 
-    override fun convertHeader(helper: BaseViewHolder, item: History) {
+    override fun convertHeader(helper: BaseViewHolder, item: HistorySection) {
         helper.setText(R.id.item_header, item.header)
     }
 
@@ -43,7 +44,7 @@ class HistoryAdapter(data: MutableList<History>? = null) :
         recyclerView.addItemDecoration(StickyItemDecoration(container, SectionEntity.HEADER_TYPE))
     }
 
-    override fun convert(holder: BaseViewHolder, item: History) {
+    override fun convert(holder: BaseViewHolder, item: HistorySection) {
         holder.setText(R.id.item_title, item.t?.title)
         holder.setText(R.id.item_ep_name, item.t?.subTitle)
         GlideUtil.with(holder.itemView.item_cover)

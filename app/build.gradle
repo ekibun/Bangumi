@@ -4,6 +4,8 @@ apply plugin: 'kotlin-android'
 
 apply plugin: 'kotlin-android-extensions'
 
+apply plugin: 'kotlin-kapt'
+
 def cmd = 'git rev-list HEAD --count'
 def gitVersion = cmd.execute().text.trim().toInteger()
 
@@ -28,11 +30,20 @@ android {
         versionName getAlphaVersionName()
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         buildConfigField "boolean", "AUTO_UPDATES", "true"
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
+        }
     }
 
     compileOptions{
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = "1.8"
     }
 
     buildTypes {
@@ -54,8 +65,13 @@ android {
 }
 
 dependencies {
+    def room_version = "2.2.3"
+
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "androidx.room:room-runtime:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
+    implementation "androidx.room:room-rxjava2:$room_version"
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.core:core-ktx:1.1.0'
     implementation 'androidx.preference:preference:1.1.0'
@@ -68,16 +84,15 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'org.jsoup:jsoup:1.11.2'
     implementation 'com.github.bumptech.glide:glide:4.10.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.10.0'
+    kapt 'com.github.bumptech.glide:compiler:4.10.0'
     implementation 'com.zlc.glide:webpdecoder:1.6.4.10.0'
     implementation 'com.github.bumptech.glide:okhttp3-integration:4.10.0'
     implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.3'
     implementation 'com.squareup.okhttp3:okhttp:4.2.2'
     implementation 'com.squareup.okhttp3:okhttp-brotli:4.2.1'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.2.2'
-    implementation 'com.github.akarnokd:rxjava3-retrofit-adapter:3.0.0'
-    implementation 'io.reactivex.rxjava3:rxjava:3.0.2'
-    implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
+    implementation "io.reactivex.rxjava2:rxjava:2.2.19"
+    implementation "io.reactivex.rxjava2:rxandroid:2.1.1"
     implementation 'jp.wasabeef:glide-transformations:4.0.1'
     implementation 'com.github.siyamed:android-shape-imageview:0.9.3'
     implementation 'com.zhy:base-adapter:3.0.3'

@@ -5,11 +5,11 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.disposables.Disposable
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.ui.topic.TopicActivity
+import soko.ekibun.bangumi.ui.view.BaseActivity
 import soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
 import soko.ekibun.bangumi.ui.view.ShadowDecoration
 
@@ -92,23 +92,28 @@ class RakuenPagerAdapter(
      */
     fun loadTopicList(position: Int = pager.currentItem) {
         val item = items[position] ?: return
+        val disposeContainer = (fragment.activity as? BaseActivity)?.disposeContainer ?: return
         item.first.isUseEmpty = false
         topicCall[position]?.dispose()
         item.second.isRefreshing = true
-        topicCall[position] = Topic.getList(
-            if (position == 1) when (fragment.selectedFilter) {
-                R.id.topic_filter_join -> "my_group"
-                R.id.topic_filter_post -> "my_group&filter=topic"
-                R.id.topic_filter_reply -> "my_group&filter=reply"
-                else -> "group"
-            } else listOf("", "group", "subject", "ep", "mono")[position]
-        ).subscribeOnUiThread({
-            item.first.isUseEmpty = true
-            item.first.setNewInstance(it.toMutableList())
-            (item.second.tag as? androidx.recyclerview.widget.RecyclerView)?.tag = true
-        }, onComplete = {
-            item.second.isRefreshing = false
-        })
+        disposeContainer.subscribeOnUiThread(
+            Topic.getList(
+                if (position == 1) when (fragment.selectedFilter) {
+                    R.id.topic_filter_join -> "my_group"
+                    R.id.topic_filter_post -> "my_group&filter=topic"
+                    R.id.topic_filter_reply -> "my_group&filter=reply"
+                    else -> "group"
+                } else listOf("", "group", "subject", "ep", "mono")[position]
+            ),
+            {
+                item.first.isUseEmpty = true
+                item.first.setNewInstance(it.toMutableList())
+                (item.second.tag as? androidx.recyclerview.widget.RecyclerView)?.tag = true
+            }, onComplete = {
+                item.second.isRefreshing = false
+            },
+            key = RAKUEN_CALL_PREFIX + position
+        )
     }
 
     override fun getPageTitle(pos: Int): CharSequence {
@@ -127,4 +132,7 @@ class RakuenPagerAdapter(
         container.removeView(`object` as View)
     }
 
+    companion object {
+        private const val RAKUEN_CALL_PREFIX = "bangumi_rakuen_"
+    }
 }

@@ -2,7 +2,7 @@ package soko.ekibun.bangumi.api.bangumi.bean
 
 import androidx.annotation.ArrayRes
 import androidx.annotation.StringDef
-import io.reactivex.rxjava3.core.Observable
+import io.reactivex.Observable
 import okhttp3.FormBody
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper

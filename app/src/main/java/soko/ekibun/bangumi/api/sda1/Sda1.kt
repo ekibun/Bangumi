@@ -1,6 +1,6 @@
 package soko.ekibun.bangumi.api.sda1
 
-import io.reactivex.rxjava3.core.Observable
+import io.reactivex.Observable
 import okhttp3.RequestBody
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.sda1.bean.Response

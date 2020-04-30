@@ -29,6 +29,7 @@ class NestedWebView @JvmOverloads constructor(
 
     var onProgressChanged = { _: WebView, _: Int -> }
     var shouldOverrideUrlLoading = { _: WebView, _: String -> false }
+    var shouldInterceptRequest: (WebView, String) -> WebResourceResponse? = { _, _ -> null }
     var onReceivedTitle = { _: WebView?, _: String? -> }
 
     var onShowFileChooser = { _: ValueCallback<Array<Uri>>?, _: WebChromeClient.FileChooserParams? -> false }
@@ -174,6 +175,11 @@ class NestedWebView @JvmOverloads constructor(
                 useDeprecatedMethod = false
                 return ((view as? NestedWebView)?.shouldOverrideUrlLoading?.invoke(view, request.url.toString())
                     ?: false) || super.shouldOverrideUrlLoading(view, request)
+            }
+
+            override fun shouldInterceptRequest(view: WebView?, request: WebResourceRequest): WebResourceResponse? {
+                return (view as? NestedWebView)?.shouldInterceptRequest?.invoke(view, request.url.toString())
+                    ?: super.shouldInterceptRequest(view, request)
             }
 
             override fun onScaleChanged(view: WebView, oldScale: Float, newScale: Float) {

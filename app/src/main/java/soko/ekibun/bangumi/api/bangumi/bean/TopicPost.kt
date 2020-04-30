@@ -2,7 +2,7 @@ package soko.ekibun.bangumi.api.bangumi.bean
 
 import com.chad.library.adapter.base.entity.node.BaseExpandNode
 import com.chad.library.adapter.base.entity.node.BaseNode
-import io.reactivex.rxjava3.core.Observable
+import io.reactivex.Observable
 import okhttp3.FormBody
 import org.jsoup.nodes.Element
 import soko.ekibun.bangumi.api.ApiHelper

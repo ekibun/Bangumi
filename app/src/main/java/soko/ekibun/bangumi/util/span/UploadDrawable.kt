@@ -4,11 +4,11 @@ import android.net.Uri
 import android.util.Log
 import android.util.Size
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
-import io.reactivex.rxjava3.core.Observable
+import io.reactivex.Observable
 import okhttp3.RequestBody
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
+import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.sda1.Sda1
 import soko.ekibun.bangumi.util.FileRequestBody
@@ -56,27 +56,34 @@ class UploadDrawable(
                 }
             }
 
-            when (App.app.sp.getString(
-                "image_uploader",
-                "p.sda1.dev"
-            )) {
-                "lain.bgm.tv" -> Bangumi.uploadImage(fileRequestBody, fileName)
-                else -> Sda1.uploadImage(fileRequestBody, fileName)
-            }.flatMap {
-                if (it.isNullOrEmpty()) Observable.error(IllegalAccessException("Image Response Empty!"))
-                else Observable.just(it)
-            }.subscribeOnUiThread({ imgUrl ->
-                Log.v("rspurl", imgUrl)
-                url = imgUrl
-                onUploaded(imgUrl)
-                loadImage()
-            }, {
-                error = true
-                it.printStackTrace()
-                errorDrawable?.let { drawable -> update(drawable) }
-            }, {
-                if (circularProgressDrawable.isRunning) circularProgressDrawable.stop()
-            })
+            disposeContainer.subscribeOnUiThread(
+                when (App.app.sp.getString(
+                    "image_uploader",
+                    "p.sda1.dev"
+                )) {
+                    "lain.bgm.tv" -> Bangumi.uploadImage(fileRequestBody, fileName)
+                    else -> Sda1.uploadImage(fileRequestBody, fileName)
+                }.flatMap {
+                    if (it.isEmpty()) Observable.error(IllegalAccessException("Image Response Empty!"))
+                    else Observable.just(it)
+                },
+                { imgUrl ->
+                    Log.v("rspurl", imgUrl)
+                    url = imgUrl
+                    onUploaded(imgUrl)
+                    loadImage()
+                }, {
+                    error = true
+                    it.printStackTrace()
+                    errorDrawable?.let { drawable -> update(drawable) }
+                }, {
+                    if (circularProgressDrawable.isRunning) circularProgressDrawable.stop()
+                }
+            )
         }
+    }
+
+    companion object {
+        private val disposeContainer = ApiHelper.DisposeContainer()
     }
 }

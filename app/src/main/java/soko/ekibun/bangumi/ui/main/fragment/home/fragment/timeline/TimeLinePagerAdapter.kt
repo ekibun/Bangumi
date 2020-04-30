@@ -6,9 +6,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper.subscribeOnUiThread
 import soko.ekibun.bangumi.api.bangumi.bean.TimeLine
 import soko.ekibun.bangumi.model.UserModel
+import soko.ekibun.bangumi.ui.view.BaseActivity
 import soko.ekibun.bangumi.ui.view.FixSwipeRefreshLayout
 import soko.ekibun.bangumi.ui.view.ShadowDecoration
 
@@ -89,44 +89,40 @@ class TimeLinePagerAdapter(
      */
     fun loadTopicList(position: Int = pager.currentItem) {
         val item = items[position] ?: return
+        val disposeContainer = (fragment.activity as? BaseActivity)?.disposeContainer ?: return
         item.first.isUseEmpty = false
         val page = pageIndex.getOrPut(position) { 0 }
         if (page == 0) {
             item.second.isRefreshing = true
             item.first.setNewInstance(null)
         }
-        TimeLine.getList(
-            listOf(
-                "all",
-                "say",
-                "subject",
-                "progress",
-                "blog",
-                "mono",
-                "relation",
-                "group",
-                "wiki",
-                "index",
-                "doujin"
-            )[position],
-            page + 1,
-            if (fragment.selectedType == R.id.timeline_type_self) UserModel.current() else null,
-            fragment.selectedType == R.id.timeline_type_all
-        ).subscribeOnUiThread({ _list ->
-            item.first.isUseEmpty = true
-            val list = _list.toMutableList()
-            if (list.isNotEmpty() && item.first.data.lastOrNull { it.isHeader }?.header == list.getOrNull(0)?.header)
-                list.removeAt(0)
-            item.first.addData(list)
-            if (list.isEmpty() || fragment.selectedType == R.id.timeline_type_all) item.first.loadMoreModule.loadMoreEnd()
-            else item.first.loadMoreModule.loadMoreComplete()
-            (item.second.tag as? androidx.recyclerview.widget.RecyclerView)?.tag = true
-            pageIndex[position] = (pageIndex[position] ?: 0) + 1
-        }, {
-            item.first.loadMoreModule.loadMoreFail()
-        }, {
-            item.second.isRefreshing = false
-        })
+        disposeContainer.subscribeOnUiThread(
+            TimeLine.getList(
+                listOf(
+                    "all", "say", "subject", "progress", "blog", "mono",
+                    "relation", "group", "wiki", "index", "doujin"
+                )[position],
+                page + 1,
+                if (fragment.selectedType == R.id.timeline_type_self) UserModel.current() else null,
+                fragment.selectedType == R.id.timeline_type_all
+            ),
+            { _list ->
+                item.first.isUseEmpty = true
+                val list = _list.toMutableList()
+                if (list.isNotEmpty() && item.first.data.lastOrNull { it.isHeader }?.header == list.getOrNull(0)?.header)
+                    list.removeAt(0)
+                item.first.addData(list)
+                if (list.isEmpty() || fragment.selectedType == R.id.timeline_type_all) item.first.loadMoreModule.loadMoreEnd()
+                else item.first.loadMoreModule.loadMoreComplete()
+                (item.second.tag as? androidx.recyclerview.widget.RecyclerView)?.tag = true
+                pageIndex[position] = (pageIndex[position] ?: 0) + 1
+            }, {
+                item.first.loadMoreModule.loadMoreFail()
+            }, {
+                item.second.isRefreshing = false
+            },
+            key = TIMELINE_CALL_PREFIX + position
+        )
     }
 
     override fun getPageTitle(pos: Int): CharSequence{
@@ -145,4 +141,7 @@ class TimeLinePagerAdapter(
         container.removeView(`object` as View)
     }
 
+    companion object {
+        private const val TIMELINE_CALL_PREFIX = "bangumi_timeline_"
+    }
 }

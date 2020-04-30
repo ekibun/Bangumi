@@ -1,7 +1,7 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
 import com.chad.library.adapter.base.entity.SectionEntity
-import io.reactivex.rxjava3.core.Observable
+import io.reactivex.Observable
 import okhttp3.FormBody
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
