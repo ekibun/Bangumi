@@ -1,6 +1,7 @@
 package soko.ekibun.bangumi.model
 
 import androidx.room.Room
+import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
 import soko.ekibun.bangumi.App
@@ -19,6 +20,23 @@ import java.util.*
 object HistoryModel {
     private val historyDao by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         Room.databaseBuilder(App.app, HistoryDatabase::class.java, "history.sqlite").build().historyDao()
+    }
+
+    @Deprecated("TODO 升级数据用，过几个版本删掉")
+    fun migrateIntoSql() {
+        val oldData = JsonUtil.toEntity<List<History>>(App.app.sp.getString("history", "") ?: "")
+        if (oldData.isNullOrEmpty()) return
+        historyDao.insert(oldData.mapNotNull {
+            History(
+                when (it.type) {
+                    "subject" -> JsonUtil.toEntity<Subject>(it.data)?.cacheKey
+                    "topic" -> JsonUtil.toEntity<Topic>(it.data)?.cacheKey
+                    "say" -> JsonUtil.toEntity<Say>(it.data)?.cacheKey
+                    else -> null
+                } ?: return@mapNotNull null, it.timestamp, it.type, it.thumb, it.title, it.subTitle, it.data
+            )
+        }).subscribeOn(Schedulers.io()).subscribe()
+        App.app.sp.edit().remove("history").apply()
     }
 
     private fun createHistory(obj: Any): History? {
@@ -80,14 +98,14 @@ object HistoryModel {
      * @param data String
      * @return Boolean
      */
-    fun removeHistory(data: History) {
-        historyDao.delete(data).subscribeOn(Schedulers.io()).subscribe()
+    fun removeHistory(data: History): Completable {
+        return historyDao.delete(data).subscribeOn(Schedulers.io())
     }
 
     /**
      * 清除
      */
-    fun clearHistory() {
-        historyDao.deleteAll().subscribeOn(Schedulers.io()).subscribe()
+    fun clearHistory(): Completable {
+        return historyDao.deleteAll().subscribeOn(Schedulers.io())
     }
 }

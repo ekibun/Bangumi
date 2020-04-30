@@ -11,10 +11,7 @@ import com.chad.library.adapter.base.module.LoadMoreModuleConfig
 import com.chad.library.adapter.base.util.getItemView
 import com.chad.library.adapter.base.viewholder.BaseViewHolder
 import com.umeng.commonsdk.UMConfigure
-import soko.ekibun.bangumi.model.DataCacheModel
-import soko.ekibun.bangumi.model.PluginsModel
-import soko.ekibun.bangumi.model.ThemeModel
-import soko.ekibun.bangumi.model.UserModel
+import soko.ekibun.bangumi.model.*
 import soko.ekibun.bangumi.util.HttpUtil
 
 /**
@@ -32,6 +29,8 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         app = this
+        HistoryModel.migrateIntoSql()
+
 
         HttpUtil.formhash = UserModel.userList.let { it.users[it.current] }?.formhash ?: HttpUtil.formhash
         ThemeModel.setTheme(this, ThemeModel.getTheme())

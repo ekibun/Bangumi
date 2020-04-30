@@ -36,15 +36,23 @@ class HistoryFragment : DrawerFragment(R.layout.content_history) {
         adapter.setOnItemChildClickListener { _, _, position ->
             AlertDialog.Builder(view.context).setMessage(R.string.history_dialog_remove)
                 .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
-                    HistoryModel.removeHistory(adapter.data[position].t!!)
-                    updateHistory(0)
+                    (activity as BaseActivity).disposeContainer.subscribeOnUiThread(
+                        HistoryModel.removeHistory(adapter.data[position].t!!).toObservable<Unit>(), {},
+                        onComplete = {
+                            updateHistory(0)
+                        }
+                    )
                 }.show()
         }
         item_clear_history?.setOnClickListener {
             AlertDialog.Builder(view.context).setMessage(R.string.history_dialog_clear)
                 .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
-                    HistoryModel.clearHistory()
-                    updateHistory(0)
+                    (activity as BaseActivity).disposeContainer.subscribeOnUiThread(
+                        HistoryModel.clearHistory().toObservable<Unit>(), {},
+                        onComplete = {
+                            updateHistory(0)
+                        }
+                    )
                 }.show()
 
         }
@@ -74,6 +82,7 @@ class HistoryFragment : DrawerFragment(R.layout.content_history) {
                     dateString = it.dateString
                 }
                 adapter.isUseEmpty = true
+                if (adapter.data.isEmpty()) adapter.notifyDataSetChanged()
                 item_swipe?.isRefreshing = false
                 item_clear_history?.visibility = if (adapter.data.size > 0) View.VISIBLE else View.INVISIBLE
                 if (list.isEmpty()) adapter.loadMoreModule.loadMoreEnd()

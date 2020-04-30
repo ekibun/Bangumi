@@ -13,6 +13,9 @@ interface HistoryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(history: History): Completable
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(history: List<History>): Completable
+
     @Delete
     fun delete(history: History): Completable
 
