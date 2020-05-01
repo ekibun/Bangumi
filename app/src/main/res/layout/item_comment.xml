@@ -11,7 +11,7 @@
         android:paddingStart="12dp"
         android:paddingEnd="12dp"
         android:clickable="true"
-        android:background="@drawable/bg_selectable"
+        android:background="?selectableItemBackground"
         android:focusable="true"
         android:transitionName="container"
         tools:ignore="RtlHardcoded,HardcodedText">

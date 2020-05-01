@@ -8,7 +8,7 @@
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
         tools:context=".ui.web.WebActivity"
-        android:background="?colorPrimaryBackground">
+        tools:background="?colorPrimaryBackground">
 
     <include
             android:id="@+id/app_bar"

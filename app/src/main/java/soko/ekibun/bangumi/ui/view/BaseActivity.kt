@@ -1,6 +1,7 @@
 package soko.ekibun.bangumi.ui.view
 
 import android.content.Intent
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
@@ -8,9 +9,11 @@ import android.view.MenuItem
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AppCompatActivity
 import com.umeng.analytics.MobclickAgent
+import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.model.PluginsModel
 import soko.ekibun.bangumi.model.ThemeModel
+import soko.ekibun.bangumi.util.ResourceUtil
 
 
 /**
@@ -31,6 +34,7 @@ abstract class BaseActivity(@LayoutRes private val resId: Int) : AppCompatActivi
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.setBackgroundDrawable(ColorDrawable(ResourceUtil.resolveColorAttr(this, R.attr.colorPrimaryBackground)))
         setContentView(resId)
 
         ThemeModel.updateNavigationTheme(this)

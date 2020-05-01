@@ -75,12 +75,6 @@ class SayAdapter(data: MutableList<SaySection>? = null) :
         }
         holder.itemView.item_user.text = item.t.user.name
 
-        if (holder.adapterPosition == 0) holder.setBackgroundResource(R.id.item_layout, R.drawable.bg_round_dialog)
-        else holder.setBackgroundColor(
-            R.id.item_layout,
-            ResourceUtil.resolveColorAttr(holder.itemView.context, android.R.attr.colorBackground)
-        )
-
         updateAvatar(holder.itemView.item_avatar, item)
         val isSelf = item.t.user.username == UserModel.current()?.username
         val showAvatar = item.isHeader

@@ -1,14 +1,16 @@
 package soko.ekibun.bangumi.ui.topic
 
 import android.graphics.Rect
+import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.google.android.material.appbar.AppBarLayout
-import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_topic.*
 import kotlinx.android.synthetic.main.appbar_layout.*
 import soko.ekibun.bangumi.R
@@ -16,6 +18,8 @@ import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
 import soko.ekibun.bangumi.ui.view.CollapsibleAppBarHelper
+import soko.ekibun.bangumi.ui.view.DimBlurTransform
+import soko.ekibun.bangumi.ui.view.RoundBackgroundDecoration
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.ResourceUtil
@@ -79,6 +83,8 @@ class TopicView(private val context: TopicActivity) {
         context.item_list.nestedScrollDistance = {
             -collapsibleAppBarHelper.appBarOffset
         }
+
+        context.item_list.addItemDecoration(RoundBackgroundDecoration())
 
         context.item_list.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
@@ -147,17 +153,26 @@ class TopicView(private val context: TopicActivity) {
             link.first
         })
 
-        GlideUtil.with(context.item_cover_blur)
+        GlideUtil.with(context)
             ?.load(Images.getImage(topic.image))
             ?.apply(
                 RequestOptions.bitmapTransform(
-                    BlurTransformation(
+                    DimBlurTransform(
                         25,
-                        8
+                        8,
+                        100
                     )
-                ).placeholder(context.item_cover_blur.drawable)
+                )
             )
-            ?.into(context.item_cover_blur)
+            ?.into(object : CustomTarget<Drawable>() {
+                override fun onLoadCleared(placeholder: Drawable?) {
+                    context.window.setBackgroundDrawable(placeholder)
+                }
+
+                override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
+                    context.window.setBackgroundDrawable(resource)
+                }
+            })
 
         adapter.setOnItemChildClickListener { _, v, position ->
             onItemClick(v, position)

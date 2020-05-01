@@ -2,6 +2,8 @@ package soko.ekibun.bangumi.util
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import androidx.preference.PreferenceViewHolder
 import androidx.preference.SwitchPreference
 import kotlinx.android.synthetic.main.pref_plugin_widget.view.*
@@ -22,16 +24,12 @@ class PluginPreference(context: Context?, private val plugin: Map.Entry<Context,
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
         super.onBindViewHolder(holder)
         holder.itemView.item_settings.setOnClickListener {
-            showPreference()
-        }
-    }
-
-    private fun showPreference() {
-        context.startActivity(
-            Intent.createChooser(
-                Intent("soko.ekibun.bangumi.plugins.setting").setPackage(plugin.key.packageName),
-                plugin.key.packageName
+            context.startActivity(
+                Intent(
+                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                    Uri.parse("package:" + plugin.key.packageName)
+                )
             )
-        )
+        }
     }
 }

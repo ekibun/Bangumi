@@ -7,6 +7,7 @@
         android:fitsSystemWindows="true"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        tools:background="?colorPrimaryBackground"
         tools:openDrawer="start">
     <LinearLayout
             android:layout_width="match_parent"
@@ -25,15 +26,14 @@
                 android:fitsSystemWindows="true"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:background="?colorPrimaryBackground">
+                android:orientation="vertical">
 
             <com.google.android.material.appbar.AppBarLayout
                     app:layout_constraintTop_toTopOf="parent"
                     android:id="@+id/app_bar"
                     android:layout_height="wrap_content"
                     android:layout_width="match_parent"
-                    android:background="?colorPrimaryBackground"
+                    android:background="@null"
                     android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
                     app:elevation="0dp">
 

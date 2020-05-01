@@ -29,7 +29,7 @@
                 android:padding="4dp"
                 android:clickable="true"
                 android:focusable="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:background="?selectableItemBackgroundBorderless"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 android:layout_marginTop="8dp"

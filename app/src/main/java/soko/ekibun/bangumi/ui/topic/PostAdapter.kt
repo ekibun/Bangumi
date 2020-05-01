@@ -20,7 +20,6 @@ import soko.ekibun.bangumi.ui.view.FastScrollRecyclerView
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.HtmlUtil
-import soko.ekibun.bangumi.util.ResourceUtil
 import soko.ekibun.bangumi.util.span.ClickableUrlSpan
 import java.util.*
 import kotlin.collections.HashMap
@@ -60,12 +59,6 @@ class PostAdapter() :
                 it.addOnClickListener(helper, R.id.item_avatar)
             }
             if (item !is TopicPost) return
-            // 第一项是圆角布局
-            if (helper.adapterPosition == 0) helper.setBackgroundResource(R.id.item_layout, R.drawable.bg_round_dialog)
-            else helper.setBackgroundColor(
-                R.id.item_layout,
-                ResourceUtil.resolveColorAttr(helper.itemView.context, android.R.attr.colorBackground)
-            )
             // 用户
             helper.itemView.item_user.text =
                 if (item.badge.isNullOrEmpty()) item.nickname else "${item.nickname} ${item.pst_content}"

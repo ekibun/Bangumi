@@ -2,11 +2,14 @@ package soko.ekibun.bangumi.ui.subject
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
+import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import jp.wasabeef.glide.transformations.BlurTransformation
@@ -26,9 +29,11 @@ import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.topic.PhotoPagerAdapter
 import soko.ekibun.bangumi.ui.view.CollapsibleAppBarHelper
+import soko.ekibun.bangumi.ui.view.RoundBackgroundDecoration
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.HttpUtil
+import soko.ekibun.bangumi.util.ResourceUtil
 import soko.ekibun.bangumi.util.TimeUtil
 
 /**
@@ -219,6 +224,7 @@ class SubjectView(private val context: SubjectActivity) {
         detail.site_list.isNestedScrollingEnabled = false
 
         context.item_list.adapter = commentAdapter
+        context.item_list.addItemDecoration(RoundBackgroundDecoration(ResourceUtil.toPixels(16f)))
         context.item_list.layoutManager = LinearLayoutManager(context)
         commentAdapter.setHeaderView(detail)
     }
@@ -316,7 +322,7 @@ class SubjectView(private val context: SubjectActivity) {
                     listOf(detail.item_cover.drawable)
                 )
             }
-            GlideUtil.with(context.item_cover_blur)
+            GlideUtil.with(context)
                 ?.load(Images.getImage(subject.image))
                 ?.apply(
                     RequestOptions.bitmapTransform(
@@ -324,9 +330,16 @@ class SubjectView(private val context: SubjectActivity) {
                             25,
                             8
                         )
-                    ).placeholder(context.item_cover_blur.drawable)
-                )
-                ?.into(context.item_cover_blur)
+                    )
+                )?.into(object : CustomTarget<Drawable>() {
+                    override fun onLoadCleared(placeholder: Drawable?) {
+                        context.window.setBackgroundDrawable(placeholder)
+                    }
+
+                    override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
+                        context.window.setBackgroundDrawable(resource)
+                    }
+                })
         }
 
         if (tag == null || tag == Subject.SaxTag.EPISODES)
