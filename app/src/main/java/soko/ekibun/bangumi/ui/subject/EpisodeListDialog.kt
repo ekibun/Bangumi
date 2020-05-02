@@ -97,7 +97,7 @@ class EpisodeListDialog : BaseDialog(R.layout.dialog_episode_list) {
             }
             popupMenu.setOnMenuItemClickListener { menu ->
                 val newStatus = progressMap[menu.itemId]
-                presenter.updateProgress(eps.mapNotNull { it.t }, newStatus)
+                presenter.updateProgress(eps.mapNotNull { it.t }, newStatus) {}
                 true
             }
             popupMenu.show()
@@ -111,7 +111,7 @@ class EpisodeListDialog : BaseDialog(R.layout.dialog_episode_list) {
         }
 
         adapter.setOnItemChildLongClickListener { _, _, position ->
-            val ep = adapter.data[position]?.t
+            val ep = adapter.data[position].t
             if (ep?.type == Episode.TYPE_MUSIC) {
                 presenter.showEpisodeDialog(ep.id)
                 true
@@ -119,7 +119,7 @@ class EpisodeListDialog : BaseDialog(R.layout.dialog_episode_list) {
         }
 
         adapter.setOnItemChildClickListener { _, _, position ->
-            val ep = adapter.data[position]?.t
+            val ep = adapter.data[position].t
             if (ep?.type == Episode.TYPE_MUSIC || adapter.clickListener(position))
                 ep?.let { presenter.showEpisodeDialog(it.id) }
         }

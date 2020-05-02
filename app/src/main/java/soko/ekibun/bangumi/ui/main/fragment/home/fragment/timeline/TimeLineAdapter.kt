@@ -44,7 +44,7 @@ class TimeLineAdapter(data: MutableList<TimeLine>? = null) :
         holder.itemView.item_del.setOnClickListener {
             AlertDialog.Builder(holder.itemView.context).setMessage(R.string.timeline_dialog_remove)
                 .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
-                    (holder.itemView.context as? BaseActivity)?.disposeContainer?.subscribeOnUiThread(
+                    (holder.itemView.context as BaseActivity).disposeContainer.subscribeOnUiThread(
                         ApiHelper.createHttpObservable(
                             "${item.t?.delUrl}&ajax=1"
                         ).map { rsp ->

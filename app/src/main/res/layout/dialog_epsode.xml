@@ -34,7 +34,7 @@
                 android:textColor="@color/color_checkable_white"
                 android:background="@drawable/bg_round_checkable"
                 android:padding="8dp"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/radio_watch"
                 android:layout_weight="1"/>
@@ -45,7 +45,7 @@
                 android:textColor="@color/color_checkable_white"
                 android:background="@drawable/bg_round_checkable"
                 android:padding="8dp"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/radio_watch_to"
                 android:layout_weight="1"/>
@@ -56,7 +56,7 @@
                 android:textColor="@color/color_checkable_white"
                 android:background="@drawable/bg_round_checkable"
                 android:padding="8dp"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/radio_queue"
                 android:layout_weight="1"/>
@@ -67,7 +67,7 @@
                 android:textColor="@color/color_checkable_white"
                 android:background="@drawable/bg_round_checkable"
                 android:padding="8dp"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/radio_drop"
                 android:layout_weight="1"/>
@@ -78,7 +78,7 @@
                 android:textColor="@color/color_checkable_white"
                 android:background="@drawable/bg_round_checkable"
                 android:padding="8dp"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/radio_remove"
                 android:layout_weight="1"/>

@@ -166,8 +166,8 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
             episode,
             eps.subList(0, episodeIndex + 1).filter { it.progress != Episode.PROGRESS_DROP },
             subject.onair
-        ) { mEps, status ->
-            updateProgress(mEps, status)
+        ) { mEps, status, onComplete ->
+            updateProgress(mEps, status, onComplete)
         }
     }
 
@@ -176,15 +176,7 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
      * @param eps List<Episode>
      * @param newStatus String
      */
-    fun updateProgress(eps: List<Episode>, newStatus: String) {
-        updateProgress(eps, newStatus) {
-            subjectView.episodeAdapter.notifyDataSetChanged()
-            subjectView.episodeDetailAdapter.notifyDataSetChanged()
-            refreshProgress()
-        }
-    }
-
-    private fun updateProgress(eps: List<Episode>, newStatus: String, callback: (Boolean) -> Unit) {
+    fun updateProgress(eps: List<Episode>, newStatus: String, callback: (Boolean) -> Unit) {
         if (newStatus == EpisodeDialog.WATCH_TO) {
             val epIds = eps.map { it.id.toString() }.reduce { acc, s -> "$acc,$s" }
             context.disposeContainer.subscribeOnUiThread(
@@ -200,7 +192,11 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
                 Subject.updateProgress(episode.id, newStatus), {
                     episode.progress = newStatus
                     callback(true)
-                }, { callback(false) })
+                }, { callback(false) }, {
+                    subjectView.episodeAdapter.notifyDataSetChanged()
+                    subjectView.episodeDetailAdapter.notifyDataSetChanged()
+                    refreshProgress()
+                })
         }
     }
 

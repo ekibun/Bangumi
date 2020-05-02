@@ -76,6 +76,14 @@
                     android:layout_height="wrap_content"/>
         </LinearLayout>
 
+        <TextView
+                android:visibility="invisible"
+                android:padding="12dp"
+                android:textSize="@dimen/textSizeMedium"
+                app:layout_constraintTop_toBottomOf="@+id/item_title_container"
+                app:layout_constraintBottom_toTopOf="@+id/item_buttons"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
 
         <com.awarmisland.android.richedittext.view.RichEditText
                 android:id="@+id/item_input"
@@ -92,6 +100,7 @@
                 android:inputType="textMultiLine"
                 app:layout_constraintTop_toBottomOf="@+id/item_title_container"
                 app:layout_constraintBottom_toTopOf="@+id/item_buttons"
+                app:layout_constraintVertical_bias="1"
                 tools:ignore="LabelFor">
 
             <requestFocus/>

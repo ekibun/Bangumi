@@ -42,10 +42,11 @@ abstract class BaseActivity(@LayoutRes private val resId: Int) : AppCompatActivi
         PluginsModel.setUpPlugins(this)
     }
 
-    var onStartListener = { ThemeModel.updateNavigationTheme(this) }
+    var onStartListener = {}
     override fun onStart() {
         super.onStart()
         delegate.localNightMode = ThemeModel.getTheme()
+        ThemeModel.updateNavigationTheme(this)
         onStartListener()
     }
 

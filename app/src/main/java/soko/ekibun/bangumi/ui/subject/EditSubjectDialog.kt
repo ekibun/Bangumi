@@ -117,7 +117,7 @@ class EditSubjectDialog : BaseDialog(R.layout.base_dialog) {
         view.item_remove.setOnClickListener {
             AlertDialog.Builder(view.context).setTitle(R.string.collection_dialog_remove)
                 .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
-                    (view.context as? BaseActivity)?.disposeContainer?.subscribeOnUiThread(
+                    (activity as BaseActivity).disposeContainer.subscribeOnUiThread(
                         Collection.remove(subject),
                         {
                             if (it) subject.collect = Collection()
@@ -127,7 +127,7 @@ class EditSubjectDialog : BaseDialog(R.layout.base_dialog) {
                 }.show()
         }
         view.item_submit.setOnClickListener {
-            (view.context as? BaseActivity)?.disposeContainer?.subscribeOnUiThread(
+            (activity as BaseActivity).disposeContainer.subscribeOnUiThread(
                 Collection.updateStatus(
                     subject, Collection(
                         status = selectMap.toList()

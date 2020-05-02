@@ -1,11 +1,14 @@
 package soko.ekibun.bangumi.ui.subject
 
 import android.annotation.SuppressLint
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.RadioButton
 import android.widget.TextView
 import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import kotlinx.android.synthetic.main.base_dialog.view.*
 import kotlinx.android.synthetic.main.dialog_epsode.view.*
 import soko.ekibun.bangumi.R
@@ -42,7 +45,7 @@ class EpisodeDialog : BaseDialog(R.layout.base_dialog) {
             episode: Episode,
             eps: List<Episode>,
             onAirInfo: OnAirInfo?,
-            callback: (eps: List<Episode>, status: String) -> Unit
+            callback: (eps: List<Episode>, status: String, onComplete: (Boolean) -> Unit) -> Unit
         ): EpisodeDialog {
             val dialog = EpisodeDialog()
             dialog.eps = eps
@@ -56,7 +59,7 @@ class EpisodeDialog : BaseDialog(R.layout.base_dialog) {
 
     var eps: List<Episode> = ArrayList()
     var episode: Episode? = null
-    var callback: ((eps: List<Episode>, status: String) -> Unit)? = null
+    var callback: ((eps: List<Episode>, status: String, onComplete: (Boolean) -> Unit) -> Unit)? = null
     val adapter = SitesAdapter()
     var info: OnAirInfo? = null
         set(value) {
@@ -103,7 +106,18 @@ class EpisodeDialog : BaseDialog(R.layout.base_dialog) {
         }
 
         if (episode.type != Episode.TYPE_MUSIC) {
-            view.item_episode_status.setOnCheckedChangeListener { _, checkedId ->
+            view.item_episode_status.setOnCheckedChangeListener { v, checkedId ->
+                val circularProgressDrawable = CircularProgressDrawable(view.context)
+                val selectView = v.findViewById<RadioButton>(checkedId)
+                circularProgressDrawable.setColorSchemeColors(Color.WHITE)
+                circularProgressDrawable.strokeWidth = selectView.textSize / 8f
+                circularProgressDrawable.centerRadius =
+                    selectView.textSize / 2 - circularProgressDrawable.strokeWidth - 1f
+                circularProgressDrawable.progressRotation = 0.75f
+                circularProgressDrawable.setBounds(0, 0, selectView.textSize.toInt(), selectView.textSize.toInt())
+                circularProgressDrawable.start()
+                selectView.setCompoundDrawables(circularProgressDrawable, null, null, null)
+
                 callback?.invoke(
                     if (checkedId == R.id.radio_watch_to) eps else listOf(episode), when (checkedId) {
                         R.id.radio_watch_to -> WATCH_TO
@@ -112,7 +126,16 @@ class EpisodeDialog : BaseDialog(R.layout.base_dialog) {
                         R.id.radio_drop -> Episode.PROGRESS_DROP
                         else -> Episode.PROGRESS_REMOVE
                     }
-                )
+                ) {
+                    selectView.setCompoundDrawables(null, null, null, null)
+                    circularProgressDrawable.stop()
+                    if (!it) when (episode.progress) {
+                        Episode.PROGRESS_QUEUE -> view.radio_queue.isChecked = true
+                        Episode.PROGRESS_WATCH -> view.radio_watch.isChecked = true
+                        Episode.PROGRESS_DROP -> view.radio_drop.isChecked = true
+                        else -> view.radio_remove.isChecked = true
+                    }
+                }
             }
         } else {
             view.item_episode_status.visibility = View.GONE

@@ -5,7 +5,8 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="56dp"
         android:layout_height="56dp"
-        android:background="?attr/selectableItemBackgroundBorderless">
+        android:background="?selectableItemBackground">
+
     <View
             android:id="@+id/item_today"
             android:layout_width="4dp"
