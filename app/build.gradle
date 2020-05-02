@@ -67,7 +67,7 @@ android {
 dependencies {
     def room_version = "2.2.3"
     def glide_version = "4.11.0"
-    def okhttp_version = "4.6.0"
+    def okhttp_version = "4.5.0"
 
     implementation fileTree(include: ["*.jar"], dir: "libs")
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
@@ -85,7 +85,6 @@ dependencies {
     implementation "com.google.android.material:material:1.2.0-alpha04"
     implementation "com.google.code.gson:gson:2.8.6"
     implementation "org.jsoup:jsoup:1.13.1"
-    implementation "org.conscrypt:conscrypt-android:2.4.0"
     implementation "com.github.bumptech.glide:glide:${glide_version}"
     kapt "com.github.bumptech.glide:compiler:${glide_version}"
     implementation "com.zlc.glide:webpdecoder:1.7.${glide_version}"
