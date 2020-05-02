@@ -101,15 +101,24 @@ object HtmlUtil {
     ): SpannableStringBuilder {
         val span = SpannableStringBuilder()
         var endWithBlock: Boolean? = null
+
+        // 忽略最开始的回车和空格
+        (element.childNodes().firstOrNull() as? TextNode)?.let {
+            val wholeText = it.wholeText.trimStart('\n', ' ')
+            if (wholeText.isEmpty()) it.remove()
+            else it.text(wholeText)
+        }
+
         element.childNodes().forEach { node ->
-            span.append(when ((node as? Element)?.tagName()?.toLowerCase(Locale.ROOT)) {
-                "div" -> {
-                    val lineBreak = if (endWithBlock == null) "" else LINE_BREAK
-                    endWithBlock = true
-                    SpannableStringBuilder(lineBreak).append(
-                        elementChildrenToSpan(node, imageGetter).also {
-                            parseBlockStyle(node, it)
-                        })
+            span.append(
+                when ((node as? Element)?.tagName()?.toLowerCase(Locale.ROOT)) {
+                    "div" -> {
+                        val lineBreak = if (endWithBlock == null) "" else LINE_BREAK
+                        endWithBlock = true
+                        SpannableStringBuilder(lineBreak).append(
+                            elementChildrenToSpan(node, imageGetter).also {
+                                parseBlockStyle(node, it)
+                            })
                 }
                 else -> {
                     val lineBreak = if (endWithBlock == true) LINE_BREAK else ""
