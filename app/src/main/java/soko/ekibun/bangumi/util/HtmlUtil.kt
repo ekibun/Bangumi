@@ -54,15 +54,12 @@ object HtmlUtil {
         doc.select("img").forEach {
             if (!it.hasAttr("src")) it.remove()
         }
-        doc.select("br").forEach {
-            val next = it.nextSibling() as? TextNode ?: return@forEach
-            val wholeText = next.wholeText.trimStart('\n', ' ')
-            if (wholeText.isEmpty()) next.remove()
-            else next.text(wholeText)
-        }
-        doc.select("pre").forEach {
-            val next = it.nextSibling() as? TextNode ?: return@forEach
-            next.text(next.wholeText.trimStart('\n', ' '))
+        doc.allElements.forEach { element ->
+            arrayOf(element.childNodes()?.getOrNull(0), element.nextSibling()).filterIsInstance<TextNode>().forEach {
+                val wholeText = it.wholeText.trimStart('\n')
+                if (wholeText.isEmpty()) it.remove()
+                else it.text(wholeText)
+            }
         }
         return elementChildrenToSpan(doc.body(), imageGetter)
     }
@@ -101,13 +98,6 @@ object HtmlUtil {
     ): SpannableStringBuilder {
         val span = SpannableStringBuilder()
         var endWithBlock: Boolean? = null
-
-        // 忽略最开始的回车和空格
-        (element.childNodes().firstOrNull() as? TextNode)?.let {
-            val wholeText = it.wholeText.trimStart('\n', ' ')
-            if (wholeText.isEmpty()) it.remove()
-            else it.text(wholeText)
-        }
 
         element.childNodes().forEach { node ->
             span.append(
@@ -152,7 +142,7 @@ object HtmlUtil {
                             else -> elementChildrenToSpan(node, imageGetter).also {
                                 parseSpanStyle(node, it)
                             }
-                        } else (node as TextNode).text())
+                        } else (node as TextNode).wholeText)
                 }
             })
         }

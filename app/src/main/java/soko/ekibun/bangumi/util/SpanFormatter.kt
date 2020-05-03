@@ -80,7 +80,7 @@ abstract class SpanFormatter {
         }
 
         fun bbcodeToHtml(text: String): String {
-            return TextUtils.htmlEncode(text)
+            return TextUtils.htmlEncode(text).replace(" ", "&nbsp;")
                 .replace(Regex("""\[quote]"""), "<div class=\"quote\">")
                 .replace(Regex("""\[code]"""), "<div class=\"codeHighlight\">")
                 .replace(Regex("""\[/(quote|code)]\n?"""), "</div>")

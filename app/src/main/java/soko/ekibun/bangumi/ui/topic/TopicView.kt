@@ -42,7 +42,7 @@ class TopicView(private val context: TopicActivity) {
         if (context.item_list.canScrollVertically(-1) || collapsibleAppBarHelper.appBarOffset != 0) {
             collapsibleAppBarHelper.appbar.setExpanded(true, true)
             context.item_list.stopScroll()
-            (context.item_list.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(0, 0)
+            context.item_list.layoutManager?.scrollToPosition(0)
             true
         } else false
     }
@@ -50,6 +50,10 @@ class TopicView(private val context: TopicActivity) {
     init {
         context.item_list.adapter = adapter
         context.item_list.layoutManager = object : LinearLayoutManager(context) {
+            override fun getFocusedChild(): View? {
+                return null
+            }
+
             override fun requestChildRectangleOnScreen(
                 parent: RecyclerView,
                 child: View,
