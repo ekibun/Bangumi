@@ -33,7 +33,7 @@ class SayView(private val context: SayActivity) {
         if (context.item_list.canScrollVertically(-1) || collapsibleAppBarHelper.appBarOffset != 0) {
             collapsibleAppBarHelper.appbar.setExpanded(true, true)
             context.item_list.stopScroll()
-            (context.item_list.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(0, 0)
+            context.item_list.layoutManager?.scrollToPosition(0)
             true
         } else false
     }
@@ -41,6 +41,10 @@ class SayView(private val context: SayActivity) {
     init {
         adapter.setUpWithRecyclerView(context.shc, context.item_list)
         context.item_list.layoutManager = object : LinearLayoutManager(context) {
+            override fun getFocusedChild(): View? {
+                return null
+            }
+
             override fun requestChildRectangleOnScreen(
                 parent: RecyclerView,
                 child: View,
