@@ -158,7 +158,7 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
      * @param id Int
      */
     fun showEpisodeDialog(id: Int) {
-        val eps = subject.eps ?: return
+        val eps = subjectView.episodeDetailAdapter.data.mapNotNull { it.t }
         val episodeIndex = eps.indexOfFirst { it.id == id }
         val episode = eps.getOrNull(episodeIndex) ?: return
         episodeDialog = EpisodeDialog.showDialog(
@@ -183,8 +183,11 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
                 Subject.updateProgress(eps.last().id, Episode.PROGRESS_WATCH, epIds), {
                     eps.forEach { it.progress = Episode.PROGRESS_WATCH }
                     callback(true)
-                }, { callback(false) }
-            )
+                }, { callback(false) }, {
+                    subjectView.episodeAdapter.notifyDataSetChanged()
+                    subjectView.episodeDetailAdapter.notifyDataSetChanged()
+                    refreshProgress()
+                })
             return
         }
         eps.forEach { episode ->

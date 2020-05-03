@@ -98,23 +98,24 @@ class EpisodeDialog : BaseDialog(R.layout.base_dialog) {
         val linearLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(context)
         linearLayoutManager.orientation = RecyclerView.HORIZONTAL
         view.item_site_list.layoutManager = linearLayoutManager
-        when (episode.progress) {
-            Episode.PROGRESS_QUEUE -> view.radio_queue.isChecked = true
-            Episode.PROGRESS_WATCH -> view.radio_watch.isChecked = true
-            Episode.PROGRESS_DROP -> view.radio_drop.isChecked = true
-            else -> view.radio_remove.isChecked = true
+        var currentStatus = when (episode.progress) {
+            Episode.PROGRESS_QUEUE -> R.id.radio_queue
+            Episode.PROGRESS_WATCH -> R.id.radio_watch
+            Episode.PROGRESS_DROP -> R.id.radio_drop
+            else -> R.id.radio_remove
         }
 
         if (episode.type != Episode.TYPE_MUSIC) {
             view.item_episode_status.setOnCheckedChangeListener { v, checkedId ->
+                if (currentStatus == checkedId) return@setOnCheckedChangeListener
                 val circularProgressDrawable = CircularProgressDrawable(view.context)
                 val selectView = v.findViewById<RadioButton>(checkedId)
+                val textSize = selectView.textSize.toInt()
                 circularProgressDrawable.setColorSchemeColors(Color.WHITE)
-                circularProgressDrawable.strokeWidth = selectView.textSize / 8f
-                circularProgressDrawable.centerRadius =
-                    selectView.textSize / 2 - circularProgressDrawable.strokeWidth - 1f
+                circularProgressDrawable.strokeWidth = textSize / 8f
+                circularProgressDrawable.centerRadius = textSize / 2 - circularProgressDrawable.strokeWidth - 1f
                 circularProgressDrawable.progressRotation = 0.75f
-                circularProgressDrawable.setBounds(0, 0, selectView.textSize.toInt(), selectView.textSize.toInt())
+                circularProgressDrawable.setBounds(0, 0, textSize, textSize)
                 circularProgressDrawable.start()
                 selectView.setCompoundDrawables(circularProgressDrawable, null, null, null)
 
@@ -129,12 +130,8 @@ class EpisodeDialog : BaseDialog(R.layout.base_dialog) {
                 ) {
                     selectView.setCompoundDrawables(null, null, null, null)
                     circularProgressDrawable.stop()
-                    if (!it) when (episode.progress) {
-                        Episode.PROGRESS_QUEUE -> view.radio_queue.isChecked = true
-                        Episode.PROGRESS_WATCH -> view.radio_watch.isChecked = true
-                        Episode.PROGRESS_DROP -> view.radio_drop.isChecked = true
-                        else -> view.radio_remove.isChecked = true
-                    }
+                    if (!it) view.findViewById<RadioButton>(currentStatus).isChecked = true
+                    else currentStatus = checkedId
                 }
             }
         } else {
