@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package soko.ekibun.bangumi.util
 
 import android.app.Activity
@@ -15,7 +13,7 @@ import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.Headers
 import com.bumptech.glide.request.RequestOptions
-import com.bumptech.glide.request.target.SimpleTarget
+import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
 
@@ -63,7 +61,8 @@ object GlideUtil {
                         Headers { mapOf("referer" to url, "user-agent" to HttpUtil.ua) })
                 )
             }
-        }.apply(options).into(object : SimpleTarget<Drawable>() {
+        }.apply(options).into(object : CustomTarget<Drawable>() {
+
             override fun onLoadStarted(placeholder: Drawable?) {
                 callback(TYPE_PLACEHOLDER, placeholder)
             }
@@ -75,7 +74,7 @@ object GlideUtil {
 
             override fun onLoadCleared(placeholder: Drawable?) {
                 if (circularProgressDrawable.isRunning) circularProgressDrawable.stop()
-                callback(TYPE_PLACEHOLDER, null)
+                ProgressAppGlideModule.forget(url)
             }
 
             override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
@@ -87,7 +86,6 @@ object GlideUtil {
                 ProgressAppGlideModule.forget(url)
             }
         })
-
     }
 
     fun with(context: Context): RequestManager? {

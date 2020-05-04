@@ -3,8 +3,7 @@ package soko.ekibun.bangumi.util.span
 import android.graphics.*
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.Drawable
-import android.text.style.ImageSpan
-import android.util.Log
+import android.text.Spannable
 import android.util.Size
 import android.view.View
 import android.widget.TextView
@@ -21,45 +20,41 @@ open class CollapseUrlDrawable(
     sizeCache: HashMap<String, Size>
 ) : UrlDrawable(wrapWidth, sizeCache) {
 
+    override var drawable: Drawable? = null
+        set(drawable) {
+            (field as? Animatable)?.stop()
+            field?.callback = null
+            field = drawable
+            field?.callback = drawableCallback
+            (drawable as? Animatable)?.start()
+            val drawableBounds = drawable?.bounds ?: bounds
+            setBounds(0, 0, drawableBounds.width(), Math.min(drawableBounds.height(), 250))
+            mBuffer = Bitmap.createBitmap(bounds.width(), bounds.height(), Bitmap.Config.ARGB_8888)
+            updateBuffer()
+
+            container?.get()?.let {
+                val text = (it.text as? Spannable) ?: return@let
+                text.getSpans(0, text.length, UrlImageSpan::class.java)?.filter { span ->
+                    span.drawable == this
+                }?.forEach { span ->
+                    span.url = url ?: ""
+                    val start = text.getSpanStart(span)
+                    val end = text.getSpanEnd(span)
+                    val flags = text.getSpanFlags(span)
+                    text.removeSpan(span)
+                    text.setSpan(span, start, end, flags)
+                }
+                it.invalidate()
+            }
+        }
+
     override fun update(drawable: Drawable) {
         val size = {
             val width = wrapWidth(if (error == false) drawable.intrinsicWidth.toFloat() else -1f)
             Size(width.toInt(), (drawable.intrinsicHeight * width / drawable.intrinsicWidth).toInt())
         }()
-        Log.v("update", "$drawable size: $size")
-        (this.drawable as? Animatable)?.stop()
-        this.drawable?.callback = null
+        drawable.setBounds(0, 0, size.width, size.height)
         this.drawable = drawable
-        this.drawable?.callback = this.drawableCallback
-        (drawable as? Animatable)?.start()
-        setBounds(0, 0, size.width, Math.min(size.height, 250))
-        mBuffer = Bitmap.createBitmap(bounds.width(), bounds.height(), Bitmap.Config.ARGB_8888)
-        this.drawable?.setBounds(0, 0, size.width, size.height)
-        updateBuffer()
-
-        container?.get()?.let {
-            it.editableText.getSpans(0, it.editableText.length, ClickableImageSpan::class.java).filter { span ->
-                span.image.drawable == this
-            }.forEach { span ->
-                val start = it.editableText.getSpanStart(span)
-                val end = it.editableText.getSpanEnd(span)
-                val flags = it.editableText.getSpanFlags(span)
-
-                it.editableText.removeSpan(span.image)
-                span.image = ImageSpan(this, url ?: "", ImageSpan.ALIGN_BASELINE)
-                it.editableText.setSpan(span.image, start, end, flags)
-            }
-            it.editableText.getSpans(0, it.editableText.length, ImageSpan::class.java).filter { span ->
-                span.drawable == this
-            }.forEach { span ->
-                val start = it.editableText.getSpanStart(span)
-                val end = it.editableText.getSpanEnd(span)
-                val flags = it.editableText.getSpanFlags(span)
-                it.editableText.removeSpan(span)
-                it.editableText.setSpan(span, start, end, flags)
-            }
-            it.invalidate()
-        }
     }
 
     private val gradientPaint by lazy {
@@ -87,8 +82,8 @@ open class CollapseUrlDrawable(
     class CollapseImageGetter(container: TextView) : HtmlUtil.ImageGetter(wrapWidth = {
         Math.min(container.width.toFloat(), Math.max(container.textSize, it))
     }) {
-        override val onClick: (View, ImageSpan) -> Unit = { itemView, span ->
-            Toast.makeText(itemView.context, span.source, Toast.LENGTH_LONG).show()
+        override val onClick: (View, UrlImageSpan) -> Unit = { itemView, span ->
+            Toast.makeText(itemView.context, span.url, Toast.LENGTH_LONG).show()
         }
 
         override fun createDrawable(): UrlDrawable {

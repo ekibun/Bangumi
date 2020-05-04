@@ -6,10 +6,7 @@ import android.text.TextUtils
 import android.text.style.*
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.ui.topic.ReplyDialog
-import soko.ekibun.bangumi.util.span.ClickableUrlSpan
-import soko.ekibun.bangumi.util.span.CodeLineSpan
-import soko.ekibun.bangumi.util.span.MaskSpan
-import soko.ekibun.bangumi.util.span.QuoteLineSpan
+import soko.ekibun.bangumi.util.span.*
 import kotlin.math.roundToInt
 
 abstract class SpanFormatter {
@@ -73,8 +70,8 @@ abstract class SpanFormatter {
                 is ForegroundColorSpan -> return "${
                 String.format("[color=#%06X]", 0xFFFFFF and span.foregroundColor)}${inner()}[/color]"
                 is MaskSpan -> return "[mask]${inner()}[/mask]"
-                is ImageSpan -> return if (span.source?.startsWith("(") == true) span.source ?: ""
-                else "[img]${span.source}[/img]"
+                is UrlImageSpan -> return if (span.url.startsWith("(")) span.url
+                else "[img]${span.url}[/img]"
             }
             return inner()
         }

@@ -8,7 +8,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.provider.OpenableColumns
 import android.text.Spanned
-import android.text.style.ImageSpan
 import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.View
@@ -31,10 +30,7 @@ import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.ui.view.BaseDialog
 import soko.ekibun.bangumi.util.HtmlUtil
 import soko.ekibun.bangumi.util.ResourceUtil
-import soko.ekibun.bangumi.util.span.ClickableImageSpan
-import soko.ekibun.bangumi.util.span.ClickableUrlSpan
-import soko.ekibun.bangumi.util.span.CollapseUrlDrawable
-import soko.ekibun.bangumi.util.span.UploadDrawable
+import soko.ekibun.bangumi.util.span.*
 import java.lang.ref.WeakReference
 
 /**
@@ -196,7 +192,7 @@ class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
                 drawable.url = emojiList[position].second
                 view.item_input.editableText.insert(
                     view.item_input.selectionStart,
-                    HtmlUtil.createImageSpan(ImageSpan(drawable, emojiList[position].first, ImageSpan.ALIGN_BASELINE))
+                    HtmlUtil.createImageSpan(UrlImageSpan(drawable, emojiList[position].first))
                 )
                 drawable.container = WeakReference(view.item_input)
                 drawable.loadImage()
@@ -329,7 +325,7 @@ class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
                 item_input.editableText.replace(start, end, "[img]$it[/img]")
             }
         }
-        val imageSpan = ImageSpan(drawable, "", ImageSpan.ALIGN_BASELINE)
+        val imageSpan = UrlImageSpan(drawable, "")
         span = ClickableImageSpan(imageSpan, collapseImageGetter.onClick)
         item_input.editableText.insert(
             item_input.selectionStart,

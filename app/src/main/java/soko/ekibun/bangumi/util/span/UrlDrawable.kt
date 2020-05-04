@@ -1,21 +1,15 @@
 package soko.ekibun.bangumi.util.span
 
-import android.graphics.*
-import android.graphics.drawable.Animatable
-import android.graphics.drawable.AnimationDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
-import android.text.Spannable
-import android.text.style.ImageSpan
+import android.util.Log
 import android.util.Size
-import android.widget.TextView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.ResourceUtil
-import java.lang.ref.WeakReference
 
 /**
  * url图片Drawable
@@ -24,15 +18,14 @@ import java.lang.ref.WeakReference
 open class UrlDrawable(
     val wrapWidth: (Float) -> Float,
     val sizeCache: HashMap<String, Size>
-) : AnimationDrawable() {
-    var container: WeakReference<TextView>? = null
+) : TextViewDrawable() {
 
     private var target: Target<Drawable>? = null
     fun cancel() {
         container?.get()?.let { GlideUtil.with(it) }?.clear(target)
+        error = null
+        drawable = null
     }
-
-    internal var drawable: Drawable? = null
 
     /**
      * 加载状态
@@ -44,9 +37,6 @@ open class UrlDrawable(
     var url: String? = null
     var uri: Uri? = null
 
-    internal var mBuffer: Bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
-    internal val mPaint = Paint(Paint.FILTER_BITMAP_FLAG or Paint.DITHER_FLAG)
-
     /**
      * 更新Drawable
      */
@@ -57,35 +47,15 @@ open class UrlDrawable(
             if (error == false) url?.let { sizeCache[it] = size }
             size
         }()
-        (this.drawable as? Animatable)?.stop()
-        this.drawable?.callback = null
+        drawable.setBounds(0, 0, size.width, size.height)
         this.drawable = drawable
-        this.drawable?.callback = drawableCallback
-        (drawable as? Animatable)?.start()
-        setBounds(0, 0, size.width, size.height)
-        mBuffer = Bitmap.createBitmap(bounds.width(), bounds.height(), Bitmap.Config.ARGB_8888)
-        this.drawable?.bounds = bounds
-        updateBuffer()
-
-        container?.get()?.let {
-            val text = (it.text as? Spannable) ?: return@let
-            text.getSpans(0, text.length, ImageSpan::class.java)?.filter { span ->
-                span.drawable == this
-            }?.forEach { span ->
-                val start = text.getSpanStart(span)
-                val end = text.getSpanEnd(span)
-                val flags = text.getSpanFlags(span)
-                text.removeSpan(span)
-                text.setSpan(span, start, end, flags)
-            }
-            it.invalidate()
-        }
     }
 
     /**
      * 加载图片
      */
     open fun loadImage() {
+        if (error == false) return // 加载完成不再加载
         val url = this.url ?: return
         val view = container?.get()
         view?.post {
@@ -107,6 +77,7 @@ open class UrlDrawable(
                 circularProgressDrawable,
                 uri
             ) { type, drawable ->
+                Log.v("Type", type.toString())
                 error = when (type) {
                     GlideUtil.TYPE_RESOURCE -> false
                     GlideUtil.TYPE_ERROR -> true
@@ -115,34 +86,5 @@ open class UrlDrawable(
                 drawable?.let { update(it) }
             }
         }
-    }
-
-    /**
-     * 更新缓存
-     */
-    open fun updateBuffer() {
-        val bufferCanvas = Canvas(mBuffer)
-        bufferCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
-        drawable?.draw(bufferCanvas)
-        invalidateSelf()
-    }
-
-    internal val drawableCallback = object : Callback {
-        override fun invalidateDrawable(who: Drawable) {
-            updateBuffer()
-            container?.get()?.invalidate()
-        }
-
-        override fun scheduleDrawable(who: Drawable, what: Runnable, `when`: Long) {
-            container?.get()?.postDelayed(what, `when`)
-        }
-
-        override fun unscheduleDrawable(who: Drawable, what: Runnable) {
-            container?.get()?.removeCallbacks(what)
-        }
-    }
-
-    override fun draw(canvas: Canvas) {
-        canvas.drawBitmap(mBuffer, bounds, bounds, mPaint)
     }
 }
