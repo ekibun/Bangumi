@@ -5,6 +5,7 @@ import android.graphics.drawable.Animatable
 import android.graphics.drawable.AnimationDrawable
 import android.graphics.drawable.Drawable
 import android.text.Spannable
+import android.text.style.ImageSpan
 import android.widget.TextView
 import java.lang.ref.WeakReference
 
@@ -25,7 +26,7 @@ open class TextViewDrawable : AnimationDrawable() {
 
             container?.get()?.let {
                 val text = (it.text as? Spannable) ?: return@let
-                text.getSpans(0, text.length, UrlImageSpan::class.java)?.filter { span ->
+                text.getSpans(0, text.length, ImageSpan::class.java)?.filter { span ->
                     span.drawable == this
                 }?.forEach { span ->
                     val start = text.getSpanStart(span)

@@ -70,8 +70,8 @@ abstract class SpanFormatter {
                 is ForegroundColorSpan -> return "${
                 String.format("[color=#%06X]", 0xFFFFFF and span.foregroundColor)}${inner()}[/color]"
                 is MaskSpan -> return "[mask]${inner()}[/mask]"
-                is UrlImageSpan -> return if (span.url.startsWith("(")) span.url
-                else "[img]${span.url}[/img]"
+                is ImageSpan -> return if (span.source?.startsWith("(") == true) span.source!!
+                else "[img]${span.source ?: (span.drawable as? UrlDrawable)?.url}[/img]"
             }
             return inner()
         }
@@ -93,7 +93,10 @@ abstract class SpanFormatter {
                 .replace(Regex("""\[/(color|s|size)]"""), "</span>").let {
                     var ret = it
                     ReplyDialog.emojiList.forEach {
-                        ret = ret.replace(it.first, "<img src=\"${it.second.replace(Bangumi.SERVER, "")}\"/>")
+                        ret = ret.replace(
+                            it.first,
+                            "<img src=\"${it.second.replace(Bangumi.SERVER, "")}\" smileid alt=\"${it.first}\"/>"
+                        )
                     }
                     ret
                 }

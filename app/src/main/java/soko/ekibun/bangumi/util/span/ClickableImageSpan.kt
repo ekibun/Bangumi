@@ -1,6 +1,7 @@
 package soko.ekibun.bangumi.util.span
 
 import android.text.style.ClickableSpan
+import android.text.style.ImageSpan
 import android.util.Log
 import android.view.View
 
@@ -8,8 +9,8 @@ import android.view.View
  *
  */
 class ClickableImageSpan(
-    var image: UrlImageSpan,
-    private val onClick: (View, UrlImageSpan) -> Unit
+    var image: ImageSpan,
+    private val onClick: (View, ImageSpan) -> Unit
 ) : ClickableSpan() {
     override fun onClick(widget: View) {
         Log.v("click", image.drawable.toString())

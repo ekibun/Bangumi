@@ -4,6 +4,7 @@ import android.graphics.*
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.Drawable
 import android.text.Spannable
+import android.text.style.ImageSpan
 import android.util.Size
 import android.view.View
 import android.widget.TextView
@@ -34,10 +35,9 @@ open class CollapseUrlDrawable(
 
             container?.get()?.let {
                 val text = (it.text as? Spannable) ?: return@let
-                text.getSpans(0, text.length, UrlImageSpan::class.java)?.filter { span ->
+                text.getSpans(0, text.length, ImageSpan::class.java)?.filter { span ->
                     span.drawable == this
                 }?.forEach { span ->
-                    span.url = url ?: ""
                     val start = text.getSpanStart(span)
                     val end = text.getSpanEnd(span)
                     val flags = text.getSpanFlags(span)
@@ -82,8 +82,11 @@ open class CollapseUrlDrawable(
     class CollapseImageGetter(container: TextView) : HtmlUtil.ImageGetter(wrapWidth = {
         Math.min(container.width.toFloat(), Math.max(container.textSize, it))
     }) {
-        override val onClick: (View, UrlImageSpan) -> Unit = { itemView, span ->
-            Toast.makeText(itemView.context, span.url, Toast.LENGTH_LONG).show()
+        override val onClick: (View, ImageSpan) -> Unit = { itemView, span ->
+            Toast.makeText(
+                itemView.context,
+                span.source ?: (span.drawable as? UrlDrawable)?.url, Toast.LENGTH_LONG
+            ).show()
         }
 
         override fun createDrawable(): UrlDrawable {

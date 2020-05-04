@@ -70,7 +70,7 @@ object HtmlUtil {
     fun attachToTextView(span: Spanned, textView: TextView) {
         // 结束之前的请求
         (textView.text as? Spanned)?.let { text ->
-            text.getSpans(0, text.length, UrlImageSpan::class.java).filterNot {
+            text.getSpans(0, text.length, ImageSpan::class.java).filterNot {
                 span.getSpanFlags(it) == 0
             }.forEach {
                 (it.drawable as? UrlDrawable)?.cancel()
@@ -78,7 +78,7 @@ object HtmlUtil {
         }
         // 更新引用
         val weakRef = WeakReference(textView)
-        span.getSpans(0, span.length, UrlImageSpan::class.java).forEach { imageSpan ->
+        span.getSpans(0, span.length, ImageSpan::class.java).forEach { imageSpan ->
             (imageSpan.drawable as? UrlDrawable)?.let {
                 it.container = weakRef
                 it.loadImage()
@@ -126,13 +126,14 @@ object HtmlUtil {
                                 val sources = Bangumi.parseUrl(src)
                                 val alt = node.attr("alt")
                                 val isSmile = node.hasAttr("smileid")
-                                val imageSpan = UrlImageSpan(
+                                val imageSpan = ImageSpan(
                                     imageGetter.getDrawable(sources),
-                                    if (isSmile) alt else src
+                                    if (isSmile) alt else src,
+                                    ImageSpan.ALIGN_BASELINE
                                 )
                                 createImageSpan(imageSpan).also {
                                     if (!isSmile) {
-                                        imageGetter.drawables.add(imageSpan.url)
+                                        imageGetter.drawables.add(sources)
                                         setSpan(
                                             ClickableImageSpan(imageSpan, imageGetter.onClick),
                                             it, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -150,7 +151,7 @@ object HtmlUtil {
         return span
     }
 
-    fun createImageSpan(imageSpan: UrlImageSpan): SpannableStringBuilder {
+    fun createImageSpan(imageSpan: ImageSpan): SpannableStringBuilder {
         return SpannableStringBuilder("￼").also {
             setSpan(imageSpan, it, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
@@ -205,10 +206,10 @@ object HtmlUtil {
     ) {
         val drawables = ArrayList<String>()
 
-        open val onClick: (View, UrlImageSpan) -> Unit = { itemView, span ->
+        open val onClick: (View, ImageSpan) -> Unit = { itemView, span ->
             PhotoPagerAdapter.showWindow(
                 itemView, drawables,
-                index = drawables.indexOf(span.url)
+                index = drawables.indexOf((span.drawable as UrlDrawable).url)
             )
         }
 
