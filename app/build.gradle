@@ -107,7 +107,7 @@ dependencies {
     implementation "com.github.chrisbanes:PhotoView:2.1.4"
     implementation "am.util:viewpager:25.3.0"
     implementation "com.jakewharton:disklrucache:2.0.2"
-    implementation "com.caverock:androidsvg:1.2.1"
+    implementation "com.caverock:androidsvg-aar:1.4"
     implementation "com.umeng.umsdk:analytics:8.0.0"
     implementation "com.umeng.umsdk:common:2.0.0"
 }
