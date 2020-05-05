@@ -26,8 +26,6 @@ class CodeLineSpan : TypefaceSpan("monospace"), LeadingMarginSpan, LineBackgroun
         first: Boolean,
         layout: Layout?
     ) {
-//            c.drawRect(Rect(x, top, x + 50, bottom), ThemeModel.TranslucentPaint)
-        if (start == 0 || text[start - 1] != '\n') return
         val spanStart = text.toSpanned().getSpanStart(this)
         if (spanStart < 0) return
         val lineCount = text.substring(spanStart, start).count { it == '\n' } + 1

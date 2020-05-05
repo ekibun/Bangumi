@@ -2,7 +2,6 @@ package soko.ekibun.bangumi.util.span
 
 import android.graphics.drawable.Drawable
 import android.net.Uri
-import android.util.Log
 import android.util.Size
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.request.RequestOptions
@@ -77,7 +76,6 @@ open class UrlDrawable(
                 circularProgressDrawable,
                 uri
             ) { type, drawable ->
-                Log.v("Type", type.toString())
                 error = when (type) {
                     GlideUtil.TYPE_RESOURCE -> false
                     GlideUtil.TYPE_ERROR -> true

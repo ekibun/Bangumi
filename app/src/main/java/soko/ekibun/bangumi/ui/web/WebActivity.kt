@@ -124,7 +124,7 @@ class WebActivity : BaseActivity(R.layout.activity_web) {
                 }
             }
             webview.shouldInterceptRequest = { view: WebView, url: String ->
-                Say.parse(url)?.let { startActivity(SayActivity.parseIntent(view.context, it)) }
+                if (openUrl != url) Say.parse(url)?.let { startActivity(SayActivity.parseIntent(view.context, it)) }
                 null
             }
         } else {

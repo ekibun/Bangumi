@@ -4,11 +4,9 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.View
-import android.widget.CheckedTextView
 import kotlinx.android.synthetic.main.content_home.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
-import soko.ekibun.bangumi.ui.main.fragment.home.fragment.HomeTabFragment
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.collection.CollectionFragment
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.rakuen.RakuenFragment
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.timeline.TimeLineFragment
@@ -34,15 +32,15 @@ class HomeFragment: DrawerFragment(R.layout.content_home) {
 
     override val titleRes: Int = R.string.home
     val collectionFragment by lazy { findOrCreateFragmentByClassName(CollectionFragment::class.java) }
-    private val fragments: List<HomeTabFragment> by lazy {
-        listOf(
-            findOrCreateFragmentByClassName(TimeLineFragment::class.java),
-            collectionFragment,
-            findOrCreateFragmentByClassName(RakuenFragment::class.java)
+    private val fragments by lazy {
+        mapOf(
+            R.id.item_timeline to findOrCreateFragmentByClassName(TimeLineFragment::class.java),
+            R.id.item_collect to collectionFragment,
+            R.id.item_rakuen to findOrCreateFragmentByClassName(RakuenFragment::class.java)
         )
     }
 
-    private var checkedPos = 1
+    private var checkedPos = R.id.item_collect
 
     /**
      * 选中
@@ -50,25 +48,17 @@ class HomeFragment: DrawerFragment(R.layout.content_home) {
      */
     fun select(pos: Int) {
         checkedPos = pos
+        val fragment = fragments[checkedPos] ?: return
         childFragmentManager.beginTransaction()
-            .replace(R.id.frame_pager, fragments[checkedPos], fragments[checkedPos].javaClass.name).commit()
-        for (i in 0 until (frame_tabs?.childCount ?: 0)) {
-            (frame_tabs?.getChildAt(i) as? CheckedTextView)?.isChecked = i == checkedPos
-        }
+            .replace(R.id.frame_pager, fragment, fragment.javaClass.name).commit()
         activity?.invalidateOptionsMenu()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        for (i in 0 until (frame_tabs?.childCount ?: 0)) {
-            (frame_tabs?.getChildAt(i) as? CheckedTextView)?.let { tv ->
-                tv.setOnClickListener {
-                    select(i)
-                }
-                tv.compoundDrawables.forEach {
-                    it?.setTintList(tv.textColors)
-                }
-            }
+        frame_tabs?.setOnNavigationItemSelectedListener {
+            select(it.itemId)
+            true
         }
         select(checkedPos)
     }
@@ -93,7 +83,7 @@ class HomeFragment: DrawerFragment(R.layout.content_home) {
 
     override fun onCreateOptionsMenu(menu: Menu) {
         super.onCreateOptionsMenu(menu)
-        fragments[checkedPos].onCreateOptionsMenu(menu)
+        fragments[checkedPos]?.onCreateOptionsMenu(menu)
     }
 
     /**
@@ -108,6 +98,6 @@ class HomeFragment: DrawerFragment(R.layout.content_home) {
      * 用户改变
      */
     fun onUserChange() {
-        fragments.forEach { it.onUserChange() }
+        fragments.values.forEach { it.onUserChange() }
     }
 }

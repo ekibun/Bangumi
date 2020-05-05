@@ -16,6 +16,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
 /**
  * 防止Glide崩溃
@@ -58,7 +59,7 @@ object GlideUtil {
                 it.load(
                     if (url.isEmpty()) null else GlideUrl(
                         url,
-                        Headers { mapOf("referer" to url, "user-agent" to HttpUtil.ua) })
+                        Headers { mapOf("referer" to url.toHttpUrlOrNull().toString(), "user-agent" to HttpUtil.ua) })
                 )
             }
         }.apply(options).into(object : CustomTarget<Drawable>() {

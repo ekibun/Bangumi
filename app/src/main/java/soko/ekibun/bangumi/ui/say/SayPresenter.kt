@@ -6,6 +6,7 @@ import kotlinx.android.synthetic.main.activity_topic.*
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Say
+import soko.ekibun.bangumi.api.bangumi.bean.UserInfo
 import soko.ekibun.bangumi.model.DataCacheModel
 import soko.ekibun.bangumi.model.HistoryModel
 import soko.ekibun.bangumi.model.UserModel
@@ -32,14 +33,17 @@ class SayPresenter(private val context: SayActivity, say: Say) {
 
         var draft: String? = null
         context.btn_reply.setOnClickListener {
-            if (HttpUtil.formhash.isNotEmpty()) showReply(say, draft) { draft = it }
+            if (HttpUtil.formhash.isNotEmpty()) showReply(say, say.user, draft) { draft = it }
             else WebActivity.launchUrl(context, say.url, "")
         }
         sayView.adapter.setOnItemChildClickListener { _, _, position ->
             WebActivity.launchUrl(context, sayView.adapter.data[position].t.user.url, "")
         }
         sayView.adapter.setOnItemChildLongClickListener { _, _, position ->
-            showReply(say, "@${sayView.adapter.data[position].t.user.username} ") { draft = it }
+            sayView.adapter.data[position].t.user.let {
+                showReply(say, it, "@${it.username} ") { draft = it }
+            }
+
             true
         }
     }
@@ -87,11 +91,11 @@ class SayPresenter(private val context: SayActivity, say: Say) {
         )
     }
 
-    private fun showReply(say: Say, draft: String?, updateDraft: (String?) -> Unit) {
+    private fun showReply(say: Say, user: UserInfo?, draft: String?, updateDraft: (String?) -> Unit) {
         val self = UserModel.current() ?: return
         ReplyDialog.showDialog(
             context.supportFragmentManager,
-            hint = context.getString(R.string.parse_hint_reply_topic, say.user.nickname) ?: "",
+            hint = context.getString(R.string.parse_hint_reply_topic, user?.nickname) ?: "",
             draft = draft
         ) { content, _, send ->
             if (content != null && send) {

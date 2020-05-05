@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+            android:id="@+id/item_timeline"
+            android:enabled="true"
+            android:icon="@drawable/ic_timelapse"
+            android:title="@string/timeline"
+            app:showAsAction="ifRoom"/>
+    <item
+            android:id="@+id/item_collect"
+            android:enabled="true"
+            android:icon="@drawable/ic_heart"
+            android:title="@string/collect"
+            app:showAsAction="ifRoom"/>
+    <item
+            android:id="@+id/item_rakuen"
+            android:enabled="true"
+            android:icon="@drawable/ic_explore"
+            android:title="@string/rakuen"
+            app:showAsAction="ifRoom"/>
+
+</menu>

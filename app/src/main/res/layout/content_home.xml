@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:fitsSystemWindows="true"
         android:orientation="vertical">
     <FrameLayout
@@ -12,49 +12,11 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"/>
 
-    <LinearLayout
+    <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/frame_tabs"
-            android:elevation="20dp"
-            android:background="?android:colorBackground"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:orientation="horizontal">
-
-        <CheckedTextView
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:drawableTop="@drawable/ic_timelapse"
-                android:background="?selectableItemBackgroundBorderless"
-                tools:drawableTint="@color/color_checkable"
-                android:textColor="@color/color_checkable"
-                android:gravity="center"
-                android:textAppearance="@android:style/TextAppearance.DeviceDefault.Widget.Button"
-                android:text="@string/timeline"/>
-
-        <CheckedTextView
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:drawableTop="@drawable/ic_heart"
-                android:background="?selectableItemBackgroundBorderless"
-                tools:drawableTint="@color/color_checkable"
-                android:textColor="@color/color_checkable"
-                tools:checked="true"
-                android:gravity="center"
-                android:textAppearance="@android:style/TextAppearance.DeviceDefault.Widget.Button"
-                android:text="@string/collect"/>
-
-        <CheckedTextView
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:drawableTop="@drawable/ic_explore"
-                android:background="?selectableItemBackgroundBorderless"
-                tools:drawableTint="@color/color_checkable"
-                android:textColor="@color/color_checkable"
-                android:gravity="center"
-                android:textAppearance="@android:style/TextAppearance.DeviceDefault.Widget.Button"
-                android:text="@string/rakuen"/>
-    </LinearLayout>
+            android:layout_height="wrap_content"
+            android:background="?android:colorBackground"
+            android:elevation="20dp"
+            app:menu="@menu/nav_main"/>
 </LinearLayout>
