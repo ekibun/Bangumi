@@ -28,6 +28,7 @@ object HtmlUtil {
      */
     fun span2bbcode(text: Spanned): String {
         return bbcodeSpanFormatter.format(text)
+            .replace(Regex("""\[/code]\n"""), "[/code]")
     }
 
     /**
