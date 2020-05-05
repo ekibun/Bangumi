@@ -27,7 +27,7 @@ class CodeLineSpan : TypefaceSpan("monospace"), LeadingMarginSpan, LineBackgroun
         layout: Layout?
     ) {
         val spanStart = text.toSpanned().getSpanStart(this)
-        if (spanStart < 0) return
+        if (spanStart < 0 || start < spanStart) return
         val lineCount = text.substring(spanStart, start).count { it == '\n' } + 1
         val typeFace = p.typeface
         val align = p.textAlign
