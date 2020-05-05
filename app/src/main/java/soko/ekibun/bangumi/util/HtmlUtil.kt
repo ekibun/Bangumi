@@ -55,8 +55,8 @@ object HtmlUtil {
             if (!it.hasAttr("src")) it.remove()
         }
         doc.allElements.forEach { element ->
-            arrayOf(element.childNodes()?.getOrNull(0), element.nextSibling()).filterIsInstance<TextNode>().forEach {
-                val wholeText = it.wholeText.trimStart('\n')
+            element.childNodes().filterIsInstance<TextNode>().forEach {
+                val wholeText = it.wholeText.trim('\n')
                 if (wholeText.isEmpty()) it.remove()
                 else it.text(wholeText)
             }

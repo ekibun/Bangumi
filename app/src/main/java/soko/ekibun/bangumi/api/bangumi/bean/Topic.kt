@@ -8,7 +8,6 @@ import org.jsoup.Jsoup
 import org.xmlpull.v1.XmlPullParser
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
-import soko.ekibun.bangumi.util.HtmlUtil
 import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.JsonUtil
 
@@ -255,7 +254,7 @@ data class Topic(
             val comment = if (post?.isSub == true)
                 "[quote][b]${post.nickname}[/b] 说: ${Jsoup.parse(post.pst_content).let { doc ->
                     doc.select("div.quote").remove()
-                    HtmlUtil.html2text(doc.html()).let {
+                    Jsoup.parse(doc.html()).text().let {
                         if (it.length > 100) it.substring(0, 100) + "..." else it
                     }
                 }}[/quote]\n" else ""

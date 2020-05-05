@@ -16,9 +16,10 @@ abstract class SpanFormatter {
         return spanFormat(text, 0, text.length, listOf())
     }
 
-    private fun spanFormat(text: Spanned, start: Int, end: Int, ignoreSpan: List<Any>): String {
+    private fun spanFormat(text: Spanned, start: Int, end: Int, _ignoreSpan: List<Any>): String {
         val out = StringBuilder()
         var i = start
+        val ignoreSpan = _ignoreSpan.toMutableList()
         while (i < end) {
             var next = text.nextSpanTransition(i, end, ParagraphStyle::class.java)
             val style = text.getSpans(i, next, ParagraphStyle::class.java)
@@ -26,17 +27,19 @@ abstract class SpanFormatter {
                 it !in ignoreSpan && text.getSpanStart(it) == i
             }.maxBy { text.getSpanEnd(it) }
             if (p != null) {
+                ignoreSpan.add(p)
                 next = text.getSpanEnd(p)
-                out.append(format(p) { spanFormat(text, i, next, ignoreSpan.plus(p)) })
+                out.append(format(p) { spanFormat(text, i, next, ignoreSpan) })
             } else out.append(withinParagraph(text, i, next, ignoreSpan))
             i = next
         }
         return out.toString()
     }
 
-    private fun withinParagraph(text: Spanned, start: Int, end: Int, ignoreSpan: List<Any>): String {
+    private fun withinParagraph(text: Spanned, start: Int, end: Int, _ignoreSpan: List<Any>): String {
         val out = StringBuilder()
         var i = start
+        val ignoreSpan = _ignoreSpan.toMutableList()
         while (i < end) {
             var next = text.nextSpanTransition(i, end, CharacterStyle::class.java)
             val style = text.getSpans(i, next, CharacterStyle::class.java)
@@ -44,8 +47,9 @@ abstract class SpanFormatter {
                 it !in ignoreSpan && text.getSpanStart(it) == i
             }.maxBy { text.getSpanEnd(it) }
             if (c != null) {
+                ignoreSpan.add(c)
                 next = text.getSpanEnd(c)
-                out.append(format(c) { withinParagraph(text, i, next, ignoreSpan.plus(c)) })
+                out.append(format(c) { withinParagraph(text, i, next, ignoreSpan) })
             } else out.append(text.substring(i, next))
             i = next
         }

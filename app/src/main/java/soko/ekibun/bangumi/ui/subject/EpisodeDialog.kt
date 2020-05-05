@@ -104,6 +104,7 @@ class EpisodeDialog : BaseDialog(R.layout.base_dialog) {
             Episode.PROGRESS_DROP -> R.id.radio_drop
             else -> R.id.radio_remove
         }
+        view.item_episode_status.check(currentStatus)
 
         if (episode.type != Episode.TYPE_MUSIC) {
             view.item_episode_status.setOnCheckedChangeListener { v, checkedId ->
@@ -130,7 +131,7 @@ class EpisodeDialog : BaseDialog(R.layout.base_dialog) {
                 ) {
                     selectView.setCompoundDrawables(null, null, null, null)
                     circularProgressDrawable.stop()
-                    if (!it) view.findViewById<RadioButton>(currentStatus).isChecked = true
+                    if (!it) v.check(currentStatus)
                     else currentStatus = checkedId
                 }
             }

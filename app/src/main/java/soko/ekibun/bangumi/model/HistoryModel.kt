@@ -4,13 +4,13 @@ import androidx.room.Room
 import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
+import org.jsoup.Jsoup
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.api.bangumi.bean.Say
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.model.history.History
 import soko.ekibun.bangumi.model.history.HistoryDatabase
-import soko.ekibun.bangumi.util.HtmlUtil
 import soko.ekibun.bangumi.util.JsonUtil
 import java.util.*
 
@@ -47,7 +47,7 @@ object HistoryModel {
                 timestamp,
                 "say",
                 obj.user.avatar,
-                HtmlUtil.html2text(obj.message ?: ""),
+                Jsoup.parse(obj.message ?: "").text(),
                 obj.user.nickname,
                 JsonUtil.toJson(
                     Say(
