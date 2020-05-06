@@ -215,7 +215,7 @@ class MainPresenter(private val context: MainActivity) {
         )
     }
 
-    val mergeAirInfo = { }
+    var mergeAirInfo = { }
 
     private fun mergeAirInfo(collection: List<Subject>) {
         val calendar = calendar
@@ -244,8 +244,8 @@ class MainPresenter(private val context: MainActivity) {
                 }
             },
             {
-                mergeAirInfo()
                 collectionList = collection
+                mergeAirInfo()
                 notifyCollectionChange()
             },
             key = "bangumi_collection_merge"

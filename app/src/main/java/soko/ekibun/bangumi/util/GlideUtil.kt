@@ -17,6 +17,7 @@ import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import soko.ekibun.bangumi.api.bangumi.Bangumi
 
 /**
  * 防止Glide崩溃
@@ -26,6 +27,18 @@ object GlideUtil {
     const val TYPE_RESOURCE = 0
     const val TYPE_PLACEHOLDER = 1
     const val TYPE_ERROR = 2
+
+    private val refererHost = mapOf(
+        ".sinaimg.cn" to "https://sina.cn"
+    )
+
+    private fun wrapReferer(url: String): String {
+        val httpUrl = url.toHttpUrlOrNull() ?: return Bangumi.SERVER
+        refererHost.forEach {
+            if (httpUrl.host.endsWith(it.key)) return it.value
+        }
+        return Bangumi.SERVER
+    }
 
     /**
      * Glide进度
@@ -59,7 +72,10 @@ object GlideUtil {
                 it.load(
                     if (url.isEmpty()) null else GlideUrl(
                         url,
-                        Headers { mapOf("referer" to url.toHttpUrlOrNull().toString(), "user-agent" to HttpUtil.ua) })
+                        Headers {
+                            mapOf("referer" to wrapReferer(url), "user-agent" to HttpUtil.ua)
+                                .filterNot { it.value.isEmpty() }
+                        })
                 )
             }
         }.apply(options).into(object : CustomTarget<Drawable>() {
