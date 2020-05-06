@@ -60,7 +60,7 @@ class HomeFragment: DrawerFragment(R.layout.content_home) {
             select(it.itemId)
             true
         }
-        select(checkedPos)
+        frame_tabs?.selectedItemId = checkedPos
     }
 
     override fun processBack(): Boolean {
