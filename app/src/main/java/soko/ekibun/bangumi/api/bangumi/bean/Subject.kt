@@ -6,7 +6,6 @@ import io.reactivex.Observable
 import okhttp3.FormBody
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
-import org.xmlpull.v1.XmlPullParser
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
@@ -481,53 +480,51 @@ data class Subject(
                         if (lastTag != SaxTag.NONE && !emitter.isDisposed) emitter.onNext(lastTag)
                         lastTag = newTag
                     }
-                    val lastData = ApiHelper.parseWithSax(rsp) { parser, str ->
-                        val attr = { name: String -> parser.getAttributeValue("", name) }
-                        val hasClass = { cls: String -> attr("class")?.split(" ")?.contains(cls) ?: false }
+                    val lastData = ApiHelper.parseSax(rsp) { element, str ->
+                        if (emitter.isDisposed) return@parseSax ApiHelper.SaxEventType.END
                         when {
-                            parser.eventType != XmlPullParser.START_TAG -> ApiHelper.SaxEventType.NOTHING
-                            parser.name == "input" && attr("name") == "formhash" -> {
-                                HttpUtil.formhash = attr("value") ?: HttpUtil.formhash
+                            element.tagName() == "input" && element.attr("name") == "formhash" -> {
+                                HttpUtil.formhash = element.attr("value") ?: HttpUtil.formhash
                                 ApiHelper.SaxEventType.NOTHING
                             }
-                            attr("id") == "navMenuNeue" -> {
-                                HttpUtil.formhash = attr("value") ?: HttpUtil.formhash
+                            element.attr("id") == "navMenuNeue" -> {
+                                HttpUtil.formhash = element.attr("value") ?: HttpUtil.formhash
                                 updateSubject(str(), SaxTag.TYPE)
                                 ApiHelper.SaxEventType.BEGIN
                             }
-                            hasClass("nameSingle") -> {
+                            element.hasClass("nameSingle") -> {
                                 updateSubject(str(), SaxTag.NAME)
                                 ApiHelper.SaxEventType.BEGIN
                             }
-                            attr("id") == "subject_summary" -> {
+                            element.attr("id") == "subject_summary" -> {
                                 updateSubject(str(), SaxTag.SUMMARY)
                                 ApiHelper.SaxEventType.BEGIN
                             }
-                            hasClass("infobox") -> {
+                            element.hasClass("infobox") -> {
                                 updateSubject(str(), SaxTag.IMAGES)
                                 ApiHelper.SaxEventType.BEGIN
                             }
-                            attr("id") == "infobox" -> {
+                            element.attr("id") == "infobox" -> {
                                 updateSubject(str(), SaxTag.INFOBOX)
                                 ApiHelper.SaxEventType.BEGIN
                             }
-                            attr("id") == "subjectPanelCollect" -> {
+                            element.attr("id") == "subjectPanelCollect" -> {
                                 updateSubject(str(), SaxTag.COLLECTION)
                                 ApiHelper.SaxEventType.BEGIN
                             }
-                            attr("id") == "panelInterestWrapper" -> {
+                            element.attr("id") == "panelInterestWrapper" -> {
                                 updateSubject(str(), SaxTag.COLLECT)
                                 ApiHelper.SaxEventType.BEGIN
                             }
-                            hasClass("line_list_music") || hasClass("prg_list") -> {
+                            element.hasClass("line_list_music") || element.hasClass("prg_list") -> {
                                 updateSubject(str(), SaxTag.EPISODES)
                                 ApiHelper.SaxEventType.BEGIN
                             }
-                            hasClass("subject_section") -> {
+                            element.hasClass("subject_section") -> {
                                 updateSubject(str(), SaxTag.SECTIONS)
                                 ApiHelper.SaxEventType.BEGIN
                             }
-                            hasClass("subject_tag_section") -> {
+                            element.hasClass("subject_tag_section") -> {
                                 updateSubject(str(), SaxTag.TAGS)
                                 ApiHelper.SaxEventType.BEGIN
                             }

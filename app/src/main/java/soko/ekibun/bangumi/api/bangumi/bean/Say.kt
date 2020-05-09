@@ -5,7 +5,6 @@ import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.ReplaySubject
 import okhttp3.FormBody
 import org.jsoup.Jsoup
-import org.xmlpull.v1.XmlPullParser
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.util.HttpUtil
@@ -128,15 +127,14 @@ data class Say(
                         }
                     }
 
-                    ApiHelper.parseWithSax(rsp) { parser, str ->
-                        if (emitter.isDisposed) return@parseWithSax ApiHelper.SaxEventType.END
+                    ApiHelper.parseSax(rsp) { element, str ->
+                        if (emitter.isDisposed) return@parseSax ApiHelper.SaxEventType.END
                         when {
-                            parser.eventType != XmlPullParser.START_TAG -> ApiHelper.SaxEventType.NOTHING
-                            parser.getAttributeValue("", "class")?.contains("reply_item") == true -> {
+                            element.hasClass("reply_item") -> {
                                 updateReply(str())
                                 ApiHelper.SaxEventType.BEGIN
                             }
-                            parser.getAttributeValue("", "id") == "footer" -> {
+                            element.attr("id") == "footer" -> {
                                 updateReply(str())
                                 ApiHelper.SaxEventType.END
                             }

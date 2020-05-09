@@ -102,7 +102,7 @@ object HtmlUtil {
         val span = SpannableStringBuilder()
         var endWithBlock: Boolean? = null
 
-        element.childNodes().forEach { node ->
+        element.childNodes().filter { it is Element || it is TextNode }.forEach { node ->
             span.append(
                 when ((node as? Element)?.tagName()?.toLowerCase(Locale.ROOT)) {
                     "div" -> {
@@ -112,42 +112,42 @@ object HtmlUtil {
                             elementChildrenToSpan(node, imageGetter).also {
                                 parseBlockStyle(node, it)
                             })
-                }
-                else -> {
-                    val lineBreak = if (endWithBlock == true) LINE_BREAK else ""
-                    endWithBlock = false
-                    SpannableStringBuilder(lineBreak).append(
-                        if (node is Element) when (node.tagName()) {
-                            "br" -> {
-                                endWithBlock = null
-                                "\n"
-                            }
-                            "img" -> {
-                                val src = node.attr("src")
-                                val sources = Bangumi.parseUrl(src)
-                                val alt = node.attr("alt")
-                                val isSmile = node.hasAttr("smileid")
-                                val imageSpan = ImageSpan(
-                                    imageGetter.getDrawable(sources),
-                                    if (isSmile) alt else src,
-                                    ImageSpan.ALIGN_BASELINE
-                                )
-                                createImageSpan(imageSpan).also {
-                                    if (!isSmile) {
-                                        imageGetter.drawables.add(sources)
-                                        setSpan(
-                                            ClickableImageSpan(imageSpan, imageGetter.onClick),
-                                            it, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                                        )
+                    }
+                    else -> {
+                        val lineBreak = if (endWithBlock == true) LINE_BREAK else ""
+                        endWithBlock = false
+                        SpannableStringBuilder(lineBreak).append(
+                            if (node is Element) when (node.tagName()) {
+                                "br" -> {
+                                    endWithBlock = null
+                                    "\n"
+                                }
+                                "img" -> {
+                                    val src = node.attr("src")
+                                    val sources = Bangumi.parseUrl(src)
+                                    val alt = node.attr("alt")
+                                    val isSmile = node.hasAttr("smileid")
+                                    val imageSpan = ImageSpan(
+                                        imageGetter.getDrawable(sources),
+                                        if (isSmile) alt else src,
+                                        ImageSpan.ALIGN_BASELINE
+                                    )
+                                    createImageSpan(imageSpan).also {
+                                        if (!isSmile) {
+                                            imageGetter.drawables.add(sources)
+                                            setSpan(
+                                                ClickableImageSpan(imageSpan, imageGetter.onClick),
+                                                it, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                                            )
+                                        }
                                     }
                                 }
-                            }
-                            else -> elementChildrenToSpan(node, imageGetter).also {
-                                parseSpanStyle(node, it)
-                            }
-                        } else (node as TextNode).wholeText)
-                }
-            })
+                                else -> elementChildrenToSpan(node, imageGetter).also {
+                                    parseSpanStyle(node, it)
+                                }
+                            } else (node as TextNode).wholeText)
+                    }
+                })
         }
         return span
     }

@@ -2,7 +2,6 @@ package soko.ekibun.bangumi.ui.view
 
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import androidx.annotation.LayoutRes
 import com.google.android.material.appbar.AppBarLayout
@@ -44,12 +43,5 @@ abstract class BaseFragmentActivity(@LayoutRes private val resId: Int? = null) :
 
     override fun setTitle(title: CharSequence?) {
         collapsibleAppBarHelper.setTitle(title.toString(), supportActionBar?.subtitle?.toString())
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> finish()
-        }
-        return super.onOptionsItemSelected(item)
     }
 }

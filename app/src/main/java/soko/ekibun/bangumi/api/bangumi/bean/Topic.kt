@@ -5,7 +5,6 @@ import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.ReplaySubject
 import okhttp3.FormBody
 import org.jsoup.Jsoup
-import org.xmlpull.v1.XmlPullParser
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.util.HttpUtil
@@ -179,14 +178,14 @@ data class Topic(
                             replyPub.onNext(str)
                         }
                     }
-                    val lastData = ApiHelper.parseWithSax(rsp) { parser, str ->
+                    val lastData = ApiHelper.parseSax(rsp) { element, str ->
+                        if (emitter.isDisposed) return@parseSax ApiHelper.SaxEventType.END
                         when {
-                            parser.eventType != XmlPullParser.START_TAG -> ApiHelper.SaxEventType.NOTHING
-                            parser.getAttributeValue("", "class")?.contains(Regex("row_reply|postTopic")) == true -> {
+                            element.attr("class").contains(Regex("row_reply|postTopic")) -> {
                                 updateReply(str())
                                 ApiHelper.SaxEventType.BEGIN
                             }
-                            parser.getAttributeValue("", "id")?.contains("reply_wrapper") == true -> {
+                            element.attr("id")?.contains("reply_wrapper") == true -> {
                                 updateReply(str())
                                 ApiHelper.SaxEventType.BEGIN
                             }

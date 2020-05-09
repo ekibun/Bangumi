@@ -7,7 +7,6 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
-import org.xmlpull.v1.XmlPullParser
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.bean.*
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
@@ -212,11 +211,10 @@ object Bangumi {
                 val ret = ArrayList<Subject>()
                 var subjectLoaded = false
 
-                ApiHelper.parseWithSax(rsp) { parser, str ->
-                    if (emitter.isDisposed) return@parseWithSax ApiHelper.SaxEventType.END
+                ApiHelper.parseSax(rsp) { element, str ->
+                    if (emitter.isDisposed) return@parseSax ApiHelper.SaxEventType.END
                     when {
-                        parser.eventType != XmlPullParser.START_TAG -> ApiHelper.SaxEventType.NOTHING
-                        parser.getAttributeValue("", "id")?.contains("columnHomeA") == true -> {
+                        element.attr("id").contains("columnHomeA") -> {
                             val s = str()
                             val doc = Jsoup.parse(s)
                             val user = doc.selectFirst(".idBadgerNeue a.avatar") ?: throw Exception("login failed")
@@ -240,14 +238,14 @@ object Bangumi {
                             )
                             ApiHelper.SaxEventType.BEGIN
                         }
-                        parser.getAttributeValue("", "id")?.startsWith("home_") == true && !subjectLoaded -> {
+                        element.attr("id").startsWith("home_") && !subjectLoaded -> {
                             subjectLoaded = true
                             ret += Jsoup.parse(str()).select(".infoWrapper").mapNotNull {
                                 Subject.parseChaseCollection(it)
                             }
                             ApiHelper.SaxEventType.BEGIN
                         }
-                        parser.getAttributeValue("", "id")?.contains("subject_prg_content") == true -> {
+                        element.attr("id").contains("subject_prg_content") -> {
                             val doc = Jsoup.parse(str())
                             emitter.onNext(
                                 Pair(

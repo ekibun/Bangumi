@@ -94,7 +94,10 @@ abstract class BaseActivity(@LayoutRes private val resId: Int) : AppCompatActivi
     var onBackListener = { false }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            android.R.id.home -> if (!onBackListener()) finish()
+            android.R.id.home -> {
+                if (!onBackListener()) finish()
+                return true
+            }
         }
         return super.onOptionsItemSelected(item)
     }
