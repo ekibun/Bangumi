@@ -64,8 +64,8 @@ class HomeFragment: DrawerFragment(R.layout.content_home) {
     }
 
     override fun processBack(): Boolean {
-        if (frame_pager == null || checkedPos == 1) return false
-        select(1)
+        if (frame_pager == null || frame_tabs?.selectedItemId == 1) return false
+        frame_tabs?.selectedItemId = 1
         return true
     }
 
@@ -77,7 +77,7 @@ class HomeFragment: DrawerFragment(R.layout.content_home) {
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         super.onViewStateRestored(savedInstanceState)
         savedInstanceState?.getInt("home_select_index")?.let {
-            select(it)
+            frame_tabs?.selectedItemId = it
         }
     }
 

@@ -130,7 +130,7 @@ object ApiHelper {
         END
     }
 
-    private val tagMatcher = "<([a-zA-Z]+)(.*?)>".toRegex()
+    private val tagMatcher = "<([a-z]+?)(.+?)>".toRegex(RegexOption.IGNORE_CASE)
     private val attrMatcher = """ (.*?)="(.*?)"""".toRegex()
 
     /**
@@ -141,29 +141,32 @@ object ApiHelper {
      */
     fun parseSax(rsp: okhttp3.Response, checkEvent: (Element, () -> String) -> SaxEventType): String {
         val stream = rsp.body!!.charStream()
-        var chars = ""
+        val chars = StringBuilder()
+        val buffer = CharArray(8192)
         var lastLineIndex = 0
         var lastClipIndex = 0
-        stream.forEachLine { line ->
-            chars += "\n" + line
-            while (true) {
-                val match = tagMatcher.find(chars, lastLineIndex - lastClipIndex) ?: break
-                lastLineIndex = match.range.last + lastClipIndex + 1
-                val curIndex = match.range.first + lastClipIndex
+        outer@ while (true) {
+            val len = stream.read(buffer)
+            if (len < 0) break
+            chars.append(buffer, 0, len)
+            val findLastClipIndex = lastClipIndex
+            for (match in tagMatcher.findAll(chars, lastLineIndex - lastClipIndex)) {
+                lastLineIndex = match.range.last + findLastClipIndex + 1
+                val curIndex = match.range.first + findLastClipIndex
                 val event =
                     checkEvent(Element(Tag.valueOf(match.groupValues[1]), Bangumi.SERVER, Attributes().also { attrs ->
                         attrMatcher.findAll(match.groupValues[2]).forEach {
                             attrs.add(it.groupValues[1], it.groupValues[2])
                         }
                     })) {
-                        chars.substring(0, curIndex - lastClipIndex)
+                        chars.substring(lastClipIndex - findLastClipIndex, curIndex - findLastClipIndex)
                     }
                 if (event == SaxEventType.BEGIN) {
-                    chars = chars.substring(curIndex - lastClipIndex)
                     lastClipIndex = curIndex
-                } else if (event == SaxEventType.END) break
+                } else if (event == SaxEventType.END) break@outer
             }
+            chars.delete(0, lastClipIndex - findLastClipIndex)
         }
-        return chars
+        return chars.toString()
     }
 }
