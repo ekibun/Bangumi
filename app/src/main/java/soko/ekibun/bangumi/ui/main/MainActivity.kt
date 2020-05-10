@@ -41,7 +41,8 @@ class MainActivity : BaseActivity(R.layout.activity_main) {
         menuInflater.inflate(R.menu.action_main, menu)
 
         val menuItem = menu.findItem(R.id.action_notify)
-        notifyMenu = MenuItemCompat.getActionProvider(menuItem) as NotifyActionProvider
+        notifyMenu = MenuItemCompat.getActionProvider(menuItem) as? NotifyActionProvider
+        notifyMenu?.badge = mainPresenter.notify?.let { it.first + it.second } ?: 0
         notifyMenu?.onClick = {
             val inbox = mainPresenter.notify?.first ?: 0
             val notify = mainPresenter.notify?.second ?: 0

@@ -257,6 +257,7 @@ class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
                     InputMethodManager.HIDE_NOT_ALWAYS
                 )
             } else {
+                view.item_input.requestFocus()
                 inputMethodManager.showSoftInput(view.item_input, 0)
             }
             updateEmojiList()
