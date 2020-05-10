@@ -98,7 +98,7 @@ class CalendarPagerAdapter(private val view: ViewGroup) : RecyclePagerAdapter<Ca
         holder.position = position
     }
 
-    fun setOnAirList(it: List<BangumiCalendarItem>) {
+    fun setOnAirList(it: List<BangumiCalendarItem>, callback: () -> Unit = {}) {
         val collectionList = mainPresenter?.collectionList ?: ArrayList()
         (view.context as? BaseActivity)?.disposeContainer?.subscribeOnUiThread(
             Observable.just(it).observeOn(Schedulers.computation()).map { raw ->
@@ -157,6 +157,7 @@ class CalendarPagerAdapter(private val view: ViewGroup) : RecyclePagerAdapter<Ca
                     }
                 }
             },
+            onComplete = callback,
             key = CALENDAR_COMPUTE_CALL
         )
     }
@@ -172,8 +173,11 @@ class CalendarPagerAdapter(private val view: ViewGroup) : RecyclePagerAdapter<Ca
     }
 
     fun calendarCallback(data: List<BangumiCalendarItem>?, error: Throwable?) {
-        view.item_swipe.isRefreshing = false
-        setOnAirList(data ?: return)
+        if (data == null) {
+            view.item_swipe.isRefreshing = false
+        } else setOnAirList(data) {
+            view.item_swipe.isRefreshing = false
+        }
     }
 
     private fun parseDate(date: Int): String {
