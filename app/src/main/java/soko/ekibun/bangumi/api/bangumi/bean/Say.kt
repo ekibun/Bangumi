@@ -127,14 +127,14 @@ data class Say(
                         }
                     }
 
-                    ApiHelper.parseSax(rsp) { element, str ->
+                    ApiHelper.parseSax(rsp) { tag, attrs, str ->
                         if (emitter.isDisposed) return@parseSax ApiHelper.SaxEventType.END
                         when {
-                            element.hasClass("reply_item") -> {
+                            attrs.contains("reply_item") -> {
                                 updateReply(str())
                                 ApiHelper.SaxEventType.BEGIN
                             }
-                            element.attr("id") == "footer" -> {
+                            attrs.contains("id=\"footer\"") -> {
                                 updateReply(str())
                                 ApiHelper.SaxEventType.END
                             }

@@ -122,7 +122,7 @@ data class Topic(
                     var beforeData = ""
 
                     val replyPub = ReplaySubject.create<String>()
-                    val observable = replyPub.subscribeOn(Schedulers.newThread()).buffer(20).flatMap { str ->
+                    val observable = replyPub.subscribeOn(Schedulers.newThread()).buffer(50).flatMap { str ->
                         Observable.just(0).observeOn(Schedulers.computation()).takeWhile {
                             !emitter.isDisposed
                         }.map {
@@ -178,14 +178,14 @@ data class Topic(
                             replyPub.onNext(str)
                         }
                     }
-                    val lastData = ApiHelper.parseSax(rsp) { element, str ->
+                    val lastData = ApiHelper.parseSax(rsp) { tag, attrs, str ->
                         if (emitter.isDisposed) return@parseSax ApiHelper.SaxEventType.END
                         when {
-                            element.attr("class").contains(Regex("row_reply|postTopic")) -> {
+                            attrs.contains("row_reply") || attrs.contains("postTopic") -> {
                                 updateReply(str())
                                 ApiHelper.SaxEventType.BEGIN
                             }
-                            element.attr("id")?.contains("reply_wrapper") == true -> {
+                            attrs.contains("reply_wrapper") -> {
                                 updateReply(str())
                                 ApiHelper.SaxEventType.BEGIN
                             }

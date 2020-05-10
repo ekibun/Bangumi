@@ -310,7 +310,7 @@ class SubjectView(private val context: SubjectActivity) {
             }
         }
 
-        if (tag == null || tag == Subject.SaxTag.IMAGES) {
+        if (tag == null || tag == Subject.SaxTag.INFOBOX) {
             GlideUtil.with(detail.item_cover)
                 ?.load(Images.getImage(subject.image))
                 ?.apply(RequestOptions.errorOf(R.drawable.err_404).placeholder(detail.item_cover.drawable))

@@ -251,8 +251,13 @@ class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
             view.context.applicationContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         view.item_btn_emoji.setOnClickListener {
             view.item_btn_emoji.isSelected = !view.item_btn_emoji.isSelected
-            if (insetsBottom > 200 == view.item_btn_emoji.isSelected) {
-                inputMethodManager.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS)
+            if (view.item_btn_emoji.isSelected) {
+                inputMethodManager.hideSoftInputFromWindow(
+                    view.item_input.windowToken,
+                    InputMethodManager.HIDE_NOT_ALWAYS
+                )
+            } else {
+                inputMethodManager.showSoftInput(view.item_input, 0)
             }
             updateEmojiList()
             if (view.item_emoji_list.visibility == View.GONE && insetsBottom < 200) {

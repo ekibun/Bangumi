@@ -211,10 +211,10 @@ object Bangumi {
                 val ret = ArrayList<Subject>()
                 var subjectLoaded = false
 
-                ApiHelper.parseSax(rsp) { element, str ->
+                ApiHelper.parseSax(rsp) { tag, attrs, str ->
                     if (emitter.isDisposed) return@parseSax ApiHelper.SaxEventType.END
                     when {
-                        element.attr("id").contains("columnHomeA") -> {
+                        attrs.contains("id=\"columnHomeA\"") -> {
                             val s = str()
                             val doc = Jsoup.parse(s)
                             val user = doc.selectFirst(".idBadgerNeue a.avatar") ?: throw Exception("login failed")
@@ -238,14 +238,14 @@ object Bangumi {
                             )
                             ApiHelper.SaxEventType.BEGIN
                         }
-                        element.attr("id").startsWith("home_") && !subjectLoaded -> {
+                        attrs.contains("id=\"home_") && !subjectLoaded -> {
                             subjectLoaded = true
                             ret += Jsoup.parse(str()).select(".infoWrapper").mapNotNull {
                                 Subject.parseChaseCollection(it)
                             }
                             ApiHelper.SaxEventType.BEGIN
                         }
-                        element.attr("id").contains("subject_prg_content") -> {
+                        attrs.contains("id=\"subject_prg_content\"") -> {
                             val doc = Jsoup.parse(str())
                             emitter.onNext(
                                 Pair(

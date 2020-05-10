@@ -134,7 +134,7 @@ data class Subject(
      * Sax tag
      */
     enum class SaxTag {
-        NONE, TYPE, NAME, SUMMARY, IMAGES, INFOBOX, EPISODES, TAGS, COLLECTION, COLLECT, SECTIONS, CHARACTOR, TOPIC, BLOG, LINKED, RECOMMEND, SEASON, ONAIR
+        NONE, TYPE, NAME, SUMMARY, INFOBOX, EPISODES, TAGS, COLLECTION, COLLECT, SECTIONS, CHARACTOR, TOPIC, BLOG, LINKED, RECOMMEND, SEASON, ONAIR
     }
 
     companion object {
@@ -249,10 +249,9 @@ data class Subject(
                             SaxTag.SUMMARY -> subject.summary =
                                 doc.selectFirst("#subject_summary")?.let { HtmlUtil.html2text(it.html()) }
                                     ?: subject.summary
-                            SaxTag.IMAGES -> subject.image =
-                                doc.selectFirst(".infobox img.cover")?.let { Bangumi.parseImageUrl(it) }
-                                    ?: subject.image
                             SaxTag.INFOBOX -> {
+                                subject.image = doc.selectFirst(".infobox img.cover")?.let { Bangumi.parseImageUrl(it) }
+                                    ?: subject.image
                                 val infobox = doc.select("#infobox li")?.map { li ->
                                     val tip = li.selectFirst("span.tip")?.text() ?: ""
                                     var value = ""
@@ -480,51 +479,42 @@ data class Subject(
                         if (lastTag != SaxTag.NONE && !emitter.isDisposed) emitter.onNext(lastTag)
                         lastTag = newTag
                     }
-                    val lastData = ApiHelper.parseSax(rsp) { element, str ->
+                    val lastData = ApiHelper.parseSax(rsp) { tag, attrs, str ->
                         if (emitter.isDisposed) return@parseSax ApiHelper.SaxEventType.END
                         when {
-                            element.tagName() == "input" && element.attr("name") == "formhash" -> {
-                                HttpUtil.formhash = element.attr("value") ?: HttpUtil.formhash
-                                ApiHelper.SaxEventType.NOTHING
-                            }
-                            element.attr("id") == "navMenuNeue" -> {
-                                HttpUtil.formhash = element.attr("value") ?: HttpUtil.formhash
+                            attrs.contains("id=\"menuNeue\"") -> {
                                 updateSubject(str(), SaxTag.TYPE)
                                 ApiHelper.SaxEventType.BEGIN
                             }
-                            element.hasClass("nameSingle") -> {
+                            attrs.contains("id=\"headerSubject\"") -> {
                                 updateSubject(str(), SaxTag.NAME)
                                 ApiHelper.SaxEventType.BEGIN
                             }
-                            element.attr("id") == "subject_summary" -> {
+                            attrs.contains("id=\"subject_summary\"") -> {
                                 updateSubject(str(), SaxTag.SUMMARY)
                                 ApiHelper.SaxEventType.BEGIN
                             }
-                            element.hasClass("infobox") -> {
-                                updateSubject(str(), SaxTag.IMAGES)
-                                ApiHelper.SaxEventType.BEGIN
-                            }
-                            element.attr("id") == "infobox" -> {
+                            attrs.contains("class=\"infobox\"") -> {
                                 updateSubject(str(), SaxTag.INFOBOX)
                                 ApiHelper.SaxEventType.BEGIN
                             }
-                            element.attr("id") == "subjectPanelCollect" -> {
+                            attrs.contains("id=\"subjectPanelCollect\"") -> {
                                 updateSubject(str(), SaxTag.COLLECTION)
                                 ApiHelper.SaxEventType.BEGIN
                             }
-                            element.attr("id") == "panelInterestWrapper" -> {
+                            attrs.contains("id=\"panelInterestWrapper\"") -> {
                                 updateSubject(str(), SaxTag.COLLECT)
                                 ApiHelper.SaxEventType.BEGIN
                             }
-                            element.hasClass("line_list_music") || element.hasClass("prg_list") -> {
+                            attrs.contains("line_list_music") || attrs.contains("prg_list") -> {
                                 updateSubject(str(), SaxTag.EPISODES)
                                 ApiHelper.SaxEventType.BEGIN
                             }
-                            element.hasClass("subject_section") -> {
+                            attrs.contains("subject_section") -> {
                                 updateSubject(str(), SaxTag.SECTIONS)
                                 ApiHelper.SaxEventType.BEGIN
                             }
-                            element.hasClass("subject_tag_section") -> {
+                            attrs.contains("subject_tag_section") -> {
                                 updateSubject(str(), SaxTag.TAGS)
                                 ApiHelper.SaxEventType.BEGIN
                             }

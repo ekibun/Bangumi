@@ -10,11 +10,7 @@ import io.reactivex.exceptions.Exceptions
 import io.reactivex.plugins.RxJavaPlugins
 import io.reactivex.schedulers.Schedulers
 import okhttp3.RequestBody
-import org.jsoup.nodes.Attributes
-import org.jsoup.nodes.Element
-import org.jsoup.parser.Tag
 import soko.ekibun.bangumi.App
-import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.util.HttpUtil
 import java.io.IOException
 import java.util.*
@@ -130,8 +126,7 @@ object ApiHelper {
         END
     }
 
-    private val tagMatcher = "<([a-z]+?)(.+?)>".toRegex(RegexOption.IGNORE_CASE)
-    private val attrMatcher = """ (.*?)="(.*?)"""".toRegex()
+    private val tagMatcher = "<(div|li)(.+?)>".toRegex(RegexOption.IGNORE_CASE)
 
     /**
      * Sax解析
@@ -139,7 +134,7 @@ object ApiHelper {
      * @param checkEvent Function2<Element, String, SaxEventType>
      * @return String
      */
-    fun parseSax(rsp: okhttp3.Response, checkEvent: (Element, () -> String) -> SaxEventType): String {
+    fun parseSax(rsp: okhttp3.Response, checkEvent: (String, String, () -> String) -> SaxEventType): String {
         val stream = rsp.body!!.charStream()
         val chars = StringBuilder()
         val buffer = CharArray(8192)
@@ -153,14 +148,9 @@ object ApiHelper {
             for (match in tagMatcher.findAll(chars, lastLineIndex - lastClipIndex)) {
                 lastLineIndex = match.range.last + findLastClipIndex + 1
                 val curIndex = match.range.first + findLastClipIndex
-                val event =
-                    checkEvent(Element(Tag.valueOf(match.groupValues[1]), Bangumi.SERVER, Attributes().also { attrs ->
-                        attrMatcher.findAll(match.groupValues[2]).forEach {
-                            attrs.add(it.groupValues[1], it.groupValues[2])
-                        }
-                    })) {
-                        chars.substring(lastClipIndex - findLastClipIndex, curIndex - findLastClipIndex)
-                    }
+                val event = checkEvent(match.groupValues[1], match.groupValues[2]) {
+                    chars.substring(lastClipIndex - findLastClipIndex, curIndex - findLastClipIndex)
+                }
                 if (event == SaxEventType.BEGIN) {
                     lastClipIndex = curIndex
                 } else if (event == SaxEventType.END) break@outer
