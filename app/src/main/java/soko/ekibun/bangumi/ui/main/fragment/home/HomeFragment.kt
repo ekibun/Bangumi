@@ -64,8 +64,8 @@ class HomeFragment: DrawerFragment(R.layout.content_home) {
     }
 
     override fun processBack(): Boolean {
-        if (frame_pager == null || frame_tabs?.selectedItemId == 1) return false
-        frame_tabs?.selectedItemId = 1
+        if (frame_pager == null || frame_tabs?.selectedItemId == R.id.item_collect) return false
+        frame_tabs?.selectedItemId = R.id.item_collect
         return true
     }
 
