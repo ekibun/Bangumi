@@ -74,7 +74,7 @@ object HtmlUtil {
             text.getSpans(0, text.length, ImageSpan::class.java).filterNot {
                 span.getSpanFlags(it) == 0
             }.forEach {
-                (it.drawable as? UrlDrawable)?.cancel()
+                (it.drawable as? UrlDrawable)?.cancel(textView)
             }
         }
         // 更新引用

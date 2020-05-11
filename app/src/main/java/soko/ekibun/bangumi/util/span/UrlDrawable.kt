@@ -3,6 +3,7 @@ package soko.ekibun.bangumi.util.span
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.util.Size
+import android.widget.TextView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
@@ -20,8 +21,11 @@ open class UrlDrawable(
 ) : TextViewDrawable() {
 
     private var target: Target<Drawable>? = null
-    fun cancel() {
+    fun cancel(textView: TextView) {
+        val view = container
+        if (view != textView) return
         container?.get()?.let { GlideUtil.with(it) }?.clear(target)
+        container = null
         error = null
         drawable = null
     }
@@ -54,7 +58,10 @@ open class UrlDrawable(
      * 加载图片
      */
     open fun loadImage() {
-        if (error == false) return // 加载完成不再加载
+        if (error == false) {
+            drawable?.let { update(it) }
+            return
+        } // 加载完成不再加载
         val url = this.url ?: return
         val view = container?.get()
         view?.post {

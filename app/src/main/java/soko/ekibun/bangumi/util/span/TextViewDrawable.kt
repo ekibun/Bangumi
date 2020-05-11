@@ -14,8 +14,8 @@ open class TextViewDrawable : AnimationDrawable() {
 
     open var drawable: Drawable? = null
         set(drawable) {
-            (field as? Animatable)?.stop()
             field?.callback = null
+            (field as? Animatable)?.stop()
             field = drawable
             if (drawable == null) return
             drawable.callback = drawableCallback

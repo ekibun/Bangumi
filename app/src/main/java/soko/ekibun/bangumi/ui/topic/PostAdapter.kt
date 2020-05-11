@@ -112,7 +112,10 @@ class PostAdapter() :
                             }
                         }
                     }
-                    HtmlUtil.attachToTextView(largeContent.getOrPut(item.pst_content, makeSpan), item_message)
+                    HtmlUtil.attachToTextView(
+                        largeContent.getOrPut(item.pst_id + "_" + item.pst_content, makeSpan),
+                        item_message
+                    )
                 }
                 helper.itemView.item_message.onFocusChangeListener = View.OnFocusChangeListener { view, focus ->
                     if (!focus) {

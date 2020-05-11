@@ -43,6 +43,7 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
         context.item_swipe.setOnRefreshListener {
             getTopic()
         }
+        topicView.adapter.loadMoreModule.isAutoLoadMore = false
         topicView.adapter.loadMoreModule.setOnLoadMoreListener {
             if (loadMoreFail == true) getTopic()
         }
