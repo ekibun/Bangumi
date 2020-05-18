@@ -375,9 +375,5 @@
                 android:layout_marginLeft="4dp"
                 android:layout_marginRight="4dp"
                 android:text="@string/subject_comment"/>
-
-        <include
-                layout="@layout/brvah_quick_view_load_more"
-                android:id="@+id/comment_load_info"/>
     </LinearLayout>
 </LinearLayout>

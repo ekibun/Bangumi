@@ -12,7 +12,6 @@ import io.reactivex.schedulers.Schedulers
 import okhttp3.RequestBody
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.util.HttpUtil
-import java.io.IOException
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -79,42 +78,29 @@ object ApiHelper {
             emitter.setCancellable {
                 httpCall.cancel()
             }
-            if (!emitter.isDisposed) httpCall.enqueue(object : okhttp3.Callback {
-                override fun onFailure(call: okhttp3.Call, e: IOException) {
-                    if (httpCall.isCanceled()) return
+            var terminated = false
+            try {
+                if (!emitter.isDisposed) {
+                    emitter.onNext(httpCall.execute())
+                }
+                if (!emitter.isDisposed) {
+                    terminated = true
+                    emitter.onComplete()
+                }
+            } catch (t: Throwable) {
+                Exceptions.throwIfFatal(t)
+                if (terminated) {
+                    RxJavaPlugins.onError(t)
+                } else if (!emitter.isDisposed) {
                     try {
-                        emitter.onError(e)
+                        emitter.onError(t)
                     } catch (inner: Throwable) {
                         Exceptions.throwIfFatal(inner)
-                        RxJavaPlugins.onError(CompositeException(e, inner))
+                        RxJavaPlugins.onError(CompositeException(t, inner))
                     }
                 }
-
-                override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
-                    if (emitter.isDisposed) return
-                    var terminated = false
-                    try {
-                        emitter.onNext(response)
-                        if (!emitter.isDisposed) {
-                            terminated = true
-                            emitter.onComplete()
-                        }
-                    } catch (t: Throwable) {
-                        Exceptions.throwIfFatal(t)
-                        if (terminated) {
-                            RxJavaPlugins.onError(t)
-                        } else if (!emitter.isDisposed) {
-                            try {
-                                emitter.onError(t)
-                            } catch (inner: Throwable) {
-                                Exceptions.throwIfFatal(inner)
-                                RxJavaPlugins.onError(CompositeException(t, inner))
-                            }
-                        }
-                    }
-                }
-            })
-        }.subscribeOn(Schedulers.computation())
+            }
+        }.subscribeOn(Schedulers.io())
     }
 
     /**

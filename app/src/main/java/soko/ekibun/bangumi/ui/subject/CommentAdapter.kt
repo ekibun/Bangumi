@@ -1,6 +1,6 @@
 package soko.ekibun.bangumi.ui.subject
 
-import android.annotation.SuppressLint
+import android.view.View
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.module.LoadMoreModule
@@ -19,8 +19,8 @@ class CommentAdapter(data: MutableList<Comment>? = null) :
     BaseQuickAdapter<Comment, BaseViewHolder>(R.layout.item_comment, data), LoadMoreModule {
 
     override fun convert(holder: BaseViewHolder, item: Comment) {
-        @SuppressLint("SetTextI18n")
-        holder.itemView.item_user.text = "${item.user?.nickname}"
+        holder.itemView.item_layout.visibility = if (item.user == null) View.GONE else View.VISIBLE
+        holder.itemView.item_user.text = item.user?.name
         holder.itemView.item_time.text = item.time
         holder.itemView.item_title.text = item.comment
         //helper.itemView.item_rate.visibility = if(item.rate == 0) View.GONE else View.VISIBLE

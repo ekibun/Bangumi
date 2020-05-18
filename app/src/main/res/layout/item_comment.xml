@@ -1,82 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/item_layout"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:clickable="true"
-        android:background="?selectableItemBackground"
-        android:focusable="true"
-        android:transitionName="container"
-        tools:ignore="RtlHardcoded,HardcodedText">
+        android:layout_height="wrap_content">
 
-    <com.github.siyamed.shapeimageview.CircularImageView
-            app:siBorderAlpha="0"
-            android:id="@+id/item_avatar"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:scaleType="centerCrop"
-            tools:ignore="ContentDescription"
-            tools:src="@drawable/err_404"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/item_user"
-            app:layout_constraintBottom_toBottomOf="@+id/item_time"/>
-    <TextView
-            android:id="@+id/item_user"
-            android:layout_width="0dp"
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/item_layout"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:singleLine="true"
-            android:textSize="@dimen/textSizeMedium"
-            android:padding="1dp"
-            tools:text="User Name"
-            app:layout_constraintLeft_toRightOf="@+id/item_avatar"
-            app:layout_constraintRight_toLeftOf="@+id/item_rate"
-            app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginLeft="8dp"/>
-    <TextView
-            android:id="@+id/item_time"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:textSize="@dimen/textSizeSmall"
-            android:padding="1dp"
-            android:ellipsize="end"
-            android:maxLines="4"
-            tools:text="2019-04-23 16:41"
-            app:layout_constraintLeft_toLeftOf="@+id/item_user"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/item_user"/>
-    <TextView
-            android:layout_marginTop="2dp"
-            android:layout_marginStart="4dp"
-            android:id="@+id/item_title"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textSize="@dimen/textSizeMedium"
-            android:textColor="?android:textColorPrimary"
-            android:padding="1dp"
-            tools:text="Comment Content"
-            app:layout_constraintLeft_toRightOf="@+id/item_avatar"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/item_time"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
-    <RatingBar
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/item_rate"
-            app:layout_constraintTop_toTopOf="@+id/item_user"
-            style="@style/Widget.AppCompat.RatingBar.Small"
-            android:numStars="5"
-            android:stepSize="0.5"
-            tools:rating="2.5"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:clickable="true"
+            android:background="?selectableItemBackground"
+            android:focusable="true"
+            android:transitionName="container"
+            tools:ignore="RtlHardcoded,HardcodedText">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <com.github.siyamed.shapeimageview.CircularImageView
+                app:siBorderAlpha="0"
+                android:id="@+id/item_avatar"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:scaleType="centerCrop"
+                tools:ignore="ContentDescription"
+                tools:src="@drawable/err_404"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/item_user"
+                app:layout_constraintBottom_toBottomOf="@+id/item_time"/>
+
+        <TextView
+                android:id="@+id/item_user"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textSize="@dimen/textSizeMedium"
+                android:padding="1dp"
+                tools:text="User Name"
+                app:layout_constraintLeft_toRightOf="@+id/item_avatar"
+                app:layout_constraintRight_toLeftOf="@+id/item_rate"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginLeft="8dp"/>
+
+        <TextView
+                android:id="@+id/item_time"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textSize="@dimen/textSizeSmall"
+                android:padding="1dp"
+                android:ellipsize="end"
+                android:maxLines="4"
+                tools:text="2019-04-23 16:41"
+                app:layout_constraintLeft_toLeftOf="@+id/item_user"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/item_user"/>
+
+        <TextView
+                android:layout_marginTop="2dp"
+                android:layout_marginStart="4dp"
+                android:id="@+id/item_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/textSizeMedium"
+                android:textColor="?android:textColorPrimary"
+                android:padding="1dp"
+                tools:text="Comment Content"
+                app:layout_constraintLeft_toRightOf="@+id/item_avatar"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/item_time"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+        <RatingBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/item_rate"
+                app:layout_constraintTop_toTopOf="@+id/item_user"
+                style="@style/Widget.AppCompat.RatingBar.Small"
+                android:numStars="5"
+                android:stepSize="0.5"
+                tools:rating="2.5"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</RelativeLayout>

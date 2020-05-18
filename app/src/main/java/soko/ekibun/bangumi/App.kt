@@ -3,14 +3,10 @@ package soko.ekibun.bangumi
 import android.app.Application
 import android.content.Context
 import android.content.Intent
-import android.view.View
-import android.view.ViewGroup
+import android.widget.Toast
 import androidx.preference.PreferenceManager
-import com.chad.library.adapter.base.loadmore.BaseLoadMoreView
-import com.chad.library.adapter.base.module.LoadMoreModuleConfig
-import com.chad.library.adapter.base.util.getItemView
-import com.chad.library.adapter.base.viewholder.BaseViewHolder
 import com.umeng.commonsdk.UMConfigure
+import io.reactivex.plugins.RxJavaPlugins
 import soko.ekibun.bangumi.model.*
 import soko.ekibun.bangumi.util.HttpUtil
 
@@ -31,6 +27,9 @@ class App : Application() {
         app = this
         HistoryModel.migrateIntoSql()
 
+        RxJavaPlugins.setErrorHandler {
+            Toast.makeText(this, it.message, Toast.LENGTH_SHORT).show()
+        }
 
         HttpUtil.formhash = UserModel.userList.let { it.users[it.current] }?.formhash ?: HttpUtil.formhash
         ThemeModel.setTheme(this, ThemeModel.getTheme())
@@ -41,23 +40,6 @@ class App : Application() {
             UMConfigure.DEVICE_TYPE_PHONE,
             null
         )
-
-        LoadMoreModuleConfig.defLoadMoreView = object : BaseLoadMoreView() {
-
-            override fun getRootView(parent: ViewGroup): View =
-                parent.getItemView(R.layout.brvah_quick_view_load_more)
-
-            override fun getLoadingView(holder: BaseViewHolder): View =
-                holder.getView(R.id.load_more_loading_view)
-
-            override fun getLoadComplete(holder: BaseViewHolder): View = View(holder.itemView.context)
-
-            override fun getLoadEndView(holder: BaseViewHolder): View =
-                holder.getView(R.id.load_more_load_end_view)
-
-            override fun getLoadFailView(holder: BaseViewHolder): View =
-                holder.getView(R.id.load_more_load_fail_view)
-        }
 
         pluginInstance = PluginsModel.createPluginInstance(this)
     }

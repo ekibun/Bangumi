@@ -60,7 +60,7 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
      * @param scrollPost String
      */
     fun getTopic(scrollPost: String = "") {
-        topicView.adapter.loadMoreModule.loadMoreComplete()
+        topicView.adapter.loadMoreModule.loadMoreToLoading()
         loadMoreFail = null
         context.item_swipe.isRefreshing = true
 
@@ -75,6 +75,7 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
                         } else {
                             processTopic(topic, scrollPost)
                             dataCacheModel.set(topic.cacheKey, topic)
+                            topicView.adapter.loadMoreModule.loadMoreEnd()
                         }
                     }
                     is List<*> -> data.map { it as TopicPost }.forEach { post ->

@@ -6,7 +6,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
 import io.reactivex.Observable
 import kotlinx.android.synthetic.main.activity_subject.*
-import kotlinx.android.synthetic.main.brvah_quick_view_load_more.view.*
 import kotlinx.android.synthetic.main.dialog_subject.view.*
 import kotlinx.android.synthetic.main.subject_detail.view.*
 import soko.ekibun.bangumi.App
@@ -56,11 +55,9 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
             WebActivity.launchUrl(context, subjectView.sitesAdapter.data[position].url(), "")
         }
 
+        subjectView.commentAdapter.data.add(0, Comment())
         subjectView.commentAdapter.loadMoreModule.setOnLoadMoreListener { loadComment(subject) }
         loadComment(subject)
-        subjectView.detail.load_more_load_fail_view.setOnClickListener {
-            loadComment(subject)
-        }
 
         context.item_swipe.setOnRefreshListener {
             refresh()
@@ -267,34 +264,19 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
 
     private fun loadComment(subject: Subject) {
         val page = commentPage
-        subjectView.detail.comment_load_info.visibility = if (page == 1) View.VISIBLE else View.GONE
-        subjectView.detail.load_more_loading_view.visibility = View.VISIBLE
-        subjectView.detail.load_more_load_fail_view.visibility = View.GONE
-        subjectView.detail.load_more_load_end_view.visibility = View.GONE
 
         context.disposeContainer.subscribeOnUiThread(
             Comment.getSubjectComment(subject, page),
             {
                 commentPage++
-                if (page == 1)
-                    subjectView.commentAdapter.setNewInstance(null)
+                subjectView.commentAdapter.addData(it)
                 if (it.isEmpty()) {
-                    subjectView.detail.load_more_loading_view.visibility = View.GONE
-                    subjectView.detail.load_more_load_fail_view.visibility = View.GONE
-                    subjectView.detail.load_more_load_end_view.visibility = View.VISIBLE
                     subjectView.commentAdapter.loadMoreModule.loadMoreEnd()
                 } else {
-                    subjectView.detail.comment_load_info.visibility = View.GONE
                     subjectView.commentAdapter.loadMoreModule.loadMoreComplete()
-                    subjectView.commentAdapter.addData(it)
                 }
             }, {
-                subjectView.detail.item_comment_header.visibility = View.VISIBLE
                 subjectView.commentAdapter.loadMoreModule.loadMoreFail()
-
-                subjectView.detail.load_more_loading_view.visibility = View.GONE
-                subjectView.detail.load_more_load_fail_view.visibility = View.VISIBLE
-                subjectView.detail.load_more_load_end_view.visibility = View.GONE
             },
             key = "bangumi_subject_comment"
         )

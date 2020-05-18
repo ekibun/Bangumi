@@ -31,7 +31,7 @@
                     android:id="@+id/item_list"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:paddingBottom="45dp"
+                    android:paddingBottom="48dp"
                     android:clipToPadding="false"
                     app:fastScrollThumbInactiveColor="?colorPrimaryForeground"
                     app:fastScrollThumbColor="?colorAccent"

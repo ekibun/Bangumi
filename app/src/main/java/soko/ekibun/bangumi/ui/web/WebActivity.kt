@@ -43,8 +43,10 @@ class WebActivity : BaseActivity(R.layout.activity_web) {
     private val openUrl by lazy {
         (intent.getStringExtra(OPEN_URL) ?: {
             val url = intent.data?.toString()
-            if (jumpUrl(this, url, "")?.let { startActivity(it) } != null) finish()
-            url ?: ""
+            if (jumpUrl(this, url, "")?.let { startActivity(it) } != null) {
+                finish()
+                ""
+            } else url ?: ""
         }()).replace(Regex("""^https?://(bgm\.tv|bangumi\.tv|chii\.in)"""), Bangumi.SERVER)
     }
 
