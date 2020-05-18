@@ -74,8 +74,8 @@ abstract class SpanFormatter {
                 is ForegroundColorSpan -> return "${
                 String.format("[color=#%06X]", 0xFFFFFF and span.foregroundColor)}${inner()}[/color]"
                 is MaskSpan -> return "[mask]${inner()}[/mask]"
-                is ImageSpan -> return if (span.source?.startsWith("(") == true) span.source!!
-                else "[img]${span.source ?: (span.drawable as? UrlDrawable)?.url}[/img]"
+                is BaseLineImageSpan -> return if (span.source?.startsWith("(") == true) span.source!!
+                else "[img]${span.source ?: span.drawable.url}[/img]"
             }
             return inner()
         }

@@ -7,7 +7,6 @@ import android.text.Spanned
 import android.text.style.*
 import android.util.Size
 import android.view.View
-import android.widget.EditText
 import android.widget.TextView
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
@@ -71,16 +70,16 @@ object HtmlUtil {
     fun attachToTextView(span: Spanned, textView: TextView) {
         // 结束之前的请求
         (textView.text as? Spanned)?.let { text ->
-            text.getSpans(0, text.length, ImageSpan::class.java).filterNot {
+            text.getSpans(0, text.length, BaseLineImageSpan::class.java).filterNot {
                 span.getSpanFlags(it) == 0
             }.forEach {
-                (it.drawable as? UrlDrawable)?.cancel(textView)
+                it.drawable.cancel(textView)
             }
         }
         // 更新引用
         val weakRef = WeakReference(textView)
-        span.getSpans(0, span.length, ImageSpan::class.java).forEach { imageSpan ->
-            (imageSpan.drawable as? UrlDrawable)?.let {
+        span.getSpans(0, span.length, BaseLineImageSpan::class.java).forEach { imageSpan ->
+            imageSpan.drawable.let {
                 it.container = weakRef
                 it.loadImage()
             }
@@ -88,10 +87,7 @@ object HtmlUtil {
         span.getSpans(0, span.length, MaskSpan::class.java).forEach { maskSpan ->
             maskSpan.textView = weakRef
         }
-        // TODO 只有图片的时候补一个零宽字符，不然只有图片的时候会吃掉lineSpacing
-        textView.text = if (textView !is EditText && span.toString().trim('￼').isEmpty())
-            SpannableStringBuilder("\u200B").append(span)
-        else span
+        textView.text = span
     }
 
     private const val LINE_BREAK = "\n"
@@ -127,10 +123,9 @@ object HtmlUtil {
                                     val sources = Bangumi.parseUrl(src)
                                     val alt = node.attr("alt")
                                     val isSmile = node.hasAttr("smileid")
-                                    val imageSpan = ImageSpan(
+                                    val imageSpan = BaseLineImageSpan(
                                         imageGetter.getDrawable(sources),
-                                        if (isSmile) alt else src,
-                                        ImageSpan.ALIGN_BASELINE
+                                        if (isSmile) alt else src
                                     )
                                     createImageSpan(imageSpan).also {
                                         if (!isSmile) {
@@ -152,7 +147,7 @@ object HtmlUtil {
         return span
     }
 
-    fun createImageSpan(imageSpan: ImageSpan): SpannableStringBuilder {
+    fun createImageSpan(imageSpan: BaseLineImageSpan): SpannableStringBuilder {
         return SpannableStringBuilder("￼").also {
             setSpan(imageSpan, it, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
@@ -207,10 +202,10 @@ object HtmlUtil {
     ) {
         val drawables = ArrayList<String>()
 
-        open val onClick: (View, ImageSpan) -> Unit = { itemView, span ->
+        open val onClick: (View, BaseLineImageSpan) -> Unit = { itemView, span ->
             PhotoPagerAdapter.showWindow(
                 itemView, drawables,
-                index = drawables.indexOf((span.drawable as UrlDrawable).url)
+                index = drawables.indexOf(span.drawable.url)
             )
         }
 
