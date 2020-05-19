@@ -93,41 +93,38 @@ object AppUtil {
     fun checkUpdate(activity: BaseActivity, checkIgnore: Boolean = true, onLatest: () -> Unit = {}) {
         when (BuildConfig.FLAVOR) {
             "github" -> {
-                activity.disposeContainer.subscribeOnUiThread(
-                    Github.releases(),
-                    { releases ->
-                        if (activity.isFinishing) return@subscribeOnUiThread
-                        val release = releases.firstOrNull() ?: return@subscribeOnUiThread
-                        val checkNew = { tag: String? ->
-                            val version = tag?.split("-")
-                            val versionName = version?.getOrNull(0) ?: ""
-                            val versionCode = version?.getOrNull(1)?.toIntOrNull() ?: 0
-                            versionName > BuildConfig.VERSION_NAME || versionCode > BuildConfig.VERSION_CODE
-                        }
-                        if (checkNew(release.tag_name) && (checkIgnore || App.app.sp.getString(
-                                "ignore_tag",
-                                ""
-                            ) != release.tag_name)
-                        )
-                            AlertDialog.Builder(activity)
-                                .setTitle(activity.getString(R.string.parse_new_version, release.tag_name))
-                                .setMessage(releases.filter { checkNew(it.tag_name) }
-                                    .map { "${it.tag_name}\n${it.body}" }
-                                    .reduce { acc, s -> "$acc\n$s" })
-                                .setPositiveButton(R.string.download) { _, _ ->
-                                    WebActivity.launchUrl(
-                                        activity,
-                                        release.assets?.firstOrNull()?.browser_download_url,
-                                        ""
-                                    )
-                                }.setNegativeButton(R.string.ignore) { _, _ ->
-                                    App.app.sp.edit().putString("ignore_tag", release.tag_name).apply()
-                                }.show()
-                        else {
-                            onLatest()
-                        }
+                activity.subscribe {
+                    val releases = Github.releases()
+                    val release = releases.firstOrNull() ?: return@subscribe
+                    val checkNew = { tag: String? ->
+                        val version = tag?.split("-")
+                        val versionName = version?.getOrNull(0) ?: ""
+                        val versionCode = version?.getOrNull(1)?.toIntOrNull() ?: 0
+                        versionName > BuildConfig.VERSION_NAME || versionCode > BuildConfig.VERSION_CODE
                     }
-                )
+                    if (checkNew(release.tag_name) && (checkIgnore || App.app.sp.getString(
+                            "ignore_tag",
+                            ""
+                        ) != release.tag_name)
+                    )
+                        AlertDialog.Builder(activity)
+                            .setTitle(activity.getString(R.string.parse_new_version, release.tag_name))
+                            .setMessage(releases.filter { checkNew(it.tag_name) }
+                                .map { "${it.tag_name}\n${it.body}" }
+                                .reduce { acc, s -> "$acc\n$s" })
+                            .setPositiveButton(R.string.download) { _, _ ->
+                                WebActivity.launchUrl(
+                                    activity,
+                                    release.assets?.firstOrNull()?.browser_download_url,
+                                    ""
+                                )
+                            }.setNegativeButton(R.string.ignore) { _, _ ->
+                                App.app.sp.edit().putString("ignore_tag", release.tag_name).apply()
+                            }.show()
+                    else {
+                        onLatest()
+                    }
+                }
             }
             "coolapk" -> {
                 WebActivity.launchUrl(activity, "https://www.coolapk.com/apk/soko.ekibun.bangumi", "")

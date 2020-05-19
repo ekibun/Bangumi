@@ -3,13 +3,14 @@ package soko.ekibun.bangumi.api.bangumi.bean
 import androidx.annotation.IntDef
 import androidx.annotation.StringDef
 import androidx.annotation.StringRes
-import io.reactivex.Observable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
+import soko.ekibun.bangumi.util.HttpUtil
 import java.text.DecimalFormat
 
 /**
@@ -234,13 +235,13 @@ data class Episode(
          * @param subject Subject
          * @return Call<List<Episode>>
          */
-        fun getSubjectEps(
+        suspend fun getSubjectEps(
             subject: Subject
-        ): Observable<List<Episode>> {
-            return ApiHelper.createHttpObservable(
-                "${Bangumi.SERVER}/subject/${subject.id}/ep"
-            ).map { rsp ->
-                parseLineList(Jsoup.parse(rsp.body?.string() ?: ""))
+        ): List<Episode> {
+            return withContext(Dispatchers.Default) {
+                parseLineList(Jsoup.parse(withContext(Dispatchers.IO) {
+                    HttpUtil.getCall("${Bangumi.SERVER}/subject/${subject.id}/ep").execute().body?.string() ?: ""
+                }))
             }
         }
     }

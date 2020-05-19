@@ -1,6 +1,5 @@
 package soko.ekibun.bangumi.ui.say
 
-import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_topic.*
 import soko.ekibun.bangumi.App
@@ -49,7 +48,7 @@ class SayPresenter(private val context: SayActivity, say: Say) {
     }
 
     fun updateHistory() {
-        HistoryModel.addHistory(say)
+        context.subscribe { HistoryModel.addHistory(say) }
     }
 
     private var loadMoreFail: Boolean? = null
@@ -58,37 +57,29 @@ class SayPresenter(private val context: SayActivity, say: Say) {
         sayView.adapter.loadMoreModule.loadMoreComplete()
         loadMoreFail = null
         context.item_swipe.isRefreshing = true
-        context.disposeContainer.subscribeOnUiThread(
-            Say.getSaySax(say),
-            { data ->
-                when (data) {
-                    is Say.SayReply -> {
-                        sayView.processSay(say, true)
-                        listOf(data)
-                    }
-                    is List<*> -> data.map { it as Say.SayReply }
-                    is Say -> {
-                        sayView.processSay(say)
-                        dataCacheModel.set(say.cacheKey, say)
-                        updateHistory()
-                        null
-                    }
-                    else -> null
-                }?.forEach { post ->
-                    val index = sayView.adapter.data.indexOfFirst { it.t.index == post.index }
-                    if (index < 0) {
-                        val insertIndex = sayView.adapter.data.indexOfLast { it.t.index < post.index }
-                        sayView.adapter.addData(insertIndex + 1, SayAdapter.SaySection(false, post))
-                    } else sayView.adapter.setData(index, SayAdapter.SaySection(false, post))
-                }
-            }, {
-                loadMoreFail = true
-                sayView.adapter.loadMoreModule.loadMoreFail()
-            }, {
-                context.item_swipe.isRefreshing = false
-            },
-            key = SAY_CALL
-        )
+        context.subscribe({
+            context.item_swipe.isRefreshing = false
+            loadMoreFail = true
+            sayView.adapter.loadMoreModule.loadMoreFail()
+        }, SAY_CALL) {
+            val updatePost = { post: Say.SayReply ->
+                val index = sayView.adapter.data.indexOfFirst { it.t.index == post.index }
+                if (index < 0) {
+                    val insertIndex = sayView.adapter.data.indexOfLast { it.t.index < post.index }
+                    sayView.adapter.addData(insertIndex + 1, SayAdapter.SaySection(false, post))
+                } else sayView.adapter.setData(index, SayAdapter.SaySection(false, post))
+            }
+            Say.getSaySax(say, {
+                sayView.processSay(say, true)
+                updatePost(it)
+            }) {
+                it.forEach(updatePost)
+            }
+            context.item_swipe.isRefreshing = false
+            sayView.processSay(say)
+            dataCacheModel.set(say.cacheKey, say)
+            updateHistory()
+        }
     }
 
     private fun showReply(say: Say, user: UserInfo?, draft: String?, updateDraft: (String?) -> Unit) {
@@ -99,30 +90,25 @@ class SayPresenter(private val context: SayActivity, say: Say) {
             draft = draft
         ) { content, _, send ->
             if (content != null && send) {
-                context.disposeContainer.subscribeOnUiThread(
-                    Say.reply(say, content),
-                    {
-                        if (it) {
-                            updateDraft(null)
-                            say.replies = (say.replies ?: ArrayList()).let { replies ->
-                                replies.plus(
-                                    Say.SayReply(
-                                        user = self,
-                                        message = content,
-                                        index = replies.size
-                                    )
-                                )
-                            }
-                            sayView.processSay(say)
-                            (context.item_list.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-                                sayView.adapter.itemCount,
-                                0
+                context.subscribe(key = SAY_REPLY_CALL) {
+                    Say.reply(say, content)
+                    updateDraft(null)
+                    say.replies = (say.replies ?: ArrayList()).let { replies ->
+                        replies.plus(
+                            Say.SayReply(
+                                user = self,
+                                message = content,
+                                index = replies.size
                             )
-                            getSay()
-                        } else Toast.makeText(context, R.string.hint_submit_error, Toast.LENGTH_LONG).show()
-                    },
-                    key = SAY_REPLY_CALL
-                )
+                        )
+                    }
+                    sayView.processSay(say)
+                    (context.item_list.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                        sayView.adapter.itemCount,
+                        0
+                    )
+                    getSay()
+                }
             } else updateDraft(content)
         }
     }

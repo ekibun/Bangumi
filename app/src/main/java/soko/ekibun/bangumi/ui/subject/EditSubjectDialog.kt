@@ -117,33 +117,28 @@ class EditSubjectDialog : BaseDialog(R.layout.base_dialog) {
         view.item_remove.setOnClickListener {
             AlertDialog.Builder(view.context).setTitle(R.string.collection_dialog_remove)
                 .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
-                    (activity as BaseActivity).disposeContainer.subscribeOnUiThread(
-                        Collection.remove(subject),
-                        {
-                            if (it) subject.collect = Collection()
-                            dismiss()
-                        }
-                    )
+                    (activity as BaseActivity).subscribe {
+                        Collection.remove(subject)
+                        subject.collect = Collection()
+                        dismiss()
+                    }
                 }.show()
         }
         view.item_submit.setOnClickListener {
-            (activity as BaseActivity).disposeContainer.subscribeOnUiThread(
-                Collection.updateStatus(
-                    subject, Collection(
-                        status = selectMap.toList()
-                            .first { it.second == view.item_subject_status.checkedRadioButtonId }.first,
-                        rating = view.item_rating.rating.toInt(),
-                        comment = view.item_comment.text.toString(),
-                        private = if (view.item_private.isChecked) 1 else 0,
-                        tag = view.item_tags.editableText.split(" ")
-                    )
-                ),
-                {
-                    subject.collect = it
-                    callback()
-                    dismiss()
-                }
-            )
+            (activity as BaseActivity).subscribe {
+                val collection = Collection(
+                    status = selectMap.toList()
+                        .first { it.second == view.item_subject_status.checkedRadioButtonId }.first,
+                    rating = view.item_rating.rating.toInt(),
+                    comment = view.item_comment.text.toString(),
+                    private = if (view.item_private.isChecked) 1 else 0,
+                    tag = view.item_tags.editableText.split(" ")
+                )
+                Collection.updateStatus(subject, collection)
+                subject.collect = collection
+                callback()
+                dismiss()
+            }
         }
 
         val paddingBottom = view.item_buttons.paddingBottom

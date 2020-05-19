@@ -2,7 +2,8 @@ package soko.ekibun.bangumi.api.bangumi
 
 import android.util.Log
 import android.webkit.CookieManager
-import io.reactivex.Observable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import org.jsoup.Jsoup
@@ -60,22 +61,22 @@ object Bangumi {
      * @param page Int
      * @return Call<List<Subject>>
      */
-    fun getCollectionList(
+    suspend fun getCollectionList(
         @Subject.SubjectType subject_type: String,
         username: String,
         @Collection.CollectionStatus collection_status: String,
         page: Int = 1
-    ): Observable<List<Subject>> {
-        return ApiHelper.createHttpObservable(
-            "$SERVER/$subject_type/list/$username/$collection_status?page=$page"
-        ).map { rsp ->
-            val doc = Jsoup.parse(rsp.body?.string() ?: "")
-            val ret = ArrayList<Subject>()
-            for (item in doc.select(".item")) {
-                val id = item.attr("id").split('_').getOrNull(1)?.toIntOrNull() ?: continue
+    ): List<Subject> {
+        return withContext(Dispatchers.Default) {
+            Jsoup.parse(withContext(Dispatchers.IO) {
+                HttpUtil.getCall(
+                    "$SERVER/$subject_type/list/$username/$collection_status?page=$page"
+                ).execute().body?.string() ?: ""
+            }).select(".item").mapNotNull { item ->
+                val id = item.attr("id").split('_').getOrNull(1)?.toIntOrNull() ?: return@mapNotNull null
                 val nameCN = item.selectFirst("h3 a")?.text()
                 val name = item.selectFirst("h3 small")?.text() ?: nameCN
-                ret += Subject(
+                Subject(
                     id = id,
                     type = Subject.TYPE_ANY,
                     name = name,
@@ -85,7 +86,6 @@ object Bangumi {
                     ep_status = -1
                 )
             }
-            ret
         }
     }
 
@@ -96,20 +96,22 @@ object Bangumi {
      * @param page Int
      * @return Call<List<Subject>>
      */
-    fun searchSubject(
+    suspend fun searchSubject(
         keywords: String,
         @Subject.SubjectType type: String = Subject.TYPE_ANY,
         page: Int
-    ): Observable<List<Subject>> {
+    ): List<Subject> {
         CookieManager.getInstance()
             .setCookie(COOKIE_HOST, "chii_searchDateLine=${System.currentTimeMillis() / 1000 - 10};")
-        return ApiHelper.createHttpObservable(
-            "$SERVER/subject_search/${java.net.URLEncoder.encode(
-                keywords,
-                "utf-8"
-            )}?cat=${Subject.parseTypeInt(type)}&page=$page"
-        ).map { rsp ->
-            val doc = Jsoup.parse(rsp.body?.string() ?: "")
+        return withContext(Dispatchers.Default) {
+            val doc = Jsoup.parse(withContext(Dispatchers.IO) {
+                HttpUtil.getCall(
+                    "$SERVER/subject_search/${java.net.URLEncoder.encode(
+                        keywords,
+                        "utf-8"
+                    )}?cat=${Subject.parseTypeInt(type)}&page=$page"
+                ).execute().body?.string() ?: ""
+            })
             if (doc.select("#colunmNotice") == null) throw error("search error")
             doc.select(".item").mapNotNull { item ->
                 val nameCN = item.selectFirst("h3")?.selectFirst("a")?.text()
@@ -137,17 +139,19 @@ object Bangumi {
      * @param page Int
      * @return Call<List<MonoInfo>>
      */
-    fun searchMono(
+    suspend fun searchMono(
         keywords: String,
         type: String,
         page: Int
-    ): Observable<List<MonoInfo>> {
+    ): List<MonoInfo> {
         CookieManager.getInstance()
             .setCookie(COOKIE_HOST, "chii_searchDateLine=${System.currentTimeMillis() / 1000 - 10};")
-        return ApiHelper.createHttpObservable(
-            "$SERVER/mono_search/${java.net.URLEncoder.encode(keywords, "utf-8")}?cat=$type&page=$page"
-        ).map { rsp ->
-            val doc = Jsoup.parse(rsp.body?.string() ?: "")
+        return withContext(Dispatchers.Default) {
+            val doc = Jsoup.parse(withContext(Dispatchers.IO) {
+                HttpUtil.getCall(
+                    "$SERVER/mono_search/${java.net.URLEncoder.encode(keywords, "utf-8")}?cat=$type&page=$page"
+                ).execute().body?.string() ?: ""
+            })
             if (doc.select("#colunmNotice") == null) throw Exception("search error")
             doc.select(".light_odd").map {
                 val a = it.selectFirst("h2 a")
@@ -171,17 +175,19 @@ object Bangumi {
      * @param sub_cat String
      * @return Call<List<Subject>>
      */
-    fun browserAirTime(
+    suspend fun browserAirTime(
         @Subject.SubjectType subject_type: String,
         year: Int,
         month: Int,
         page: Int,
         sub_cat: String
-    ): Observable<List<Subject>> {
-        return ApiHelper.createHttpObservable(
-            "$SERVER/$subject_type/browser${if (sub_cat.isEmpty()) "" else "/$sub_cat"}/airtime/$year-$month?page=$page"
-        ).map { rsp ->
-            val doc = Jsoup.parse(rsp.body?.string() ?: "")
+    ): List<Subject> {
+        return withContext(Dispatchers.Default) {
+            val doc = Jsoup.parse(withContext(Dispatchers.IO) {
+                HttpUtil.getCall(
+                    "$SERVER/$subject_type/browser${if (sub_cat.isEmpty()) "" else "/$sub_cat"}/airtime/$year-$month?page=$page"
+                ).execute().body?.string() ?: ""
+            })
             doc.select(".item").mapNotNull {
                 val nameCN = it.selectFirst("h3 a")?.text()
                 Subject(
@@ -202,30 +208,43 @@ object Bangumi {
      * 进度管理 + 用户信息
      * @return Observable<Pair<Int, Int>|UserInfo|List<Subject>>
      */
-    fun getCollectionSax(): Observable<Any> {
-        val cookieManager = CookieManager.getInstance()
-
-        return ApiHelper.createHttpObservable(SERVER).flatMap { rsp ->
-
-            Observable.create<Any> { emitter ->
-                val ret = ArrayList<Subject>()
-                var subjectLoaded = false
-
-                ApiHelper.parseSax(rsp) { tag, attrs, str ->
-                    if (emitter.isDisposed) return@parseSax ApiHelper.SaxEventType.END
-                    when {
-                        attrs.contains("id=\"columnHomeA\"") -> {
-                            val s = str()
-                            val doc = Jsoup.parse(s)
-                            val user = doc.selectFirst(".idBadgerNeue a.avatar") ?: throw Exception("login failed")
-                            val username = UserInfo.getUserName(user.attr("href"))
-                            rsp.headers("set-cookie").forEach {
-                                cookieManager.setCookie(COOKIE_HOST, it)
-                            }
-                            cookieManager.flush()
-                            HttpUtil.formhash = Regex("""//bgm.tv/logout/([^"]+)""").find(s)?.groupValues?.getOrNull(1)
-                                ?: HttpUtil.formhash
-                            emitter.onNext(
+    suspend fun getCollectionSax(
+        onUser: (UserInfo) -> Unit,
+        onNotify: (Pair<Int, Int>) -> Unit
+    ): List<Subject> {
+        return withContext(Dispatchers.Default) {
+            val cookieManager = CookieManager.getInstance()
+            val rsp = withContext(Dispatchers.IO) { HttpUtil.getCall(SERVER).execute() }
+            var subjectLoaded = false
+            val ret = ArrayList<Subject>()
+            ApiHelper.parseSaxAsync(rsp, { _, attrs ->
+                when {
+                    attrs.contains("id=\"columnHomeA\"") -> {
+                        "user" to ApiHelper.SaxEventType.BEGIN
+                    }
+                    attrs.contains("id=\"home_") && !subjectLoaded -> {
+                        subjectLoaded = true
+                        "subject" to ApiHelper.SaxEventType.BEGIN
+                    }
+                    attrs.contains("id=\"subject_prg_content\"") -> {
+                        "notify" to ApiHelper.SaxEventType.END
+                    }
+                    else -> null to ApiHelper.SaxEventType.NOTHING
+                }
+            }) { tag, str ->
+                when (tag) {
+                    "user" -> {
+                        val doc = Jsoup.parse(str)
+                        val user = doc.selectFirst(".idBadgerNeue a.avatar") ?: throw Exception("login failed")
+                        val username = UserInfo.getUserName(user.attr("href"))
+                        rsp.headers("set-cookie").forEach {
+                            cookieManager.setCookie(COOKIE_HOST, it)
+                        }
+                        cookieManager.flush()
+                        HttpUtil.formhash = Regex("""//bgm.tv/logout/([^"]+)""").find(str)?.groupValues?.getOrNull(1)
+                            ?: HttpUtil.formhash
+                        withContext(Dispatchers.Main) {
+                            onUser(
                                 UserInfo(
                                     id = Regex("""CHOBITS_UID = (\d+)""").find(
                                         doc.select("script").html()
@@ -236,18 +255,17 @@ object Bangumi {
                                     sign = doc.selectFirst("input[name=sign_input]")?.attr("value")
                                 )
                             )
-                            ApiHelper.SaxEventType.BEGIN
                         }
-                        attrs.contains("id=\"home_") && !subjectLoaded -> {
-                            subjectLoaded = true
-                            ret += Jsoup.parse(str()).select(".infoWrapper").mapNotNull {
-                                Subject.parseChaseCollection(it)
-                            }
-                            ApiHelper.SaxEventType.BEGIN
+                    }
+                    "subject" -> {
+                        ret += Jsoup.parse(str).select(".infoWrapper").mapNotNull {
+                            Subject.parseChaseCollection(it)
                         }
-                        attrs.contains("id=\"subject_prg_content\"") -> {
-                            val doc = Jsoup.parse(str())
-                            emitter.onNext(
+                    }
+                    "notify" -> {
+                        val doc = Jsoup.parse(str)
+                        withContext(Dispatchers.Main) {
+                            onNotify(
                                 Pair(
                                     Regex("叮咚叮咚～你有 ([0-9]+) 条新信息!").find(
                                         doc.selectFirst("#robot_speech_js")?.text()
@@ -256,16 +274,11 @@ object Bangumi {
                                     doc.selectFirst("#notify_count")?.text()?.toIntOrNull() ?: 0
                                 )
                             )
-                            ApiHelper.SaxEventType.END
                         }
-                        else -> ApiHelper.SaxEventType.NOTHING
                     }
                 }
-                if (!emitter.isDisposed) {
-                    emitter.onNext(ret)
-                    emitter.onComplete()
-                }
             }
+            ret
         }
     }
 
@@ -275,20 +288,24 @@ object Bangumi {
      * @param fileName String
      * @return Call<String>
      */
-    fun uploadImage(requestBody: RequestBody, fileName: String): Observable<String> {
-        return ApiHelper.createHttpObservable("$SERVER/blog/create").flatMap {
-            val sid = Regex("""CHOBITS_SID = '(.*?)';""").find(it.body!!.string())?.groupValues?.get(1)!!
+    suspend fun uploadImage(requestBody: RequestBody, fileName: String): String {
+        return withContext(Dispatchers.IO) {
+            val sid = Regex("""CHOBITS_SID = '(.*?)';""").find(
+                HttpUtil.getCall("$SERVER/blog/create").execute().body!!.string()
+            )!!.groupValues[1]
             Log.v("sid", sid)
-            ApiHelper.createHttpObservable(
-                "$SERVER/blog/upload_photo?folder=/blog/files&sid=$sid",
-                body = MultipartBody.Builder().setType(MultipartBody.FORM)
-                    .addFormDataPart("Filename", fileName)
-                    .addFormDataPart("Filedata", fileName, requestBody)
-                    .addFormDataPart("Upload", "Submit Query")
-                    .build()
-            ).map { rsp ->
-                Images.large("https:" + Jsoup.parse(rsp.body!!.string()).selectFirst("img").attr("src"))
-            }
+            Images.large(
+                Jsoup.parse(
+                    HttpUtil.getCall(
+                        "$SERVER/blog/upload_photo?folder=/blog/files&sid=$sid",
+                        body = MultipartBody.Builder().setType(MultipartBody.FORM)
+                            .addFormDataPart("Filename", fileName)
+                            .addFormDataPart("Filedata", fileName, requestBody)
+                            .addFormDataPart("Upload", "Submit Query")
+                            .build()
+                    ).execute().body!!.string()
+                ).selectFirst("img").attr("src")
+            )
         }
     }
 }

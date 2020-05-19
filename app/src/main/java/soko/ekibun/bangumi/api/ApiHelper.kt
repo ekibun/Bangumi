@@ -1,108 +1,11 @@
 package soko.ekibun.bangumi.api
 
-import android.widget.Toast
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
-import io.reactivex.exceptions.CompositeException
-import io.reactivex.exceptions.Exceptions
-import io.reactivex.plugins.RxJavaPlugins
-import io.reactivex.schedulers.Schedulers
-import okhttp3.RequestBody
-import soko.ekibun.bangumi.App
-import soko.ekibun.bangumi.util.HttpUtil
-import java.util.*
-import kotlin.collections.HashMap
+import kotlinx.coroutines.*
 
 /**
  * API工具库
  */
 object ApiHelper {
-    class DisposeContainer {
-        private val disposables = CompositeDisposable()
-        private val keyDisposable = HashMap<String, Disposable>()
-
-        /**
-         * 在主线程回调
-         * - `onError`中调用`onComplete`保持协同
-         * - `onError`默认弹出[Toast]:
-         *    ```
-         *    Toast.makeText(App.app, it.message, Toast.LENGTH_SHORT).show()
-         *    ```
-         */
-        fun <T> subscribeOnUiThread(
-            observable: Observable<T>, onNext: (t: T) -> Unit,
-            onError: (t: Throwable) -> Unit = {
-                it.printStackTrace()
-            },
-            onComplete: () -> Unit = {},
-            key: String? = null
-        ): Disposable {
-            if (!key.isNullOrEmpty()) keyDisposable[key]?.dispose()
-            return observable.observeOn(AndroidSchedulers.mainThread())
-                .subscribe(onNext, {
-                    if (!it.toString().toLowerCase(Locale.ROOT).contains("canceled")) {
-                        Toast.makeText(App.app, it.message, Toast.LENGTH_SHORT).show()
-                        it.printStackTrace()
-                        onError(it)
-                    }
-                    onComplete()
-                }, onComplete).also {
-                    if (!key.isNullOrEmpty()) keyDisposable[key] = it
-                    disposables.add(it)
-                }
-        }
-
-        fun dispose() {
-            disposables.dispose()
-        }
-
-        fun dispose(key: String) {
-            keyDisposable.remove(key)?.dispose()
-        }
-    }
-
-    /**
-     * 创建OkHttp的[Observable]
-     * - 运行在[Schedulers.computation]
-     */
-    fun createHttpObservable(
-        url: String,
-        header: Map<String, String> = HashMap(),
-        body: RequestBody? = null,
-        useCookie: Boolean = true
-    ): Observable<okhttp3.Response> {
-        return Observable.create<okhttp3.Response> { emitter ->
-            val httpCall = HttpUtil.getCall(url, header, body, useCookie)
-            emitter.setCancellable {
-                httpCall.cancel()
-            }
-            var terminated = false
-            try {
-                if (!emitter.isDisposed) {
-                    emitter.onNext(httpCall.execute())
-                }
-                if (!emitter.isDisposed) {
-                    terminated = true
-                    emitter.onComplete()
-                }
-            } catch (t: Throwable) {
-                Exceptions.throwIfFatal(t)
-                if (terminated) {
-                    RxJavaPlugins.onError(t)
-                } else if (!emitter.isDisposed) {
-                    try {
-                        emitter.onError(t)
-                    } catch (inner: Throwable) {
-                        Exceptions.throwIfFatal(inner)
-                        RxJavaPlugins.onError(CompositeException(t, inner))
-                    }
-                }
-            }
-        }.subscribeOn(Schedulers.io())
-    }
-
     /**
      * Sax事件
      */
@@ -144,5 +47,72 @@ object ApiHelper {
             chars.delete(0, lastClipIndex - findLastClipIndex)
         }
         return chars.toString()
+    }
+
+    suspend fun parseSaxAsync(
+        rsp: okhttp3.Response,
+        checkEvent: suspend (String, String) -> Pair<Any?, SaxEventType>,
+        runAsync: suspend CoroutineScope.(Any, String) -> Unit
+    ): String {
+        return coroutineScope {
+            val ret = ArrayList<Deferred<Unit>>()
+            val stream = rsp.body!!.charStream()
+            val chars = StringBuilder()
+            val buffer = CharArray(8192)
+            var lastLineIndex = 0
+            var lastClipIndex = 0
+            var end = false
+            outer@ while (!end) {
+                val len = withContext(Dispatchers.IO) { stream.read(buffer) }
+                if (len < 0) break
+                chars.append(buffer, 0, len)
+                val findLastClipIndex = lastClipIndex
+
+                parseTag(chars, lastLineIndex - lastClipIndex) { start, last, tagName, attrs ->
+                    lastLineIndex = last + findLastClipIndex
+                    val curIndex = start + findLastClipIndex
+                    val (tag, event) = checkEvent.invoke(tagName, attrs)
+                    if (tag != null) {
+                        val str = chars.substring(lastClipIndex - findLastClipIndex, curIndex - findLastClipIndex)
+                        ret += async { runAsync(tag, str) }
+                    }
+                    if (event == SaxEventType.BEGIN) {
+                        lastClipIndex = curIndex
+                    } else if (event == SaxEventType.END) {
+                        end = true
+                    }
+                    end
+                }
+                chars.delete(0, lastClipIndex - findLastClipIndex)
+            }
+            ret.awaitAll()
+            chars.toString()
+        }
+    }
+
+    private suspend fun parseTag(
+        char: StringBuilder,
+        start: Int,
+        callback: suspend (Int, Int, String, String) -> Boolean
+    ) {
+        var index = start
+        while (true) {
+            index = char.indexOf('<', index) + 1
+            if (index == 0 || index >= char.length) break
+            if (char[index] == '/') continue
+            val indexEnd = char.indexOf('>', index + 1)
+            if (indexEnd < 0) break
+            val tagEnd = char.indexOf(' ', index + 1)
+            if (tagEnd in 1 until indexEnd) {
+                if (callback(
+                        index - 1,
+                        indexEnd,
+                        char.substring(index, tagEnd),
+                        char.substring(tagEnd, indexEnd)
+                    )
+                ) break
+            }
+            index = indexEnd
+        }
     }
 }

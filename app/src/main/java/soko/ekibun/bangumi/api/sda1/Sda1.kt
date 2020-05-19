@@ -1,9 +1,10 @@
 package soko.ekibun.bangumi.api.sda1
 
-import io.reactivex.Observable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.RequestBody
-import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.sda1.bean.Response
+import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.JsonUtil
 
 /**
@@ -17,12 +18,14 @@ object Sda1 {
      * @param fileName String
      * @return Call<String>
      */
-    fun uploadImage(requestBody: RequestBody, fileName: String): Observable<String> {
-        return ApiHelper.createHttpObservable(
-            url = "https://p.sda1.dev/api/v1/upload_external_noform?fileName=$fileName",
-            body = requestBody
-        ).map { rsp ->
-            JsonUtil.toEntity<Response>(rsp.body?.string() ?: "")?.data?.url ?: ""
+    suspend fun uploadImage(requestBody: RequestBody, fileName: String): String {
+        return withContext(Dispatchers.IO) {
+            JsonUtil.toEntity<Response>(
+                HttpUtil.getCall(
+                    url = "https://p.sda1.dev/api/v1/upload_external_noform?fileName=$fileName",
+                    body = requestBody
+                ).execute().body?.string() ?: ""
+            )?.data?.url ?: ""
         }
     }
 }

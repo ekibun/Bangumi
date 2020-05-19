@@ -36,23 +36,19 @@ class HistoryFragment : DrawerFragment(R.layout.content_history) {
         adapter.setOnItemChildClickListener { _, _, position ->
             AlertDialog.Builder(view.context).setMessage(R.string.history_dialog_remove)
                 .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
-                    (activity as BaseActivity).disposeContainer.subscribeOnUiThread(
-                        HistoryModel.removeHistory(adapter.data[position].t!!).toObservable<Unit>(), {},
-                        onComplete = {
-                            updateHistory(0)
-                        }
-                    )
+                    (activity as BaseActivity).subscribe {
+                        HistoryModel.removeHistory(adapter.data[position].t!!)
+                        updateHistory(0)
+                    }
                 }.show()
         }
         item_clear_history?.setOnClickListener {
             AlertDialog.Builder(view.context).setMessage(R.string.history_dialog_clear)
                 .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
-                    (activity as BaseActivity).disposeContainer.subscribeOnUiThread(
-                        HistoryModel.clearHistory().toObservable<Unit>(), {},
-                        onComplete = {
-                            updateHistory(0)
-                        }
-                    )
+                    (activity as BaseActivity).subscribe {
+                        HistoryModel.clearHistory()
+                        updateHistory(0)
+                    }
                 }.show()
 
         }
@@ -72,25 +68,22 @@ class HistoryFragment : DrawerFragment(R.layout.content_history) {
             adapter.setNewInstance(null)
         }
         item_clear_history?.visibility = if (adapter.data.size > 0) View.VISIBLE else View.INVISIBLE
-        (activity as? BaseActivity)?.disposeContainer?.subscribeOnUiThread(
-            HistoryModel.getHistoryList(page).toObservable(),
-            { list ->
-                var dateString = adapter.data.lastOrNull { it.t != null }?.t?.dateString
-                list.forEach {
-                    if (dateString != it.dateString) adapter.addData(HistoryAdapter.HistorySection(it.dateString))
-                    adapter.addData(HistoryAdapter.HistorySection(it))
-                    dateString = it.dateString
-                }
-                adapter.isUseEmpty = true
-                if (adapter.data.isEmpty()) adapter.notifyDataSetChanged()
-                item_swipe?.isRefreshing = false
-                item_clear_history?.visibility = if (adapter.data.size > 0) View.VISIBLE else View.INVISIBLE
-                if (list.isEmpty()) adapter.loadMoreModule.loadMoreEnd()
-                else adapter.loadMoreModule.loadMoreComplete()
-                curpage++
-            },
-            key = HISTORY_LIST_CALL
-        )
+        (activity as? BaseActivity)?.subscribe(key = HISTORY_LIST_CALL) {
+            val list = HistoryModel.getHistoryList(page)
+            var dateString = adapter.data.lastOrNull { it.t != null }?.t?.dateString
+            list.forEach {
+                if (dateString != it.dateString) adapter.addData(HistoryAdapter.HistorySection(it.dateString))
+                adapter.addData(HistoryAdapter.HistorySection(it))
+                dateString = it.dateString
+            }
+            adapter.isUseEmpty = true
+            if (adapter.data.isEmpty()) adapter.notifyDataSetChanged()
+            item_swipe?.isRefreshing = false
+            item_clear_history?.visibility = if (adapter.data.size > 0) View.VISIBLE else View.INVISIBLE
+            if (list.isEmpty()) adapter.loadMoreModule.loadMoreEnd()
+            else adapter.loadMoreModule.loadMoreComplete()
+            curpage++
+        }
     }
 
     companion object {

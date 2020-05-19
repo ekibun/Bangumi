@@ -1,9 +1,10 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
-import io.reactivex.Observable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
-import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
+import soko.ekibun.bangumi.util.HttpUtil
 
 /**
  * 吐槽
@@ -26,14 +27,16 @@ data class Comment(
          * @param page Int
          * @return Call<List<Comment>>
          */
-        fun getSubjectComment(
+        suspend fun getSubjectComment(
             subject: Subject,
             page: Int
-        ): Observable<List<Comment>> {
-            return ApiHelper.createHttpObservable(
-                "${Bangumi.SERVER}/subject/${subject.id}/comments?page=$page"
-            ).map { rsp ->
-                val doc = Jsoup.parse(rsp.body?.string() ?: "")
+        ): List<Comment> {
+            return withContext(Dispatchers.Default) {
+                val doc = Jsoup.parse(withContext(Dispatchers.IO) {
+                    HttpUtil.getCall(
+                        "${Bangumi.SERVER}/subject/${subject.id}/comments?page=$page"
+                    ).execute().body?.string() ?: ""
+                })
                 doc.select("#comment_box .item").mapNotNull {
                     val user = it.selectFirst(".text a")
                     val username = UserInfo.getUserName(user?.attr("href"))

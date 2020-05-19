@@ -4,10 +4,12 @@ import android.view.Menu
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
-import io.reactivex.Observable
 import kotlinx.android.synthetic.main.activity_subject.*
 import kotlinx.android.synthetic.main.dialog_subject.view.*
 import kotlinx.android.synthetic.main.subject_detail.view.*
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
@@ -138,7 +140,7 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
     }
 
     fun updateHistory() {
-        HistoryModel.addHistory(subject)
+        context.subscribe { HistoryModel.addHistory(subject) }
     }
 
     /**
@@ -173,43 +175,44 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
      * @param eps List<Episode>
      * @param newStatus String
      */
-    fun updateProgress(eps: List<Episode>, newStatus: String, callback: (Boolean) -> Unit) {
+    fun updateProgress(eps: List<Episode>, newStatus: String, _callback: (Boolean) -> Unit) {
+        val callback = { ret: Boolean ->
+            subjectView.episodeAdapter.notifyDataSetChanged()
+            subjectView.episodeDetailAdapter.notifyDataSetChanged()
+            refreshProgress()
+            _callback(ret)
+        }
         if (newStatus == EpisodeDialog.WATCH_TO) {
             val epIds = eps.map { it.id.toString() }.reduce { acc, s -> "$acc,$s" }
-            context.disposeContainer.subscribeOnUiThread(
-                Subject.updateProgress(eps.last().id, Episode.PROGRESS_WATCH, epIds), {
-                    eps.forEach { it.progress = Episode.PROGRESS_WATCH }
-                    callback(true)
-                }, { callback(false) }, {
-                    subjectView.episodeAdapter.notifyDataSetChanged()
-                    subjectView.episodeDetailAdapter.notifyDataSetChanged()
-                    refreshProgress()
-                })
+            context.subscribe({
+                callback(false)
+            }) {
+                Subject.updateProgress(eps.last().id, Episode.PROGRESS_WATCH, epIds)
+                eps.forEach { it.progress = Episode.PROGRESS_WATCH }
+                callback(true)
+            }
             return
         }
         eps.forEach { episode ->
-            context.disposeContainer.subscribeOnUiThread(
-                Subject.updateProgress(episode.id, newStatus), {
-                    episode.progress = newStatus
-                    callback(true)
-                }, { callback(false) }, {
-                    subjectView.episodeAdapter.notifyDataSetChanged()
-                    subjectView.episodeDetailAdapter.notifyDataSetChanged()
-                    refreshProgress()
-                })
+            context.subscribe({
+                callback(false)
+            }) {
+                Subject.updateProgress(episode.id, newStatus)
+                episode.progress = newStatus
+                callback(true)
+            }
         }
     }
 
     fun updateSubjectProgress(vol: Int?, ep: Int?) {
-        context.disposeContainer.subscribeOnUiThread(
+        context.subscribe {
             Subject.updateSubjectProgress(
                 subject,
                 watchedeps = (ep ?: subject.ep_status).toString(),
                 watched_vols = (vol ?: subject.vol_status).toString()
-            ), {
-                refresh()
-            }
-        )
+            )
+            refresh()
+        }
     }
 
     var subjectRefreshListener = { _: Any? -> }
@@ -220,79 +223,67 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
         context.item_swipe.isRefreshing = true
 
         // 不存在会卡很久，单独作为一个请求
-        context.disposeContainer.subscribeOnUiThread(
-            Github.onAirInfo(subject.id).onErrorResumeNext(Observable.empty()),
-            {
-                subject.onair = it
-                subjectView.updateSubject(subject, Subject.SaxTag.ONAIR)
-                dataCacheModel.set(subject.cacheKey, subject)
-                episodeDialog?.info = it
-            },
-            key = "bangumi_subject_onair"
-        )
+        context.subscribe(key = "bangumi_subject_onair") {
+            val airInfo = Github.onAirInfo(subject.id) ?: return@subscribe
+            subject.onair = airInfo
+            subjectView.updateSubject(subject, Subject.SaxTag.ONAIR)
+            dataCacheModel.set(subject.cacheKey, subject)
+            episodeDialog?.info = airInfo
+        }
 
-        context.disposeContainer.subscribeOnUiThread(
-            Observable.merge(
-                Subject.getDetail(subject),
-                BgmIpViewer.getSeason(subject.id).onErrorResumeNext(Observable.empty()),
-                Episode.getSubjectEps(subject)
-            ),
-            {
-                when (it) {
-                    is Subject.SaxTag -> {
-                        if (it in arrayOf(Subject.SaxTag.COLLECT, Subject.SaxTag.NONE)) refreshCollection()
-                        subjectView.updateSubject(subject, if (it == Subject.SaxTag.NONE) null else it)
-                    }
-                    is BgmIpViewer.SeasonData -> {
-                        subject.season = it.seasons
+        context.subscribe({
+            context.item_swipe.isRefreshing = false
+        }, "bangumi_subject_detail") {
+            coroutineScope {
+                listOf(
+                    async {
+                        Subject.getDetail(subject) {
+                            if (it in arrayOf(Subject.SaxTag.COLLECT, Subject.SaxTag.NONE)) refreshCollection()
+                            subjectView.updateSubject(subject, if (it == Subject.SaxTag.NONE) null else it)
+                        }
+                        subjectView.updateSubject(subject)
+                        subjectRefreshListener(subject)
+                        dataCacheModel.set(subject.cacheKey, subject)
+                    },
+                    async {
+                        subject.season = BgmIpViewer.getSeason(subject.id).seasons
                         subjectView.updateSubject(subject, Subject.SaxTag.SEASON)
-                    }
-                    is List<*> -> {
-                        val eps = subjectView.updateEpisode(it.mapNotNull { it as? Episode })
+                    },
+                    async {
+                        val eps = subjectView.updateEpisode(Episode.getSubjectEps(subject))
                         subjectView.updateEpisodeLabel(eps, subject)
                         subject.eps = eps
                     }
-                }
-                subjectRefreshListener(it)
-                dataCacheModel.set(subject.cacheKey, subject)
-            }, onComplete = {
+                ).awaitAll()
                 context.item_swipe.isRefreshing = false
-            },
-            key = "bangumi_subject_detail"
-        )
+            }
+        }
     }
 
     private fun loadComment(subject: Subject) {
-        val page = commentPage
-
-        context.disposeContainer.subscribeOnUiThread(
-            Comment.getSubjectComment(subject, page),
-            {
-                commentPage++
-                subjectView.commentAdapter.addData(it)
-                if (it.isEmpty()) {
-                    subjectView.commentAdapter.loadMoreModule.loadMoreEnd()
-                } else {
-                    subjectView.commentAdapter.loadMoreModule.loadMoreComplete()
-                }
-            }, {
-                subjectView.commentAdapter.loadMoreModule.loadMoreFail()
-            },
-            key = "bangumi_subject_comment"
-        )
+        context.subscribe({
+            subjectView.commentAdapter.loadMoreModule.loadMoreFail()
+        }, "bangumi_subject_comment") {
+            val comment = Comment.getSubjectComment(subject, commentPage)
+            commentPage++
+            subjectView.commentAdapter.addData(comment)
+            if (comment.isEmpty()) {
+                subjectView.commentAdapter.loadMoreModule.loadMoreEnd()
+            } else {
+                subjectView.commentAdapter.loadMoreModule.loadMoreComplete()
+            }
+        }
     }
 
     private fun removeCollection(subject: Subject) {
         if (context.isFinishing) return
         AlertDialog.Builder(context).setTitle(R.string.collection_dialog_remove)
             .setNegativeButton(R.string.cancel) { _, _ -> }.setPositiveButton(R.string.ok) { _, _ ->
-                context.disposeContainer.subscribeOnUiThread(
-                    Collection.remove(subject),
-                    {
-                        if (it) subject.collect = Collection()
-                        refreshCollection()
-                    }
-                )
+                context.subscribe {
+                    Collection.remove(subject)
+                    subject.collect = Collection()
+                    refreshCollection()
+                }
             }.show()
     }
 
@@ -338,21 +329,18 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
                     removeCollection(subject)
                     return@setOnMenuItemClickListener true
                 }
-                context.disposeContainer.subscribeOnUiThread(
-                    Collection.updateStatus(
-                        subject, Collection(
-                            status = Collection.getStatusById(menu.itemId + 1),
-                            rating = body.rating,
-                            comment = body.comment,
-                            private = body.private,
-                            tag = body.tag
-                        )
-                    ),
-                    {
-                        subject.collect = it
-                        refreshCollection()
-                    }
-                )
+                context.subscribe {
+                    val collection = Collection(
+                        status = Collection.getStatusById(menu.itemId + 1),
+                        rating = body.rating,
+                        comment = body.comment,
+                        private = body.private,
+                        tag = body.tag
+                    )
+                    Collection.updateStatus(subject, collection)
+                    subject.collect = collection
+                    refreshCollection()
+                }
                 true
             }
             popupMenu.show()
@@ -367,16 +355,12 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
     }
 
     private fun refreshProgress() {
-        context.disposeContainer.subscribeOnUiThread(
-            Episode.getSubjectEps(subject),
-            {
-                val eps = subjectView.updateEpisode(it)
-                subjectView.updateEpisodeLabel(eps, subject)
-                subject.eps = eps
-                dataCacheModel.set(subject.cacheKey, subject)
-                subjectRefreshListener(eps)
-            },
-            key = "bangumi_subject_progress"
-        )
+        context.subscribe(key = "bangumi_subject_progress") {
+            val eps = subjectView.updateEpisode(Episode.getSubjectEps(subject))
+            subjectView.updateEpisodeLabel(eps, subject)
+            subject.eps = eps
+            dataCacheModel.set(subject.cacheKey, subject)
+            subjectRefreshListener(eps)
+        }
     }
 }

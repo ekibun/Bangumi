@@ -1,9 +1,11 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
-import io.reactivex.Observable
-import io.reactivex.schedulers.Schedulers
-import io.reactivex.subjects.ReplaySubject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import okhttp3.FormBody
+import okhttp3.Response
 import org.jsoup.Jsoup
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
@@ -55,59 +57,55 @@ data class Say(
          * 加载吐槽
          * @return Call<SayReply|List<SayReply>|Say>
          */
-        fun getSaySax(say: Say): Observable<Any> {
-            return ApiHelper.createHttpObservable(say.url).flatMap { rsp ->
-                Observable.create<Any> { emitter ->
-                    val avatarCache = HashMap<String, String>()
-                    say.user.avatar?.let { avatarCache[say.user.username!!] = it }
-                    say.replies?.forEach { reply ->
-                        reply.user.avatar?.let { avatarCache[reply.user.username!!] = it }
+        suspend fun getSaySax(
+            say: Say,
+            onUpdateSay: suspend (SayReply) -> Unit,
+            onUpdate: suspend (List<SayReply>) -> Unit
+        ) {
+            withContext(Dispatchers.Default) {
+                val rsp = withContext(Dispatchers.IO) { HttpUtil.getCall(say.url).execute() }
+                val avatarCache = HashMap<String, String>()
+                say.user.avatar?.let { avatarCache[say.user.username!!] = it }
+                say.replies?.forEach { reply ->
+                    reply.user.avatar?.let { avatarCache[reply.user.username!!] = it }
+                }
+                val unresolvedMutex = HashMap<String, Mutex>()
+                val mutex = Mutex()
+
+                var replyCount = -1
+                val replies = ArrayList<SayReply>()
+                ApiHelper.parseSaxAsync(rsp, { tag, attrs ->
+                    when {
+                        attrs.contains("reply_item") -> {
+                            replyCount++
+                            replyCount to ApiHelper.SaxEventType.BEGIN
+                        }
+                        attrs.contains("id=\"footer\"") -> {
+                            replyCount++
+                            replyCount to ApiHelper.SaxEventType.END
+                        }
+                        else -> null to ApiHelper.SaxEventType.NOTHING
                     }
-                    val unresolvedReplies = HashMap<String, ArrayList<SayReply>>()
+                }) { tag, str ->
+                    val doc = Jsoup.parseBodyFragment(str)
+                    doc.outputSettings().prettyPrint(false)
 
-                    val replyPub = ReplaySubject.create<String>()
-                    val observable = replyPub.flatMap { username ->
-                        Observable.just(0).observeOn(Schedulers.computation()).takeWhile {
-                            !emitter.isDisposed
-                        }.map {
-                            UserInfo.getApiUser(username)
-                        }
-                    }.subscribeOn(Schedulers.newThread())
-
-                    observable.subscribe({ user ->
-                        if (emitter.isDisposed) return@subscribe
-                        if (!user.avatar.isNullOrEmpty()) synchronized(avatarCache) {
-                            user.let { avatarCache[it.username!!] = it.avatar!! }
-                        }
-                        synchronized(unresolvedReplies) {
-                            unresolvedReplies.remove(user.username)?.apply {
-                                this.forEach {
-                                    it.user.avatar = user.avatar
-                                }
-                            }
-                        }?.let { if (!emitter.isDisposed) emitter.onNext(it) }
-                    }, {
-                        if (!emitter.isDisposed) emitter.onError(it)
-                    })
-
-                    var beforeData = ""
-                    val replies = ArrayList<SayReply>()
-                    val updateReply = { str: String ->
-                        val doc = Jsoup.parse(str)
-                        doc.outputSettings().prettyPrint(false)
-                        if (beforeData.isEmpty()) {
-                            beforeData = str
+                    when (tag) {
+                        0 -> {
                             say.user = UserInfo.parse(
                                 doc.selectFirst(".statusHeader .inner a"),
                                 Bangumi.parseImageUrl(doc.selectFirst(".statusHeader .avatar img"))
                             )
                             say.message = doc.selectFirst(".statusContent .text")?.html()
                             say.time = doc.selectFirst(".statusContent .date")?.text()
-                            if (!emitter.isDisposed) emitter.onNext(SayReply(say.user, say.message ?: "", 0))
-                        } else {
+                            withContext(Dispatchers.Main) { onUpdateSay(SayReply(say.user, say.message ?: "", 0)) }
+                        }
+                        else -> {
                             val user = UserInfo.parse(doc.selectFirst("a.l"))
-                            user.avatar = user.avatar ?: synchronized(avatarCache) {
-                                avatarCache[user.username]
+                            user.avatar = user.avatar ?: mutex.withLock {
+                                unresolvedMutex.getOrPut(user.username!!) { Mutex() }
+                            }.withLock {
+                                avatarCache.getOrPut(user.username!!) { UserInfo.getApiUser(user.username!!).avatar!! }
                             }
                             val sayReply = SayReply(
                                 user = user,
@@ -115,52 +113,26 @@ data class Say(
                                     ?.joinToString("") {
                                         it.outerHtml()
                                     }?.trim() ?: "",
-                                index = replies.size + 1
+                                index = tag as Int
                             )
-                            replies += sayReply
-                            if (user.avatar.isNullOrEmpty()) {
-                                synchronized(unresolvedReplies) {
-                                    if (!unresolvedReplies.containsKey(user.username)) replyPub.onNext(user.username!!)
-                                    unresolvedReplies.getOrPut(user.username!!) { ArrayList() }.add(sayReply)
-                                }
-                            }
+                            mutex.withLock { replies += sayReply }
+                            withContext(Dispatchers.Main) { onUpdate(listOf(sayReply)) }
                         }
-                    }
-
-                    ApiHelper.parseSax(rsp) { tag, attrs, str ->
-                        if (emitter.isDisposed) return@parseSax ApiHelper.SaxEventType.END
-                        when {
-                            attrs.contains("reply_item") -> {
-                                updateReply(str())
-                                ApiHelper.SaxEventType.BEGIN
-                            }
-                            attrs.contains("id=\"footer\"") -> {
-                                updateReply(str())
-                                ApiHelper.SaxEventType.END
-                            }
-                            else -> ApiHelper.SaxEventType.NOTHING
-                        }
-                    }
-                    replyPub.onComplete()
-                    observable.blockingSubscribe()
-                    say.replies = replies
-                    if (!emitter.isDisposed) {
-                        emitter.onNext(say)
-                        emitter.onComplete()
                     }
                 }
+                say.replies = replies.sortedBy { it.index }
             }
         }
 
-        fun reply(say: Say, content: String): Observable<Boolean> {
-            return ApiHelper.createHttpObservable(
-                "${Bangumi.SERVER}/timeline/${say.id}/new_reply?ajax=1",
-                body = FormBody.Builder()
-                    .add("content", content)
-                    .add("formhash", HttpUtil.formhash)
-                    .add("submit", "submit").build()
-            ).map { rsp ->
-                rsp.body?.string()?.contains("\"status\":\"ok\"") == true
+        suspend fun reply(say: Say, content: String): Response {
+            return withContext(Dispatchers.IO) {
+                HttpUtil.getCall(
+                    "${Bangumi.SERVER}/timeline/${say.id}/new_reply?ajax=1",
+                    body = FormBody.Builder()
+                        .add("content", content)
+                        .add("formhash", HttpUtil.formhash)
+                        .add("submit", "submit").build()
+                ).execute()
             }
         }
     }

@@ -1,12 +1,13 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
 import com.chad.library.adapter.base.entity.SectionEntity
-import io.reactivex.Observable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.FormBody
+import okhttp3.Response
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.TextNode
-import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.util.HttpUtil
 import java.util.*
@@ -66,17 +67,20 @@ class TimeLine(override val isHeader: Boolean) : SectionEntity {
          * @param global Boolean
          * @return Call<List<TimeLine>>
          */
-        fun getList(
+        suspend fun getList(
             type: String,
             page: Int,
             usr: UserInfo?,
             global: Boolean
-        ): Observable<List<TimeLine>> {
-            return ApiHelper.createHttpObservable(
-                "${Bangumi.SERVER}${if (usr == null) "" else "/user/${usr.username}"}/timeline?type=$type&page=$page&ajax=1",
-                useCookie = !global
-            ).map { rsp ->
-                val doc = Jsoup.parse(rsp.body?.string() ?: "")
+        ): List<TimeLine> {
+            return withContext(Dispatchers.Default) {
+                val rsp = withContext(Dispatchers.IO) {
+                    HttpUtil.getCall(
+                        "${Bangumi.SERVER}${if (usr == null) "" else "/user/${usr.username}"}/timeline?type=$type&page=$page&ajax=1",
+                        useCookie = !global
+                    ).execute().body?.string() ?: ""
+                }
+                val doc = Jsoup.parse(rsp)
                 val ret = ArrayList<TimeLine>()
                 var user = usr ?: UserInfo()
                 val cssInfo = if (usr == null) ".info" else ".info_full"
@@ -135,17 +139,32 @@ class TimeLine(override val isHeader: Boolean) : SectionEntity {
          * @param say_input String
          * @return Call<Boolean>
          */
-        fun addComment(
+        suspend fun addComment(
             say_input: String
-        ): Observable<Boolean> {
-            return ApiHelper.createHttpObservable(
-                "${Bangumi.SERVER}/update/user/say?ajax=1",
-                body = FormBody.Builder()
-                    .add("say_input", say_input)
-                    .add("formhash", HttpUtil.formhash)
-                    .add("submit", "submit").build()
-            ).map { rsp ->
-                rsp.body?.string()?.contains("\"status\":\"ok\"") == true
+        ): Response {
+            return withContext(Dispatchers.IO) {
+                HttpUtil.getCall(
+                    "${Bangumi.SERVER}/update/user/say?ajax=1",
+                    body = FormBody.Builder()
+                        .add("say_input", say_input)
+                        .add("formhash", HttpUtil.formhash)
+                        .add("submit", "submit").build()
+                ).execute()
+            }
+        }
+
+        /**
+         * 删除时间线
+         * @param item TimeLine
+         * @return Call<Boolean>
+         */
+        suspend fun removeTimeLine(
+            item: TimeLine
+        ): Response {
+            return withContext(Dispatchers.IO) {
+                HttpUtil.getCall(
+                    "${item.t?.delUrl}&ajax=1"
+                ).execute()
             }
         }
     }

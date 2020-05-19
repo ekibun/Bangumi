@@ -5,7 +5,6 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import io.reactivex.disposables.Disposable
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
 import soko.ekibun.bangumi.ui.topic.TopicActivity
@@ -19,7 +18,6 @@ import soko.ekibun.bangumi.ui.view.ShadowDecoration
  * @property pager ViewPager
  * @property tabList (kotlin.Array<(kotlin.String..kotlin.String?)>..kotlin.Array<out (kotlin.String..kotlin.String?)>?)
  * @property items HashMap<Int, Pair<RakuenAdapter, FixSwipeRefreshLayout>>
- * @property topicCall HashMap<Int, Call<List<Topic>>>
  * @constructor
  */
 class RakuenPagerAdapter(
@@ -78,13 +76,10 @@ class RakuenPagerAdapter(
      */
     fun reset(position: Int) {
         val item = items[position] ?: return
-        topicCall[position]?.dispose()
+        (fragment.activity as? BaseActivity)?.cancel { it.startsWith(RAKUEN_CALL_PREFIX) }
         item.first.isUseEmpty = false
         item.first.setNewInstance(null)
     }
-
-    @SuppressLint("UseSparseArrays")
-    private var topicCall = HashMap<Int, Disposable>()
 
     /**
      * 加载帖子列表
@@ -92,28 +87,24 @@ class RakuenPagerAdapter(
      */
     fun loadTopicList(position: Int = pager.currentItem) {
         val item = items[position] ?: return
-        val disposeContainer = (fragment.activity as? BaseActivity)?.disposeContainer ?: return
         item.first.isUseEmpty = false
-        topicCall[position]?.dispose()
         item.second.isRefreshing = true
-        disposeContainer.subscribeOnUiThread(
-            Topic.getList(
+        (fragment.activity as? BaseActivity)?.subscribe({
+            item.second.isRefreshing = false
+        }, RAKUEN_CALL_PREFIX + position) {
+            val it = Topic.getList(
                 if (position == 1) when (fragment.selectedFilter) {
                     R.id.topic_filter_join -> "my_group"
                     R.id.topic_filter_post -> "my_group&filter=topic"
                     R.id.topic_filter_reply -> "my_group&filter=reply"
                     else -> "group"
                 } else listOf("", "group", "subject", "ep", "mono")[position]
-            ),
-            {
-                item.first.isUseEmpty = true
-                item.first.setNewInstance(it.toMutableList())
-                (item.second.tag as? androidx.recyclerview.widget.RecyclerView)?.tag = true
-            }, onComplete = {
-                item.second.isRefreshing = false
-            },
-            key = RAKUEN_CALL_PREFIX + position
-        )
+            )
+            item.second.isRefreshing = false
+            item.first.isUseEmpty = true
+            item.first.setNewInstance(it.toMutableList())
+            (item.second.tag as? androidx.recyclerview.widget.RecyclerView)?.tag = true
+        }
     }
 
     override fun getPageTitle(pos: Int): CharSequence {

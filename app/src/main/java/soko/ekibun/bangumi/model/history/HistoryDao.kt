@@ -1,25 +1,23 @@
 package soko.ekibun.bangumi.model.history
 
 import androidx.room.*
-import io.reactivex.Completable
-import io.reactivex.Single
 
 @Dao
 interface HistoryDao {
 
     @Query("SELECT * FROM history ORDER BY timestamp DESC LIMIT :limit OFFSET :offset")
-    fun getListOffset(limit: Int, offset: Int): Single<List<History>>
+    suspend fun getListOffset(limit: Int, offset: Int): List<History>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(history: History): Completable
+    suspend fun insert(history: History)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(history: List<History>): Completable
+    suspend fun insert(history: List<History>)
 
     @Delete
-    fun delete(history: History): Completable
+    suspend fun delete(history: History)
 
     @Query("DELETE FROM history")
-    fun deleteAll(): Completable
+    suspend fun deleteAll()
 
 }

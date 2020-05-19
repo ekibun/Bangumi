@@ -7,9 +7,9 @@ import android.view.ViewGroup
 import android.view.WindowInsets
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import io.reactivex.Observable
-import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.content_calendar.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
@@ -98,10 +98,12 @@ class CalendarPagerAdapter(private val view: ViewGroup) : RecyclePagerAdapter<Ca
         holder.position = position
     }
 
-    fun setOnAirList(it: List<BangumiCalendarItem>, callback: () -> Unit = {}) {
+    fun setOnAirList(raw: List<BangumiCalendarItem>, callback: () -> Unit = {}) {
         val collectionList = mainPresenter?.collectionList ?: ArrayList()
-        (view.context as? BaseActivity)?.disposeContainer?.subscribeOnUiThread(
-            Observable.just(it).observeOn(Schedulers.computation()).map { raw ->
+        (view.context as? BaseActivity)?.subscribe({
+            callback()
+        }, CALENDAR_COMPUTE_CALL) {
+            withContext(Dispatchers.Default) {
                 val use30h = App.app.sp.getBoolean("calendar_use_30h", false)
                 val now = CalendarAdapter.getNowInt(use30h)
 
@@ -145,21 +147,17 @@ class CalendarPagerAdapter(private val view: ViewGroup) : RecyclePagerAdapter<Ca
                     if (index >= 0) entry.value.add(index, CalendarAdapter.CalendarSection(true))
                     entry.value to index
                 }
-            },
-            { onAir ->
-                onAir.forEach { entry ->
-                    val item = getItem(entry.key)
-                    val (data, index) = entry.value
-                    item.setNewInstance(data)
-                    if (index >= 0) {
-                        (holders.firstOrNull { it.position == 7 }?.recyclerView?.layoutManager as? LinearLayoutManager)
-                            ?.scrollToPositionWithOffset(index - 1, 0)
-                    }
+            }.forEach { entry ->
+                val item = getItem(entry.key)
+                val (data, index) = entry.value
+                item.setNewInstance(data)
+                if (index >= 0) {
+                    (holders.firstOrNull { it.position == 7 }?.recyclerView?.layoutManager as? LinearLayoutManager)
+                        ?.scrollToPositionWithOffset(index - 1, 0)
                 }
-            },
-            onComplete = callback,
-            key = CALENDAR_COMPUTE_CALL
-        )
+            }
+            callback()
+        }
     }
 
     private val mainPresenter: MainPresenter? get() = (view.context as? MainActivity)?.mainPresenter

@@ -2,10 +2,11 @@ package soko.ekibun.bangumi.api.bangumi.bean
 
 import com.chad.library.adapter.base.entity.node.BaseExpandNode
 import com.chad.library.adapter.base.entity.node.BaseNode
-import io.reactivex.Observable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.FormBody
+import okhttp3.Response
 import org.jsoup.nodes.Element
-import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.util.HttpUtil
@@ -83,21 +84,21 @@ data class TopicPost(
          * @param post TopicPost
          * @return Call<Boolean>
          */
-        fun remove(
+        suspend fun remove(
             post: TopicPost
-        ): Observable<Boolean> {
-            return ApiHelper.createHttpObservable(
-                Bangumi.SERVER + when (post.model) {
-                    "group" -> "/erase/group/reply/"
-                    "prsn" -> "/erase/reply/person/"
-                    "crt" -> "/erase/reply/character/"
-                    "ep" -> "/erase/reply/ep/"
-                    "subject" -> "/erase/subject/reply/"
-                    "blog" -> "/erase/reply/blog/"
-                    else -> ""
-                } + "${post.pst_id}?gh=${HttpUtil.formhash}&ajax=1"
-            ).map { rsp ->
-                rsp.body?.string()?.contains("\"status\":\"ok\"") == true
+        ): Response {
+            return withContext(Dispatchers.IO) {
+                HttpUtil.getCall(
+                    Bangumi.SERVER + when (post.model) {
+                        "group" -> "/erase/group/reply/"
+                        "prsn" -> "/erase/reply/person/"
+                        "crt" -> "/erase/reply/character/"
+                        "ep" -> "/erase/reply/ep/"
+                        "subject" -> "/erase/subject/reply/"
+                        "blog" -> "/erase/reply/blog/"
+                        else -> ""
+                    } + "${post.pst_id}?gh=${HttpUtil.formhash}&ajax=1"
+                ).execute()
             }
         }
 
@@ -107,25 +108,25 @@ data class TopicPost(
          * @param content String
          * @return Call<Boolean>
          */
-        fun edit(
+        suspend fun edit(
             post: TopicPost,
             content: String
-        ): Observable<Boolean> {
-            return ApiHelper.createHttpObservable(
-                Bangumi.SERVER + when (post.model) {
-                    "group" -> "/group/reply/${post.pst_id}/edit"
-                    "prsn" -> "/person/edit_reply/${post.pst_id}"
-                    "crt" -> "/character/edit_reply/${post.pst_id}"
-                    "ep" -> "/subject/ep/edit_reply/${post.pst_id}"
-                    "subject" -> "/subject/reply/${post.pst_id}/edit"
-                    "blog" -> "/blog/reply/edit/${post.pst_id}"
-                    else -> ""
-                }, body = FormBody.Builder()
-                    .add("formhash", HttpUtil.formhash)
-                    .add("submit", "改好了")
-                    .add("content", content).build()
-            ).map { rsp ->
-                rsp.code == 200
+        ): Response {
+            return withContext(Dispatchers.IO) {
+                HttpUtil.getCall(
+                    Bangumi.SERVER + when (post.model) {
+                        "group" -> "/group/reply/${post.pst_id}/edit"
+                        "prsn" -> "/person/edit_reply/${post.pst_id}"
+                        "crt" -> "/character/edit_reply/${post.pst_id}"
+                        "ep" -> "/subject/ep/edit_reply/${post.pst_id}"
+                        "subject" -> "/subject/reply/${post.pst_id}/edit"
+                        "blog" -> "/blog/reply/edit/${post.pst_id}"
+                        else -> ""
+                    }, body = FormBody.Builder()
+                        .add("formhash", HttpUtil.formhash)
+                        .add("submit", "改好了")
+                        .add("content", content).build()
+                ).execute()
             }
         }
     }

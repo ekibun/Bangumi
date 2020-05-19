@@ -42,7 +42,6 @@ class IndexPagerAdapter(val fragment: IndexFragment, pager: androidx.viewpager.w
     private val pageIndex = SparseIntArray()
     private fun loadIndex(item: IndexPagerViewHolder){
         val indexType = IndexTypeView.typeList[indexTypeView.selectedType] ?: return
-        val disposeContainer = (fragment.activity as? BaseActivity)?.disposeContainer ?: return
 
         val position = item.position
         val year = position / 12 + 1000
@@ -54,24 +53,21 @@ class IndexPagerAdapter(val fragment: IndexFragment, pager: androidx.viewpager.w
         }
         item.adapter.isUseEmpty = false
 
-        disposeContainer.subscribeOnUiThread(
-            Bangumi.browserAirTime(indexType.first, year, month, page + 1, indexType.second),
-            {
-                item.adapter.isUseEmpty = true
-                if (it.isEmpty()) {
-                    item.adapter.loadMoreModule.loadMoreEnd()
-                } else {
-                    item.adapter.loadMoreModule.loadMoreComplete()
-                    item.adapter.addData(it)
-                    pageIndex.put(position, (pageIndex.get(position, 0)) + 1)
-                }
-            }, {
-                item.adapter.loadMoreModule.loadMoreFail()
-            }, {
-                item.view.isRefreshing = false
-            },
-            key = INDEX_CALL_PREFIX + position
-        )
+        (fragment.activity as? BaseActivity)?.subscribe({
+            item.view.isRefreshing = false
+            item.adapter.loadMoreModule.loadMoreFail()
+        }, INDEX_CALL_PREFIX + position) {
+            val data = Bangumi.browserAirTime(indexType.first, year, month, page + 1, indexType.second)
+            item.view.isRefreshing = false
+            item.adapter.isUseEmpty = true
+            if (data.isEmpty()) {
+                item.adapter.loadMoreModule.loadMoreEnd()
+            } else {
+                item.adapter.loadMoreModule.loadMoreComplete()
+                item.adapter.addData(data)
+                pageIndex.put(position, (pageIndex.get(position, 0)) + 1)
+            }
+        }
     }
 
     private fun reset(item: IndexPagerViewHolder){

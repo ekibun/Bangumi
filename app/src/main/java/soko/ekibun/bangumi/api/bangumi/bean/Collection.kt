@@ -2,10 +2,11 @@ package soko.ekibun.bangumi.api.bangumi.bean
 
 import androidx.annotation.ArrayRes
 import androidx.annotation.StringDef
-import io.reactivex.Observable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.FormBody
+import okhttp3.Response
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.util.HttpUtil
 
@@ -80,22 +81,23 @@ data class Collection(
          * @param newCollection Collection
          * @return Call<Collection>
          */
-        fun updateStatus(
+        suspend fun updateStatus(
             subject: Subject,
             newCollection: Collection
-        ): Observable<Collection> {
-            return ApiHelper.createHttpObservable("${Bangumi.SERVER}/subject/${subject.id}/interest/update?gh=${HttpUtil.formhash}",
-                body = FormBody.Builder()
-                    .add("referer", "ajax")
-                    .add("interest", newCollection.statusId.toString())
-                    .add("rating", newCollection.rating.toString())
-                    .add(
-                        "tags",
-                        if (newCollection.tag?.isNotEmpty() == true) newCollection.tag.reduce { acc, s -> "$acc $s" } else "")
-                    .add("comment", newCollection.comment ?: "")
-                    .add("privacy", newCollection.private.toString())
-                    .add("update", "保存").build()
-            ).map { newCollection }
+        ): Response {
+            return withContext(Dispatchers.IO) {
+                HttpUtil.getCall("${Bangumi.SERVER}/subject/${subject.id}/interest/update?gh=${HttpUtil.formhash}",
+                    body = FormBody.Builder()
+                        .add("referer", "ajax")
+                        .add("interest", newCollection.statusId.toString())
+                        .add("rating", newCollection.rating.toString())
+                        .add(
+                            "tags",
+                            if (newCollection.tag?.isNotEmpty() == true) newCollection.tag.reduce { acc, s -> "$acc $s" } else "")
+                        .add("comment", newCollection.comment ?: "")
+                        .add("privacy", newCollection.private.toString())
+                        .add("update", "保存").build()).execute()
+            }
         }
 
         /**
@@ -103,13 +105,11 @@ data class Collection(
          * @param subject Subject
          * @return Call<Boolean>
          */
-        fun remove(
+        suspend fun remove(
             subject: Subject
-        ): Observable<Boolean> {
-            return ApiHelper.createHttpObservable(
-                "${Bangumi.SERVER}/subject/${subject.id}/remove?gh=${HttpUtil.formhash}"
-            ).map { rsp ->
-                rsp.code == 200
+        ): Response {
+            return withContext(Dispatchers.IO) {
+                HttpUtil.getCall("${Bangumi.SERVER}/subject/${subject.id}/remove?gh=${HttpUtil.formhash}").execute()
             }
         }
     }

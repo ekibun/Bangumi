@@ -3,11 +3,12 @@ package soko.ekibun.bangumi
 import android.app.Application
 import android.content.Context
 import android.content.Intent
-import android.widget.Toast
 import androidx.preference.PreferenceManager
 import com.umeng.commonsdk.UMConfigure
-import io.reactivex.plugins.RxJavaPlugins
-import soko.ekibun.bangumi.model.*
+import soko.ekibun.bangumi.model.DataCacheModel
+import soko.ekibun.bangumi.model.PluginsModel
+import soko.ekibun.bangumi.model.ThemeModel
+import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.util.HttpUtil
 
 /**
@@ -25,11 +26,6 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         app = this
-        HistoryModel.migrateIntoSql()
-
-        RxJavaPlugins.setErrorHandler {
-            Toast.makeText(this, it.message, Toast.LENGTH_SHORT).show()
-        }
 
         HttpUtil.formhash = UserModel.userList.let { it.users[it.current] }?.formhash ?: HttpUtil.formhash
         ThemeModel.setTheme(this, ThemeModel.getTheme())

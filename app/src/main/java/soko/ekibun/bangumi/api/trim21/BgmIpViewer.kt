@@ -1,9 +1,10 @@
 package soko.ekibun.bangumi.api.trim21
 
-import io.reactivex.Observable
-import soko.ekibun.bangumi.api.ApiHelper
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.trim21.bean.IpView
+import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.JsonUtil
 import java.util.*
 
@@ -24,11 +25,11 @@ object BgmIpViewer {
      * 获取季度数据
      * @param id [Subject.id]
      */
-    fun getSeason(id: Int): Observable<SeasonData> {
-        return ApiHelper.createHttpObservable(
-            "https://www.trim21.cn/api.v1/view_ip/subject/$id"
-        ).map { rsp ->
-            val ipView = JsonUtil.toEntity<IpView>(rsp.body?.string() ?: "")!!
+    suspend fun getSeason(id: Int): SeasonData {
+        return withContext(Dispatchers.Main) {
+            val ipView = JsonUtil.toEntity<IpView>(withContext(Dispatchers.IO) {
+                HttpUtil.getCall("https://www.trim21.cn/api.v1/view_ip/subject/$id").execute().body?.string() ?: ""
+            })!!
             SeasonData(ipView, getSeasonNode(ipView, id).map {
                 Subject(
                     it.subject_id,

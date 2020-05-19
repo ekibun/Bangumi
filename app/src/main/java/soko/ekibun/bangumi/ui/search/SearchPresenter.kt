@@ -121,48 +121,42 @@ class SearchPresenter(private val context: SearchActivity) {
                 context.search_swipe?.isRefreshing = true
             val page = loadCount
             if (typeView.subjectTypeList.containsKey(typeView.selectedType)) {
-                context.disposeContainer.subscribeOnUiThread(
-                    Bangumi.searchSubject(
+                context.subscribe({
+                    context.search_swipe?.isRefreshing = false
+                    subjectAdapter.loadMoreModule.loadMoreFail()
+                }, SEARCH_CALL) {
+                    val list = Bangumi.searchSubject(
                         key, typeView.subjectTypeList[typeView.selectedType]
                             ?: Subject.TYPE_ANY, page + 1
-                    ),
-                    { list ->
-                        if (list.isEmpty())
-                            subjectAdapter.loadMoreModule.loadMoreEnd()
-                        else {
-                            subjectAdapter.loadMoreModule.loadMoreComplete()
-                            subjectAdapter.addData(list)
-                            loadCount = page + 1 //searchAdapter.data.size
-                        }
-                    }, {
-                        subjectAdapter.loadMoreModule.loadMoreFail()
-                    }, {
-                        context.search_swipe?.isRefreshing = false
-                    },
-                    key = SEARCH_CALL
-                )
+                    )
+                    context.search_swipe?.isRefreshing = false
+                    if (list.isEmpty())
+                        subjectAdapter.loadMoreModule.loadMoreEnd()
+                    else {
+                        subjectAdapter.loadMoreModule.loadMoreComplete()
+                        subjectAdapter.addData(list)
+                        loadCount = page + 1 //searchAdapter.data.size
+                    }
+                }
                 if (context.search_list.adapter != subjectAdapter) context.search_list.adapter = subjectAdapter
             }else {
-                context.disposeContainer.subscribeOnUiThread(
-                    Bangumi.searchMono(
+                context.subscribe({
+                    context.search_swipe?.isRefreshing = false
+                    monoAdapter.loadMoreModule.loadMoreFail()
+                }, SEARCH_CALL) {
+                    val list = Bangumi.searchMono(
                         key, typeView.monoTypeList[typeView.selectedType]
                             ?: "all", page + 1
-                    ),
-                    { list ->
-                        if (list.isEmpty())
-                            monoAdapter.loadMoreModule.loadMoreEnd()
-                        else {
-                            monoAdapter.loadMoreModule.loadMoreComplete()
-                            monoAdapter.addData(list)
-                            loadCount = page + 1 //searchAdapter.data.size
-                        }
-                    }, {
-                        monoAdapter.loadMoreModule.loadMoreFail()
-                    }, {
-                        context.search_swipe?.isRefreshing = false
-                    },
-                    key = SEARCH_CALL
-                )
+                    )
+                    context.search_swipe?.isRefreshing = false
+                    if (list.isEmpty())
+                        monoAdapter.loadMoreModule.loadMoreEnd()
+                    else {
+                        monoAdapter.loadMoreModule.loadMoreComplete()
+                        monoAdapter.addData(list)
+                        loadCount = page + 1 //searchAdapter.data.size
+                    }
+                }
                 if (context.search_list.adapter != monoAdapter) context.search_list.adapter = monoAdapter
             }
         }

@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
-import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_collection.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
@@ -112,12 +111,9 @@ class CollectionPagerAdapter(
     fun reset() {
         items.forEach { (it.value.second.tag as? RecyclerView)?.tag = null }
         pageIndex.clear()
-        collectionCalls.forEach { it.value.dispose() }
+        (context as? BaseActivity)?.cancel { it.startsWith(COLLECTION_CALL_PREFIX) }
         loadCollectionList()
     }
-
-    @SuppressLint("UseSparseArrays")
-    private var collectionCalls = HashMap<Int, Disposable>()
 
     @SuppressLint("UseSparseArrays")
     private val pageIndex = HashMap<Int, Int>()
@@ -148,11 +144,9 @@ class CollectionPagerAdapter(
 
     private fun loadCollectionList(position: Int = pager.currentItem) {
         val item = items[position] ?: return
-        val disposeContainer = (fragment.activity as? BaseActivity)?.disposeContainer ?: return
         item.second.isRefreshing = false
         item.first.isUseEmpty = false
         val page = pageIndex.getOrPut(position) { 0 }
-        collectionCalls[position]?.dispose()
         val useApi = useApi(position)
         if (page == 0) {
             if (!useApi) item.first.setNewInstance(null)
@@ -161,29 +155,26 @@ class CollectionPagerAdapter(
         }
         if (useApi) mainPresenter?.updateUserCollection()
         else {
-            disposeContainer.subscribeOnUiThread(
-                Bangumi.getCollectionList(
+            (fragment.activity as? BaseActivity)?.subscribe({
+                item.second.isRefreshing = false
+                item.first.loadMoreModule.loadMoreFail()
+            }, COLLECTION_CALL_PREFIX + position) {
+                val list = Bangumi.getCollectionList(
                     tabList[position],
-                    UserModel.current()?.username ?: return,
+                    UserModel.current()?.username ?: throw Exception("login failed"),
                     collectionTypeView.getType(), page + 1
-                ),
-                { list: List<Subject> ->
-                    item.first.isUseEmpty = true
-                    list.forEach { it.type = tabList[position] }
-                    item.first.addData(list)
-                    if (list.size < 10)
-                        item.first.loadMoreModule.loadMoreEnd()
-                    else
-                        item.first.loadMoreModule.loadMoreComplete()
-                    (item.second.tag as? RecyclerView)?.tag = true
-                    pageIndex[position] = (pageIndex[position] ?: 0) + 1
-                }, {
-                    item.first.loadMoreModule.loadMoreFail()
-                }, {
-                    item.second.isRefreshing = false
-                },
-                key = COLLECTION_CALL_PREFIX + position
-            )
+                )
+                item.second.isRefreshing = false
+                item.first.isUseEmpty = true
+                list.forEach { it.type = tabList[position] }
+                item.first.addData(list)
+                if (list.size < 10)
+                    item.first.loadMoreModule.loadMoreEnd()
+                else
+                    item.first.loadMoreModule.loadMoreComplete()
+                (item.second.tag as? RecyclerView)?.tag = true
+                pageIndex[position] = (pageIndex[position] ?: 0) + 1
+            }
         }
     }
 

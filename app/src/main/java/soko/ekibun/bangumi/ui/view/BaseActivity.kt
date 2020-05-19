@@ -6,11 +6,13 @@ import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AppCompatActivity
 import com.umeng.analytics.MobclickAgent
+import kotlinx.coroutines.*
+import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.model.PluginsModel
 import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.util.ResourceUtil
@@ -29,17 +31,44 @@ import soko.ekibun.bangumi.util.ResourceUtil
  * @property onBackListener Function0<Boolean>
  * @constructor
  */
-abstract class BaseActivity(@LayoutRes private val resId: Int) : AppCompatActivity() {
-    val disposeContainer = ApiHelper.DisposeContainer()
+abstract class BaseActivity(@LayoutRes private val resId: Int) : AppCompatActivity(), CoroutineScope by MainScope() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         window.setBackgroundDrawable(ColorDrawable(ResourceUtil.resolveColorAttr(this, R.attr.colorPrimaryBackground)))
         setContentView(resId)
 
         ThemeModel.updateNavigationTheme(this)
 
         PluginsModel.setUpPlugins(this)
+    }
+
+    private val jobCollection = HashMap<String, Job>()
+    fun cancel(check: (String) -> Boolean) {
+        jobCollection.keys.forEach {
+            if (check(it)) jobCollection.remove(it)
+        }
+    }
+
+    fun subscribe(
+        onError: (t: Throwable) -> Unit = {},
+        key: String? = null,
+        block: suspend CoroutineScope.() -> Unit
+    ): Job {
+        if (!key.isNullOrEmpty()) jobCollection[key]?.cancel()
+        return launch {
+            try {
+                block.invoke(this)
+            } catch (_: CancellationException) {
+            } catch (t: Throwable) {
+                Toast.makeText(App.app, t.message, Toast.LENGTH_SHORT).show()
+                t.printStackTrace()
+                onError(t)
+            }
+        }.also {
+            if (!key.isNullOrEmpty()) jobCollection[key] = it
+        }
     }
 
     var onStartListener = {}
@@ -59,7 +88,7 @@ abstract class BaseActivity(@LayoutRes private val resId: Int) : AppCompatActivi
     var onDestroyListener = {}
     override fun onDestroy() {
         super.onDestroy()
-        disposeContainer.dispose()
+        cancel()
         Log.v("destroy", "${this.javaClass}")
         onDestroyListener()
     }

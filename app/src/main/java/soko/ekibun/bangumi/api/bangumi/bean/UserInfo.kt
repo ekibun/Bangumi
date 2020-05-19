@@ -1,5 +1,7 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jsoup.nodes.Element
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.util.HttpUtil
@@ -59,13 +61,13 @@ data class UserInfo(
         }
 
         private val userCache = WeakHashMap<String, UserInfo>()
-        fun getApiUser(username: String): UserInfo {
+        suspend fun getApiUser(username: String): UserInfo {
             return userCache.getOrPut(username) {
-                JsonUtil.toJsonObject(
+                JsonUtil.toJsonObject(withContext(Dispatchers.IO) {
                     HttpUtil.getCall(
                         "https://api.bgm.tv/user/${username}"
                     ).execute().body?.string() ?: ""
-                ).let { obj ->
+                }).let { obj ->
                     UserInfo(
                         id = obj.get("id")?.asInt ?: 0,
                         username = obj.get("username")?.asString,

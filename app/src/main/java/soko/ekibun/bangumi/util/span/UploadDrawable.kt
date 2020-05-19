@@ -4,11 +4,11 @@ import android.net.Uri
 import android.util.Log
 import android.util.Size
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
-import io.reactivex.Observable
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import okhttp3.RequestBody
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.sda1.Sda1
 import soko.ekibun.bangumi.util.FileRequestBody
@@ -56,34 +56,31 @@ class UploadDrawable(
                 }
             }
 
-            disposeContainer.subscribeOnUiThread(
-                when (App.app.sp.getString(
-                    "image_uploader",
-                    "p.sda1.dev"
-                )) {
-                    "lain.bgm.tv" -> Bangumi.uploadImage(fileRequestBody, fileName)
-                    else -> Sda1.uploadImage(fileRequestBody, fileName)
-                }.flatMap {
-                    if (it.isEmpty()) Observable.error(IllegalAccessException("Image Response Empty!"))
-                    else Observable.just(it)
-                },
-                { imgUrl ->
+            scope.launch {
+                try {
+                    val imgUrl = when (App.app.sp.getString(
+                        "image_uploader",
+                        "p.sda1.dev"
+                    )) {
+                        "lain.bgm.tv" -> Bangumi.uploadImage(fileRequestBody, fileName)
+                        else -> Sda1.uploadImage(fileRequestBody, fileName)
+                    }
+                    if (imgUrl.isEmpty()) throw IllegalAccessException("Image Response Empty!")
                     Log.v("rspurl", imgUrl)
                     url = imgUrl
                     onUploaded(imgUrl)
                     loadImage()
-                }, {
+                } catch (e: Exception) {
                     error = true
-                    it.printStackTrace()
+                    e.printStackTrace()
                     errorDrawable?.let { drawable -> update(drawable) }
-                }, {
-                    if (circularProgressDrawable.isRunning) circularProgressDrawable.stop()
                 }
-            )
+                if (circularProgressDrawable.isRunning) circularProgressDrawable.stop()
+            }
         }
     }
 
     companion object {
-        private val disposeContainer = ApiHelper.DisposeContainer()
+        private val scope = MainScope()
     }
 }

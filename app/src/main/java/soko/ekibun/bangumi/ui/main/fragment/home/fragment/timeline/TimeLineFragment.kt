@@ -101,17 +101,13 @@ class TimeLineFragment : HomeTabFragment(R.layout.fragment_timeline) {
                     draft = draft
                 ) { content, _, send ->
                     if (content != null && send) {
-                        (activity as? BaseActivity)?.disposeContainer?.subscribeOnUiThread(
-                            TimeLine.addComment(content),
-                            {
-                                if (it) {
-                                    draft = null
-                                    if (item_pager?.currentItem ?: 2 !in 0..1) item_pager?.currentItem = 1
-                                    adapter.pageIndex[item_pager?.currentItem ?: 0] = 0
-                                    adapter.loadTopicList()
-                                } else Toast.makeText(activity, R.string.hint_submit_error, Toast.LENGTH_LONG).show()
-                            }
-                        )
+                        (activity as? BaseActivity)?.subscribe {
+                            TimeLine.addComment(content)
+                            draft = null
+                            if (item_pager?.currentItem ?: 2 !in 0..1) item_pager?.currentItem = 1
+                            adapter.pageIndex[item_pager?.currentItem ?: 0] = 0
+                            adapter.loadTopicList()
+                        }
                     } else draft = content
                 }
                 true

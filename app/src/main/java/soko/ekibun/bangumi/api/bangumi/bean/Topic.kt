@@ -1,9 +1,12 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
-import io.reactivex.Observable
-import io.reactivex.schedulers.Schedulers
-import io.reactivex.subjects.ReplaySubject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import okhttp3.FormBody
+import okhttp3.Response
 import org.jsoup.Jsoup
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
@@ -60,13 +63,15 @@ data class Topic(
          * @param type String
          * @return Call<List<Topic>>
          */
-        fun getList(
+        suspend fun getList(
             type: String
-        ): Observable<List<Topic>> {
-            return ApiHelper.createHttpObservable(
-                "${Bangumi.SERVER}/rakuen/topiclist" + if (type.isEmpty()) "" else "?type=$type"
-            ).map { rsp ->
-                val doc = Jsoup.parse(rsp.body?.string() ?: "")
+        ): List<Topic> {
+            return withContext(Dispatchers.Default) {
+                val doc = Jsoup.parse(withContext(Dispatchers.IO) {
+                    HttpUtil.getCall(
+                        "${Bangumi.SERVER}/rakuen/topiclist" + if (type.isEmpty()) "" else "?type=$type"
+                    ).execute().body?.string() ?: ""
+                })
                 doc.select(".item_list").mapNotNull {
                     val title = it.selectFirst(".title") ?: return@mapNotNull null
                     val modelId = Regex("""/rakuen/topic/([^/]+)/(\d+)""").find(title.attr("href") ?: "")?.groupValues
@@ -111,36 +116,41 @@ data class Topic(
          * @param topic Topic
          * @return Observable<Boolean|List<TopicPost>>
          */
-        fun getTopicSax(topic: Topic): Observable<Any> {
-            return ApiHelper.createHttpObservable(
-                when (topic.model) {
-                    "blog" -> "${Bangumi.SERVER}/blog/${topic.id}"
-                    else -> "${Bangumi.SERVER}/rakuen/topic/${topic.model}/${topic.id}"
-                }
-            ).flatMap { rsp ->
-                Observable.create<Any> { emitter ->
-                    var beforeData = ""
-
-                    val replyPub = ReplaySubject.create<String>()
-                    val observable = replyPub.subscribeOn(Schedulers.newThread()).buffer(50).flatMap { str ->
-                        Observable.just(0).observeOn(Schedulers.computation()).takeWhile {
-                            !emitter.isDisposed
-                        }.map {
-                            parsePost(str.joinToString(""))
+        suspend fun getTopicSax(
+            topic: Topic,
+            onHeader: () -> Unit,
+            onTopicPost: (List<TopicPost>) -> Unit
+        ) {
+            withContext(Dispatchers.Default) {
+                val rsp = withContext(Dispatchers.IO) {
+                    HttpUtil.getCall(
+                        when (topic.model) {
+                            "blog" -> "${Bangumi.SERVER}/blog/${topic.id}"
+                            else -> "${Bangumi.SERVER}/rakuen/topic/${topic.model}/${topic.id}"
                         }
+                    ).execute()
+                }
+                var replyCount = -2
+                val posts = ArrayList<TopicPost>()
+                val mutex = Mutex()
+                var finishFirst = false
+                val endString = ApiHelper.parseSaxAsync(rsp, { tag, attrs ->
+                    when {
+                        attrs.contains("row_reply") || attrs.contains("postTopic") -> {
+                            replyCount++
+                            if (replyCount <= 0 || replyCount > 25) {
+                                replyCount.also { if (replyCount > 0) replyCount = 0 } to ApiHelper.SaxEventType.BEGIN
+                            } else null to ApiHelper.SaxEventType.NOTHING
+                        }
+                        attrs.contains("reply_wrapper") -> {
+                            ApiHelper.SaxEventType.BEGIN to ApiHelper.SaxEventType.BEGIN
+                        }
+                        else -> null to ApiHelper.SaxEventType.NOTHING
                     }
-
-                    observable.subscribe({
-                        if (!emitter.isDisposed) emitter.onNext(it)
-                    }, {
-                        if (!emitter.isDisposed) emitter.onError(it)
-                    })
-
-                    val firstReplies = ArrayList<TopicPost>()
-                    val updateReply = { str: String ->
-                        if (beforeData.isEmpty()) {
-                            beforeData = str
-                            val doc = Jsoup.parse(str)
+                }) { tag, str ->
+                    when (tag) {
+                        -1 -> {
+                            val doc = Jsoup.parseBodyFragment(str)
                             doc.outputSettings().prettyPrint(false)
 
                             topic.title = doc.selectFirst("#pageHeader h1")?.ownText()
@@ -169,44 +179,25 @@ data class Topic(
                                     model = "blog"
                                 )
                             }
-                            if (!emitter.isDisposed) emitter.onNext(true)
-                        } else if (firstReplies.isEmpty()) {
-                            val posts = parsePost(str)
-                            firstReplies.addAll(posts)
-                            emitter.onNext(posts)
-                        } else {
-                            replyPub.onNext(str)
+                            withContext(Dispatchers.Main) { onHeader() }
                         }
-                    }
-                    val lastData = ApiHelper.parseSax(rsp) { tag, attrs, str ->
-                        if (emitter.isDisposed) return@parseSax ApiHelper.SaxEventType.END
-                        when {
-                            attrs.contains("row_reply") || attrs.contains("postTopic") -> {
-                                updateReply(str())
-                                ApiHelper.SaxEventType.BEGIN
-                            }
-                            attrs.contains("reply_wrapper") -> {
-                                updateReply(str())
-                                ApiHelper.SaxEventType.BEGIN
-                            }
-                            else -> ApiHelper.SaxEventType.NOTHING
+                        else -> {
+                            val post = parsePost(str)
+                            mutex.withLock { posts.addAll(post) }
+                            while (tag != 0 && !finishFirst) delay(100)
+                            withContext(Dispatchers.Main) { onTopicPost(post) }
+                            if (tag == 0) finishFirst = true
                         }
-                    }
-                    replyPub.onComplete()
-
-                    val doc = Jsoup.parse(beforeData + lastData)
-                    val error = doc.selectFirst("#reply_wrapper")?.selectFirst(".tip")
-                    val form = doc.selectFirst("#ReplyForm")
-                    topic.lastview = form?.selectFirst("input[name=lastview]")?.attr("value")
-                    topic.error = error?.text()?.let {
-                        Pair(it, Bangumi.parseUrl(error.selectFirst("a")?.attr("href") ?: ""))
-                    }
-                    topic.replies = firstReplies.plus(observable.blockingIterable().flatten()).sortedBy { it.floor }
-                    if (!emitter.isDisposed) {
-                        emitter.onNext(false)
-                        emitter.onComplete()
                     }
                 }
+                val doc = Jsoup.parse(endString)
+                val error = doc.selectFirst("#reply_wrapper")?.selectFirst(".tip")
+                val form = doc.selectFirst("#ReplyForm")
+                topic.lastview = form?.selectFirst("input[name=lastview]")?.attr("value")
+                topic.error = error?.text()?.let {
+                    Pair(it, Bangumi.parseUrl(error.selectFirst("a")?.attr("href") ?: ""))
+                }
+                topic.replies = posts.sortedBy { it.floor }
             }
         }
 
@@ -215,16 +206,16 @@ data class Topic(
          * @param topic Topic
          * @return Call<Boolean>
          */
-        fun remove(
+        suspend fun remove(
             topic: Topic
-        ): Observable<Boolean> {
-            return ApiHelper.createHttpObservable(
-                when (topic.model) {
-                    "blog" -> "${Bangumi.SERVER}/erase/entry/${topic.id}"
-                    else -> topic.url.replace(Bangumi.SERVER, "${Bangumi.SERVER}/erase")
-                } + "?gh=${HttpUtil.formhash}&ajax=1"
-            ).map { rsp ->
-                rsp.code == 200
+        ): Response {
+            return withContext(Dispatchers.IO) {
+                HttpUtil.getCall(
+                    when (topic.model) {
+                        "blog" -> "${Bangumi.SERVER}/erase/entry/${topic.id}"
+                        else -> topic.url.replace(Bangumi.SERVER, "${Bangumi.SERVER}/erase")
+                    } + "?gh=${HttpUtil.formhash}&ajax=1"
+                ).execute()
             }
         }
 
@@ -245,37 +236,38 @@ data class Topic(
          * @param content String
          * @return Call<List<TopicPost>>
          */
-        fun reply(
+        suspend fun reply(
             topic: Topic,
             post: TopicPost?,
             content: String
-        ): Observable<ReplyData.ReplyPost> {
-            val comment = if (post?.isSub == true)
-                "[quote][b]${post.nickname}[/b] 说: ${Jsoup.parse(post.pst_content).let { doc ->
-                    doc.select("div.quote").remove()
-                    Jsoup.parse(doc.html()).text().let {
-                        if (it.length > 100) it.substring(0, 100) + "..." else it
-                    }
-                }}[/quote]\n" else ""
+        ): ReplyData.ReplyPost {
+            return withContext(Dispatchers.Default) {
+                val comment = if (post?.isSub == true)
+                    "[quote][b]${post.nickname}[/b] 说: ${Jsoup.parse(post.pst_content).let { doc ->
+                        doc.select("div.quote").remove()
+                        Jsoup.parse(doc.html()).text().let {
+                            if (it.length > 100) it.substring(0, 100) + "..." else it
+                        }
+                    }}[/quote]\n" else ""
 
-            val data = FormBody.Builder()
-                .add("lastview", topic.lastview ?: "")
-                .add("formhash", HttpUtil.formhash)
-                .add("content", comment + content)
-                .add("submit", "submit")
-            if (post != null) {
-                data.add("topic_id", post.pst_mid)
-                    .add("related", post.relate)
-                    .add("post_uid", post.pst_uid)
-            }
-
-            return ApiHelper.createHttpObservable(
-                when (topic.model) {
-                    "blog" -> "${Bangumi.SERVER}/blog/entry/${topic.id}"
-                    else -> topic.url
-                } + "/new_reply?ajax=1", body = data.build()
-            ).map { rsp ->
-                JsonUtil.toEntity<ReplyData>(rsp.body?.string() ?: "")?.posts
+                val data = FormBody.Builder()
+                    .add("lastview", topic.lastview ?: "")
+                    .add("formhash", HttpUtil.formhash)
+                    .add("content", comment + content)
+                    .add("submit", "submit")
+                if (post != null) {
+                    data.add("topic_id", post.pst_mid)
+                        .add("related", post.relate)
+                        .add("post_uid", post.pst_uid)
+                }
+                JsonUtil.toEntity<ReplyData>(withContext(Dispatchers.IO) {
+                    HttpUtil.getCall(
+                        when (topic.model) {
+                            "blog" -> "${Bangumi.SERVER}/blog/entry/${topic.id}"
+                            else -> topic.url
+                        } + "/new_reply?ajax=1", body = data.build()
+                    ).execute().body?.string() ?: ""
+                })?.posts!!
             }
         }
 
@@ -286,19 +278,19 @@ data class Topic(
          * @param content String
          * @return Call<Boolean>
          */
-        fun edit(
+        suspend fun edit(
             topic: Topic,
             title: String,
             content: String
-        ): Observable<Boolean> {
-            return ApiHelper.createHttpObservable(
-                topic.url + "/edit?ajax=1", body = FormBody.Builder()
-                    .add("formhash", HttpUtil.formhash)
-                    .add("title", title)
-                    .add("submit", "改好了")
-                    .add("content", content).build()
-            ).map { rsp ->
-                rsp.code == 200
+        ): Response {
+            return withContext(Dispatchers.IO) {
+                HttpUtil.getCall(
+                    topic.url + "/edit?ajax=1", body = FormBody.Builder()
+                        .add("formhash", HttpUtil.formhash)
+                        .add("title", title)
+                        .add("submit", "改好了")
+                        .add("content", content).build()
+                ).execute()
             }
         }
     }
