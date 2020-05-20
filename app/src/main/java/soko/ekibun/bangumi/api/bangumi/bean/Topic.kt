@@ -1,6 +1,5 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
-import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
@@ -149,7 +148,6 @@ data class Topic(
                         else -> null to ApiHelper.SaxEventType.NOTHING
                     }
                 }) { tag, str ->
-                    Log.v("tag", "$tag")
                     when (tag) {
                         -1 -> {
                             val doc = Jsoup.parseBodyFragment(str)
@@ -192,7 +190,6 @@ data class Topic(
                         }
                     }
                 }
-                Log.v("end", endString)
                 val doc = Jsoup.parse(endString)
                 val error = doc.selectFirst("#reply_wrapper")?.selectFirst(".tip")
                 val form = doc.selectFirst("#ReplyForm")

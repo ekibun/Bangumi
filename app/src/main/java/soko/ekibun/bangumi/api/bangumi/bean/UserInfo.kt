@@ -1,12 +1,13 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.withContext
 import org.jsoup.nodes.Element
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.JsonUtil
 import java.util.*
+import java.util.concurrent.Executors
 
 /**
  * 用户信息类
@@ -61,9 +62,12 @@ data class UserInfo(
         }
 
         private val userCache = WeakHashMap<String, UserInfo>()
+        private val IoDispatcher = Executors.newFixedThreadPool(4).asCoroutineDispatcher()
+
+        @Suppress("BlockingMethodInNonBlockingContext")
         suspend fun getApiUser(username: String): UserInfo {
             return userCache.getOrPut(username) {
-                JsonUtil.toJsonObject(withContext(Dispatchers.IO) {
+                JsonUtil.toJsonObject(withContext(IoDispatcher) {
                     HttpUtil.getCall(
                         "https://api.bgm.tv/user/${username}"
                     ).execute().body?.string() ?: ""

@@ -56,9 +56,10 @@ abstract class BaseActivity(@LayoutRes private val resId: Int) : AppCompatActivi
         key: String? = null,
         block: suspend CoroutineScope.() -> Unit
     ): Job {
-        if (!key.isNullOrEmpty()) jobCollection[key]?.cancel()
+        val oldJob = jobCollection[key]
         return launch {
             try {
+                oldJob?.cancelAndJoin()
                 block.invoke(this)
             } catch (_: CancellationException) {
             } catch (t: Throwable) {

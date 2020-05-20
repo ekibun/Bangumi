@@ -9,7 +9,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.content_calendar.view.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
@@ -149,15 +148,13 @@ class CalendarPagerAdapter(private val view: ViewGroup) : RecyclePagerAdapter<Ca
                     entry.value to index
                 }
             }
-            withContext(NonCancellable) {
-                list.forEach { entry ->
-                    val item = getItem(entry.key)
-                    val (data, index) = entry.value
-                    item.setNewInstance(data)
-                    if (index >= 0) {
-                        (holders.firstOrNull { it.position == 7 }?.recyclerView?.layoutManager as? LinearLayoutManager)
-                            ?.scrollToPositionWithOffset(index - 1, 0)
-                    }
+            list.forEach { entry ->
+                val item = getItem(entry.key)
+                val (data, index) = entry.value
+                item.setNewInstance(data)
+                if (index >= 0) {
+                    (holders.firstOrNull { it.position == 7 }?.recyclerView?.layoutManager as? LinearLayoutManager)
+                        ?.scrollToPositionWithOffset(index - 1, 0)
                 }
             }
             callback()
