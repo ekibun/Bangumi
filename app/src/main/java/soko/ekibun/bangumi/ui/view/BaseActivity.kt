@@ -16,6 +16,7 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.model.PluginsModel
 import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.util.ResourceUtil
+import java.util.concurrent.ConcurrentHashMap
 
 
 /**
@@ -44,7 +45,7 @@ abstract class BaseActivity(@LayoutRes private val resId: Int) : AppCompatActivi
         PluginsModel.setUpPlugins(this)
     }
 
-    private val jobCollection = HashMap<String, Job>()
+    private val jobCollection = ConcurrentHashMap<String, Job>()
     fun cancel(check: (String) -> Boolean) {
         jobCollection.keys.forEach {
             if (check(it)) jobCollection.remove(it)
@@ -56,7 +57,7 @@ abstract class BaseActivity(@LayoutRes private val resId: Int) : AppCompatActivi
         key: String? = null,
         block: suspend CoroutineScope.() -> Unit
     ): Job {
-        val oldJob = jobCollection[key]
+        val oldJob = if (key.isNullOrEmpty()) null else jobCollection[key]
         return launch {
             try {
                 oldJob?.cancelAndJoin()
