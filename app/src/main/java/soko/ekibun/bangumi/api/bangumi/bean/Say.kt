@@ -10,6 +10,8 @@ import org.jsoup.Jsoup
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.util.HttpUtil
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.collections.set
 
 data class Say(
@@ -69,11 +71,10 @@ data class Say(
                 say.replies?.forEach { reply ->
                     reply.user.avatar?.let { avatarCache[reply.user.username!!] = it }
                 }
-                val unresolvedMutex = HashMap<String, Mutex>()
-                val mutex = Mutex()
+                val unresolvedMutex = ConcurrentHashMap<String, Mutex>()
 
                 var replyCount = -1
-                val replies = ArrayList<SayReply>()
+                val replies = ConcurrentLinkedQueue<SayReply>()
                 ApiHelper.parseSaxAsync(rsp, { tag, attrs ->
                     when {
                         attrs.contains("reply_item") -> {
@@ -102,11 +103,10 @@ data class Say(
                         }
                         else -> {
                             val user = UserInfo.parse(doc.selectFirst("a.l"))
-                            user.avatar = user.avatar ?: mutex.withLock {
-                                unresolvedMutex.getOrPut(user.username!!) { Mutex() }
-                            }.withLock {
-                                avatarCache.getOrPut(user.username!!) { UserInfo.getApiUser(user.username!!).avatar!! }
-                            }
+                            user.avatar =
+                                user.avatar ?: unresolvedMutex.getOrPut(user.username!!) { Mutex() }.withLock {
+                                    avatarCache.getOrPut(user.username!!) { UserInfo.getApiUser(user.username!!).avatar!! }
+                                }
                             val sayReply = SayReply(
                                 user = user,
                                 message = doc.selectFirst(".reply_item").childNodes()?.let { it.subList(6, it.size) }
@@ -115,7 +115,7 @@ data class Say(
                                     }?.trim() ?: "",
                                 index = tag as Int
                             )
-                            mutex.withLock { replies += sayReply }
+                            replies += sayReply
                             withContext(Dispatchers.Main) { onUpdate(listOf(sayReply)) }
                         }
                     }

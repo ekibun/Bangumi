@@ -2,8 +2,6 @@ package soko.ekibun.bangumi.api.bangumi.bean
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import okhttp3.FormBody
 import okhttp3.Response
@@ -12,6 +10,7 @@ import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.JsonUtil
+import java.util.concurrent.ConcurrentLinkedQueue
 
 /**
  * 帖子
@@ -131,8 +130,7 @@ data class Topic(
                     ).execute()
                 }
                 var replyCount = -2
-                val posts = ArrayList<TopicPost>()
-                val mutex = Mutex()
+                val posts = ConcurrentLinkedQueue<TopicPost>()
                 var finishFirst = false
                 val endString = ApiHelper.parseSaxAsync(rsp, { tag, attrs ->
                     when {
@@ -183,7 +181,7 @@ data class Topic(
                         }
                         else -> {
                             val post = parsePost(str)
-                            mutex.withLock { posts.addAll(post) }
+                            posts.addAll(post)
                             while (tag is Int && tag != 0 && !finishFirst) delay(100)
                             withContext(Dispatchers.Main) { onTopicPost(post) }
                             if (tag == 0) finishFirst = true
