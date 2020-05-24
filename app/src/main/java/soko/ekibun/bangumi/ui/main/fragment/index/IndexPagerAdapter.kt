@@ -54,11 +54,11 @@ class IndexPagerAdapter(val fragment: IndexFragment, pager: androidx.viewpager.w
         item.adapter.isUseEmpty = false
 
         (fragment.activity as? BaseActivity)?.subscribe({
-            item.view.isRefreshing = false
             item.adapter.loadMoreModule.loadMoreFail()
+        }, {
+            item.view.isRefreshing = false
         }, INDEX_CALL_PREFIX + position) {
             val data = Bangumi.browserAirTime(indexType.first, year, month, page + 1, indexType.second)
-            item.view.isRefreshing = false
             item.adapter.isUseEmpty = true
             if (data.isEmpty()) {
                 item.adapter.loadMoreModule.loadMoreEnd()

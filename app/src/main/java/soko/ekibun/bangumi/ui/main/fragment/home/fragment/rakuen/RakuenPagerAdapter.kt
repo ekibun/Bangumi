@@ -89,9 +89,9 @@ class RakuenPagerAdapter(
         val item = items[position] ?: return
         item.first.isUseEmpty = false
         item.second.isRefreshing = true
-        (fragment.activity as? BaseActivity)?.subscribe({
+        (fragment.activity as? BaseActivity)?.subscribe(onComplete = {
             item.second.isRefreshing = false
-        }, RAKUEN_CALL_PREFIX + position) {
+        }, key = RAKUEN_CALL_PREFIX + position) {
             val it = Topic.getList(
                 if (position == 1) when (fragment.selectedFilter) {
                     R.id.topic_filter_join -> "my_group"
@@ -100,7 +100,6 @@ class RakuenPagerAdapter(
                     else -> "group"
                 } else listOf("", "group", "subject", "ep", "mono")[position]
             )
-            item.second.isRefreshing = false
             item.first.isUseEmpty = true
             item.first.setNewInstance(it.toMutableList())
             (item.second.tag as? androidx.recyclerview.widget.RecyclerView)?.tag = true

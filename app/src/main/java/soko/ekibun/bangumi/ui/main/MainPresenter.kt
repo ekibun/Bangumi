@@ -190,7 +190,7 @@ class MainPresenter(private val context: MainActivity) {
                 UserModel.switchToUser(null)
                 updateUser(null)
             }
-        }, COLLECTION_CALL) {
+        }, key = COLLECTION_CALL) {
             val data = Bangumi.getCollectionSax({ user ->
                 UserModel.updateUser(user)
                 UserModel.switchToUser(user)
@@ -243,7 +243,7 @@ class MainPresenter(private val context: MainActivity) {
     fun updateCalendarList() {
         context.subscribe({
             drawerView.calendarFragment.calendarCallback(null, it)
-        }, "bangumi_calendar") {
+        }, key = "bangumi_calendar") {
             val data = Github.bangumiCalendar()
             calendar = data
             App.app.dataCacheModel.set(CALENDAR_CACHE_KEY, data)

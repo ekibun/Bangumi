@@ -54,6 +54,7 @@ abstract class BaseActivity(@LayoutRes private val resId: Int) : AppCompatActivi
 
     fun subscribe(
         onError: (t: Throwable) -> Unit = {},
+        onComplete: () -> Unit = {},
         key: String? = null,
         block: suspend CoroutineScope.() -> Unit
     ): Job {
@@ -68,6 +69,7 @@ abstract class BaseActivity(@LayoutRes private val resId: Int) : AppCompatActivi
                 t.printStackTrace()
                 onError(t)
             }
+            if (isActive) onComplete()
         }.also {
             if (!key.isNullOrEmpty()) jobCollection[key] = it
         }

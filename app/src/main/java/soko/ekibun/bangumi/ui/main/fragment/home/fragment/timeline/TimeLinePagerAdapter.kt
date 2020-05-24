@@ -94,9 +94,9 @@ class TimeLinePagerAdapter(
         if (page == 0) {
             item.second.isRefreshing = true
         }
-        (fragment.activity as? BaseActivity)?.subscribe({
+        (fragment.activity as? BaseActivity)?.subscribe(onComplete = {
             item.second.isRefreshing = false
-        }, TIMELINE_CALL_PREFIX + position) {
+        }, key = TIMELINE_CALL_PREFIX + position) {
             val list = TimeLine.getList(
                 listOf(
                     "all", "say", "subject", "progress", "blog", "mono",
@@ -106,7 +106,6 @@ class TimeLinePagerAdapter(
                 if (fragment.selectedType == R.id.timeline_type_self) UserModel.current() else null,
                 fragment.selectedType == R.id.timeline_type_all
             ).toMutableList()
-            item.second.isRefreshing = false
             if (list.isNotEmpty() && item.first.data.lastOrNull { it.isHeader }?.header == list.getOrNull(0)?.header)
                 list.removeAt(0)
             if (page == 0) item.first.setNewInstance(list)

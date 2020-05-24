@@ -122,14 +122,14 @@ class SearchPresenter(private val context: SearchActivity) {
             val page = loadCount
             if (typeView.subjectTypeList.containsKey(typeView.selectedType)) {
                 context.subscribe({
-                    context.search_swipe?.isRefreshing = false
                     subjectAdapter.loadMoreModule.loadMoreFail()
+                }, {
+                    context.search_swipe?.isRefreshing = false
                 }, SEARCH_CALL) {
                     val list = Bangumi.searchSubject(
                         key, typeView.subjectTypeList[typeView.selectedType]
                             ?: Subject.TYPE_ANY, page + 1
                     )
-                    context.search_swipe?.isRefreshing = false
                     if (list.isEmpty())
                         subjectAdapter.loadMoreModule.loadMoreEnd()
                     else {
@@ -141,14 +141,14 @@ class SearchPresenter(private val context: SearchActivity) {
                 if (context.search_list.adapter != subjectAdapter) context.search_list.adapter = subjectAdapter
             }else {
                 context.subscribe({
-                    context.search_swipe?.isRefreshing = false
                     monoAdapter.loadMoreModule.loadMoreFail()
+                }, {
+                    context.search_swipe?.isRefreshing = false
                 }, SEARCH_CALL) {
                     val list = Bangumi.searchMono(
                         key, typeView.monoTypeList[typeView.selectedType]
                             ?: "all", page + 1
                     )
-                    context.search_swipe?.isRefreshing = false
                     if (list.isEmpty())
                         monoAdapter.loadMoreModule.loadMoreEnd()
                     else {

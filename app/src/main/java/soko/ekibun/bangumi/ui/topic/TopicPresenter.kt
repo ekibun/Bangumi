@@ -59,8 +59,9 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
         context.item_swipe.isRefreshing = true
 
         context.subscribe({
-            context.item_swipe.isRefreshing = false
             topicView.adapter.loadMoreModule.loadMoreFail()
+        }, {
+            context.item_swipe.isRefreshing = false
         }, "bangumi_topic") {
             Topic.getTopicSax(topic, {
                 topicView.processTopic(topic, scrollPost, true)
@@ -75,7 +76,6 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
                     } else topicView.adapter.setData(index, post)
                 }
             })
-            context.item_swipe.isRefreshing = false
             processTopic(topic, scrollPost)
             dataCacheModel.set(topic.cacheKey, topic)
             topicView.adapter.loadMoreModule.loadMoreEnd()

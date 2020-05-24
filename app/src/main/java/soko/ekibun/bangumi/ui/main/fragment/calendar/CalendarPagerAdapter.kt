@@ -100,9 +100,9 @@ class CalendarPagerAdapter(private val view: ViewGroup) : RecyclePagerAdapter<Ca
 
     fun setOnAirList(raw: List<BangumiCalendarItem>, callback: () -> Unit = {}) {
         val collectionList = mainPresenter?.collectionList ?: ArrayList()
-        (view.context as? BaseActivity)?.subscribe({
+        (view.context as? BaseActivity)?.subscribe(onComplete = {
             callback()
-        }, CALENDAR_COMPUTE_CALL) {
+        }, key = CALENDAR_COMPUTE_CALL) {
             val list = withContext(Dispatchers.Default) {
                 val use30h = App.app.sp.getBoolean("calendar_use_30h", false)
                 val now = CalendarAdapter.getNowInt(use30h)
@@ -157,7 +157,6 @@ class CalendarPagerAdapter(private val view: ViewGroup) : RecyclePagerAdapter<Ca
                         ?.scrollToPositionWithOffset(index - 1, 0)
                 }
             }
-            callback()
         }
     }
 

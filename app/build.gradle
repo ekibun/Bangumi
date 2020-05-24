@@ -84,6 +84,10 @@ dependencies {
     implementation "com.squareup.okhttp3:okhttp-brotli:$okhttpVersion"
     implementation "com.squareup.okhttp3:logging-interceptor:$okhttpVersion"
 
+    implementation "androidx.lifecycle:lifecycle-extensions:$archLifecycleVersion"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$archLifecycleVersion"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$archLifecycleVersion"
+
     implementation "androidx.core:core-ktx:1.2.0"
     implementation "androidx.preference:preference:1.1.0"
     testImplementation "junit:junit:4.12"

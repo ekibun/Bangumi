@@ -231,9 +231,9 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
             episodeDialog?.info = airInfo
         }
 
-        context.subscribe({
+        context.subscribe(onComplete = {
             context.item_swipe.isRefreshing = false
-        }, "bangumi_subject_detail") {
+        }, key = "bangumi_subject_detail") {
             coroutineScope {
                 listOf(
                     async {
@@ -255,7 +255,6 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
                         subject.eps = eps
                     }
                 ).awaitAll()
-                context.item_swipe.isRefreshing = false
             }
         }
     }
@@ -263,7 +262,7 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
     private fun loadComment(subject: Subject) {
         context.subscribe({
             subjectView.commentAdapter.loadMoreModule.loadMoreFail()
-        }, "bangumi_subject_comment") {
+        }, key = "bangumi_subject_comment") {
             val comment = Comment.getSubjectComment(subject, commentPage)
             commentPage++
             subjectView.commentAdapter.addData(comment)

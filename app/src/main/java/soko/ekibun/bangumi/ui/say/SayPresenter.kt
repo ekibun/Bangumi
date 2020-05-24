@@ -58,9 +58,10 @@ class SayPresenter(private val context: SayActivity, say: Say) {
         loadMoreFail = null
         context.item_swipe.isRefreshing = true
         context.subscribe({
-            context.item_swipe.isRefreshing = false
             loadMoreFail = true
             sayView.adapter.loadMoreModule.loadMoreFail()
+        }, {
+            context.item_swipe.isRefreshing = false
         }, SAY_CALL) {
             val updatePost = { post: Say.SayReply ->
                 val index = sayView.adapter.data.indexOfFirst { it.t.index == post.index }
@@ -75,7 +76,6 @@ class SayPresenter(private val context: SayActivity, say: Say) {
             }) {
                 it.forEach(updatePost)
             }
-            context.item_swipe.isRefreshing = false
             sayView.processSay(say)
             dataCacheModel.set(say.cacheKey, say)
             updateHistory()

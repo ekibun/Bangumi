@@ -34,4 +34,5 @@ ext {
     okhttpVersion = '4.5.0'
     coroutinesVersion = '1.2.1'
     appCompatVersion = '1.1.0'
+    archLifecycleVersion = '2.2.0-rc02'
 }

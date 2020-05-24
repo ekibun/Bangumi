@@ -156,15 +156,15 @@ class CollectionPagerAdapter(
         if (useApi) mainPresenter?.updateUserCollection()
         else {
             (fragment.activity as? BaseActivity)?.subscribe({
-                item.second.isRefreshing = false
                 item.first.loadMoreModule.loadMoreFail()
+            }, {
+                item.second.isRefreshing = false
             }, COLLECTION_CALL_PREFIX + position) {
                 val list = Bangumi.getCollectionList(
                     tabList[position],
                     UserModel.current()?.username ?: throw Exception("login failed"),
                     collectionTypeView.getType(), page + 1
                 )
-                item.second.isRefreshing = false
                 item.first.isUseEmpty = true
                 list.forEach { it.type = tabList[position] }
                 item.first.addData(list)
