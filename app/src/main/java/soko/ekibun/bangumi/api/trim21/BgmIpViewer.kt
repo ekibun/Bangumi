@@ -28,7 +28,7 @@ object BgmIpViewer {
     suspend fun getSeason(id: Int): SeasonData {
         return withContext(Dispatchers.Main) {
             val ipView = JsonUtil.toEntity<IpView>(withContext(Dispatchers.IO) {
-                HttpUtil.getCall("https://www.trim21.cn/api.v1/view_ip/subject/$id").execute().body?.string() ?: ""
+                HttpUtil.fetch("https://www.trim21.cn/api.v1/view_ip/subject/$id").body?.string() ?: ""
             })!!
             SeasonData(ipView, getSeasonNode(ipView, id).map {
                 Subject(

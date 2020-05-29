@@ -240,7 +240,7 @@ data class Episode(
         ): List<Episode> {
             return withContext(Dispatchers.Default) {
                 parseLineList(Jsoup.parse(withContext(Dispatchers.IO) {
-                    HttpUtil.getCall("${Bangumi.SERVER}/subject/${subject.id}/ep").execute().body?.string() ?: ""
+                    HttpUtil.fetch("${Bangumi.SERVER}/subject/${subject.id}/ep").body?.string() ?: ""
                 }))
             }
         }

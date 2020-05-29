@@ -65,7 +65,7 @@ abstract class BaseActivity(@LayoutRes private val resId: Int) : AppCompatActivi
                 block.invoke(this)
             } catch (_: CancellationException) {
             } catch (t: Throwable) {
-                Toast.makeText(App.app, t.message, Toast.LENGTH_SHORT).show()
+                Toast.makeText(App.app, t.localizedMessage, Toast.LENGTH_SHORT).show()
                 t.printStackTrace()
                 onError(t)
             }

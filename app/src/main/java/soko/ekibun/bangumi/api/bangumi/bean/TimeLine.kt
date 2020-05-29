@@ -73,13 +73,13 @@ class TimeLine(override val isHeader: Boolean) : SectionEntity {
             usr: UserInfo?,
             global: Boolean
         ): List<TimeLine> {
-            return withContext(Dispatchers.Default) {
-                val rsp = withContext(Dispatchers.IO) {
-                    HttpUtil.getCall(
-                        "${Bangumi.SERVER}${if (usr == null) "" else "/user/${usr.username}"}/timeline?type=$type&page=$page&ajax=1",
+            return withContext(Dispatchers.IO) {
+                val rsp = HttpUtil.fetch(
+                    "${Bangumi.SERVER}${if (usr == null) "" else "/user/${usr.username}"}/timeline?type=$type&page=$page&ajax=1",
+                    HttpUtil.RequestOption(
                         useCookie = !global
-                    ).execute().body?.string() ?: ""
-                }
+                    )
+                ).body?.string() ?: ""
                 val doc = Jsoup.parse(rsp)
                 val ret = ArrayList<TimeLine>()
                 var user = usr ?: UserInfo()
@@ -143,13 +143,15 @@ class TimeLine(override val isHeader: Boolean) : SectionEntity {
             say_input: String
         ): Response {
             return withContext(Dispatchers.IO) {
-                HttpUtil.getCall(
+                HttpUtil.fetch(
                     "${Bangumi.SERVER}/update/user/say?ajax=1",
-                    body = FormBody.Builder()
-                        .add("say_input", say_input)
-                        .add("formhash", HttpUtil.formhash)
-                        .add("submit", "submit").build()
-                ).execute()
+                    HttpUtil.RequestOption(
+                        body = FormBody.Builder()
+                            .add("say_input", say_input)
+                            .add("formhash", HttpUtil.formhash)
+                            .add("submit", "submit").build()
+                    )
+                )
             }
         }
 
@@ -162,9 +164,9 @@ class TimeLine(override val isHeader: Boolean) : SectionEntity {
             item: TimeLine
         ): Response {
             return withContext(Dispatchers.IO) {
-                HttpUtil.getCall(
+                HttpUtil.fetch(
                     "${item.t?.delUrl}&ajax=1"
-                ).execute()
+                )
             }
         }
     }

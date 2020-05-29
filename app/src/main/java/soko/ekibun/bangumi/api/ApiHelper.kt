@@ -15,40 +15,6 @@ object ApiHelper {
         END
     }
 
-    private val tagMatcher = "<(div|li)(.+?)>".toRegex(RegexOption.IGNORE_CASE)
-
-    /**
-     * Sax解析
-     * @param rsp Response
-     * @param checkEvent Function2<Element, String, SaxEventType>
-     * @return String
-     */
-    fun parseSax(rsp: okhttp3.Response, checkEvent: (String, String, () -> String) -> SaxEventType): String {
-        val stream = rsp.body!!.charStream()
-        val chars = StringBuilder()
-        val buffer = CharArray(8192)
-        var lastLineIndex = 0
-        var lastClipIndex = 0
-        outer@ while (true) {
-            val len = stream.read(buffer)
-            if (len < 0) break
-            chars.append(buffer, 0, len)
-            val findLastClipIndex = lastClipIndex
-            for (match in tagMatcher.findAll(chars, lastLineIndex - lastClipIndex)) {
-                lastLineIndex = match.range.last + findLastClipIndex + 1
-                val curIndex = match.range.first + findLastClipIndex
-                val event = checkEvent(match.groupValues[1], match.groupValues[2]) {
-                    chars.substring(lastClipIndex - findLastClipIndex, curIndex - findLastClipIndex)
-                }
-                if (event == SaxEventType.BEGIN) {
-                    lastClipIndex = curIndex
-                } else if (event == SaxEventType.END) break@outer
-            }
-            chars.delete(0, lastClipIndex - findLastClipIndex)
-        }
-        return chars.toString()
-    }
-
     suspend fun parseSaxAsync(
         rsp: okhttp3.Response,
         checkEvent: suspend (String, String) -> Pair<Any?, SaxEventType>,

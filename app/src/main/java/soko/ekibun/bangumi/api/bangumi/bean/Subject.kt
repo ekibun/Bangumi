@@ -226,7 +226,7 @@ data class Subject(
          */
         suspend fun getDetail(subject: Subject, onUpdate: (SaxTag) -> Unit) {
             withContext(Dispatchers.Default) {
-                val rsp = withContext(Dispatchers.IO) { HttpUtil.getCall(subject.url).execute() }
+                val rsp = HttpUtil.fetch(subject.url)
                 var lastTag = SaxTag.NONE
                 var tankobon: List<Subject>? = null
 
@@ -530,10 +530,12 @@ data class Subject(
             epIds: String? = null
         ): Response {
             return withContext(Dispatchers.IO) {
-                HttpUtil.getCall(
+                HttpUtil.fetch(
                     "${Bangumi.SERVER}/subject/ep/$id/status/$status?gh=${HttpUtil.formhash}&ajax=1",
-                    body = FormBody.Builder().add("ep_id", epIds ?: id.toString()).build()
-                ).execute()
+                    HttpUtil.RequestOption(
+                        body = FormBody.Builder().add("ep_id", epIds ?: id.toString()).build()
+                    )
+                )
             }
         }
 
@@ -550,13 +552,15 @@ data class Subject(
             watched_vols: String
         ): Response {
             return withContext(Dispatchers.IO) {
-                HttpUtil.getCall("${Bangumi.SERVER}/subject/set/watched/${subject.id}",
-                    body = FormBody.Builder()
-                        .add("referer", "subject")
-                        .add("submit", "更新")
-                        .add("watchedeps", watchedeps)
-                        .also { if (subject.vol_count != 0) it.add("watched_vols", watched_vols) }
-                        .build()).execute()
+                HttpUtil.fetch("${Bangumi.SERVER}/subject/set/watched/${subject.id}",
+                    HttpUtil.RequestOption(
+                        body = FormBody.Builder()
+                            .add("referer", "subject")
+                            .add("submit", "更新")
+                            .add("watchedeps", watchedeps)
+                            .also { if (subject.vol_count != 0) it.add("watched_vols", watched_vols) }
+                            .build()
+                    ))
             }
         }
     }

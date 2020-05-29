@@ -67,12 +67,12 @@ object Bangumi {
         @Collection.CollectionStatus collection_status: String,
         page: Int = 1
     ): List<Subject> {
-        return withContext(Dispatchers.Default) {
-            Jsoup.parse(withContext(Dispatchers.IO) {
-                HttpUtil.getCall(
+        return withContext(Dispatchers.IO) {
+            Jsoup.parse(
+                HttpUtil.fetch(
                     "$SERVER/$subject_type/list/$username/$collection_status?page=$page"
-                ).execute().body?.string() ?: ""
-            }).select(".item").mapNotNull { item ->
+                ).body?.string() ?: ""
+            ).select(".item").mapNotNull { item ->
                 val id = item.attr("id").split('_').getOrNull(1)?.toIntOrNull() ?: return@mapNotNull null
                 val nameCN = item.selectFirst("h3 a")?.text()
                 val name = item.selectFirst("h3 small")?.text() ?: nameCN
@@ -103,15 +103,15 @@ object Bangumi {
     ): List<Subject> {
         CookieManager.getInstance()
             .setCookie(COOKIE_HOST, "chii_searchDateLine=${System.currentTimeMillis() / 1000 - 10};")
-        return withContext(Dispatchers.Default) {
-            val doc = Jsoup.parse(withContext(Dispatchers.IO) {
-                HttpUtil.getCall(
+        return withContext(Dispatchers.IO) {
+            val doc = Jsoup.parse(
+                HttpUtil.fetch(
                     "$SERVER/subject_search/${java.net.URLEncoder.encode(
                         keywords,
                         "utf-8"
                     )}?cat=${Subject.parseTypeInt(type)}&page=$page"
-                ).execute().body?.string() ?: ""
-            })
+                ).body?.string() ?: ""
+            )
             if (doc.select("#colunmNotice") == null) throw error("search error")
             doc.select(".item").mapNotNull { item ->
                 val nameCN = item.selectFirst("h3")?.selectFirst("a")?.text()
@@ -146,12 +146,12 @@ object Bangumi {
     ): List<MonoInfo> {
         CookieManager.getInstance()
             .setCookie(COOKIE_HOST, "chii_searchDateLine=${System.currentTimeMillis() / 1000 - 10};")
-        return withContext(Dispatchers.Default) {
-            val doc = Jsoup.parse(withContext(Dispatchers.IO) {
-                HttpUtil.getCall(
+        return withContext(Dispatchers.IO) {
+            val doc = Jsoup.parse(
+                HttpUtil.fetch(
                     "$SERVER/mono_search/${java.net.URLEncoder.encode(keywords, "utf-8")}?cat=$type&page=$page"
-                ).execute().body?.string() ?: ""
-            })
+                ).body?.string() ?: ""
+            )
             if (doc.select("#colunmNotice") == null) throw Exception("search error")
             doc.select(".light_odd").map {
                 val a = it.selectFirst("h2 a")
@@ -182,12 +182,12 @@ object Bangumi {
         page: Int,
         sub_cat: String
     ): List<Subject> {
-        return withContext(Dispatchers.Default) {
-            val doc = Jsoup.parse(withContext(Dispatchers.IO) {
-                HttpUtil.getCall(
+        return withContext(Dispatchers.IO) {
+            val doc = Jsoup.parse(
+                HttpUtil.fetch(
                     "$SERVER/$subject_type/browser${if (sub_cat.isEmpty()) "" else "/$sub_cat"}/airtime/$year-$month?page=$page"
-                ).execute().body?.string() ?: ""
-            })
+                ).body?.string() ?: ""
+            )
             doc.select(".item").mapNotNull {
                 val nameCN = it.selectFirst("h3 a")?.text()
                 Subject(
@@ -214,7 +214,7 @@ object Bangumi {
     ): List<Subject> {
         return withContext(Dispatchers.Default) {
             val cookieManager = CookieManager.getInstance()
-            val rsp = withContext(Dispatchers.IO) { HttpUtil.getCall(SERVER).execute() }
+            val rsp = HttpUtil.fetch(SERVER)
             var subjectLoaded = false
             val ret = ArrayList<Subject>()
             ApiHelper.parseSaxAsync(rsp, { _, attrs ->
@@ -291,19 +291,21 @@ object Bangumi {
     suspend fun uploadImage(requestBody: RequestBody, fileName: String): String {
         return withContext(Dispatchers.IO) {
             val sid = Regex("""CHOBITS_SID = '(.*?)';""").find(
-                HttpUtil.getCall("$SERVER/blog/create").execute().body!!.string()
+                HttpUtil.fetch("$SERVER/blog/create").body!!.string()
             )!!.groupValues[1]
             Log.v("sid", sid)
             Images.large(
                 Jsoup.parse(
-                    HttpUtil.getCall(
+                    HttpUtil.fetch(
                         "$SERVER/blog/upload_photo?folder=/blog/files&sid=$sid",
-                        body = MultipartBody.Builder().setType(MultipartBody.FORM)
-                            .addFormDataPart("Filename", fileName)
-                            .addFormDataPart("Filedata", fileName, requestBody)
-                            .addFormDataPart("Upload", "Submit Query")
-                            .build()
-                    ).execute().body!!.string()
+                        HttpUtil.RequestOption(
+                            body = MultipartBody.Builder().setType(MultipartBody.FORM)
+                                .addFormDataPart("Filename", fileName)
+                                .addFormDataPart("Filedata", fileName, requestBody)
+                                .addFormDataPart("Upload", "Submit Query")
+                                .build()
+                        )
+                    ).body!!.string()
                 ).selectFirst("img").attr("src")
             )
         }

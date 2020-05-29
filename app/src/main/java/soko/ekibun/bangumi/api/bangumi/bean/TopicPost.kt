@@ -88,7 +88,7 @@ data class TopicPost(
             post: TopicPost
         ): Response {
             return withContext(Dispatchers.IO) {
-                HttpUtil.getCall(
+                HttpUtil.fetch(
                     Bangumi.SERVER + when (post.model) {
                         "group" -> "/erase/group/reply/"
                         "prsn" -> "/erase/reply/person/"
@@ -98,7 +98,7 @@ data class TopicPost(
                         "blog" -> "/erase/reply/blog/"
                         else -> ""
                     } + "${post.pst_id}?gh=${HttpUtil.formhash}&ajax=1"
-                ).execute()
+                )
             }
         }
 
@@ -113,7 +113,7 @@ data class TopicPost(
             content: String
         ): Response {
             return withContext(Dispatchers.IO) {
-                HttpUtil.getCall(
+                HttpUtil.fetch(
                     Bangumi.SERVER + when (post.model) {
                         "group" -> "/group/reply/${post.pst_id}/edit"
                         "prsn" -> "/person/edit_reply/${post.pst_id}"
@@ -122,11 +122,13 @@ data class TopicPost(
                         "subject" -> "/subject/reply/${post.pst_id}/edit"
                         "blog" -> "/blog/reply/edit/${post.pst_id}"
                         else -> ""
-                    }, body = FormBody.Builder()
-                        .add("formhash", HttpUtil.formhash)
-                        .add("submit", "改好了")
-                        .add("content", content).build()
-                ).execute()
+                    }, HttpUtil.RequestOption(
+                        body = FormBody.Builder()
+                            .add("formhash", HttpUtil.formhash)
+                            .add("submit", "改好了")
+                            .add("content", content).build()
+                    )
+                )
             }
         }
     }

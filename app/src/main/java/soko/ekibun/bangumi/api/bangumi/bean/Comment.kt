@@ -33,9 +33,9 @@ data class Comment(
         ): List<Comment> {
             return withContext(Dispatchers.Default) {
                 val doc = Jsoup.parse(withContext(Dispatchers.IO) {
-                    HttpUtil.getCall(
+                    HttpUtil.fetch(
                         "${Bangumi.SERVER}/subject/${subject.id}/comments?page=$page"
-                    ).execute().body?.string() ?: ""
+                    ).body?.string() ?: ""
                 })
                 doc.select("#comment_box .item").mapNotNull {
                     val user = it.selectFirst(".text a")

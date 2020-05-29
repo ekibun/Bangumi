@@ -21,9 +21,9 @@ object Github {
     suspend fun releases(): List<Release> {
         return withContext(Dispatchers.IO) {
             JsonUtil.toEntity<List<Release>>(
-                HttpUtil.getCall(
+                HttpUtil.fetch(
                     "$GITHUB_SERVER_API/repos/ekibun/Bangumi/releases"
-                ).execute().body!!.string()
+                ).body!!.string()
             )!!
         }
     }
@@ -35,11 +35,32 @@ object Github {
      */
     suspend fun bangumiCalendar(): List<BangumiCalendarItem> {
         return withContext(Dispatchers.IO) {
+            if (latestTag.isEmpty()) updateOnAirLatestTag()
             JsonUtil.toEntity<List<BangumiCalendarItem>>(
-                HttpUtil.getCall(
-                    "$JSDELIVR_SERVER_API/gh/ekibun/bangumi_onair@master/calendar.json"
-                ).execute().body!!.string()
+                HttpUtil.fetch(
+                    "$JSDELIVR_SERVER_API/gh/ekibun/bangumi_onair$latestTag/calendar.json"
+                ).body!!.string()
             )!!
+        }
+    }
+
+    private var latestTag = ""
+        get() = if (field.isEmpty()) "" else "@$field"
+    private var lastUpdate = 0L
+    private suspend fun updateOnAirLatestTag() {
+        withContext(Dispatchers.IO) {
+            try {
+                val curTime = System.currentTimeMillis()
+                if (curTime - lastUpdate < 60 * 60 * 1000L) return@withContext
+                lastUpdate = curTime
+                latestTag = HttpUtil.fetch(
+                    "https://github.com/ekibun/bangumi_onair/releases/latest", HttpUtil.RequestOption(
+                        followRedirect = false
+                    )
+                ).headers["Location"]?.substringAfterLast('/') ?: latestTag
+            } catch (e: Throwable) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -49,10 +70,11 @@ object Github {
      */
     suspend fun onAirInfo(id: Int): OnAirInfo? {
         return withContext(Dispatchers.IO) {
+            updateOnAirLatestTag()
             JsonUtil.toEntity<OnAirInfo>(
-                HttpUtil.getCall(
-                    "$JSDELIVR_SERVER_API/gh/ekibun/bangumi_onair@master/onair/${id / 1000}/$id.json"
-                ).execute().body?.string() ?: ""
+                HttpUtil.fetch(
+                    "$JSDELIVR_SERVER_API/gh/ekibun/bangumi_onair$latestTag/onair/${id / 1000}/$id.json"
+                ).body?.string() ?: ""
             )
         }
     }

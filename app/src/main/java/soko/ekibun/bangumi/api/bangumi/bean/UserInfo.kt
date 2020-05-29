@@ -68,9 +68,9 @@ data class UserInfo(
         suspend fun getApiUser(username: String): UserInfo {
             return userCache.getOrPut(username) {
                 JsonUtil.toJsonObject(withContext(IoDispatcher) {
-                    HttpUtil.getCall(
+                    HttpUtil.fetch(
                         "https://api.bgm.tv/user/${username}"
-                    ).execute().body?.string() ?: ""
+                    ).body?.string() ?: ""
                 }).let { obj ->
                     UserInfo(
                         id = obj.get("id")?.asInt ?: 0,

@@ -86,17 +86,20 @@ data class Collection(
             newCollection: Collection
         ): Response {
             return withContext(Dispatchers.IO) {
-                HttpUtil.getCall("${Bangumi.SERVER}/subject/${subject.id}/interest/update?gh=${HttpUtil.formhash}",
-                    body = FormBody.Builder()
-                        .add("referer", "ajax")
-                        .add("interest", newCollection.statusId.toString())
-                        .add("rating", newCollection.rating.toString())
-                        .add(
-                            "tags",
-                            if (newCollection.tag?.isNotEmpty() == true) newCollection.tag.reduce { acc, s -> "$acc $s" } else "")
-                        .add("comment", newCollection.comment ?: "")
-                        .add("privacy", newCollection.private.toString())
-                        .add("update", "保存").build()).execute()
+                HttpUtil.fetch("${Bangumi.SERVER}/subject/${subject.id}/interest/update?gh=${HttpUtil.formhash}",
+                    HttpUtil.RequestOption(
+                        body = FormBody.Builder()
+                            .add("referer", "ajax")
+                            .add("interest", newCollection.statusId.toString())
+                            .add("rating", newCollection.rating.toString())
+                            .add(
+                                "tags",
+                                if (newCollection.tag?.isNotEmpty() == true) newCollection.tag.reduce { acc, s -> "$acc $s" } else "")
+                            .add("comment", newCollection.comment ?: "")
+                            .add("privacy", newCollection.private.toString())
+                            .add("update", "保存").build()
+                    )
+                )
             }
         }
 
@@ -109,7 +112,7 @@ data class Collection(
             subject: Subject
         ): Response {
             return withContext(Dispatchers.IO) {
-                HttpUtil.getCall("${Bangumi.SERVER}/subject/${subject.id}/remove?gh=${HttpUtil.formhash}").execute()
+                HttpUtil.fetch("${Bangumi.SERVER}/subject/${subject.id}/remove?gh=${HttpUtil.formhash}")
             }
         }
     }

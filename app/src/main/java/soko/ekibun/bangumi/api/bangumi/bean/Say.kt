@@ -65,7 +65,7 @@ data class Say(
             onUpdate: suspend (List<SayReply>) -> Unit
         ) {
             withContext(Dispatchers.Default) {
-                val rsp = withContext(Dispatchers.IO) { HttpUtil.getCall(say.url).execute() }
+                val rsp = HttpUtil.fetch(say.url)
                 val avatarCache = HashMap<String, String>()
                 say.user.avatar?.let { avatarCache[say.user.username!!] = it }
                 say.replies?.forEach { reply ->
@@ -126,13 +126,15 @@ data class Say(
 
         suspend fun reply(say: Say, content: String): Response {
             return withContext(Dispatchers.IO) {
-                HttpUtil.getCall(
+                HttpUtil.fetch(
                     "${Bangumi.SERVER}/timeline/${say.id}/new_reply?ajax=1",
-                    body = FormBody.Builder()
-                        .add("content", content)
-                        .add("formhash", HttpUtil.formhash)
-                        .add("submit", "submit").build()
-                ).execute()
+                    HttpUtil.RequestOption(
+                        body = FormBody.Builder()
+                            .add("content", content)
+                            .add("formhash", HttpUtil.formhash)
+                            .add("submit", "submit").build()
+                    )
+                )
             }
         }
     }

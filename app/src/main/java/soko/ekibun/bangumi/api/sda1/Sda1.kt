@@ -21,10 +21,10 @@ object Sda1 {
     suspend fun uploadImage(requestBody: RequestBody, fileName: String): String {
         return withContext(Dispatchers.IO) {
             JsonUtil.toEntity<Response>(
-                HttpUtil.getCall(
-                    url = "https://p.sda1.dev/api/v1/upload_external_noform?fileName=$fileName",
-                    body = requestBody
-                ).execute().body?.string() ?: ""
+                HttpUtil.fetch(
+                    "https://p.sda1.dev/api/v1/upload_external_noform?fileName=$fileName",
+                    HttpUtil.RequestOption(body = requestBody)
+                ).body?.string() ?: ""
             )?.data?.url ?: ""
         }
     }

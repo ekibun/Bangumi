@@ -65,12 +65,12 @@ data class Topic(
         suspend fun getList(
             type: String
         ): List<Topic> {
-            return withContext(Dispatchers.Default) {
-                val doc = Jsoup.parse(withContext(Dispatchers.IO) {
-                    HttpUtil.getCall(
+            return withContext(Dispatchers.IO) {
+                val doc = Jsoup.parse(
+                    HttpUtil.fetch(
                         "${Bangumi.SERVER}/rakuen/topiclist" + if (type.isEmpty()) "" else "?type=$type"
-                    ).execute().body?.string() ?: ""
-                })
+                    ).body?.string() ?: ""
+                )
                 doc.select(".item_list").mapNotNull {
                     val title = it.selectFirst(".title") ?: return@mapNotNull null
                     val modelId = Regex("""/rakuen/topic/([^/]+)/(\d+)""").find(title.attr("href") ?: "")?.groupValues
@@ -120,15 +120,13 @@ data class Topic(
             onHeader: () -> Unit,
             onTopicPost: (List<TopicPost>) -> Unit
         ) {
-            withContext(Dispatchers.Default) {
-                val rsp = withContext(Dispatchers.IO) {
-                    HttpUtil.getCall(
-                        when (topic.model) {
-                            "blog" -> "${Bangumi.SERVER}/blog/${topic.id}"
-                            else -> "${Bangumi.SERVER}/rakuen/topic/${topic.model}/${topic.id}"
-                        }
-                    ).execute()
-                }
+            withContext(Dispatchers.IO) {
+                val rsp = HttpUtil.fetch(
+                    when (topic.model) {
+                        "blog" -> "${Bangumi.SERVER}/blog/${topic.id}"
+                        else -> "${Bangumi.SERVER}/rakuen/topic/${topic.model}/${topic.id}"
+                    }
+                )
                 var replyCount = -2
                 val posts = ConcurrentLinkedQueue<TopicPost>()
                 var finishFirst = false
@@ -208,12 +206,12 @@ data class Topic(
             topic: Topic
         ): Response {
             return withContext(Dispatchers.IO) {
-                HttpUtil.getCall(
+                HttpUtil.fetch(
                     when (topic.model) {
                         "blog" -> "${Bangumi.SERVER}/erase/entry/${topic.id}"
                         else -> topic.url.replace(Bangumi.SERVER, "${Bangumi.SERVER}/erase")
                     } + "?gh=${HttpUtil.formhash}&ajax=1"
-                ).execute()
+                )
             }
         }
 
@@ -239,7 +237,7 @@ data class Topic(
             post: TopicPost?,
             content: String
         ): ReplyData.ReplyPost {
-            return withContext(Dispatchers.Default) {
+            return withContext(Dispatchers.IO) {
                 val comment = if (post?.isSub == true)
                     "[quote][b]${post.nickname}[/b] 说: ${Jsoup.parse(post.pst_content).let { doc ->
                         doc.select("div.quote").remove()
@@ -258,14 +256,14 @@ data class Topic(
                         .add("related", post.relate)
                         .add("post_uid", post.pst_uid)
                 }
-                JsonUtil.toEntity<ReplyData>(withContext(Dispatchers.IO) {
-                    HttpUtil.getCall(
+                JsonUtil.toEntity<ReplyData>(
+                    HttpUtil.fetch(
                         when (topic.model) {
                             "blog" -> "${Bangumi.SERVER}/blog/entry/${topic.id}"
                             else -> topic.url
-                        } + "/new_reply?ajax=1", body = data.build()
-                    ).execute().body?.string() ?: ""
-                })?.posts!!
+                        } + "/new_reply?ajax=1", HttpUtil.RequestOption(body = data.build())
+                    ).body?.string() ?: ""
+                )?.posts!!
             }
         }
 
@@ -282,13 +280,15 @@ data class Topic(
             content: String
         ): Response {
             return withContext(Dispatchers.IO) {
-                HttpUtil.getCall(
-                    topic.url + "/edit?ajax=1", body = FormBody.Builder()
-                        .add("formhash", HttpUtil.formhash)
-                        .add("title", title)
-                        .add("submit", "改好了")
-                        .add("content", content).build()
-                ).execute()
+                HttpUtil.fetch(
+                    topic.url + "/edit?ajax=1", HttpUtil.RequestOption(
+                        body = FormBody.Builder()
+                            .add("formhash", HttpUtil.formhash)
+                            .add("title", title)
+                            .add("submit", "改好了")
+                            .add("content", content).build()
+                    )
+                )
             }
         }
     }
