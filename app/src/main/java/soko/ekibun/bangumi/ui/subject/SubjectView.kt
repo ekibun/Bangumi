@@ -26,7 +26,6 @@ import soko.ekibun.bangumi.api.bangumi.bean.Collection
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
-import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.topic.PhotoPagerAdapter
 import soko.ekibun.bangumi.ui.view.CollapsibleAppBarHelper
 import soko.ekibun.bangumi.ui.view.RoundBackgroundDecoration
@@ -164,8 +163,6 @@ class SubjectView(private val context: SubjectActivity) {
         behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             @SuppressLint("SwitchIntDef")
             override fun onStateChanged(bottomSheet: View, @BottomSheetBehavior.State newState: Int) { /* no-op */
-                if (newState == BottomSheetBehavior.STATE_HIDDEN) ThemeModel.fullScreen(context.window)
-                else ThemeModel.updateNavigationTheme(context)
                 if (newState == BottomSheetBehavior.STATE_COLLAPSED)
                     (context.item_list.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(0, 0)
                 if (newState == BottomSheetBehavior.STATE_HIDDEN) context.item_swipe.isRefreshing = false
@@ -173,7 +170,7 @@ class SubjectView(private val context: SubjectActivity) {
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                collapsibleAppBarHelper.updateStatus(slideOffset)
+                collapsibleAppBarHelper.updateStatus(Math.abs(slideOffset))
             }
         })
 
