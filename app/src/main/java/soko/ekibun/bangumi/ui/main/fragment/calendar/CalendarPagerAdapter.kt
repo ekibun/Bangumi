@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.content_calendar.view.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.withContext
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
@@ -98,11 +99,9 @@ class CalendarPagerAdapter(private val view: ViewGroup) : RecyclePagerAdapter<Ca
         holder.position = position
     }
 
-    fun setOnAirList(raw: List<BangumiCalendarItem>, callback: () -> Unit = {}) {
+    fun setOnAirList(raw: List<BangumiCalendarItem>): Job? {
         val collectionList = mainPresenter?.collectionList ?: ArrayList()
-        (view.context as? BaseActivity)?.subscribe(onComplete = {
-            callback()
-        }, key = CALENDAR_COMPUTE_CALL) {
+        return (view.context as? BaseActivity)?.subscribe(key = CALENDAR_COMPUTE_CALL) {
             val list = withContext(Dispatchers.Default) {
                 val use30h = App.app.sp.getBoolean("calendar_use_30h", false)
                 val now = CalendarAdapter.getNowInt(use30h)
@@ -167,14 +166,12 @@ class CalendarPagerAdapter(private val view: ViewGroup) : RecyclePagerAdapter<Ca
      */
     private fun loadCalendarList() {
         view.item_swipe.isRefreshing = true
-        mainPresenter?.updateCalendarList()
-    }
-
-    fun calendarCallback(data: List<BangumiCalendarItem>?, error: Throwable?) {
-        if (data == null) {
+        (view.context as? BaseActivity)?.subscribe(onComplete = {
             view.item_swipe.isRefreshing = false
-        } else setOnAirList(data) {
-            view.item_swipe.isRefreshing = false
+        }, key = MainPresenter.CALENDAR_CALL) {
+            mainPresenter?.updateCalendarList()?.let {
+                setOnAirList(it)?.join()
+            }
         }
     }
 

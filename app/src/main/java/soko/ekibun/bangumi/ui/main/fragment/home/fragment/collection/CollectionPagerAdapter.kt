@@ -24,17 +24,6 @@ import soko.ekibun.bangumi.ui.view.ShadowDecoration
 
 /**
  * 收藏PagerAdapter
- * @property context Context
- * @property fragment CollectionFragment
- * @property pager ViewPager
- * @property tabList Array<String>
- * @property collectionTypeView CollectTypeView
- * @property mainPresenter MainPresenter?
- * @property items HashMap<Int, Pair<CollectionListAdapter, FixSwipeRefreshLayout>>
- * @property isScrollDown Boolean
- * @property collectionCalls HashMap<Int, Call<List<Subject>>>
- * @property pageIndex HashMap<Int, Int>
- * @constructor
  */
 class CollectionPagerAdapter(
     private val context: Context,
@@ -65,8 +54,6 @@ class CollectionPagerAdapter(
 
     @SuppressLint("UseSparseArrays")
     private val items = HashMap<Int, Pair<CollectionListAdapter, FixSwipeRefreshLayout>>()
-
-    val isScrollDown get() = (items[pager.currentItem]?.second?.tag as? RecyclerView)?.canScrollVertically(-1) == true
 
     private fun useApi(position: Int): Boolean {
         return collectionTypeView.getType() == Collection.STATUS_DO && tabList[position] in arrayOf(
@@ -118,15 +105,12 @@ class CollectionPagerAdapter(
     @SuppressLint("UseSparseArrays")
     private val pageIndex = HashMap<Int, Int>()
 
-    fun collectionCallback(list: List<Subject>?, error: Throwable?, fromCache: Boolean = false) {
+    private fun updateCollection(list: List<Subject>?, fromCache: Boolean = false) {
         items.keys.forEach { position ->
             if (!useApi(position)) return@forEach
             val item = items[position] ?: return@forEach
             item.second.isRefreshing = false
-            if (list == null) {
-                if (error != null) item.first.loadMoreModule.loadMoreFail()
-                return@forEach
-            }
+            if (list == null) return@forEach
             if (!fromCache) item.first.isUseEmpty = true
             list.filter { it.type == tabList[position] }.let {
                 item.first.setNewInstance(it.sortedBy { it.airInfo.isNullOrEmpty() }.sortedByDescending {
@@ -144,22 +128,21 @@ class CollectionPagerAdapter(
 
     private fun loadCollectionList(position: Int = pager.currentItem) {
         val item = items[position] ?: return
-        item.second.isRefreshing = false
-        item.first.isUseEmpty = false
-        val page = pageIndex.getOrPut(position) { 0 }
-        val useApi = useApi(position)
-        if (page == 0) {
-            if (!useApi) item.first.setNewInstance(null)
-            else collectionCallback(mainPresenter?.collectionList, null, true)
-            item.second.isRefreshing = true
-        }
-        if (useApi) mainPresenter?.updateUserCollection()
-        else {
-            (fragment.activity as? BaseActivity)?.subscribe({
-                item.first.loadMoreModule.loadMoreFail()
-            }, {
-                item.second.isRefreshing = false
-            }, COLLECTION_CALL_PREFIX + position) {
+        (fragment.activity as? BaseActivity)?.subscribe({
+            item.first.loadMoreModule.loadMoreFail()
+        }, {
+            item.second.isRefreshing = false
+        }, COLLECTION_CALL_PREFIX + position) {
+            item.second.isRefreshing = false
+            item.first.isUseEmpty = false
+            val page = pageIndex.getOrPut(position) { 0 }
+            val useApi = useApi(position)
+            if (page == 0) {
+                if (useApi) updateCollection(mainPresenter?.collectionList, true)
+                item.second.isRefreshing = true
+            }
+            if (useApi) updateCollection(mainPresenter?.updateUserCollection())
+            else {
                 val list = Bangumi.getCollectionList(
                     tabList[position],
                     UserModel.current()?.username ?: throw Exception("login failed"),
@@ -167,11 +150,9 @@ class CollectionPagerAdapter(
                 )
                 item.first.isUseEmpty = true
                 list.forEach { it.type = tabList[position] }
-                item.first.addData(list)
-                if (list.size < 10)
-                    item.first.loadMoreModule.loadMoreEnd()
-                else
-                    item.first.loadMoreModule.loadMoreComplete()
+                if (page == 0) item.first.setNewInstance(list.toMutableList()) else item.first.addData(list)
+                if (list.size < 10) item.first.loadMoreModule.loadMoreEnd()
+                else item.first.loadMoreModule.loadMoreComplete()
                 (item.second.tag as? RecyclerView)?.tag = true
                 pageIndex[position] = (pageIndex[position] ?: 0) + 1
             }

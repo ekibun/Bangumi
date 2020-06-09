@@ -5,7 +5,6 @@ import android.view.Menu
 import android.view.View
 import kotlinx.android.synthetic.main.content_calendar.*
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
 import soko.ekibun.bangumi.ui.main.MainActivity
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
 
@@ -60,9 +59,5 @@ class CalendarFragment: DrawerFragment(R.layout.content_calendar) {
         (activity as? MainActivity)?.mainPresenter?.calendar?.let {
             (item_pager?.adapter as? CalendarPagerAdapter)?.setOnAirList(it)
         }
-    }
-
-    fun calendarCallback(data: List<BangumiCalendarItem>?, error: Throwable?) {
-        (item_pager?.adapter as? CalendarPagerAdapter)?.calendarCallback(data, error)
     }
 }

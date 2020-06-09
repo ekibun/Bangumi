@@ -1,179 +1,185 @@
-package soko.ekibun.bangumi.util;
+package soko.ekibun.bangumi.util
 
-import android.content.Context;
-import android.graphics.drawable.PictureDrawable;
-import android.os.Handler;
-import android.os.Looper;
-import androidx.annotation.NonNull;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.Registry;
-import com.bumptech.glide.annotation.GlideModule;
-import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader;
-import com.bumptech.glide.load.model.GlideUrl;
-import com.bumptech.glide.module.AppGlideModule;
-import com.bumptech.glide.samples.svg.SvgDecoder;
-import com.bumptech.glide.samples.svg.SvgDrawableTranscoder;
-import com.caverock.androidsvg.SVG;
-import okhttp3.*;
-import okio.*;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.PictureDrawable
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
+import com.bumptech.glide.Glide
+import com.bumptech.glide.GlideBuilder
+import com.bumptech.glide.Registry
+import com.bumptech.glide.annotation.GlideModule
+import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader
+import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.load.resource.bitmap.BitmapTransitionOptions
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import com.bumptech.glide.module.AppGlideModule
+import com.bumptech.glide.samples.svg.SvgDecoder
+import com.bumptech.glide.samples.svg.SvgDrawableTranscoder
+import com.caverock.androidsvg.SVG
+import okhttp3.*
+import okio.*
+import java.io.IOException
+import java.io.InputStream
+import java.util.*
 
 @GlideModule
-public class ProgressAppGlideModule extends AppGlideModule {
-
+class ProgressAppGlideModule : AppGlideModule() {
     // Disable manifest parsing to avoid adding similar modules twice.
-    @Override
-    public boolean isManifestParsingEnabled() {
-        return false;
+    override fun isManifestParsingEnabled(): Boolean {
+        return false
     }
 
-    public void registerComponents(@NonNull Context context, @NonNull Glide glide, @NonNull Registry registry) {
-        registry.register(SVG.class, PictureDrawable.class, new SvgDrawableTranscoder())
-                .append(InputStream.class, SVG.class, new SvgDecoder());
-        OkHttpClient client = new OkHttpClient.Builder()
-                .addNetworkInterceptor(new Interceptor() {
-                    @Override
-                    public Response intercept(Chain chain) throws IOException {
-                        Request request = chain.request();
-                        Response response = chain.proceed(request);
-                        ResponseProgressListener listener = new DispatchingProgressListener();
-                        return response.newBuilder()
-                                .body(new OkHttpProgressResponseBody(request.url(), response.body(), listener))
-                                .build();
-                    }
-                })
-                .build();
-        registry.replace(GlideUrl.class, InputStream.class, new OkHttpUrlLoader.Factory(client));
+    override fun applyOptions(context: Context, builder: GlideBuilder) {
+        builder.setLogLevel(Log.ERROR)
+            .setDefaultTransitionOptions(Drawable::class.java, DrawableTransitionOptions.withCrossFade())
+            .setDefaultTransitionOptions(Bitmap::class.java, BitmapTransitionOptions.withCrossFade())
     }
 
-    public static void forget(String url) {
-        ProgressAppGlideModule.DispatchingProgressListener.forget(url);
-    }
-    public static void expect(String url, ProgressAppGlideModule.UIonProgressListener listener) {
-        ProgressAppGlideModule.DispatchingProgressListener.expect(url, listener);
+    override fun registerComponents(
+        context: Context,
+        glide: Glide,
+        registry: Registry
+    ) {
+        registry.register(SVG::class.java, PictureDrawable::class.java, SvgDrawableTranscoder())
+            .append(InputStream::class.java, SVG::class.java, SvgDecoder())
+
+        val client = OkHttpClient.Builder()
+            .addNetworkInterceptor(object : Interceptor {
+                @Throws(IOException::class)
+                override fun intercept(chain: Interceptor.Chain): Response {
+                    val request = chain.request()
+                    val response = chain.proceed(request)
+                    val listener: ResponseProgressListener = DispatchingProgressListener()
+                    return response.newBuilder()
+                        .body(OkHttpProgressResponseBody(request.url, response.body, listener))
+                        .build()
+                }
+            })
+            .build()
+        registry.replace(
+            GlideUrl::class.java,
+            InputStream::class.java,
+            OkHttpUrlLoader.Factory(client)
+        )
     }
 
     private interface ResponseProgressListener {
-        void update(HttpUrl url, long bytesRead, long contentLength);
+        fun update(url: HttpUrl, bytesRead: Long, contentLength: Long)
     }
 
-    public interface UIonProgressListener {
-        void onProgress(long bytesRead, long expectedLength);
+    interface UIonProgressListener {
+        fun onProgress(bytesRead: Long, expectedLength: Long)
+
         /**
          * Control how often the listener needs an update. 0% and 100% will always be dispatched.
-         * @return in percentage (0.2 = call {@link #onProgress} around every 0.2 percent of progress)
+         * @return in percentage (0.2 = call [.onProgress] around every 0.2 percent of progress)
          */
-        float getGranualityPercentage();
+        val graduallyPercentage: Float
     }
 
-    private static class DispatchingProgressListener implements ProgressAppGlideModule.ResponseProgressListener {
-        private static final Map<String, UIonProgressListener> LISTENERS = new HashMap<>();
-        private static final Map<String, Long> PROGRESSES = new HashMap<>();
-
-        private final Handler handler;
-
-        DispatchingProgressListener() {
-            this.handler = new Handler(Looper.getMainLooper());
-        }
-
-        static void forget(String url) {
-            LISTENERS.remove(url);
-            PROGRESSES.remove(url);
-        }
-
-        static void expect(String url, UIonProgressListener listener) {
-            LISTENERS.put(url, listener);
-        }
-
-        @Override
-        public void update(HttpUrl url, final long bytesRead, final long contentLength) {
+    private class DispatchingProgressListener internal constructor() : ResponseProgressListener {
+        private val handler: Handler = Handler(Looper.getMainLooper())
+        override fun update(url: HttpUrl, bytesRead: Long, contentLength: Long) {
             //System.out.printf("%s: %d/%d = %.2f%%%n", url, bytesRead, contentLength, (100f * bytesRead) / contentLength);
-            String key = url.toString();
-            final UIonProgressListener listener = LISTENERS.get(key);
-            if (listener == null) {
-                return;
-            }
+            val key = url.toString()
+            val listener = LISTENERS[key] ?: return
             if (contentLength <= bytesRead) {
-                forget(key);
+                forget(key)
             }
-            if (needsDispatch(key, bytesRead, contentLength, listener.getGranualityPercentage())) {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        listener.onProgress(bytesRead, contentLength);
-                    }
-                });
+            if (needsDispatch(key, bytesRead, contentLength, listener.graduallyPercentage)) {
+                handler.post { listener.onProgress(bytesRead, contentLength) }
             }
         }
 
-        private boolean needsDispatch(String key, long current, long total, float granularity) {
-            if (granularity == 0 || current == 0 || total == current) {
-                return true;
+        private fun needsDispatch(
+            key: String,
+            current: Long,
+            total: Long,
+            granularity: Float
+        ): Boolean {
+            if (granularity == 0f || current == 0L || total == current) {
+                return true
             }
-            float percent = 100f * current / total;
-            long currentProgress = (long) (percent / granularity);
-            Long lastProgress = PROGRESSES.get(key);
-            if (lastProgress == null || currentProgress != lastProgress) {
-                PROGRESSES.put(key, currentProgress);
-                return true;
+            val percent = 100f * current / total
+            val currentProgress = (percent / granularity).toLong()
+            val lastProgress = PROGRESSES[key]
+            return if (lastProgress == null || currentProgress != lastProgress) {
+                PROGRESSES[key] = currentProgress
+                true
             } else {
-                return false;
+                false
             }
         }
+
+        companion object {
+            private val LISTENERS: MutableMap<String, UIonProgressListener> =
+                HashMap()
+            private val PROGRESSES: MutableMap<String, Long> =
+                HashMap()
+
+            fun forget(url: String) {
+                LISTENERS.remove(url)
+                PROGRESSES.remove(url)
+            }
+
+            fun expect(url: String, listener: UIonProgressListener) {
+                LISTENERS[url] = listener
+            }
+        }
+
     }
 
-    private static class OkHttpProgressResponseBody extends ResponseBody {
-        private final HttpUrl url;
-        private final ResponseBody responseBody;
-        private final ResponseProgressListener progressListener;
-        private BufferedSource bufferedSource;
-
-        OkHttpProgressResponseBody(HttpUrl url, ResponseBody responseBody,
-                                   ResponseProgressListener progressListener) {
-            this.url = url;
-            this.responseBody = responseBody;
-            this.progressListener = progressListener;
+    private class OkHttpProgressResponseBody internal constructor(
+        private val url: HttpUrl, private val responseBody: ResponseBody?,
+        private val progressListener: ResponseProgressListener
+    ) : ResponseBody() {
+        private var bufferedSource: BufferedSource? = null
+        override fun contentType(): MediaType? {
+            return responseBody!!.contentType()
         }
 
-        @Override
-        public MediaType contentType() {
-            return responseBody.contentType();
+        override fun contentLength(): Long {
+            return responseBody!!.contentLength()
         }
 
-        @Override
-        public long contentLength() {
-            return responseBody.contentLength();
-        }
-
-        @Override
-        public BufferedSource source() {
+        override fun source(): BufferedSource {
             if (bufferedSource == null) {
-                bufferedSource = Okio.buffer(source(responseBody.source()));
+                bufferedSource = source(responseBody!!.source()).buffer()
             }
-            return bufferedSource;
+            return bufferedSource!!
         }
 
-        private Source source(Source source) {
-            return new ForwardingSource(source) {
-                long totalBytesRead = 0L;
+        private fun source(source: Source): Source {
+            return object : ForwardingSource(source) {
+                var totalBytesRead = 0L
 
-                @Override
-                public long read(Buffer sink, long byteCount) throws IOException {
-                    long bytesRead = super.read(sink, byteCount);
-                    long fullLength = responseBody.contentLength();
-                    if (bytesRead == -1) { // this source is exhausted
-                        totalBytesRead = fullLength;
+                @Throws(IOException::class)
+                override fun read(sink: Buffer, byteCount: Long): Long {
+                    val bytesRead = super.read(sink, byteCount)
+                    val fullLength = responseBody!!.contentLength()
+                    if (bytesRead == -1L) { // this source is exhausted
+                        totalBytesRead = fullLength
                     } else {
-                        totalBytesRead += bytesRead;
+                        totalBytesRead += bytesRead
                     }
-                    progressListener.update(url, totalBytesRead, fullLength);
-                    return bytesRead;
+                    progressListener.update(url, totalBytesRead, fullLength)
+                    return bytesRead
                 }
-            };
+            }
+        }
+
+    }
+
+    companion object {
+        fun forget(url: String) {
+            DispatchingProgressListener.forget(url)
+        }
+
+        fun expect(url: String, listener: UIonProgressListener) {
+            DispatchingProgressListener.expect(url, listener)
         }
     }
 }

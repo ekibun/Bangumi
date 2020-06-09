@@ -5,7 +5,6 @@ import android.view.View
 import kotlinx.android.synthetic.main.fragment_collection.*
 import kotlinx.android.synthetic.main.view_login.*
 import soko.ekibun.bangumi.R
-import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.HomeTabFragment
 import soko.ekibun.bangumi.ui.web.WebActivity
@@ -71,9 +70,5 @@ class CollectionFragment: HomeTabFragment(R.layout.fragment_collection){
         item_pager?.visibility = if (hasUser) View.VISIBLE else View.INVISIBLE
         item_tab_container?.visibility = if (hasUser) View.VISIBLE else View.INVISIBLE
         (item_pager?.adapter as? CollectionPagerAdapter)?.reset()
-    }
-
-    fun collectionCallback(list: List<Subject>?, error: Throwable?) {
-        (item_pager?.adapter as? CollectionPagerAdapter)?.collectionCallback(list, error)
     }
 }

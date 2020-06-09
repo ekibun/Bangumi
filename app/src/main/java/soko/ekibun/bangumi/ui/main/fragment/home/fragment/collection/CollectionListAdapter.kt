@@ -1,5 +1,7 @@
 package soko.ekibun.bangumi.ui.main.fragment.home.fragment.collection
 
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.module.LoadMoreModule
@@ -81,7 +83,10 @@ class CollectionListAdapter(data: MutableList<Subject>? = null) :
         })
         GlideUtil.with(holder.itemView.item_cover)
             ?.load(Images.getImage(item.image))
-            ?.apply(RequestOptions.errorOf(R.drawable.err_404).placeholder(R.drawable.placeholder))
+            ?.apply(
+                RequestOptions.errorOf(R.drawable.err_404).placeholder(R.drawable.placeholder)
+                    .transform(CenterCrop(), RoundedCorners(holder.itemView.item_cover.radius))
+            )
             ?.into(holder.itemView.item_cover)
     }
 }

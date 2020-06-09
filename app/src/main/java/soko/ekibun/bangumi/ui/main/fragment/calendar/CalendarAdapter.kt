@@ -2,6 +2,8 @@ package soko.ekibun.bangumi.ui.main.fragment.calendar
 
 import android.annotation.SuppressLint
 import android.view.View
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseSectionQuickAdapter
 import com.chad.library.adapter.base.entity.SectionEntity
@@ -40,7 +42,10 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
         )
         GlideUtil.with(holder.itemView.item_cover)
             ?.load(Images.small(item.t.subject.image))
-            ?.apply(RequestOptions.errorOf(R.drawable.err_404).placeholder(R.drawable.placeholder))
+            ?.apply(
+                RequestOptions.errorOf(R.drawable.err_404).placeholder(R.drawable.placeholder)
+                    .transform(CenterCrop(), RoundedCorners(holder.itemView.item_cover.radius))
+            )
             ?.into(holder.itemView.item_cover)
         holder.itemView.item_chase.visibility = if (item.t.subject.collect != null) View.VISIBLE else View.GONE
 

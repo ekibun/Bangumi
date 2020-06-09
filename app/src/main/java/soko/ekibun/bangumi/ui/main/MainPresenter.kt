@@ -98,7 +98,7 @@ class MainPresenter(private val context: MainActivity) {
                 switchUser = UserModel.current()
                 val user = UserModel.userList.users[it.itemId]?.user
                 UserModel.switchToUser(user)
-                if (lastUser?.username != user?.username) context.cancel { it == COLLECTION_CALL }
+                if (lastUser?.username != user?.username) context.cancel { key -> key == COLLECTION_CALL }
                 if (user != null) updateUser(user)
                 else WebActivity.startActivityForAuth(context)
                 true
@@ -172,25 +172,12 @@ class MainPresenter(private val context: MainActivity) {
     var collectionList: List<Subject> = ArrayList()
     var notify: Pair<Int, Int>? = null
 
-    private fun notifyCollectionChange() {
-        drawerView.calendarFragment.onCollectionChange()
-        drawerView.homeFragment.collectionFragment.collectionCallback(collectionList, null)
-    }
-
     /**
      * 获取收藏
      */
-    fun updateUserCollection() {
+    suspend fun updateUserCollection(): List<Subject> {
         val callUser = user
-        context.subscribe({
-            if (callUser?.username != this.user?.username) return@subscribe
-            drawerView.homeFragment.collectionFragment.collectionCallback(null, it)
-            if ((it as? Exception)?.message == "login failed") {
-                user?.let { u -> UserModel.removeUser(u) }
-                UserModel.switchToUser(null)
-                updateUser(null)
-            }
-        }, key = COLLECTION_CALL) {
+        try {
             val data = Bangumi.getCollectionSax({ user ->
                 UserModel.updateUser(user)
                 UserModel.switchToUser(user)
@@ -200,63 +187,68 @@ class MainPresenter(private val context: MainActivity) {
                 context.notifyMenu?.badge = notify.let { it.first + it.second }
             })
             mergeAirInfo(data)
+            return collectionList
+        } catch (e: Throwable) {
+            if (callUser?.username == this.user?.username && (e as? Exception)?.message == "login failed") {
+                user?.let { u -> UserModel.removeUser(u) }
+                UserModel.switchToUser(null)
+                updateUser(null)
+            }
+            throw e
         }
     }
 
     var mergeAirInfo = { }
 
-    private fun mergeAirInfo(collection: List<Subject>) {
+    private suspend fun mergeAirInfo(collection: List<Subject>) {
         val calendar = calendar
-        context.subscribe(key = "bangumi_collection_merge") {
-            withContext(Dispatchers.Default) {
-                collection.forEach { subject ->
-                    val cal = calendar.find { cal -> cal.id == subject.id }
-                    cal?.eps?.forEach { calEp ->
-                        subject.eps?.find { ep -> ep.id == calEp.id }?.merge(calEp)
-                    }
-                    val eps = (subject.eps as? List<*>)?.mapNotNull { it as? Episode }
-                        ?.filter { it.type == Episode.TYPE_MAIN }
-                    val watchTo = eps?.lastOrNull { it.progress == Episode.PROGRESS_WATCH }
-                    eps?.getOrNull(watchTo?.let { eps.indexOf(it) + 1 } ?: 0)?.let { newEp ->
-                        if (newEp.airdate == null) return@let
-                        val use30h = App.app.sp.getBoolean("calendar_use_30h", false)
-                        val dateTime = cal?.getEpisodeDateTime(newEp) ?: return@let
-                        val nowInt = CalendarAdapter.getNowInt(use30h)
-                        subject.airInfo = if (dateTime.first == nowInt) dateTime.second
-                        else if (dateTime.first > nowInt) {
-                            val airDate = CalendarAdapter.getIntCalendar(dateTime.first)
-                            val nowDate = CalendarAdapter.getIntCalendar(nowInt)
-                            if (airDate.timeInMillis - nowDate.timeInMillis > 24 * 60 * 60 * 1000) "" else "明天${dateTime.second}"
-                        } else ""
-                    }
+        withContext(Dispatchers.Default) {
+            collection.forEach { subject ->
+                val cal = calendar.find { cal -> cal.id == subject.id }
+                cal?.eps?.forEach { calEp ->
+                    subject.eps?.find { ep -> ep.id == calEp.id }?.merge(calEp)
+                }
+                val eps = (subject.eps as? List<*>)?.mapNotNull { it as? Episode }
+                    ?.filter { it.type == Episode.TYPE_MAIN }
+                val watchTo = eps?.lastOrNull { it.progress == Episode.PROGRESS_WATCH }
+                eps?.getOrNull(watchTo?.let { eps.indexOf(it) + 1 } ?: 0)?.let { newEp ->
+                    if (newEp.airdate == null) return@let
+                    val use30h = App.app.sp.getBoolean("calendar_use_30h", false)
+                    val dateTime = cal?.getEpisodeDateTime(newEp) ?: return@let
+                    val nowInt = CalendarAdapter.getNowInt(use30h)
+                    subject.airInfo = if (dateTime.first == nowInt) dateTime.second
+                    else if (dateTime.first > nowInt) {
+                        val airDate = CalendarAdapter.getIntCalendar(dateTime.first)
+                        val nowDate = CalendarAdapter.getIntCalendar(nowInt)
+                        if (airDate.timeInMillis - nowDate.timeInMillis > 24 * 60 * 60 * 1000) "" else "明天${dateTime.second}"
+                    } else ""
                 }
             }
-            collectionList = collection
-            mergeAirInfo()
-            notifyCollectionChange()
         }
+        collectionList = collection
+        mergeAirInfo()
+        drawerView.calendarFragment.onCollectionChange()
     }
 
     /**
      * 加载日历列表
      */
-    fun updateCalendarList() {
-        context.subscribe({
-            drawerView.calendarFragment.calendarCallback(null, it)
-        }, key = "bangumi_calendar") {
-            val data = Github.bangumiCalendar()
-            calendar = data
-            App.app.dataCacheModel.set(CALENDAR_CACHE_KEY, data)
-            drawerView.calendarFragment.calendarCallback(data, null)
-        }
+    suspend fun updateCalendarList(): List<BangumiCalendarItem> {
+        val data = Github.bangumiCalendar()
+        calendar = data
+        App.app.dataCacheModel.set(CALENDAR_CACHE_KEY, data)
+        return data
     }
 
     init {
-        updateCalendarList()
+        context.subscribe(key = CALENDAR_CALL) {
+            updateCalendarList()
+        }
     }
 
     companion object {
         const val COLLECTION_CALL = "bangumi_collection"
+        const val CALENDAR_CALL = "bangumi_calendar"
 
         const val CALENDAR_CACHE_KEY = "calendar"
     }

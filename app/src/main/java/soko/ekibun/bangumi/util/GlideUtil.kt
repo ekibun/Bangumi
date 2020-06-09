@@ -61,9 +61,7 @@ object GlideUtil {
                 circularProgressDrawable.invalidateSelf()
             }
 
-            override fun getGranualityPercentage(): Float {
-                return 1.0f
-            }
+            override val graduallyPercentage: Float = 1f
         })
         return request.asDrawable().let {
             if (uri != null) {
