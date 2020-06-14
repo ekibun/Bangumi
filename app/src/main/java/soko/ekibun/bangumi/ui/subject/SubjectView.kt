@@ -7,8 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.GenericTransitionOptions
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
@@ -312,9 +311,9 @@ class SubjectView(private val context: SubjectActivity) {
         if (tag == null || tag == Subject.SaxTag.INFOBOX) {
             GlideUtil.with(detail.item_cover)
                 ?.load(Images.getImage(subject.image))
+                ?.transition(GenericTransitionOptions())
                 ?.apply(
                     RequestOptions.errorOf(R.drawable.err_404).placeholder(R.drawable.placeholder)
-                        .transform(CenterCrop(), RoundedCorners(detail.item_cover.radius))
                 )
                 ?.into(detail.item_cover)
             detail.item_cover.setOnClickListener {
