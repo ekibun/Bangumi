@@ -2,7 +2,6 @@ package soko.ekibun.bangumi
 
 import android.app.Application
 import android.content.Context
-import android.content.Intent
 import androidx.preference.PreferenceManager
 import com.umeng.commonsdk.UMConfigure
 import soko.ekibun.bangumi.model.DataCacheModel
@@ -15,13 +14,11 @@ import soko.ekibun.bangumi.util.HttpUtil
  * App entry
  * @property dataCacheModel DataCacheModel
  * @property pluginInstance Map<Context, Any>?
- * @property remoteAction Function3<[@kotlin.ParameterName] Intent?, [@kotlin.ParameterName] Int, [@kotlin.ParameterName] Int, Unit>
  */
 class App : Application() {
     val sp by lazy { PreferenceManager.getDefaultSharedPreferences(this) }
     val dataCacheModel by lazy { DataCacheModel(this) }
     lateinit var pluginInstance: Map<Context, Any>
-    var remoteAction: (intent: Intent?, flags: Int, startId: Int) -> Unit = { _, _, _ -> }
 
     override fun onCreate() {
         super.onCreate()

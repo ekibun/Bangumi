@@ -271,7 +271,7 @@
     <string name="phrase_duration">时长：%1$s</string>
     <string name="phrase_comment">讨论（+%1$d）</string>
 
-    <string name="phrase_reply">%1$d 回复</string>
+    <string name="phrase_reply">+%1$d 回复</string>
 
     <!-- 超展开 -->
     <string name="parse_hint_reply_topic">回复 %1$s</string>

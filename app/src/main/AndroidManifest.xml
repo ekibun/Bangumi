@@ -21,12 +21,6 @@
             tools:ignore="AllowBackup,GoogleAppIndexingWarning,UnusedAttribute">
         <activity android:name=".ui.say.SayActivity">
         </activity>
-
-        <service
-                android:name=".RemoteService"
-                android:exported="false">
-        </service>
-
         <activity
                 android:name=".ui.setting.SettingsActivity"
                 android:label="@string/settings"

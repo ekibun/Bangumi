@@ -19,8 +19,8 @@
     <com.github.siyamed.shapeimageview.CircularImageView
             app:siBorderAlpha="0"
             android:id="@+id/item_avatar"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="@dimen/avatarListSize"
+            android:layout_height="@dimen/avatarListSize"
             android:scaleType="centerCrop"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"

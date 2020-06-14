@@ -19,13 +19,12 @@
     <com.github.siyamed.shapeimageview.CircularImageView
             app:siBorderAlpha="0"
             android:id="@+id/item_avatar"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="@dimen/avatarListSize"
+            android:layout_height="@dimen/avatarListSize"
             android:scaleType="centerCrop"
             tools:ignore="ContentDescription"
             app:layout_constraintTop_toTopOf="@+id/item_user"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toBottomOf="@+id/item_time"
             tools:src="@drawable/err_404"/>
     <TextView
             android:id="@+id/item_user"
@@ -39,16 +38,16 @@
             app:layout_constraintTop_toTopOf="parent"
             android:layout_marginLeft="8dp"
             tools:text="UserName"/>
+
     <TextView
             android:id="@+id/item_time"
-            android:layout_width="0dp"
-            android:layout_marginTop="2dp"
+            android:layout_width="wrap_content"
+            android:layout_marginTop="3dp"
             android:layout_height="wrap_content"
             android:textSize="@dimen/textSizeSmall"
             android:ellipsize="end"
             android:singleLine="true"
             app:layout_constraintLeft_toLeftOf="@+id/item_user"
-            app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/item_user"
             tools:text="2019-04-23"/>
     <TextView
@@ -79,8 +78,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/item_title"
             tools:text="Blog Content..."/>
+
     <TextView
-            android:layout_marginTop="6dp"
             android:alpha="0.5"
             android:id="@+id/item_comment"
             android:layout_width="0dp"
@@ -88,11 +87,14 @@
             android:textSize="@dimen/textSizeSmall"
             android:singleLine="true"
             android:ellipsize="end"
+            android:layout_marginLeft="6dp"
             app:layout_constraintLeft_toRightOf="@+id/item_avatar"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/item_summary"
-            app:layout_constraintStart_toStartOf="@+id/item_summary"
             app:layout_constraintEnd_toEndOf="parent"
-            tools:text="0 回复"/>
+            tools:text="+0 回复"
+            app:layout_constraintStart_toEndOf="@+id/item_time"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintTop_toTopOf="@+id/item_time"
+            app:layout_constraintBottom_toBottomOf="@+id/item_time"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
