@@ -32,15 +32,24 @@ import java.util.concurrent.ConcurrentHashMap
  * @property onBackListener Function0<Boolean>
  * @constructor
  */
-abstract class BaseActivity(@LayoutRes private val resId: Int) : AppCompatActivity(), CoroutineScope by MainScope() {
+abstract class BaseActivity(@LayoutRes private val resId: Int? = null) : AppCompatActivity(),
+    CoroutineScope by MainScope() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        window.setBackgroundDrawable(ColorDrawable(ResourceUtil.resolveColorAttr(this, R.attr.colorPrimaryBackground)))
-        setContentView(resId)
-
-        ThemeModel.updateNavigationTheme(this)
+        resId?.let {
+            window.setBackgroundDrawable(
+                ColorDrawable(
+                    ResourceUtil.resolveColorAttr(
+                        this,
+                        R.attr.colorPrimaryBackground
+                    )
+                )
+            )
+            setContentView(it)
+            ThemeModel.updateNavigationTheme(this)
+        }
 
         PluginsModel.setUpPlugins(this)
     }

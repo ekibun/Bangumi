@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.Keep
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.GravityCompat
 import kotlinx.android.synthetic.main.activity_main.*
@@ -171,6 +172,11 @@ class MainPresenter(private val context: MainActivity) {
     var calendar: List<BangumiCalendarItem> = App.app.dataCacheModel.get(CALENDAR_CACHE_KEY) ?: ArrayList()
     var collectionList: List<Subject> = ArrayList()
     var notify: Pair<Int, Int>? = null
+
+    @Keep
+    fun notifyCollectionChange() {
+        drawerView.homeFragment.collectionFragment.onCollectionChange()
+    }
 
     /**
      * 获取收藏

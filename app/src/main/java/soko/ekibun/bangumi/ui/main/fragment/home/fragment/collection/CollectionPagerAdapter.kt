@@ -105,7 +105,7 @@ class CollectionPagerAdapter(
     @SuppressLint("UseSparseArrays")
     private val pageIndex = HashMap<Int, Int>()
 
-    private fun updateCollection(list: List<Subject>?, fromCache: Boolean = false) {
+    fun updateCollection(list: List<Subject>?, fromCache: Boolean = false) {
         items.keys.forEach { position ->
             if (!useApi(position)) return@forEach
             val item = items[position] ?: return@forEach

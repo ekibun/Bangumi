@@ -126,25 +126,18 @@
                 android:name=".ui.subject.SubjectActivity"
                 android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
                 android:supportsPictureInPicture="true">
+        </activity>
+        <activity
+                android:name=".ui.action.ActionActivity"
+                android:autoRemoveFromRecents="true"
+                android:excludeFromRecents="true"
+                android:theme="@style/AppTheme.Transparent">
             <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
-
                 <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-
-                <data
-                        android:host="subject"
-                        android:scheme="bangumi"/>
-            </intent-filter>
-            <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
-
-                <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
-
                 <data
-                        android:host="playersubject"
-                        android:pathPrefix="/bangumi"
+                        android:host="bangumi"
                         android:scheme="ekibun"/>
             </intent-filter>
         </activity>
