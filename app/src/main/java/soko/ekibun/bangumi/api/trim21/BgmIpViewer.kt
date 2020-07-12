@@ -1,5 +1,6 @@
 package soko.ekibun.bangumi.api.trim21
 
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
@@ -26,7 +27,7 @@ object BgmIpViewer {
      * @param id [Subject.id]
      */
     suspend fun getSeason(id: Int): SeasonData {
-        return withContext(Dispatchers.Main) {
+        return withContext(Dispatchers.Default) {
             val ipView = JsonUtil.toEntity<IpView>(withContext(Dispatchers.IO) {
                 HttpUtil.fetch("https://www.trim21.cn/api.v1/view_ip/subject/$id").body?.string() ?: ""
             })!!
@@ -46,34 +47,37 @@ object BgmIpViewer {
      * @param subjectId [Subject.id]
      * @return List<IpView.Node>
      */
-    private fun getSeasonNode(it: IpView, subjectId: Int): List<IpView.Node> {
+    private fun getSeasonNode(ipView: IpView, subjectId: Int): List<IpView.Node> {
         val ret = ArrayList<IpView.Node>()
 
-        val bgmIp = it.nodes?.firstOrNull { it.subject_id == subjectId } ?: return ret
-        val id =
-            it.edges?.firstOrNull { edge -> edge.source == bgmIp.id && edge.relation == "主线故事" }?.target ?: bgmIp.id
+        val bgmIp = ipView.nodes?.firstOrNull { it.subject_id == subjectId } ?: return ret
+        val visitNode = { nodeId: Int ->
+            ipView.nodes.firstOrNull { it.id == nodeId }?.takeIf { it.visit != true }
+        }
+        val id = ipView.edges?.firstOrNull { edge ->
+            edge.source == bgmIp.id && edge.relation == "主线故事"
+        }?.target ?: bgmIp.id
 
-        for (edge in it.edges?.filter { edge -> edge.target == id && edge.relation == "主线故事" }?.reversed()
-            ?: ArrayList()) {
-            ret.add(0, it.nodes.firstOrNull { it.id == edge.source } ?: continue)
-        }
-        ret.add(0, it.nodes.firstOrNull { it.id == id } ?: return ret)
-        var prevId = id
+        val queue = LinkedList<Int>()
+        queue.add(id + 1)
         while (true) {
-            prevId = it.edges?.firstOrNull { it.source == prevId && it.relation == "前传" }?.target ?: break
-            for (edge in it.edges.filter { edge -> edge.target == prevId && edge.relation == "主线故事" }.reversed()) {
-                ret.add(0, it.nodes.firstOrNull { it.id == edge.source } ?: continue)
+            val nodeId = queue.poll() ?: break
+            val node = visitNode(nodeId)?.also {
+                Log.v("node", it.name_cn ?: it.name)
+                it.visit = true
+            } ?: continue
+            ret.add(node)
+            for (edge in ipView.edges?.filter { edge ->
+                edge.target == node.id && edge.relation == "主线故事"
+            }?.reversed() ?: emptyList()) {
+                ret.add(visitNode(edge.source) ?: continue)
             }
-            ret.add(0, it.nodes.firstOrNull { it.id == prevId } ?: break)
+            if (ipView.edges == null) break
+            queue.addAll(ipView.edges.filter { it.source == nodeId && it.relation == "续集" }.map { it.target })
+            queue.addAll(ipView.edges.filter { it.source == nodeId && it.relation == "前传" }.map { it.target })
+            queue.addAll(ipView.edges.filter { it.target == nodeId && it.relation == "续集" }.map { it.source })
+            queue.addAll(ipView.edges.filter { it.target == nodeId && it.relation == "前传" }.map { it.source })
         }
-        var nextId = id
-        while (true) {
-            nextId = it.edges?.firstOrNull { it.source == nextId && it.relation == "续集" }?.target ?: break
-            ret.add(it.nodes.firstOrNull { it.id == nextId } ?: break)
-            for (edge in it.edges.filter { edge -> edge.target == nextId && edge.relation == "主线故事" }) {
-                ret.add(it.nodes.firstOrNull { it.id == edge.source } ?: continue)
-            }
-        }
-        return ret.distinct()
+        return ret.distinct().sortedBy { it.subject_id }
     }
 }

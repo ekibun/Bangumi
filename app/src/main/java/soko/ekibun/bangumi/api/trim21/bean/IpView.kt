@@ -36,10 +36,11 @@ data class IpView(
      * @constructor
      */
     data class Node(
-            val subject_id: Int = 0,
-            val id: Int = 0,
-            val image: String? = null,
-            val name: String? = null,
-            val name_cn: String? = null
+        val subject_id: Int = 0,
+        val id: Int = 0,
+        val image: String? = null,
+        val name: String? = null,
+        val name_cn: String? = null,
+        var visit: Boolean? = null
     )
 }
