@@ -139,7 +139,8 @@ data class Topic(
                             } else null to ApiHelper.SaxEventType.NOTHING
                         }
                         attrs.contains("reply_wrapper") -> {
-                            ApiHelper.SaxEventType.BEGIN to ApiHelper.SaxEventType.BEGIN
+                            replyCount++
+                            replyCount to ApiHelper.SaxEventType.BEGIN
                         }
                         else -> null to ApiHelper.SaxEventType.NOTHING
                     }
