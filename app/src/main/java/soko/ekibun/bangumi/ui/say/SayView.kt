@@ -87,13 +87,8 @@ class SayView(private val context: SayActivity) {
                 context.item_swipe.setOnChildScrollUpCallback { _, _ -> canScroll }
             }
         })
-        context.title_collapse.setOnClickListener {
-            if (scroll2Top()) return@setOnClickListener
-            WebActivity.startActivity(context, context.sayPresenter.say.url)
-        }
-        context.title_expand.setOnClickListener {
-            if (scroll2Top()) return@setOnClickListener
-            WebActivity.startActivity(context, context.sayPresenter.say.url)
+        collapsibleAppBarHelper.onTitleClickListener = {
+            if (!scroll2Top()) WebActivity.startActivity(context, context.sayPresenter.say.url)
         }
     }
 

@@ -96,13 +96,8 @@ class TopicView(private val context: TopicActivity) {
                 context.item_swipe.setOnChildScrollUpCallback { _, _ -> canScroll }
             }
         })
-        context.title_collapse.setOnClickListener {
-            if (scroll2Top()) return@setOnClickListener
-            WebActivity.startActivity(context, context.topicPresenter.topic.url)
-        }
-        context.title_expand.setOnClickListener {
-            if (scroll2Top()) return@setOnClickListener
-            WebActivity.startActivity(context, context.topicPresenter.topic.url)
+        collapsibleAppBarHelper.onTitleClickListener = {
+            if (!scroll2Top()) WebActivity.startActivity(context, context.topicPresenter.topic.url)
         }
     }
 
@@ -170,7 +165,7 @@ class TopicView(private val context: TopicActivity) {
             )
             ?.into(object : CustomTarget<Drawable>() {
                 override fun onLoadCleared(placeholder: Drawable?) {
-                    context.window.setBackgroundDrawable(placeholder)
+                    placeholder?.let { context.window.setBackgroundDrawable(it) }
                 }
 
                 override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {

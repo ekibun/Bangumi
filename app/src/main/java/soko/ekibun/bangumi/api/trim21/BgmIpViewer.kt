@@ -59,7 +59,7 @@ object BgmIpViewer {
         }?.target ?: bgmIp.id
 
         val queue = LinkedList<Int>()
-        queue.add(id + 1)
+        queue.add(id)
         while (true) {
             val nodeId = queue.poll() ?: break
             val node = visitNode(nodeId)?.also {
