@@ -2,6 +2,7 @@ package soko.ekibun.bangumi.api.github
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.github.bean.BangumiCalendarItem
 import soko.ekibun.bangumi.api.github.bean.OnAirInfo
 import soko.ekibun.bangumi.api.github.bean.Release
@@ -30,6 +31,10 @@ object Github {
 
     private const val JSDELIVR_SERVER_API = "https://cdn.jsdelivr.net"
 
+    private val JSDELIVR_REQUEST_OPTION = HttpUtil.RequestOption(
+        header = mapOf("referer" to Bangumi.SERVER)
+    )
+
     /**
      * 时间表
      */
@@ -38,7 +43,8 @@ object Github {
             if (latestTag.isEmpty()) updateOnAirLatestTag()
             JsonUtil.toEntity<List<BangumiCalendarItem>>(
                 HttpUtil.fetch(
-                    "$JSDELIVR_SERVER_API/gh/ekibun/bangumi_onair$latestTag/calendar.json"
+                    "$JSDELIVR_SERVER_API/gh/ekibun/bangumi_onair$latestTag/calendar.json",
+                    JSDELIVR_REQUEST_OPTION
                 ).body!!.string()
             )!!
         }
@@ -73,7 +79,8 @@ object Github {
             updateOnAirLatestTag()
             JsonUtil.toEntity<OnAirInfo>(
                 HttpUtil.fetch(
-                    "$JSDELIVR_SERVER_API/gh/ekibun/bangumi_onair$latestTag/onair/${id / 1000}/$id.json"
+                    "$JSDELIVR_SERVER_API/gh/ekibun/bangumi_onair$latestTag/onair/${id / 1000}/$id.json",
+                    JSDELIVR_REQUEST_OPTION
                 ).body?.string() ?: ""
             )
         }

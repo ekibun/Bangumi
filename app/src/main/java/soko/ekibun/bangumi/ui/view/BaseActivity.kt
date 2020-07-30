@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.umeng.analytics.MobclickAgent
 import kotlinx.coroutines.*
 import soko.ekibun.bangumi.App
+import soko.ekibun.bangumi.BuildConfig
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.model.PluginsModel
 import soko.ekibun.bangumi.model.ThemeModel
@@ -74,7 +75,8 @@ abstract class BaseActivity(@LayoutRes private val resId: Int? = null) : AppComp
                 block.invoke(this)
             } catch (_: CancellationException) {
             } catch (t: Throwable) {
-                Toast.makeText(App.app, t.localizedMessage, Toast.LENGTH_SHORT).show()
+                if (BuildConfig.DEBUG)
+                    Toast.makeText(App.app, "$t: ${t.message}", Toast.LENGTH_SHORT).show()
                 t.printStackTrace()
                 onError(t)
             }
