@@ -17,7 +17,6 @@ import soko.ekibun.bangumi.api.bangumi.bean.Comment
 import soko.ekibun.bangumi.api.bangumi.bean.Episode
 import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.api.github.Github
-import soko.ekibun.bangumi.api.trim21.BgmIpViewer
 import soko.ekibun.bangumi.model.DataCacheModel
 import soko.ekibun.bangumi.model.HistoryModel
 import soko.ekibun.bangumi.ui.topic.TopicActivity
@@ -52,6 +51,12 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
         }
         subjectView.detail.item_detail.setOnClickListener {
             InfoboxDialog.showDialog(context.supportFragmentManager, subject)
+        }
+        subjectView.detail.item_friend_score_label.setOnClickListener {
+            WebActivity.launchUrl(context, "http://bgm.tv/subject/${subject.id}/collections?filter=friends", "")
+        }
+        subjectView.detail.detail_friend_score.setOnClickListener {
+            WebActivity.launchUrl(context, "http://bgm.tv/subject/${subject.id}/collections?filter=friends", "")
         }
         subjectView.sitesAdapter.setOnItemClickListener { _, _, position ->
             WebActivity.launchUrl(context, subjectView.sitesAdapter.data[position].url(), "")
@@ -246,7 +251,7 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
                         dataCacheModel.set(subject.cacheKey, subject)
                     },
                     async {
-                        subject.season = BgmIpViewer.getSeason(subject.id).seasons
+                        subject.season = Github.getSeason(subject.id)
                         subjectView.updateSubject(subject, Subject.SaxTag.SEASON)
                     },
                     async {

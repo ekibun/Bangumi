@@ -19,13 +19,13 @@ import soko.ekibun.bangumi.util.JsonUtil
  */
 class SubjectActivity : BaseActivity(R.layout.activity_subject) {
     private val subjectPresenter: SubjectPresenter by lazy {
-        SubjectPresenter(this, JsonUtil.toEntity<Subject>(intent.getStringExtra(EXTRA_SUBJECT) ?: "") ?: {
+        SubjectPresenter(this, JsonUtil.toEntity<Subject>(intent.getStringExtra(EXTRA_SUBJECT) ?: "") ?: run {
             val id = Regex("""/subject/([0-9]+)""").find(
                 intent.data?.toString()
                     ?: ""
             )?.groupValues?.get(1)?.toIntOrNull() ?: 0
             Subject(id)
-        }())
+        })
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

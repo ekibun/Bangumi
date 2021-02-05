@@ -91,7 +91,7 @@ class CollapsibleAppBarHelper(val appbar: AppBarLayout) {
                     val str = (v as TextView).text.toString()
                     when (item.itemId) {
                         ID_COPY -> {
-                            clipboardManager.primaryClip = ClipData.newPlainText("bangumi_title", str)
+                            clipboardManager.setPrimaryClip(ClipData.newPlainText("bangumi_title", str))
                             Toast.makeText(v.context, "已复制到剪贴板", Toast.LENGTH_LONG).show()
                         }
                         ID_SHARE -> AppUtil.shareString(v.context, str)

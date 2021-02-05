@@ -45,21 +45,21 @@ class CodeLineSpan : TypefaceSpan("monospace"), LeadingMarginSpan, LineBackgroun
     override fun getLeadingMargin(first: Boolean): Int = 50
 
     override fun drawBackground(
-        c: Canvas,
-        p: Paint?,
+        canvas: Canvas,
+        paint: Paint,
         left: Int,
         right: Int,
         top: Int,
         baseline: Int,
         bottom: Int,
-        text: CharSequence?,
+        text: CharSequence,
         start: Int,
         end: Int,
-        lnum: Int
+        lineNumber: Int
     ) {
         val alpha = ThemeModel.TranslucentPaint.alpha
         ThemeModel.TranslucentPaint.alpha = 10
-        c.drawRect(Rect(left, top, right, bottom), ThemeModel.TranslucentPaint)
+        canvas.drawRect(Rect(left, top, right, bottom), ThemeModel.TranslucentPaint)
         ThemeModel.TranslucentPaint.alpha = alpha
     }
 

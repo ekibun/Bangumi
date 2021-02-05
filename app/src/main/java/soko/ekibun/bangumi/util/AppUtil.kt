@@ -23,12 +23,53 @@ import java.nio.ByteBuffer
  * App工具库
  */
 object AppUtil {
+
+    private fun saveDrawableToPath(drawable: Drawable, path: String) {
+        try {
+            File(path).parentFile?.mkdirs()
+            val stream = FileOutputStream(path, false) // overwrites this image every time
+            if (drawable is GifDrawable) {
+                val newGifDrawable = (drawable.constantState!!.newDrawable().mutate()) as GifDrawable
+                val byteBuffer = newGifDrawable.buffer
+                val bytes = ByteArray(byteBuffer.capacity())
+                (byteBuffer.duplicate().clear() as ByteBuffer).get(bytes)
+                stream.write(bytes, 0, bytes.size)
+            } else if (drawable is BitmapDrawable) {
+                drawable.bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+            }
+            stream.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun deleteAllFiles(root: File) {
+        val files = root.listFiles()
+        if (files != null) for (f in files) {
+            if (f.isDirectory) { // 判断是否为文件夹
+                deleteAllFiles(f)
+                try {
+                    f.delete()
+                } catch (e: java.lang.Exception) {
+                }
+            } else {
+                if (f.exists()) { // 判断是否存在
+                    deleteAllFiles(f)
+                    try {
+                        f.delete()
+                    } catch (e: java.lang.Exception) {
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * 分享字符串
      * @param context Context
      * @param str String
      */
-    fun shareString(context: Context, str: String){
+    fun shareString(context: Context, str: String?){
         val intent = Intent(Intent.ACTION_SEND)
         intent.putExtra(Intent.EXTRA_TEXT, str)
         intent.type = "text/plain"
@@ -37,26 +78,15 @@ object AppUtil {
 
     /**
      * 分享图片
-     * @param context Context
-     * @param drawable Drawable
      */
-    fun shareDrawable(context: Context, drawable: Drawable){
+    fun shareDrawable(context: Context, drawable: Drawable) {
         try {
             val cachePath = File(context.cacheDir, "images")
             cachePath.mkdirs() // don't forget to make the directory
-            val stream = FileOutputStream("$cachePath/image", false) // overwrites this image every time
-            if(drawable is GifDrawable){
-                val newGifDrawable = (drawable.constantState!!.newDrawable().mutate()) as GifDrawable
-                val byteBuffer = newGifDrawable.buffer
-                val bytes = ByteArray(byteBuffer.capacity())
-                (byteBuffer.duplicate().clear() as ByteBuffer).get(bytes)
-                stream.write(bytes, 0 ,bytes.size)
-            }else if(drawable is BitmapDrawable){
-                drawable.bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
-            }
-            stream.close()
-
-            val imageFile = File(cachePath, "image")
+            deleteAllFiles(cachePath)
+            val fileName = "image_${System.currentTimeMillis()}"
+            saveDrawableToPath(drawable, "$cachePath/$fileName")
+            val imageFile = File(cachePath, fileName)
             val contentUri = FileProvider.getUriForFile(context, "soko.ekibun.bangumi.fileprovider", imageFile)
 
             if (contentUri != null) {
@@ -77,7 +107,7 @@ object AppUtil {
      * @param context Context
      * @param url String
      */
-    fun openBrowser(context: Context, url: String){
+    fun openBrowser(context: Context, url: String?){
         try{
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
             context.startActivity(intent)
