@@ -7,9 +7,7 @@ import androidx.appcompat.widget.PopupMenu
 import kotlinx.android.synthetic.main.activity_subject.*
 import kotlinx.android.synthetic.main.dialog_subject.view.*
 import kotlinx.android.synthetic.main.subject_detail.view.*
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.*
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
@@ -239,9 +237,10 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
         context.subscribe(onComplete = {
             context.item_swipe.isRefreshing = false
         }, key = "bangumi_subject_detail") {
+            val errs = arrayListOf<Throwable>()
             coroutineScope {
                 listOf(
-                    async {
+                    suspend {
                         Subject.getDetail(subject) {
                             if (it in arrayOf(Subject.SaxTag.COLLECT, Subject.SaxTag.NONE)) refreshCollection()
                             subjectView.updateSubject(subject, if (it == Subject.SaxTag.NONE) null else it)
@@ -250,16 +249,27 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
                         subjectRefreshListener(subject)
                         dataCacheModel.set(subject.cacheKey, subject)
                     },
-                    async {
+                    suspend {
                         subject.season = Github.getSeason(subject.id)
                         subjectView.updateSubject(subject, Subject.SaxTag.SEASON)
                     },
-                    async {
+                    suspend {
                         val eps = subjectView.updateEpisode(Episode.getSubjectEps(subject))
                         subjectView.updateEpisodeLabel(eps, subject)
                         subject.eps = eps
                     }
-                ).awaitAll()
+                ).map {
+                    async {
+                        try {
+                            it()
+                        } catch (e: Throwable) {
+                            errs.add(e)
+                        }
+                    }
+                }.awaitAll()
+                if(errs.size > 0) {
+                    throw Exception(errs.joinToString("\n"))
+                }
             }
         }
     }

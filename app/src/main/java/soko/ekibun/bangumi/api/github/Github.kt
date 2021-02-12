@@ -151,7 +151,7 @@ object Github {
                 id = it.id,
                 name = it.name,
                 name_cn = it.nameCN,
-                image = Bangumi.parseUrl(it.image),
+                image = Bangumi.parseUrl(it.image ?: ""),
             )
         }.sortedBy { it.id }
     }

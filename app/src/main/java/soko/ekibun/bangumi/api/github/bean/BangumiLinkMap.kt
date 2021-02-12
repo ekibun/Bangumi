@@ -7,9 +7,9 @@ data class BangumiLinkMap(
 ) {
     data class BangumiLinkSubject(
         val id: Int,
-        val name: String,
-        val nameCN: String,
-        val image: String,
+        val name: String?,
+        val nameCN: String?,
+        val image: String?,
         var visit: Boolean? = null
     )
 

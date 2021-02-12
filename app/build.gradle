@@ -42,7 +42,7 @@ android {
         debug {
             keyAlias 'ekibun'
             keyPassword 'ekibun'
-            storeFile file('D:/OneDrive/文档/ekibun.jks')
+            storeFile file('D:/OneDrive/ekibun.jks')
             storePassword 'ekibun'
         }
     }
