@@ -47,7 +47,7 @@ class DrawerView(private val context: MainActivity, onLogout: () -> Unit) {
         R.id.nav_history to findOrCreateFragmentByClassName(HistoryFragment::class.java)
     )
 
-    val toggle = {
+    val toggle = run {
         context.setSupportActionBar(context.toolbar)
         val toggle = ActionBarDrawerToggle(
             context, context.drawer_layout, context.toolbar,
@@ -58,7 +58,7 @@ class DrawerView(private val context: MainActivity, onLogout: () -> Unit) {
             context.resources.configuration.orientation != Configuration.ORIENTATION_LANDSCAPE
         toggle.syncState()
         toggle
-    }()
+    }
 
     var navigationItemSelectedListener = { it: MenuItem ->
         context.drawer_layout.closeDrawers()

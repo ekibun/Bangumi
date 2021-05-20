@@ -43,33 +43,12 @@ object Github {
      */
     suspend fun bangumiCalendar(): List<BangumiCalendarItem> {
         return withContext(Dispatchers.IO) {
-            if (latestTag.isEmpty()) updateOnAirLatestTag()
             JsonUtil.toEntity<List<BangumiCalendarItem>>(
                 HttpUtil.fetch(
-                    "$JSDELIVR_SERVER_API/gh/ekibun/bangumi_onair$latestTag/calendar.json",
+                    "$JSDELIVR_SERVER_API/gh/ekibun/bangumi_onair/calendar.json",
                     JSDELIVR_REQUEST_OPTION
                 ).body!!.string()
             )!!
-        }
-    }
-
-    private var latestTag = ""
-        get() = if (field.isEmpty()) "" else "@$field"
-    private var lastUpdate = 0L
-    private suspend fun updateOnAirLatestTag() {
-        withContext(Dispatchers.IO) {
-            try {
-                val curTime = System.currentTimeMillis()
-                if (curTime - lastUpdate < 60 * 60 * 1000L) return@withContext
-                lastUpdate = curTime
-                latestTag = HttpUtil.fetch(
-                    "https://github.com/ekibun/bangumi_onair/releases/latest", HttpUtil.RequestOption(
-                        followRedirect = false
-                    )
-                ).headers["Location"]?.substringAfterLast('/') ?: latestTag
-            } catch (e: Throwable) {
-                e.printStackTrace()
-            }
         }
     }
 
@@ -79,10 +58,9 @@ object Github {
      */
     suspend fun onAirInfo(id: Int): OnAirInfo? {
         return withContext(Dispatchers.IO) {
-            updateOnAirLatestTag()
             JsonUtil.toEntity<OnAirInfo>(
                 HttpUtil.fetch(
-                    "$JSDELIVR_SERVER_API/gh/ekibun/bangumi_onair$latestTag/onair/${id / 1000}/$id.json",
+                    "$JSDELIVR_SERVER_API/gh/ekibun/bangumi_onair/onair/${id / 1000}/$id.json",
                     JSDELIVR_REQUEST_OPTION
                 ).body?.string() ?: ""
             )
@@ -95,7 +73,6 @@ object Github {
      */
     suspend fun getSeason(id: Int): List<Subject>? {
         return withContext(Dispatchers.IO) {
-            updateOnAirLatestTag()
             val mapId = HttpUtil.fetch(
                 "$JSDELIVR_SERVER_API/gh/ekibun/bangumi_link/node/${id / 1000}/$id",
                 JSDELIVR_REQUEST_OPTION

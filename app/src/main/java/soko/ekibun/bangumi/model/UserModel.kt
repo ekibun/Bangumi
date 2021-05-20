@@ -49,9 +49,9 @@ object UserModel {
                     }
                 }
                 HttpUtil.formhash = it.formhash
-            } ?: {
+            } ?: run {
                 HttpUtil.formhash = ""
-            }()
+            }
             App.app.sp.edit().putString(PREF_USER, JsonUtil.toJson(userList)).apply()
         }
         cookieManager.flush()
@@ -73,8 +73,7 @@ object UserModel {
     }
 
     fun current(): UserInfo? {
-        val current = userList.users[userList.current]?.user
-        return current
+        return userList.users[userList.current]?.user
     }
 
     fun removeUser(user: UserInfo): Boolean {
