@@ -45,7 +45,7 @@ object Github {
         return withContext(Dispatchers.IO) {
             JsonUtil.toEntity<List<BangumiCalendarItem>>(
                 HttpUtil.fetch(
-                    "$JSDELIVR_SERVER_API/gh/ekibun/bangumi_onair/calendar.json",
+                    "$JSDELIVR_SERVER_API/gh/ekibot/bangumi-onair/calendar.json",
                     JSDELIVR_REQUEST_OPTION
                 ).body!!.string()
             )!!
@@ -60,7 +60,7 @@ object Github {
         return withContext(Dispatchers.IO) {
             JsonUtil.toEntity<OnAirInfo>(
                 HttpUtil.fetch(
-                    "$JSDELIVR_SERVER_API/gh/ekibun/bangumi_onair/onair/${id / 1000}/$id.json",
+                    "$JSDELIVR_SERVER_API/gh/ekibot/bangumi-onair/onair/${id / 1000}/$id.json",
                     JSDELIVR_REQUEST_OPTION
                 ).body?.string() ?: ""
             )
@@ -74,12 +74,12 @@ object Github {
     suspend fun getSeason(id: Int): List<Subject>? {
         return withContext(Dispatchers.IO) {
             val mapId = HttpUtil.fetch(
-                "$JSDELIVR_SERVER_API/gh/ekibun/bangumi_link/node/${id / 1000}/$id",
+                "$JSDELIVR_SERVER_API/gh/ekibot/bangumi-link/node/${id / 1000}/$id",
                 JSDELIVR_REQUEST_OPTION
             ).body?.string()?.toIntOrNull() ?: return@withContext null
             JsonUtil.toEntity<BangumiLinkMap>(
                 HttpUtil.fetch(
-                    "$JSDELIVR_SERVER_API/gh/ekibun/bangumi_link/map/${mapId / 1000}/$mapId.json",
+                    "$JSDELIVR_SERVER_API/gh/ekibot/bangumi-link/map/${mapId / 1000}/$mapId.json",
                     JSDELIVR_REQUEST_OPTION
                 ).body?.string() ?: ""
             )?.let {
