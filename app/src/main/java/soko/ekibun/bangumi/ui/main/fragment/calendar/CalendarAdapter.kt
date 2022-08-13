@@ -33,33 +33,33 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
             R.id.item_time,
             if (getItemOrNull(holder.adapterPosition - 1)?.time == item.time) "" else item.time
         )
-        holder.setText(R.id.item_title, item.t.subject.displayName)
+        holder.setText(R.id.item_title, item.t?.subject?.displayName)
         holder.setText(
             R.id.item_ep_name,
-            (if (item.t.episode?.id != 0) item.t.episode?.parseSort() + " " else "")
-                    + (if (item.t.episode?.name_cn.isNullOrEmpty()) item.t.episode?.name
-                ?: "" else item.t.episode?.name_cn)
+            (if (item.t?.episode?.id != 0) item.t?.episode?.parseSort() + " " else "")
+                    + (if (item.t?.episode?.name_cn.isNullOrEmpty()) item.t?.episode?.name
+                ?: "" else item.t?.episode?.name_cn)
         )
         GlideUtil.with(holder.itemView.item_cover)
-            ?.load(Images.small(item.t.subject.image))
+            ?.load(Images.small(item.t?.subject?.image))
             ?.apply(
                 RequestOptions.errorOf(R.drawable.err_404).placeholder(R.drawable.placeholder)
                     .transform(CenterCrop(), RoundedCorners(holder.itemView.item_cover.radius))
             )
             ?.into(holder.itemView.item_cover)
-        holder.itemView.item_chase.visibility = if (item.t.subject.collect != null) View.VISIBLE else View.GONE
+        holder.itemView.item_chase.visibility = if (item.t?.subject?.collect != null) View.VISIBLE else View.GONE
 
         holder.itemView.item_title.setTextColor(
             ResourceUtil.resolveColorAttr(
                 holder.itemView.context,
-                if (item.t.episode?.id != 0) android.R.attr.textColorPrimary else android.R.attr.textColorSecondary
+                if (item.t?.episode?.id != 0) android.R.attr.textColorPrimary else android.R.attr.textColorSecondary
             )
         )
-        holder.itemView.item_cover.alpha = if (item.t.episode?.id != 0) 1.0f else 0.6f
+        holder.itemView.item_cover.alpha = if (item.t?.episode?.id != 0) 1.0f else 0.6f
 
         val color = ResourceUtil.resolveColorAttr(
             holder.itemView.context,
-            if (item.t.episode?.id != 0 && item.past) R.attr.colorPrimary else android.R.attr.textColorSecondary
+            if (item.t?.episode?.id != 0 && item.past) R.attr.colorPrimary else android.R.attr.textColorSecondary
         )
         holder.itemView.item_ep_name.setTextColor(color)
         holder.itemView.item_time.alpha = if (item.past) 0.6f else 1.0f
@@ -85,7 +85,7 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
         var date: Int = 0
         var time: String = ""
         var past: Boolean = false
-        lateinit var t: OnAir
+        var t: OnAir? = null
 
         constructor(subject: OnAir, date: Int, time: String) : this(false) {
             this.t = subject
@@ -117,9 +117,9 @@ class CalendarAdapter(data: MutableList<CalendarSection>? = null) :
             val nowInt = getNowInt(use_30h)
             if (nowInt > date) return true
             else if (nowInt < date) return false
-            val match = Regex("""([0-9]*):([0-9]*)""").find(time)
-            val hour = match?.groupValues?.get(1)?.toIntOrNull() ?: 0
-            val minute = match?.groupValues?.get(2)?.toIntOrNull() ?: 0
+            val match = Regex("""([0-9]+):([0-9]+)""").find(time) ?: return false
+            val hour = match.groupValues[1].toIntOrNull() ?: 0
+            val minute = match.groupValues[2].toIntOrNull() ?: 0
             val cal = Calendar.getInstance()
             val hourNow = cal.get(Calendar.HOUR_OF_DAY)
             val hourNow30h = if (use_30h) (hourNow - 6 + 24) % 24 + 6 else hourNow

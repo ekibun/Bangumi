@@ -526,7 +526,7 @@ data class Subject(
          */
         suspend fun updateProgress(
             id: Int,
-            @Episode.EpisodeStatus status: String,
+            @Episode.ProgressType status: String,
             epIds: String? = null
         ): Response {
             return withContext(Dispatchers.IO) {

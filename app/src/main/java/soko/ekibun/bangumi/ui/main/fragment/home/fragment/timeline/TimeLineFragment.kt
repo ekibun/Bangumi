@@ -100,15 +100,16 @@ class TimeLineFragment : HomeTabFragment(R.layout.fragment_timeline) {
                     hint = context?.getString(R.string.timeline_dialog_add) ?: "",
                     draft = draft
                 ) { content, _, send ->
+                    draft = content
                     if (content != null && send) {
                         (activity as? BaseActivity)?.subscribe {
                             TimeLine.addComment(content)
                             draft = null
-                            if (item_pager?.currentItem ?: 2 !in 0..1) item_pager?.currentItem = 1
+                            if ((item_pager?.currentItem ?: 2) !in 0..1) item_pager?.currentItem = 1
                             adapter.pageIndex[item_pager?.currentItem ?: 0] = 0
                             adapter.loadTopicList()
                         }
-                    } else draft = content
+                    }
                 }
                 true
             }

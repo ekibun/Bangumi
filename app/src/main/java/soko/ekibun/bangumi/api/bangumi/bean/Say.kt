@@ -1,8 +1,6 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import okhttp3.FormBody
 import okhttp3.Response
@@ -10,9 +8,7 @@ import org.jsoup.Jsoup
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.util.HttpUtil
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
-import kotlin.collections.set
 
 data class Say(
     val id: Int,
@@ -66,12 +62,6 @@ data class Say(
         ) {
             withContext(Dispatchers.Default) {
                 val rsp = HttpUtil.fetch(say.url)
-                val avatarCache = HashMap<String, String>()
-                say.user.avatar?.let { avatarCache[say.user.username!!] = it }
-                say.replies?.forEach { reply ->
-                    reply.user.avatar?.let { avatarCache[reply.user.username!!] = it }
-                }
-                val unresolvedMutex = ConcurrentHashMap<String, Mutex>()
 
                 var replyCount = -1
                 val replies = ConcurrentLinkedQueue<SayReply>()
@@ -93,20 +83,16 @@ data class Say(
 
                     when (tag) {
                         0 -> {
-                            say.user = UserInfo.parse(
-                                doc.selectFirst(".statusHeader .inner a"),
-                                Bangumi.parseImageUrl(doc.selectFirst(".statusHeader .avatar img"))
-                            )
+                            val user = UserInfo.parse(doc.selectFirst(".statusHeader .inner a"))
+                            user.avatar = user.avatar ?: "https://api.bgm.tv/v0/users/${user.username}/avatar?type=large"
+                            say.user = user
                             say.message = doc.selectFirst(".statusContent .text")?.html()
                             say.time = doc.selectFirst(".statusContent .date")?.text()
                             withContext(Dispatchers.Main) { onUpdateSay(SayReply(say.user, say.message ?: "", 0)) }
                         }
                         else -> {
                             val user = UserInfo.parse(doc.selectFirst("a.l"))
-                            user.avatar =
-                                user.avatar ?: unresolvedMutex.getOrPut(user.username!!) { Mutex() }.withLock {
-                                    avatarCache.getOrPut(user.username!!) { UserInfo.getApiUser(user.username!!).avatar!! }
-                                }
+                            user.avatar = user.avatar ?: "https://api.bgm.tv/v0/users/${user.username}/avatar?type=large"
                             val sayReply = SayReply(
                                 user = user,
                                 message = doc.selectFirst(".reply_item").childNodes()?.let { it.subList(6, it.size) }

@@ -71,6 +71,7 @@ class SayPresenter(private val context: SayActivity, say: Say) {
                 } else sayView.adapter.setData(index, SayAdapter.SaySection(false, post))
             }
             Say.getSaySax(say, {
+                updateHistory()
                 sayView.processSay(say, true)
                 updatePost(it)
             }) {
@@ -78,7 +79,6 @@ class SayPresenter(private val context: SayActivity, say: Say) {
             }
             sayView.processSay(say)
             dataCacheModel.set(say.cacheKey, say)
-            updateHistory()
         }
     }
 
@@ -86,9 +86,10 @@ class SayPresenter(private val context: SayActivity, say: Say) {
         val self = UserModel.current() ?: return
         ReplyDialog.showDialog(
             context.supportFragmentManager,
-            hint = context.getString(R.string.parse_hint_reply_topic, user?.nickname) ?: "",
+            hint = context.getString(R.string.parse_hint_reply_topic, user?.nickname),
             draft = draft
         ) { content, _, send ->
+            updateDraft(content)
             if (content != null && send) {
                 context.subscribe(key = SAY_REPLY_CALL) {
                     Say.reply(say, content)
@@ -109,7 +110,7 @@ class SayPresenter(private val context: SayActivity, say: Say) {
                     )
                     getSay()
                 }
-            } else updateDraft(content)
+            }
         }
     }
 

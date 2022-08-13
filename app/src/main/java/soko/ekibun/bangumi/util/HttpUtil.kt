@@ -20,6 +20,7 @@ object HttpUtil {
     var formhash = ""
     private val cookieHandler by lazy { WebViewCookieHandler() }
     private val httpClients: Array<OkHttpClient> by lazy {
+
         arrayOf(
             httpClientBuilder.addInterceptor(BridgeInterceptor(cookieHandler))
                 .followRedirects(false)
@@ -31,12 +32,11 @@ object HttpUtil {
         )
     }
 
-    private val httpClientBuilder: OkHttpClient.Builder by lazy {
+    private val httpClientBuilder: OkHttpClient.Builder get() =
         OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)
             .addInterceptor(BrotliInterceptor)
             .addNetworkInterceptor(HttpLoggingInterceptor().apply { this.level = HttpLoggingInterceptor.Level.BASIC })
-    }
 
     /**
      * 请求options

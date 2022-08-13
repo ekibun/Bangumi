@@ -1,13 +1,7 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.withContext
 import org.jsoup.nodes.Element
 import soko.ekibun.bangumi.api.bangumi.Bangumi
-import soko.ekibun.bangumi.util.HttpUtil
-import soko.ekibun.bangumi.util.JsonUtil
-import java.util.*
-import java.util.concurrent.Executors
 
 /**
  * 用户信息类
@@ -59,28 +53,6 @@ data class UserInfo(
                     )
                 }
             )
-        }
-
-        private val userCache = WeakHashMap<String, UserInfo>()
-        private val IoDispatcher = Executors.newFixedThreadPool(4).asCoroutineDispatcher()
-
-        @Suppress("BlockingMethodInNonBlockingContext")
-        suspend fun getApiUser(username: String): UserInfo {
-            return userCache.getOrPut(username) {
-                JsonUtil.toJsonObject(withContext(IoDispatcher) {
-                    HttpUtil.fetch(
-                        "https://api.bgm.tv/user/${username}"
-                    ).body?.string() ?: ""
-                }).let { obj ->
-                    UserInfo(
-                        id = obj.get("id")?.asInt ?: 0,
-                        username = obj.get("username")?.asString,
-                        nickname = obj.get("nickname")?.asString,
-                        avatar = obj.getAsJsonObject("avatar")?.get("large")?.asString,
-                        sign = obj.get("sign")?.asString
-                    )
-                }
-            }
         }
     }
 }

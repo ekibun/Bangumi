@@ -22,8 +22,6 @@ import soko.ekibun.bangumi.ui.view.BaseActivity
 import soko.ekibun.bangumi.ui.view.ShadowDecoration
 import soko.ekibun.bangumi.util.TimeUtil
 import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 /**
  * 时间表PagerAdapter
@@ -47,6 +45,7 @@ class CalendarPagerAdapter(private val view: ViewGroup) : RecyclePagerAdapter<Ca
     init {
 
         var canScroll = false
+        @Suppress("ClickableViewAccessibility")
         view.item_pager.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_MOVE -> {
@@ -72,14 +71,14 @@ class CalendarPagerAdapter(private val view: ViewGroup) : RecyclePagerAdapter<Ca
     }
 
     private fun getItem(position: Int): CalendarAdapter {
-        return items.get(position) ?: {
+        return items.get(position) ?: run {
             val adapter = CalendarAdapter()
             adapter.setOnItemClickListener { _, v, pos ->
-                SubjectActivity.startActivity(v.context, adapter.data[pos].t.subject)
+                adapter.data[pos].t?.subject?.let { SubjectActivity.startActivity(v.context, it) }
             }
             items.put(position, adapter)
             adapter
-        }()
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): PagerViewHolder {
@@ -118,7 +117,7 @@ class CalendarPagerAdapter(private val view: ViewGroup) : RecyclePagerAdapter<Ca
                         type = Subject.TYPE_ANIME,
                         name = subject.name,
                         name_cn = subject.name_cn,
-                        image = subject.image,
+                        image = "https://api.bgm.tv/v0/subjects/${subject.id}/image?type=grid",
                         collect = collectionList.find { it.id == subject.id }?.let { Collection() }
                     )
                     subject.eps?.forEach {

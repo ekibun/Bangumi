@@ -45,7 +45,7 @@ object Github {
         return withContext(Dispatchers.IO) {
             JsonUtil.toEntity<List<BangumiCalendarItem>>(
                 HttpUtil.fetch(
-                    "$JSDELIVR_SERVER_API/gh/ekibot/bangumi-onair/calendar.json",
+                    "$JSDELIVR_SERVER_API/gh/ekibot/bangumi-link/calendar.json",
                     JSDELIVR_REQUEST_OPTION
                 ).body!!.string()
             )!!

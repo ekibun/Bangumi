@@ -106,7 +106,7 @@ class TimeLinePagerAdapter(
                 if (fragment.selectedType == R.id.timeline_type_self) UserModel.current() else null,
                 fragment.selectedType == R.id.timeline_type_all
             ).toMutableList()
-            if (list.isNotEmpty() && item.first.data.lastOrNull { it.isHeader }?.header == list.getOrNull(0)?.header)
+            if (page != 0 && list.isNotEmpty() && item.first.data.lastOrNull { it.isHeader }?.header == list.getOrNull(0)?.header)
                 list.removeAt(0)
             if (page == 0) item.first.setNewInstance(list)
             else item.first.addData(list)
