@@ -169,9 +169,11 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
         val hint = post?.let { context.getString(R.string.parse_hint_reply_post, post.nickname) }
                 ?: context.getString(R.string.parse_hint_reply_topic, topic.title)
         buildPopupWindow(hint, drafts[draftId]) { inputString, _, send ->
+            inputString?.let { drafts[draftId] = it }
             if (send) {
                 context.subscribe {
                     val reply = Topic.reply(topic, post, inputString ?: "")
+                    if (inputString == drafts[draftId]) drafts[draftId] = ""
                     var lastFloor = (topicView.adapter.data.lastOrNull() as? TopicPost)?.floor ?: 0
                     reply.main?.values?.forEach { newPost ->
                         val oldPostIndex =
@@ -212,8 +214,6 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
                         else reply.main?.values?.lastOrNull { it.username == username }
                     }?.let { topicView.scrollToPost(it.pst_id, true) }
                 }
-            } else {
-                inputString?.let { drafts[draftId] = it }
             }
         }
     }
