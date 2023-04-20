@@ -60,7 +60,6 @@ class PostAdapter() :
             }
             if (item !is TopicPost) return
             // 用户
-            println(item)
             helper.itemView.item_user.text =
                 if (item.badge.isNullOrEmpty()) item.nickname else "${item.nickname} ${item.pst_content}"
             helper.itemView.item_user_sign.text =
