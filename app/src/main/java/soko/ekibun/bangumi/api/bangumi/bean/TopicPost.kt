@@ -51,8 +51,9 @@ data class TopicPost(
          */
         fun parse(it: Element): TopicPost? {
             val user = it.selectFirst(".inner a") ?: return null
-            val data = (it.selectFirst(".icons_cmt")?.attr("onclick") ?: "").split(",")
-            val relate = data.getOrNull(2)?.toIntOrNull() ?: 0
+            // <a href="javascript:void(0);" onclick="subReply('group', 380646, 2309023, 0, 428864, 650688, 0)" class="icon" title="回复">
+            val data = (it.selectFirst(".icon")?.attr("onclick") ?: "").split(",")
+            val relate = data.getOrNull(2)?.trim()?.toIntOrNull() ?: 0
             val post_id = it.selectFirst(".re_info a")?.attr("href")?.substringAfter("_")?.toIntOrNull() ?: 0
             val badge = it.selectFirst(".badgeState")?.text()
             val floor = Regex("""#(\d+)(-\d+)?""").find(it.selectFirst(".floor-anchor")?.text() ?: "")?.groupValues
@@ -69,7 +70,7 @@ data class TopicPost(
                     sign = if (!badge.isNullOrEmpty()) "" else it.selectFirst(".inner .tip_j")?.text() ?: "",
                     avatar = Bangumi.parseImageUrl(it.selectFirst("span.avatarNeue")),
                     dateline = if (!badge.isNullOrEmpty()) it.selectFirst(".inner .tip_j")?.text()
-                            ?: "" else it.selectFirst(".re_info")?.text()?.split("/")?.get(0)?.trim()?.substringAfter(" - ")
+                            ?: "" else it.selectFirst(".re_info")?.text()?.split(".")?.get(0)?.split("回")?.get(0)?.trim()?.substringAfter(" - ")
                             ?: "",
                     relate = relate.toString(),
                     model = Regex("'([^']*)'").find(data.getOrNull(0) ?: "")?.groupValues?.get(1) ?: "",
