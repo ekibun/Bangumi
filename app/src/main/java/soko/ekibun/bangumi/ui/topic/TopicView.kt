@@ -2,6 +2,7 @@ package soko.ekibun.bangumi.ui.topic
 
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -11,8 +12,12 @@ import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.google.android.material.appbar.AppBarLayout
-import kotlinx.android.synthetic.main.activity_topic.*
-import kotlinx.android.synthetic.main.appbar_layout.*
+import kotlinx.android.synthetic.main.activity_topic.app_bar
+import kotlinx.android.synthetic.main.activity_topic.btn_reply
+import kotlinx.android.synthetic.main.activity_topic.item_list
+import kotlinx.android.synthetic.main.activity_topic.item_swipe
+import kotlinx.android.synthetic.main.appbar_layout.title_slice_0
+import kotlinx.android.synthetic.main.appbar_layout.title_slice_1
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Topic
@@ -151,7 +156,7 @@ class TopicView(private val context: TopicActivity) {
             }
             link.first
         })
-
+        Log.v("TOPIC", Images.getImage(topic.image.toString()))
         GlideUtil.with(context)
             ?.load(Images.getImage(topic.image))
             ?.apply(

@@ -14,10 +14,8 @@ import com.bumptech.glide.request.transition.Transition
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import jp.wasabeef.glide.transformations.BlurTransformation
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_subject.*
-import kotlinx.android.synthetic.main.activity_subject.app_bar
-import kotlinx.android.synthetic.main.activity_subject.root_layout
+import kotlinx.android.synthetic.main.appbar_layout.toolbar
 import kotlinx.android.synthetic.main.dialog_subject.view.*
 import kotlinx.android.synthetic.main.subject_detail.view.*
 import org.jsoup.Jsoup
@@ -111,15 +109,14 @@ class SubjectView(private val context: SubjectActivity) {
         set(value) {
             field = value
             context.bottom_sheet.let {
-                it.setPadding(
-                    it.paddingLeft, it.paddingTop, it.paddingRight,
-                    insertTop +
-                            Math.max(
-                                context.toolbar.height,
-                                if (behavior.isHideable) 0 else (it.width * value).toInt()
-                            )
+                val bot = insertTop + Math.max(
+                    context.toolbar.height,
+                    if (behavior.isHideable) 0 else (it.width * value).toInt()
                 )
-                it.translationY = it.paddingBottom.toFloat()
+                it.setPadding(
+                    it.paddingLeft, 0, it.paddingRight, bot
+                )
+                it.translationY = bot.toFloat()
             }
         }
     var insertTop = 0
@@ -308,13 +305,11 @@ class SubjectView(private val context: SubjectActivity) {
             }
         }
 
-        if (tag == null || tag == Subject.SaxTag.INFOBOX) {
+        if ((tag == null || tag == Subject.SaxTag.INFOBOX) && subject.image != null) {
             GlideUtil.with(detail.item_cover)
                 ?.load(Images.getImage(subject.image))
                 ?.transition(GenericTransitionOptions())
-                ?.apply(
-                    RequestOptions.errorOf(R.drawable.err_404).placeholder(R.drawable.placeholder)
-                )
+                ?.apply(RequestOptions.errorOf(R.drawable.err_404))
                 ?.into(detail.item_cover)
             detail.item_cover.setOnClickListener {
                 PhotoPagerAdapter.showWindow(
@@ -324,7 +319,7 @@ class SubjectView(private val context: SubjectActivity) {
                 )
             }
             GlideUtil.with(context)
-                ?.load(Images.getImage(subject.image))
+                ?.load(subject.image)
                 ?.apply(
                     RequestOptions.bitmapTransform(
                         BlurTransformation(

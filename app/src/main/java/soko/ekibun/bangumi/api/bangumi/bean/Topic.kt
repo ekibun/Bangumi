@@ -127,6 +127,7 @@ data class Topic(
                         else -> "${Bangumi.SERVER}/rakuen/topic/${topic.model}/${topic.id}"
                     }
                 )
+                var beginString = ""
                 var replyCount = -2
                 val posts = ConcurrentLinkedQueue<TopicPost>()
                 var finishFirst = false
@@ -139,18 +140,19 @@ data class Topic(
                             } else null to ApiHelper.SaxEventType.NOTHING
                         }
                         attrs.contains("reply_wrapper") -> {
-                            replyCount++
                             replyCount to ApiHelper.SaxEventType.BEGIN
                         }
                         else -> null to ApiHelper.SaxEventType.NOTHING
                     }
                 }) { tag, str ->
-                    when (tag) {
-                        -1 -> {
-                            val doc = Jsoup.parseBodyFragment(str)
-                            doc.outputSettings().prettyPrint(false)
+                    if (tag is Int && tag < 0) {
+                        beginString = str
+                        val doc = Jsoup.parseBodyFragment(str)
+                        doc.outputSettings().prettyPrint(false)
 
-                            topic.title = doc.selectFirst("#pageHeader h1")?.ownText()
+                        val title = doc.selectFirst("#pageHeader h1")?.ownText()
+                        if (title != null) {
+                            topic.title = title
 
                             topic.links = LinkedHashMap<String, String>().let { links ->
                                 doc.select("#pageHeader a")?.filter { !it.text().isNullOrEmpty() }?.forEach {
@@ -178,16 +180,18 @@ data class Topic(
                             }
                             withContext(Dispatchers.Main) { onHeader() }
                         }
-                        else -> {
-                            val post = parsePost(str)
-                            posts.addAll(post)
-                            while (tag is Int && tag != 0 && !finishFirst) delay(100)
-                            withContext(Dispatchers.Main) { onTopicPost(post) }
-                            if (tag == 0) finishFirst = true
-                        }
+                    } else {
+                        val post = parsePost(str)
+                        posts.addAll(post)
+                        while (tag is Int && tag != 0 && !finishFirst) delay(100)
+                        withContext(Dispatchers.Main) { onTopicPost(post) }
+                        if (tag == 0) finishFirst = true
                     }
                 }
-                val doc = Jsoup.parse(endString)
+                val post = parsePost(endString)
+                posts.addAll(post)
+
+                val doc = Jsoup.parse(beginString + endString)
                 val error = doc.selectFirst("#reply_wrapper")?.selectFirst(".tip")
                 val form = doc.selectFirst("#ReplyForm")
                 topic.lastview = form?.selectFirst("input[name=lastview]")?.attr("value")

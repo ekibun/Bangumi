@@ -6,7 +6,9 @@ import soko.ekibun.bangumi.App
  * bgm.tv图像类
  */
 object Images {
-    fun medium(url: String?): String = (url ?: "").replace(Regex("/[lcmgs]/"), "/m/")
+    fun medium(url: String?): String = (url ?: "")
+        .replace(Regex("/r/[\\dx]+/"), "/")
+        .replace(Regex("/[lcmgs]/"), "/m/")
     fun large(url: String?): String = medium(url).replace("/m/", "/l/")
     fun common(url: String?): String = medium(url).let { medium ->
         if (medium.contains(Regex("/(user|crt|icon)/"))) medium

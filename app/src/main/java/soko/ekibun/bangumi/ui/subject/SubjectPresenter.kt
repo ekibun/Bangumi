@@ -4,10 +4,24 @@ import android.view.Menu
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
-import kotlinx.android.synthetic.main.activity_subject.*
-import kotlinx.android.synthetic.main.dialog_subject.view.*
-import kotlinx.android.synthetic.main.subject_detail.view.*
-import kotlinx.coroutines.*
+import kotlinx.android.synthetic.main.activity_subject.item_swipe
+import kotlinx.android.synthetic.main.dialog_subject.view.detail_friend_score
+import kotlinx.android.synthetic.main.dialog_subject.view.item_collect
+import kotlinx.android.synthetic.main.dialog_subject.view.item_collect_image
+import kotlinx.android.synthetic.main.dialog_subject.view.item_collect_info
+import kotlinx.android.synthetic.main.dialog_subject.view.item_friend_score_label
+import kotlinx.android.synthetic.main.dialog_subject.view.item_subject_info
+import kotlinx.android.synthetic.main.subject_detail.view.blog_detail
+import kotlinx.android.synthetic.main.subject_detail.view.character_detail
+import kotlinx.android.synthetic.main.subject_detail.view.episode_detail
+import kotlinx.android.synthetic.main.subject_detail.view.item_detail
+import kotlinx.android.synthetic.main.subject_detail.view.item_ep_status
+import kotlinx.android.synthetic.main.subject_detail.view.item_progress_edit
+import kotlinx.android.synthetic.main.subject_detail.view.item_vol_status
+import kotlinx.android.synthetic.main.subject_detail.view.topic_detail
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Collection
@@ -247,6 +261,7 @@ class SubjectPresenter(private val context: SubjectActivity, var subject: Subjec
                         }
                         subjectView.updateSubject(subject)
                         subjectRefreshListener(subject)
+                        updateHistory()
                         dataCacheModel.set(subject.cacheKey, subject)
                     },
                     suspend {

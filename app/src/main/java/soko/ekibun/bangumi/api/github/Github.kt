@@ -10,7 +10,7 @@ import soko.ekibun.bangumi.api.github.bean.OnAirInfo
 import soko.ekibun.bangumi.api.github.bean.Release
 import soko.ekibun.bangumi.util.HttpUtil
 import soko.ekibun.bangumi.util.JsonUtil
-import java.util.*
+import java.util.LinkedList
 
 /**
  * GitHub API
@@ -32,11 +32,7 @@ object Github {
         }
     }
 
-    private const val JSDELIVR_SERVER_API = "https://cdn.jsdelivr.net"
-
-    private val JSDELIVR_REQUEST_OPTION = HttpUtil.RequestOption(
-        header = mapOf("referer" to Bangumi.SERVER)
-    )
+    private const val RAW_SERVER_API = "https://ghproxy.com/https://raw.githubusercontent.com"
 
     /**
      * 时间表
@@ -45,8 +41,7 @@ object Github {
         return withContext(Dispatchers.IO) {
             JsonUtil.toEntity<List<BangumiCalendarItem>>(
                 HttpUtil.fetch(
-                    "$JSDELIVR_SERVER_API/gh/ekibot/bangumi-link/calendar.json",
-                    JSDELIVR_REQUEST_OPTION
+                    "$RAW_SERVER_API/ekibot/bangumi-link/master/calendar.json"
                 ).body!!.string()
             )!!
         }
@@ -60,8 +55,7 @@ object Github {
         return withContext(Dispatchers.IO) {
             JsonUtil.toEntity<OnAirInfo>(
                 HttpUtil.fetch(
-                    "$JSDELIVR_SERVER_API/gh/ekibot/bangumi-onair/onair/${id / 1000}/$id.json",
-                    JSDELIVR_REQUEST_OPTION
+                    "$RAW_SERVER_API/ekibot/bangumi-onair/master/onair/${id / 1000}/$id.json"
                 ).body?.string() ?: ""
             )
         }
@@ -74,13 +68,11 @@ object Github {
     suspend fun getSeason(id: Int): List<Subject>? {
         return withContext(Dispatchers.IO) {
             val mapId = HttpUtil.fetch(
-                "$JSDELIVR_SERVER_API/gh/ekibot/bangumi-link/node/${id / 1000}/$id",
-                JSDELIVR_REQUEST_OPTION
+                "$RAW_SERVER_API/ekibot/bangumi-link/master/node/${id / 1000}/$id"
             ).body?.string()?.toIntOrNull() ?: return@withContext null
             JsonUtil.toEntity<BangumiLinkMap>(
                 HttpUtil.fetch(
-                    "$JSDELIVR_SERVER_API/gh/ekibot/bangumi-link/map/${mapId / 1000}/$mapId.json",
-                    JSDELIVR_REQUEST_OPTION
+                    "$RAW_SERVER_API/ekibot/bangumi-link/master/map/${mapId / 1000}/$mapId.json"
                 ).body?.string() ?: ""
             )?.let {
                 getSeasonNode(it, id)

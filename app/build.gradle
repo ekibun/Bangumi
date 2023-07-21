@@ -64,10 +64,6 @@ android {
     }
     flavorDimensions "versionCode"
     productFlavors {
-        coolapk {
-            dimension "versionCode"
-            buildConfigField "boolean", "AUTO_UPDATES", "false"
-        }
         github {
             dimension "versionCode"
         }
