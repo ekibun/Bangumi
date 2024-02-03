@@ -8,7 +8,11 @@ import android.view.MenuItem
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.ViewCompat
 import androidx.core.view.children
-import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_main.content_frame
+import kotlinx.android.synthetic.main.activity_main.drawer_layout
+import kotlinx.android.synthetic.main.activity_main.nav_view
+import kotlinx.android.synthetic.main.activity_main.root_layout
+import kotlinx.android.synthetic.main.activity_main.toolbar
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.ui.main.fragment.DrawerFragment
 import soko.ekibun.bangumi.ui.main.fragment.calendar.CalendarFragment
@@ -81,7 +85,7 @@ class DrawerView(private val context: MainActivity, onLogout: () -> Unit) {
             context.content_frame.children.forEach { v ->
                 v.onApplyWindowInsets(insets.replaceSystemWindowInsets(0, 0, 0, insets.systemWindowInsetBottom))
             }
-            insets.consumeSystemWindowInsets()
+            insets
         }
 
         context.nav_view.setNavigationItemSelectedListener {

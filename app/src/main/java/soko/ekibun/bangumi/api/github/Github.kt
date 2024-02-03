@@ -32,7 +32,7 @@ object Github {
         }
     }
 
-    private const val RAW_SERVER_API = "https://ghproxy.com/https://raw.githubusercontent.com"
+    private const val RAW_SERVER_API = "https://raw.githubusercontent.com"
 
     /**
      * 时间表

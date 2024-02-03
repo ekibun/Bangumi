@@ -71,6 +71,8 @@ object ThemeModel {
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
         val color = ResourceUtil.resolveColorAttr(context, android.R.attr.colorBackground)
         window.navigationBarColor = Color.argb(200, Color.red(color), Color.green(color), Color.blue(color))
+        if (Build.VERSION.SDK_INT < 28) return
+        window.attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
     }
 
 

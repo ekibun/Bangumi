@@ -128,6 +128,7 @@ data class Topic(
                     }
                 )
                 var beginString = ""
+                var isReplyBox = false;
                 var replyCount = -2
                 val posts = ConcurrentLinkedQueue<TopicPost>()
                 var finishFirst = false
@@ -140,13 +141,14 @@ data class Topic(
                             } else null to ApiHelper.SaxEventType.NOTHING
                         }
                         attrs.contains("reply_wrapper") -> {
+                            replyCount++
+                            isReplyBox = true
                             replyCount to ApiHelper.SaxEventType.BEGIN
                         }
                         else -> null to ApiHelper.SaxEventType.NOTHING
                     }
                 }) { tag, str ->
                     if (tag is Int && tag < 0) {
-                        beginString = str
                         val doc = Jsoup.parseBodyFragment(str)
                         doc.outputSettings().prettyPrint(false)
 
@@ -181,6 +183,9 @@ data class Topic(
                             withContext(Dispatchers.Main) { onHeader() }
                         }
                     } else {
+                        if(beginString == "" && isReplyBox) {
+                            beginString = str
+                        }
                         val post = parsePost(str)
                         posts.addAll(post)
                         while (tag is Int && tag != 0 && !finishFirst) delay(100)

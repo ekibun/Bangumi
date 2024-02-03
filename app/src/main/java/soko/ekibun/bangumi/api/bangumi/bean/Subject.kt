@@ -281,7 +281,7 @@ data class Subject(
                                     it.selectFirst("span")?.text()
                                         ?: "", it.selectFirst("small")?.text()?.toIntOrNull() ?: 0
                                 )
-                            }
+                            }?.filter { it.first != "" }
                         }
                         SaxTag.COLLECTION -> {
                             subject.collection = doc.select("#subjectPanelCollect .tip_i a")

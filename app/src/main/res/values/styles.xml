@@ -6,7 +6,6 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="colorPrimaryBackground">@color/colorPrimary</item>
         <item name="colorPrimaryForeground">@color/colorAccent</item>
-
         <item name="android:windowTranslucentStatus">true</item>
     </style>
 

@@ -9,7 +9,11 @@ import android.view.ViewGroup
 import android.widget.RelativeLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
-import androidx.preference.*
+import androidx.preference.ListPreference
+import androidx.preference.Preference
+import androidx.preference.PreferenceCategory
+import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.PreferenceScreen
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.BuildConfig
 import soko.ekibun.bangumi.R
@@ -19,7 +23,6 @@ import soko.ekibun.bangumi.ui.view.BaseFragmentActivity
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.AppUtil
 import soko.ekibun.bangumi.util.PluginPreference
-import java.net.URLEncoder
 
 /**
  * 设置Activity
@@ -165,20 +168,6 @@ class SettingsActivity : BaseFragmentActivity(), PreferenceFragmentCompat.OnPref
                 "github_page" -> activity?.let {
                     WebActivity.launchUrl(it, "https://github.com/ekibun/Bangumi", "")
                 }
-                "pref_alipay" -> activity?.startActivity(
-                    Intent.createChooser(
-                        Intent.parseUri(
-                            "intent://platformapi/startapp?saId=10000007&" +
-                                    "qrcode=" + URLEncoder.encode(
-                                "https://qr.alipay.com/fkx192410t0bnuwmwawdaa4",
-                                "utf-8"
-                            ) +
-                                    "#Intent;scheme=alipayqr;package=com.eg.android.AlipayGphone;end",
-                            Intent.URI_INTENT_SCHEME
-                        ),
-                        "buy me a coffee"
-                    )
-                )
             }
 
             return super.onPreferenceTreeClick(preference)

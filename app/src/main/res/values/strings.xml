@@ -294,11 +294,4 @@
     <string name="history">历史记录</string>
     <string name="clear_history">清空历史记录</string>
     <string name="about">关于</string>
-
-    <string name="buy_me_a_coffee">
-一转眼，app已经两岁了，是开坑之后持续最久的项目了。起初是想借助Bangumi的api整合各个资源站的数据，没想到写着写着变成了Bangumi第三方客户端。\n
-\n两年来，通过这个项目认识了Bangumi，也认识了一些友商dalao，项目也成了日常摸鱼和脑洞的试验场。一路下来很有趣，所以也会坚持写下去。当然，由于垃圾原生和自己技术的问题，新功能肯定没有隔壁友商加的快。\n
-\n最后，欢迎各种建议、欢迎STAR，欢迎投食！\n
-    </string>
-    <string name="buy_me_a_coffee_sign">2020-03-13</string>
 </resources>
