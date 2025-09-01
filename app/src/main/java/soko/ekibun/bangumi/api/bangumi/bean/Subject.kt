@@ -352,23 +352,26 @@ data class Subject(
                                 subtitle == "角色介绍" -> {
                                     saxTag = SaxTag.CHARACTOR
                                     subject.crt = doc.select("li")?.map {
-                                        val a = it.selectFirst("a.avatar")
+                                        val titleLink = it.selectFirst("a.title")
+                                        val name = titleLink?.text() ?: ""
+                                        val imageLink = it.selectFirst("a.thumbTip")
+                                        val nameCn = imageLink?.attr("title") ?: name
                                         Character(
                                             id = Regex("""/character/([0-9]*)""").find(
-                                                a?.attr("href") ?: ""
+                                                imageLink?.attr("href") ?: ""
                                             )?.groupValues?.get(1)?.toIntOrNull() ?: 0,
-                                            name = a?.text() ?: "",
-                                            name_cn = it.selectFirst(".info .tip")?.text() ?: "",
+                                            name,
+                                            name_cn = nameCn,
                                             role_name = it.selectFirst(".info .badge_job_tip")?.text() ?: "",
-                                            image = Bangumi.parseImageUrl(a.selectFirst("span.avatarNeue")),
-                                            comment = it.selectFirst("small.fade")?.text()
+                                            image = Bangumi.parseImageUrl(imageLink.selectFirst("span.avatarNeue")),
+                                            comment = it.selectFirst("small.primary")?.text()
                                                 ?.trim('(', '+', ')')?.toIntOrNull() ?: 0,
-                                            actors = it.select("a[rel=\"v:starring\"]").map { psn ->
+                                            actors = it.select("p.badge_actor a").map { actorNameLink ->
                                                 Person(
                                                     id = Regex("""/person/([0-9]*)""").find(
-                                                        psn.attr("href") ?: ""
+                                                        actorNameLink.attr("href") ?: ""
                                                     )?.groupValues?.get(1)?.toIntOrNull() ?: 0,
-                                                    name = psn.text() ?: ""
+                                                    name = actorNameLink.text() ?: ""
                                                 )
                                             })
                                     }
