@@ -358,17 +358,17 @@ data class Subject(
                                                 a?.attr("href") ?: ""
                                             )?.groupValues?.get(1)?.toIntOrNull() ?: 0,
                                             name = a?.text() ?: "",
-                                            name_cn = it.selectFirst(".info .tip")?.text() ?: "",
+                                            name_cn = it.selectFirst(".tip_j")?.text() ?: "",
                                             role_name = it.selectFirst(".info .badge_job_tip")?.text() ?: "",
                                             image = Bangumi.parseImageUrl(a.selectFirst("span.avatarNeue")),
                                             comment = it.selectFirst("small.fade")?.text()
                                                 ?.trim('(', '+', ')')?.toIntOrNull() ?: 0,
-                                            actors = it.select("a[rel=\"v:starring\"]").map { psn ->
+                                            actors = it.select(".badge_actor").map { psn ->
                                                 Person(
                                                     id = Regex("""/person/([0-9]*)""").find(
-                                                        psn.attr("href") ?: ""
+                                                        psn.attr("bve-processed") ?: ""
                                                     )?.groupValues?.get(1)?.toIntOrNull() ?: 0,
-                                                    name = psn.text() ?: ""
+                                                    name = psn.text()?.replace("CV ", "") ?: ""
                                                 )
                                             })
                                     }

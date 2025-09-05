@@ -38,7 +38,7 @@ data class Comment(
                     ).body?.string() ?: ""
                 })
                 doc.select("#comment_box .item").mapNotNull {
-                    val user = it.selectFirst(".text a")
+                    val user = it.selectFirst(".text a.l")
                     val username = UserInfo.getUserName(user?.attr("href"))
                     Comment(
                         user = UserInfo(
