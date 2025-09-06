@@ -156,7 +156,9 @@ data class Topic(
                         val doc = Jsoup.parseBodyFragment(str)
                         doc.outputSettings().prettyPrint(false)
 
-                        val title = doc.selectFirst("#pageHeader h1")?.ownText()
+                        val title = doc.selectFirst(
+                            if(topic.model == "blog") ".header h1.title" else "#pageHeader h1"
+                        )?.ownText()
                         if (title != null) {
                             topic.title = title
 
@@ -167,20 +169,21 @@ data class Topic(
                                 links
                             }
 
-                            val image = Bangumi.parseImageUrl(doc.selectFirst("#pageHeader img"))
+                            val image = Bangumi.parseImageUrl(doc.selectFirst(
+                                if(topic.model == "blog") ".author img.avatar" else "#pageHeader img"
+                            ))
                             topic.image = image
                             if (topic.model == "blog") {
-                                val userInfo = doc.selectFirst("#pageHeader a.avatar")
+                                val userInfo = doc.selectFirst(".author .title a.avatar")
                                 val userName = UserInfo.getUserName(userInfo?.attr("href")) ?: ""
                                 topic.blog = TopicPost(
-                                    "", "",
+                                    topic.id.toString(), "",
                                     pst_uid = userName,
                                     username = userName,
                                     nickname = userInfo?.text() ?: "",
                                     avatar = image,
                                     pst_content = doc.selectFirst("#entry_content")?.html() ?: "",
-                                    dateline = doc.selectFirst(".re_info")?.text()?.substringBefore('/')?.trim(' ')
-                                        ?: "",
+                                    dateline = doc.selectFirst(".header .time")?.text() ?: "",
                                     model = "blog"
                                 )
                             }
@@ -215,15 +218,15 @@ data class Topic(
                     }?.html() ?: "{}"
                     val data_likes_list = script.substring(script.indexOf("{"), script.lastIndexOf("}")+1)
                     Log.d("LIKES", data_likes_list)
-                    val entities = JsonUtil.toEntity<Map<String, JsonObject>>(data_likes_list)
-                    topic.replies.forEach { reply ->
-                        val obj = entities?.get(reply.pst_id)?: return@forEach
+                    val entities = JsonUtil.toEntity<Map<String, JsonElement>>(data_likes_list)
+                    (topic.replies + topic.blog).forEach { reply ->
+                        val obj = entities?.get(reply?.pst_id)?: return@forEach
                         val list = if(obj.isJsonArray) {
                             JsonUtil.toEntity<List<TopicPost.Like>>(obj)
                         } else {
                             JsonUtil.toEntity<Map<String, TopicPost.Like>>(obj)?.values?.toList()
                         }
-                        reply.likes = list
+                        reply?.likes = list
                     }
                 } catch (e: Throwable) {
                     Log.d("ERR",e.toString())
