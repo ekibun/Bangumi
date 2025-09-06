@@ -3,15 +3,19 @@ package soko.ekibun.bangumi.ui.main.fragment.home.fragment.timeline
 import android.text.method.LinkMovementMethod
 import android.view.View
 import androidx.appcompat.app.AlertDialog
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseSectionQuickAdapter
 import com.chad.library.adapter.base.module.LoadMoreModule
 import com.chad.library.adapter.base.viewholder.BaseViewHolder
+import kotlinx.android.synthetic.main.item_reply.view.like_list
 import kotlinx.android.synthetic.main.item_timeline.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.TimeLine
 import soko.ekibun.bangumi.ui.say.SayActivity
+import soko.ekibun.bangumi.ui.topic.LikeAdapter
 import soko.ekibun.bangumi.ui.view.BaseActivity
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
@@ -33,6 +37,13 @@ class TimeLineAdapter(data: MutableList<TimeLine>? = null) :
         holder.itemView.item_layout.setOnClickListener {
             SayActivity.startActivity(holder.itemView.context, item.t?.say ?: return@setOnClickListener)
         }
+        if(holder.itemView.like_list.adapter !is LikeAdapter) {
+            holder.itemView.like_list.adapter = LikeAdapter()
+            holder.itemView.like_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+            holder.itemView.like_list.isNestedScrollingEnabled = false
+        }
+        (holder.itemView.like_list.adapter as LikeAdapter).setList(item.t?.say?.likes)
+
         holder.itemView.item_layout.isClickable = item.t?.say != null
         //action
         holder.itemView.item_action.text = HtmlUtil.html2span(item.t?.action ?: "")

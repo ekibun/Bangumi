@@ -77,13 +77,26 @@
             tools:text="Reply Content"
             app:layout_constraintTop_toBottomOf="@+id/item_user"
             app:layout_constraintStart_toStartOf="@+id/item_user"
-            app:layout_constraintBottom_toTopOf="@+id/item_action_box"
+            app:layout_constraintBottom_toTopOf="@+id/tag_list"
             app:layout_constraintEnd_toEndOf="parent"/>
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/like_list"
+        android:clipToPadding="false"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/item_message"
+        app:layout_constraintBottom_toTopOf="@+id/item_action_box"
+        app:layout_constraintStart_toStartOf="@+id/item_user"
+        tools:orientation="horizontal"
+        tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:listitem="@layout/item_tag"/>
+
     <LinearLayout android:layout_width="0dp"
                   android:id="@+id/item_action_box"
                   android:layout_height="wrap_content"
                   app:layout_constraintEnd_toEndOf="parent"
-                  app:layout_constraintTop_toBottomOf="@+id/item_message"
+                  app:layout_constraintTop_toBottomOf="@+id/like_list"
                   app:layout_constraintBottom_toBottomOf="parent"
                   app:layout_constraintStart_toStartOf="@+id/item_user">
         <TextView

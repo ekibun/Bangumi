@@ -31,7 +31,7 @@ object ApiHelper {
             outer@ while (!end) {
                 val len = withContext(Dispatchers.IO) { stream.read(buffer) }
                 if (len < 0) break
-                chars.append(buffer, 0, len)
+                chars.appendRange(buffer, 0, len)
                 val findLastClipIndex = lastClipIndex
 
                 parseTag(chars, lastLineIndex - lastClipIndex) { start, last, tagName, attrs ->

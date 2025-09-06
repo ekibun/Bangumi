@@ -7,6 +7,8 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.BaseSectionQuickAdapter
 import com.chad.library.adapter.base.entity.SectionEntity
@@ -15,12 +17,14 @@ import com.chad.library.adapter.base.viewholder.BaseViewHolder
 import com.oubowu.stickyitemdecoration.StickyHeadContainer
 import com.oubowu.stickyitemdecoration.StickyItemDecoration
 import kotlinx.android.synthetic.main.item_avatar_header.view.*
+import kotlinx.android.synthetic.main.item_reply.view.like_list
 import kotlinx.android.synthetic.main.item_say.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.Say
 import soko.ekibun.bangumi.model.UserModel
+import soko.ekibun.bangumi.ui.topic.LikeAdapter
 import soko.ekibun.bangumi.ui.view.FastScrollRecyclerView
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.HtmlUtil

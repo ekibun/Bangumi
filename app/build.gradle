@@ -37,6 +37,7 @@ android {
             }
         }
     }
+    ndkVersion ="22.1.7171670"
 
     signingConfigs {
         debug {
@@ -110,6 +111,4 @@ dependencies {
     implementation "am.util:viewpager:25.3.0"
     implementation "com.jakewharton:disklrucache:2.0.2"
     implementation "com.caverock:androidsvg-aar:1.4"
-    implementation "com.umeng.umsdk:common:9.3.8"
-    implementation "com.umeng.umsdk:asms:1.2.2"
 }

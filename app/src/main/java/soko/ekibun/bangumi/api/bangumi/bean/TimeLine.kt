@@ -1,6 +1,8 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
+import android.util.Log
 import com.chad.library.adapter.base.entity.SectionEntity
+import com.google.gson.JsonObject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.FormBody
@@ -10,6 +12,7 @@ import org.jsoup.nodes.Element
 import org.jsoup.nodes.TextNode
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.util.HttpUtil
+import soko.ekibun.bangumi.util.JsonUtil
 import java.util.*
 
 /**
@@ -41,6 +44,7 @@ class TimeLine(override val isHeader: Boolean) : SectionEntity {
      * @constructor
      */
     data class TimeLineItem(
+        val id: String,
         val user: UserInfo,
         val action: String,
         val time: String,
@@ -96,6 +100,7 @@ class TimeLine(override val isHeader: Boolean) : SectionEntity {
                         }
                         val delUrl = item.selectFirst(".tml_del")?.attr("href")
                         ret += TimeLine(TimeLineItem(
+                            id = item.attr("id")?.substringAfter("_")?: "",
                             user = user,
                             action = item.selectFirst(cssInfo)?.childNodes()?.map {
                                 if (it is TextNode || (it as? Element)?.tagName() == "a" && it.selectFirst("img") == null)
@@ -104,7 +109,7 @@ class TimeLine(override val isHeader: Boolean) : SectionEntity {
                                     (if (usr == null) "<br/>" else "") + it.html()
                                 else ""
                             }?.reduce { acc, s -> acc + s } ?: "",
-                            time = item.selectFirst(".date")?.text()?.trim('·', ' ', '回', '复') ?: "",
+                            time = item.selectFirst(".date")?.text()?.trim('·', ' ', '回', '复', '贴') ?: "",
                             content = item.selectFirst(".collectInfo")?.text()
                                 ?: item.selectFirst(".info_sub")?.text(),
                             contentUrl = item.selectFirst(".info_sub a")?.attr("href"),
@@ -129,6 +134,25 @@ class TimeLine(override val isHeader: Boolean) : SectionEntity {
                         )
                         )
                     }
+                }
+                try{
+                    val script = doc.select("script").firstOrNull {
+                        it.html().contains(" data_likes_list ")
+                    }?.html() ?: "{}"
+                    val data_likes_list = script.substring(script.indexOf("{"), script.lastIndexOf("}")+1)
+                    val entities = JsonUtil.toEntity<Map<String, JsonObject>>(data_likes_list)
+                    Log.d("LIKES", data_likes_list)
+                    ret.forEach { r ->
+                        val obj = entities?.get(r.t?.id)?: return@forEach
+                        val list = if(obj.isJsonArray) {
+                            JsonUtil.toEntity<List<TopicPost.Like>>(obj)
+                        } else {
+                            JsonUtil.toEntity<Map<String, TopicPost.Like>>(obj)?.values?.toList()
+                        }
+                        r.t?.say?.likes = list
+                    }
+                } catch (e: Throwable) {
+                    Log.d("ERR",e.toString())
                 }
                 ret
             }

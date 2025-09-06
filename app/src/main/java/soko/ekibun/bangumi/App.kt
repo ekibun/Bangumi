@@ -3,7 +3,6 @@ package soko.ekibun.bangumi
 import android.app.Application
 import android.content.Context
 import androidx.preference.PreferenceManager
-import com.umeng.commonsdk.UMConfigure
 import soko.ekibun.bangumi.model.DataCacheModel
 import soko.ekibun.bangumi.model.PluginsModel
 import soko.ekibun.bangumi.model.ThemeModel
@@ -26,14 +25,6 @@ class App : Application() {
 
         HttpUtil.formhash = UserModel.userList.let { it.users[it.current] }?.formhash ?: HttpUtil.formhash
         ThemeModel.setTheme(this, ThemeModel.getTheme())
-        UMConfigure.init(
-            this,
-            "5e68fe80167edd6e34000185",
-            if (BuildConfig.DEBUG) "debug" else BuildConfig.FLAVOR,
-            UMConfigure.DEVICE_TYPE_PHONE,
-            null
-        )
-
         pluginInstance = PluginsModel.createPluginInstance(this)
     }
 

@@ -19,7 +19,7 @@ import java.net.URI
  */
 object Bangumi {
     const val SERVER = "https://bgm.tv"
-    const val COOKIE_HOST = ".bgm.tv"
+    const val COOKIE_HOST = "https://.bgm.tv"
 
     /**
      * 获取完整的URL

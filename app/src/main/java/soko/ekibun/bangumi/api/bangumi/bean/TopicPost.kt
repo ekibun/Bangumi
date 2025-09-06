@@ -29,7 +29,8 @@ data class TopicPost(
     val model: String = "",
     var floor: Int = 0,
     var sub_floor: Int = 0,
-    var badge: String? = null
+    var badge: String? = null,
+    var likes: List<Like>? = null
 ) : BaseExpandNode() {
     init {
         isExpanded = true
@@ -43,6 +44,33 @@ data class TopicPost(
 
     override val childNode: MutableList<BaseNode>? get() = children as MutableList<BaseNode>
 
+    data class Like(
+        val value: Int,
+        val type: Int,
+        val main_id: Int,
+        val emoji: String,
+        val total: Int,
+        val users: List<UserInfo>
+    ) {
+        companion object {
+            val emojiWrap: Map<Int, String> = mapOf(
+                0 to "/img/smiles/tv/44.gif",
+                79 to "/img/smiles/tv/40.gif",
+                54 to "/img/smiles/tv/15.gif",
+                140 to "/img/smiles/tv/101.gif",
+                62 to "/img/smiles/tv/23.gif",
+                122 to "/img/smiles/tv/83.gif",
+                104 to "/img/smiles/tv/65.gif",
+                80 to "/img/smiles/tv/41.gif",
+                141 to "/img/smiles/tv/102.gif",
+                88 to "/img/smiles/tv/49.gif",
+                85 to "/img/smiles/tv/46.gif",
+                90 to "/img/smiles/tv/51.gif"
+            )
+        }
+        val image get() = emojiWrap[value] ?: ""
+    }
+
     companion object {
         /**
          * 讨论
@@ -54,7 +82,7 @@ data class TopicPost(
             // <a href="javascript:void(0);" onclick="subReply('group', 380646, 2309023, 0, 428864, 650688, 0)" class="icon" title="回复">
             val data = (it.selectFirst(".icon")?.attr("onclick") ?: "").split(",")
             val relate = data.getOrNull(2)?.trim()?.toIntOrNull() ?: 0
-            val post_id = it.selectFirst(".re_info a")?.attr("href")?.substringAfter("_")?.toIntOrNull() ?: 0
+            val post_id = it.attr("id")?.substringAfter("_")?.toIntOrNull() ?: 0
             val badge = it.selectFirst(".badgeState")?.text()
             val floor = Regex("""#(\d+)(-\d+)?""").find(it.selectFirst(".floor-anchor")?.text() ?: "")?.groupValues
             return TopicPost(

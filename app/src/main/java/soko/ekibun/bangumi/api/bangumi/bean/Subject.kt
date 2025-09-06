@@ -1,5 +1,6 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
+import android.util.Log
 import androidx.annotation.StringDef
 import androidx.annotation.StringRes
 import kotlinx.coroutines.Dispatchers
@@ -76,6 +77,7 @@ data class Subject(
     var blog: List<Topic>? = null,
     //web
     var linked: List<Subject>? = null,
+    var tankobon: List<Subject>? = null,
     var recommend: List<Subject>? = null,
     var tags: List<Pair<String, Int>>? = null,
     var collect: Collection? = null,
@@ -228,7 +230,6 @@ data class Subject(
             withContext(Dispatchers.Default) {
                 val rsp = HttpUtil.fetch(subject.url)
                 var lastTag = SaxTag.NONE
-                var tankobon: List<Subject>? = null
 
                 val updateSubject = updateSubject@{ tag: Any, str: String ->
                     var saxTag = (tag as? SaxTag) ?: return@updateSubject SaxTag.NONE
@@ -422,23 +423,26 @@ data class Subject(
                                         )
                                     }
                                 }
-                                subtitle == "单行本" -> tankobon = doc.select("li")?.map {
-                                    val avatar = it.selectFirst("a.avatar")
-                                    val title = avatar?.attr("title")?.split("/ ")
-                                    Subject(
-                                        id = Regex("""/subject/([0-9]*)""").find(
-                                            avatar?.attr("href") ?: ""
-                                        )?.groupValues?.get(1)?.toIntOrNull() ?: 0,
-                                        name = title?.getOrNull(0),
-                                        name_cn = title?.getOrNull(1),
-                                        category = "单行本",
-                                        image = Bangumi.parseImageUrl(avatar.selectFirst("span.avatarNeue"))
-                                    )
+                                subtitle?.startsWith("单行本") ?: false -> {
+                                    saxTag = SaxTag.LINKED
+                                    subject.tankobon = doc.select("li")?.map {
+                                        val avatar = it.selectFirst("a.avatar")
+                                        val title = avatar?.attr("title")?.split("/ ")
+                                        Subject(
+                                            id = Regex("""/subject/([0-9]*)""").find(
+                                                avatar?.attr("href") ?: ""
+                                            )?.groupValues?.get(1)?.toIntOrNull() ?: 0,
+                                            name = title?.getOrNull(0),
+                                            name_cn = title?.getOrNull(1),
+                                            category = "单行本",
+                                            image = Bangumi.parseImageUrl(avatar.selectFirst("span.avatarNeue"))
+                                        )
+                                    }
                                 }
                                 subtitle == "关联条目" -> {
                                     saxTag = SaxTag.LINKED
                                     var sub = ""
-                                    val linked = doc.select("li")?.mapNotNull {
+                                    subject.linked = doc.select("li")?.mapNotNull {
                                         val newSub = it.selectFirst(".sub").text()
                                         if (!newSub.isNullOrEmpty()) sub = newSub
                                         val avatar = it.selectFirst(".avatar")
@@ -447,18 +451,14 @@ data class Subject(
                                             title?.attr("href")
                                                 ?: ""
                                         )?.groupValues?.get(1)?.toIntOrNull() ?: 0
-                                        if (tankobon?.firstOrNull { b -> b.id == id } == null)
-                                            Subject(
-                                                id = id,
-                                                name = title?.text(),
-                                                name_cn = avatar.attr("title"),
-                                                category = sub,
-                                                image = Bangumi.parseImageUrl(avatar.selectFirst("span.avatarNeue"))
-                                            )
-                                        else null
+                                        Subject(
+                                            id = id,
+                                            name = title?.text(),
+                                            name_cn = avatar.attr("title"),
+                                            category = sub,
+                                            image = Bangumi.parseImageUrl(avatar.selectFirst("span.avatarNeue"))
+                                        )
                                     }?.toMutableList() ?: ArrayList()
-                                    linked.addAll(0, tankobon ?: ArrayList())
-                                    subject.linked = linked
                                 }
                                 subtitle?.contains("大概会喜欢") ?: false -> {
                                     saxTag = SaxTag.RECOMMEND
