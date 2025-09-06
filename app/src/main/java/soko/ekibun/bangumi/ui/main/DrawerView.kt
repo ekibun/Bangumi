@@ -79,15 +79,6 @@ class DrawerView(private val context: MainActivity, onLogout: () -> Unit) {
     }
 
     init {
-
-        context.drawer_layout.setOnApplyWindowInsetsListener { _, insets ->
-            context.root_layout.setPadding(0, insets.systemWindowInsetTop, 0, 0)
-            context.content_frame.children.forEach { v ->
-                v.onApplyWindowInsets(insets.replaceSystemWindowInsets(0, 0, 0, insets.systemWindowInsetBottom))
-            }
-            insets
-        }
-
         context.nav_view.setNavigationItemSelectedListener {
             navigationItemSelectedListener(it)
         }

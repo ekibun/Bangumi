@@ -15,7 +15,8 @@ data class Say(
     var user: UserInfo,
     var message: String? = null,
     var time: String? = null,
-    var replies: List<SayReply>? = null
+    var replies: List<SayReply>? = null,
+    var likes: List<TopicPost.Like>? = null
 ) {
     val cacheKey = "say_$id"
 

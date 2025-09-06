@@ -1,10 +1,14 @@
 package soko.ekibun.bangumi.api.bangumi.bean
 
+import android.util.Log
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import okhttp3.FormBody
 import okhttp3.Response
+import org.json.JSONObject
 import org.jsoup.Jsoup
 import soko.ekibun.bangumi.api.ApiHelper
 import soko.ekibun.bangumi.api.bangumi.Bangumi
@@ -204,6 +208,26 @@ data class Topic(
                     Pair(it, Bangumi.parseUrl(error.selectFirst("a")?.attr("href") ?: ""))
                 }
                 topic.replies = posts.sortedBy { it.floor }
+
+                try{
+                    val script = doc.select("script").firstOrNull {
+                        it.html().contains(" data_likes_list ")
+                    }?.html() ?: "{}"
+                    val data_likes_list = script.substring(script.indexOf("{"), script.lastIndexOf("}")+1)
+                    Log.d("LIKES", data_likes_list)
+                    val entities = JsonUtil.toEntity<Map<String, JsonObject>>(data_likes_list)
+                    topic.replies.forEach { reply ->
+                        val obj = entities?.get(reply.pst_id)?: return@forEach
+                        val list = if(obj.isJsonArray) {
+                            JsonUtil.toEntity<List<TopicPost.Like>>(obj)
+                        } else {
+                            JsonUtil.toEntity<Map<String, TopicPost.Like>>(obj)?.values?.toList()
+                        }
+                        reply.likes = list
+                    }
+                } catch (e: Throwable) {
+                    Log.d("ERR",e.toString())
+                }
             }
         }
 

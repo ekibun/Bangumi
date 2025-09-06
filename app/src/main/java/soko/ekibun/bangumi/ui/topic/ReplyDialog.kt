@@ -390,6 +390,25 @@ class ReplyDialog : BaseDialog(R.layout.dialog_reply) {
                 .forEachIndexed { i, s ->
                     emojiList.add(s to "${Bangumi.SERVER}/img/smiles/${i + 1}.gif")
                 }
+            for (i in 200..238)
+                emojiList.add(
+                    String.format(
+                        "(bgm%d)",
+                        i
+                    ) to String.format("${Bangumi.SERVER}/img/smiles/tv_vs/bgm_%d.png", i)
+                )
+            for (i in 500..529)
+                emojiList.add(
+                    String.format(
+                        "(bgm%d)",
+                        i
+                    ) to String.format("${Bangumi.SERVER}/img/smiles/tv_500/bgm_%d${
+                        when(i){
+                            500,501,505,515,516,517,518,519,521,522,523 -> ".gif"
+                            else -> ".png"
+                        }
+                    }", i)
+                )
             emojiList
         }
     }

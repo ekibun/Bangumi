@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import soko.ekibun.bangumi.model.ThemeModel
 import soko.ekibun.bangumi.ui.main.MainActivity
 
 /**

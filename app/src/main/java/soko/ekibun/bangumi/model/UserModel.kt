@@ -1,7 +1,7 @@
 package soko.ekibun.bangumi.model
 
+import android.util.Log
 import android.webkit.CookieManager
-import com.umeng.analytics.MobclickAgent
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.UserInfo
@@ -38,6 +38,7 @@ object UserModel {
         if (userList.current != user?.id) {
             userList.current = user?.id ?: -1
             arrayOf(Bangumi.COOKIE_HOST, XSB_COOKIE_HOST).forEach { host ->
+                Log.i("COOKIE", cookieManager.getCookie(host) ?: "")
                 (cookieManager.getCookie(host) ?: "").split(';').forEach {
                     cookieManager.setCookie(host, it.split('=')[0].trim() + "=; Expires=Thu, 01 Jan 1970 00:00:00 GMT")
                 }
@@ -58,9 +59,6 @@ object UserModel {
     }
 
     fun updateUser(user: UserInfo) {
-        if (!userList.users.containsKey(user.id) && user.id > 0) {
-            MobclickAgent.onProfileSignIn(user.id.toString())
-        }
         userList.users[user.id] = UserStore.User(
             user = user,
             cookie = mapOf(
@@ -78,9 +76,6 @@ object UserModel {
 
     fun removeUser(user: UserInfo): Boolean {
         val removed = userList.users.remove(user.id)
-        if (removed != null) {
-            MobclickAgent.onProfileSignOff()
-        }
         if (userList.current == user.id) {
             switchToUser(userList.users.values.firstOrNull()?.user)
         }
@@ -89,5 +84,5 @@ object UserModel {
     }
 
     const val PREF_USER = "user"
-    val XSB_COOKIE_HOST = "tinygrail.com"
+    val XSB_COOKIE_HOST = "https://.tinygrail.com"
 }

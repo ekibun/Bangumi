@@ -34,6 +34,14 @@ object JsonUtil {
         }
     }
 
+    inline fun <reified T> toEntity(obj: JsonObject): T? {
+        return try {
+            GSON.fromJson(obj, object : TypeToken<T>() {}.type)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     /**
      * 转为JsonObject
      * @param json String

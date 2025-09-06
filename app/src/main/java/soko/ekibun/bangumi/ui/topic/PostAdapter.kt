@@ -1,10 +1,13 @@
 package soko.ekibun.bangumi.ui.topic
 
+import android.annotation.SuppressLint
 import android.text.Spanned
 import android.text.method.LinkMovementMethod
 import android.util.Size
 import android.view.View
 import android.widget.TextView
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.request.RequestOptions
 import com.chad.library.adapter.base.entity.node.BaseNode
 import com.chad.library.adapter.base.module.LoadMoreModule
@@ -51,6 +54,7 @@ class PostAdapter() :
         private val imageSizes = HashMap<String, Size>()
         private val largeContent = WeakHashMap<String, Spanned>()
 
+        @SuppressLint("SetTextI18n")
         override fun convert(helper: BaseViewHolder, item: BaseNode) {
             (getAdapter() as PostAdapter).let {
                 it.addOnClickListener(helper, R.id.item_del)
@@ -69,9 +73,16 @@ class PostAdapter() :
                 ) else item.dateline
             val subFloor = if (item.sub_floor > 0) "-${item.sub_floor}" else ""
             helper.itemView.item_time.text = (if (item.floor > 0) "#${item.floor}$subFloor - " else "") + item.dateline
-            helper.itemView.item_reply.visibility = if (item.relate.toIntOrNull() ?: 0 > 0) View.VISIBLE else View.GONE
+            helper.itemView.item_reply.visibility = if ((item.relate.toIntOrNull() ?: 0) > 0) View.VISIBLE else View.GONE
             helper.itemView.item_del.visibility = if (item.editable) View.VISIBLE else View.GONE
             helper.itemView.item_edit.visibility = helper.itemView.item_del.visibility
+
+            if(helper.itemView.like_list.adapter !is LikeAdapter) {
+                helper.itemView.like_list.adapter = LikeAdapter()
+                helper.itemView.like_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+                helper.itemView.like_list.isNestedScrollingEnabled = false
+            }
+            (helper.itemView.like_list.adapter as LikeAdapter).setList(item.likes)
 
             helper.itemView.item_expand.visibility = if (item.children.size > 0) View.VISIBLE else View.GONE
             helper.itemView.item_expand.setText(if (item.isExpanded) R.string.collapse else R.string.expand)

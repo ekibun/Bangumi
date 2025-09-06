@@ -9,7 +9,6 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AppCompatActivity
-import com.umeng.analytics.MobclickAgent
 import kotlinx.coroutines.*
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.BuildConfig
@@ -112,14 +111,12 @@ abstract class BaseActivity(@LayoutRes private val resId: Int? = null) : AppComp
     var onPauseListener = {}
     override fun onPause() {
         super.onPause()
-        MobclickAgent.onPause(this)
         onPauseListener()
     }
 
     var onResumeListener = {}
     override fun onResume() {
         super.onResume()
-        MobclickAgent.onResume(this)
         onResumeListener()
     }
 

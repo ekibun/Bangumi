@@ -357,8 +357,9 @@ class SubjectView(private val context: SubjectActivity) {
             characterAdapter.setNewInstance(subject.crt?.toMutableList())
         }
         if (tag == null || tag == Subject.SaxTag.LINKED) {
-            detail.item_linked.visibility = if (subject.linked?.isNotEmpty() == true) View.VISIBLE else View.GONE
-            linkedSubjectsAdapter.setNewInstance(subject.linked?.toMutableList())
+            val subjectLinked = subject.tankobon.orEmpty() + subject.linked.orEmpty()
+            detail.item_linked.visibility = if (subjectLinked.isNotEmpty()) View.VISIBLE else View.GONE
+            linkedSubjectsAdapter.setNewInstance(subjectLinked.toMutableList())
         }
         if (tag == null || tag == Subject.SaxTag.RECOMMEND) {
             detail.item_commend.visibility = if (subject.recommend?.isNotEmpty() == true) View.VISIBLE else View.GONE
