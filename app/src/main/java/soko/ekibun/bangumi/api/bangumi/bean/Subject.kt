@@ -399,24 +399,24 @@ data class Subject(
                                 subtitle == "评论" -> {
                                     saxTag = SaxTag.BLOG
                                     subject.blog = doc.select("div.item")?.map {
-                                        val user = UserInfo.parse(it.selectFirst(".tip_j a"))
+                                        val user = UserInfo.parse(it.selectFirst(".time a"))
                                         Topic(
                                             model = "blog",
                                             id = Regex("""/blog/([0-9]*)""").find(
                                                 it.selectFirst(".title a")?.attr("href") ?: ""
                                             )?.groupValues?.get(1)?.toIntOrNull() ?: 0,
                                             title = it.selectFirst(".title a")?.text() ?: "",
-                                            image = Bangumi.parseImageUrl(it.selectFirst("img")),
-                                            replyCount = it.selectFirst("small.orange")?.text()
-                                                ?.trim('(', '+', ')')?.toIntOrNull() ?: 0,
-                                            time = it.selectFirst("small.time")?.text(),
+                                            image = Bangumi.parseImageUrl(it.selectFirst("img.avatarCover")),
+                                            replyCount = it.select(".time a")?.lastOrNull()?.text()
+                                                ?.trim('回', '复', ' ', '·')?.toIntOrNull() ?: 0,
+                                            time = it.selectFirst(".time")?.ownText() ?: "",
                                             blog = TopicPost(
                                                 "", "",
                                                 pst_uid = user.username ?: "",
                                                 username = user.username ?: "",
                                                 nickname = user.nickname ?: "",
-                                                pst_content = it.selectFirst(".content")?.ownText() ?: "",
-                                                dateline = it.selectFirst("small.time")?.text() ?: "",
+                                                pst_content = it.selectFirst(".content a")?.ownText() ?: "",
+                                                dateline = it.selectFirst(".time")?.ownText() ?: "",
                                                 model = "blog"
                                             ),
                                             user = user
@@ -435,7 +435,7 @@ data class Subject(
                                             name = title?.getOrNull(0),
                                             name_cn = title?.getOrNull(1),
                                             category = "单行本",
-                                            image = Bangumi.parseImageUrl(avatar.selectFirst("span.avatarNeue"))
+                                            image = Bangumi.parseImageUrl(avatar.selectFirst("span.coverNeue"))
                                         )
                                     }
                                 }
@@ -456,7 +456,7 @@ data class Subject(
                                             name = title?.text(),
                                             name_cn = avatar.attr("title"),
                                             category = sub,
-                                            image = Bangumi.parseImageUrl(avatar.selectFirst("span.avatarNeue"))
+                                            image = Bangumi.parseImageUrl(avatar.selectFirst("span.coverNeue"))
                                         )
                                     }?.toMutableList() ?: ArrayList()
                                 }

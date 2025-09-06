@@ -25,7 +25,7 @@ class BlogAdapter(data: MutableList<Topic>? = null) :
         holder.itemView.item_summary.text = item.blog?.pst_content
         holder.itemView.item_comment.text = holder.itemView.context.getString(R.string.phrase_reply, item.replyCount)
         GlideUtil.with(holder.itemView.item_avatar)
-            ?.load(Images.getImage(item.image))
+            ?.load(item.image)
             ?.apply(
                 RequestOptions.circleCropTransform().error(R.drawable.err_404).placeholder(R.drawable.placeholder_round)
             )
