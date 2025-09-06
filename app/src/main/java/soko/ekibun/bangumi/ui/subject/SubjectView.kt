@@ -16,6 +16,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_subject.*
 import kotlinx.android.synthetic.main.appbar_layout.toolbar
+import kotlinx.android.synthetic.main.dialog_edit_subject.view.item_my_tag_list
 import kotlinx.android.synthetic.main.dialog_subject.view.*
 import kotlinx.android.synthetic.main.subject_detail.view.*
 import org.jsoup.Jsoup
@@ -28,6 +29,7 @@ import soko.ekibun.bangumi.api.bangumi.bean.Subject
 import soko.ekibun.bangumi.ui.topic.PhotoPagerAdapter
 import soko.ekibun.bangumi.ui.view.CollapsibleAppBarHelper
 import soko.ekibun.bangumi.ui.view.RoundBackgroundDecoration
+import soko.ekibun.bangumi.ui.view.ShadowDecoration
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.HttpUtil
@@ -189,6 +191,7 @@ class SubjectView(private val context: SubjectActivity) {
         detail.episode_list.adapter = episodeAdapter
         detail.episode_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
         detail.episode_list.isNestedScrollingEnabled = false
+        ShadowDecoration.set(detail.episode_list, drawEnd = true)
 
         detail.linked_list.adapter = linkedSubjectsAdapter
         detail.linked_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
@@ -213,6 +216,7 @@ class SubjectView(private val context: SubjectActivity) {
         detail.tag_list.adapter = tagAdapter
         detail.tag_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
         detail.tag_list.isNestedScrollingEnabled = false
+        ShadowDecoration.set(detail.tag_list, drawEnd = true)
 
         detail.site_list.adapter = sitesAdapter
         detail.site_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)

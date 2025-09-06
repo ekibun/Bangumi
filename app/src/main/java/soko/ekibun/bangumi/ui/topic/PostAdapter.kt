@@ -23,6 +23,7 @@ import soko.ekibun.bangumi.model.UserModel
 import soko.ekibun.bangumi.ui.view.BaseActivity
 import soko.ekibun.bangumi.ui.view.BaseNodeAdapter
 import soko.ekibun.bangumi.ui.view.FastScrollRecyclerView
+import soko.ekibun.bangumi.ui.view.ShadowDecoration
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.HtmlUtil
@@ -85,6 +86,7 @@ class PostAdapter() :
                 helper.itemView.like_list.adapter = LikeAdapter()
                 helper.itemView.like_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
                 helper.itemView.like_list.isNestedScrollingEnabled = false
+                ShadowDecoration.set(helper.itemView.like_list, drawEnd = true)
             }
             (helper.itemView.like_list.adapter as LikeAdapter).let { adapter ->
                 adapter.setList(item.likes)

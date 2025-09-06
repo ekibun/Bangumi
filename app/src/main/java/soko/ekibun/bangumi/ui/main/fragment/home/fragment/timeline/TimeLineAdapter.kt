@@ -25,6 +25,7 @@ import soko.ekibun.bangumi.ui.say.SayActivity
 import soko.ekibun.bangumi.ui.topic.EmojiAdapter
 import soko.ekibun.bangumi.ui.topic.LikeAdapter
 import soko.ekibun.bangumi.ui.view.BaseActivity
+import soko.ekibun.bangumi.ui.view.ShadowDecoration
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.GlideUtil
 import soko.ekibun.bangumi.util.HtmlUtil
@@ -71,6 +72,7 @@ class TimeLineAdapter(data: MutableList<TimeLine>? = null) :
             holder.itemView.like_list.adapter = LikeAdapter()
             holder.itemView.like_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
             holder.itemView.like_list.isNestedScrollingEnabled = false
+            ShadowDecoration.set(holder.itemView.like_list, drawEnd = true)
         }
         (holder.itemView.like_list.adapter as LikeAdapter).let { adapter ->
             adapter.setList(item.t?.say?.likes)
