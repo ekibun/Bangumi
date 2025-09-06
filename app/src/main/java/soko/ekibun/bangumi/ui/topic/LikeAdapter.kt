@@ -32,5 +32,6 @@ class LikeAdapter(data: MutableList<TopicPost.Like>? = null) :
         holder.itemView.item_tag_name.text = item.value.toString()
         holder.itemView.isSelected = item.users.firstOrNull { it.username == UserModel.current()?.username } != null
         holder.itemView.item_tag_count.text = item.total.toString()
+        holder.itemView.tooltipText = item.users.joinToString { it.nickname ?: it.username ?: "" }
     }
 }

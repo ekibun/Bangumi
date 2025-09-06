@@ -119,7 +119,7 @@ data class TopicPost(
                     floor = floor?.getOrNull(1)?.toIntOrNull() ?: 1,
                     sub_floor = floor?.getOrNull(2)?.trim('-')?.toIntOrNull() ?: 0,
                     badge = badge,
-                    likeType = it.selectFirst("a.like_dropdown").attr("data-like-type")?.toIntOrNull()?: 0
+                    likeType = it.selectFirst("a.like_dropdown")?.attr("data-like-type")?.toIntOrNull()?: 8
             )
         }
 
