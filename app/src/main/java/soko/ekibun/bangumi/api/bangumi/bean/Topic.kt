@@ -184,7 +184,8 @@ data class Topic(
                                     avatar = image,
                                     pst_content = doc.selectFirst("#entry_content")?.html() ?: "",
                                     dateline = doc.selectFirst(".header .time")?.text() ?: "",
-                                    model = "blog"
+                                    model = "blog",
+                                    likeType = doc.selectFirst("a.like_dropdown").attr("data-like-type")?.toIntOrNull()?: 0
                                 )
                             }
                             withContext(Dispatchers.Main) { onHeader() }

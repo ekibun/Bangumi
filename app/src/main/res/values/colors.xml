@@ -2,6 +2,7 @@
 <resources>
     <color name="colorPrimary">#f09199</color>
     <color name="colorAccent">#ec818a</color>
-    <color name="colorTransGrey">#2999</color>
+    <color name="colorTransGrey">#3999</color>
+    <color name="colorTransAccent">#33ec818a</color>
     <color name="colorGrey">#555</color>
 </resources>

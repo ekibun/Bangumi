@@ -8,7 +8,7 @@
               android:paddingTop="4dp"
               android:paddingBottom="4dp"
               android:background="@drawable/bg_round_rect"
-              android:backgroundTint="@color/colorTransGrey"
+              android:backgroundTint="@color/color_selectable_bg"
               android:layout_height="wrap_content"
               android:gravity="center"
               android:clickable="true"

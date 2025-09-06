@@ -88,4 +88,18 @@
             android:src="@drawable/ic_clear"
             android:contentDescription="@string/delete"/>
 
+    <ImageView
+        android:id="@+id/item_dolike"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="4dp"
+        android:src="@drawable/ic_insert_emoji"
+        android:tint="?android:textColorSecondary"
+        android:tintMode="src_in"
+        app:layout_constraintEnd_toEndOf="@+id/like_list"
+        app:layout_constraintTop_toBottomOf="@+id/like_list" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

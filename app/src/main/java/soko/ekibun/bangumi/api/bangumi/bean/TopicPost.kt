@@ -30,6 +30,7 @@ data class TopicPost(
     var floor: Int = 0,
     var sub_floor: Int = 0,
     var badge: String? = null,
+    var likeType: Int = 0,
     var likes: List<Like>? = null
 ) : BaseExpandNode() {
     init {
@@ -48,9 +49,8 @@ data class TopicPost(
         val value: Int,
         val type: Int,
         val main_id: Int,
-        val emoji: String,
-        val total: Int,
-        val users: List<UserInfo>
+        var total: Int,
+        var users: List<UserInfo>
     ) {
         companion object {
             val emojiWrap: Map<Int, String> = mapOf(
@@ -67,6 +67,20 @@ data class TopicPost(
                 85 to "/img/smiles/tv/46.gif",
                 90 to "/img/smiles/tv/51.gif"
             )
+
+            /**
+             * 贴贴
+             * @return Call<Boolean>
+             */
+            suspend fun dolike(
+                type: Int, topicId: Int, id: String, value: String
+            ): Response {
+                return withContext(Dispatchers.IO) {
+                    HttpUtil.fetch(
+                        "${Bangumi.SERVER}/like?type=${type}&main_id=${topicId}&id=${id}&value=${value}&gh=${HttpUtil.formhash}&ajax=1"
+                    )
+                }
+            }
         }
         val image get() = emojiWrap[value] ?: ""
     }
@@ -104,7 +118,8 @@ data class TopicPost(
                     model = Regex("'([^']*)'").find(data.getOrNull(0) ?: "")?.groupValues?.get(1) ?: "",
                     floor = floor?.getOrNull(1)?.toIntOrNull() ?: 1,
                     sub_floor = floor?.getOrNull(2)?.trim('-')?.toIntOrNull() ?: 0,
-                    badge = badge
+                    badge = badge,
+                    likeType = it.selectFirst("a.like_dropdown").attr("data-like-type")?.toIntOrNull()?: 0
             )
         }
 

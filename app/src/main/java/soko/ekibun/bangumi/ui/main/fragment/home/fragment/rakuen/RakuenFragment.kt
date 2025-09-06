@@ -6,11 +6,14 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.widget.PopupMenu
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_rakuen.*
 import kotlinx.android.synthetic.main.item_rakuen_tab.view.*
 import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.ui.main.fragment.home.fragment.HomeTabFragment
+import soko.ekibun.bangumi.ui.topic.EmojiAdapter
 import soko.ekibun.bangumi.ui.web.WebActivity
 import soko.ekibun.bangumi.util.ResourceUtil
 

@@ -98,6 +98,7 @@
                   app:layout_constraintEnd_toEndOf="parent"
                   app:layout_constraintTop_toBottomOf="@+id/like_list"
                   app:layout_constraintBottom_toBottomOf="parent"
+        android:background="@android:color/transparent"
                   app:layout_constraintStart_toStartOf="@+id/item_user">
         <TextView
                 android:paddingTop="8dp"
@@ -109,44 +110,57 @@
                 android:textSize="@dimen/textSizeSmall"
                 android:ellipsize="end"
                 android:maxLines="1"/>
-        <TextView
+        <ImageView
                 android:padding="8dp"
                 android:id="@+id/item_del"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/textSizeSmall"
-                android:text="@string/delete"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_clear"
                 android:clickable="true"
-                android:background="?android:attr/selectableItemBackground"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
                 android:focusable="true"/>
-        <TextView
+        <ImageView
                 android:padding="8dp"
                 android:id="@+id/item_edit"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/textSizeSmall"
-                android:text="@string/edit"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_edit"
                 android:clickable="true"
-                android:background="?android:attr/selectableItemBackground"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
                 android:focusable="true"/>
-        <TextView
+        <ImageView
+                android:padding="8dp"
+                android:id="@+id/item_dolike"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_insert_emoji"
+                android:tintMode="src_in"
+                android:tint="?android:textColorSecondary"
+                android:clickable="true"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:focusable="true"/>
+        <ImageView
                 android:padding="8dp"
                 android:id="@+id/item_reply"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/textSizeSmall"
-                android:text="@string/reply"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_reply"
+                android:tintMode="src_in"
+                android:tint="?android:textColorSecondary"
                 android:clickable="true"
-                android:background="?android:attr/selectableItemBackground"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
                 android:focusable="true"/>
-        <TextView
+        <ImageView
                 android:padding="8dp"
                 android:id="@+id/item_expand"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/textSizeSmall"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_chevron_left"
+                android:tintMode="src_in"
+                android:tint="?android:textColorSecondary"
+                android:rotation="-90"
                 android:clickable="true"
-                android:background="?android:attr/selectableItemBackground"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
                 android:focusable="true"/>
     </LinearLayout>
 

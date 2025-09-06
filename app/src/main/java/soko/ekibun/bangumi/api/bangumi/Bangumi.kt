@@ -241,7 +241,7 @@ object Bangumi {
                             cookieManager.setCookie(COOKIE_HOST, it)
                         }
                         cookieManager.flush()
-                        HttpUtil.formhash = Regex("""//bgm.tv/logout/([^"]+)""").find(str)?.groupValues?.getOrNull(1)
+                        HttpUtil.formhash = Regex("""//bgm.tv/logout/([A-Za-z0-9]+)""").find(str)?.groupValues?.getOrNull(1)
                             ?: HttpUtil.formhash
                         withContext(Dispatchers.Main) {
                             onUser(

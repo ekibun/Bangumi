@@ -1,7 +1,18 @@
 package soko.ekibun.bangumi.ui.topic
 
 import android.annotation.SuppressLint
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.util.Log
+import android.util.TypedValue
+import android.view.View
+import android.view.ViewGroup
+import android.widget.PopupWindow
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_topic.*
 import soko.ekibun.bangumi.App
 import soko.ekibun.bangumi.R
@@ -30,6 +41,28 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
     val dataCacheModel by lazy { App.app.dataCacheModel }
 
     var topic: Topic
+
+    val likePopup by lazy {
+        val likePopupView = RecyclerView(context)
+        likePopupView.layoutManager = GridLayoutManager(context, 4)
+        val likeEmojis = TopicPost.Like.emojiWrap.map { it.key.toString() to Bangumi.parseUrl(it.value) }.toMutableList()
+        val adapter = EmojiAdapter(likeEmojis)
+        likePopupView.adapter = adapter
+        val popupWindow = PopupWindow(likePopupView,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,true)
+        popupWindow.setBackgroundDrawable(
+            AppCompatResources.getDrawable(context, R.drawable.abc_popup_background_mtrl_mult)
+        )
+        popupWindow.isOutsideTouchable = true
+        { view: View, cb: (String)->Unit ->
+            popupWindow.showAsDropDown(view)
+            adapter.setOnItemChildClickListener { _, _, position ->
+                popupWindow.dismiss()
+                cb(likeEmojis[position].first)
+            }
+        }
+    }
 
     init {
         // 读取缓存
@@ -94,6 +127,46 @@ class TopicPresenter(private val context: TopicActivity, topic: Topic, scrollPos
                     WebActivity.startActivity(v.context, "${Bangumi.SERVER}/user/${post.username}")
                 R.id.item_reply -> {
                     showReplyPopupWindow(topic, post)
+                }
+                R.id.item_dolike -> {
+                    likePopup(v) { value ->
+                        context.subscribe {
+                            TopicPost.Like.dolike(post.likeType, topic.id, post.pst_id, value)
+                            val user = UserModel.current()?: return@subscribe
+                            val like = post.likes?.firstOrNull{ it.value.toString() == value }
+                            if(like == null) {
+                                // 删除其他的，只能留下一个
+                                post.likes?.forEach {
+                                    val newUsersOther = it.users.toMutableList()
+                                    newUsersOther.removeAll { it.username == user.username }
+                                    it.total = newUsersOther.size
+                                    it.users = newUsersOther
+                                }
+                                post.likes = post.likes.orEmpty() + TopicPost.Like(
+                                    value = value.toIntOrNull()?: 0,
+                                    type = post.likeType,
+                                    main_id = topic.id,
+                                    total = 1,
+                                    users = listOf(user)
+                                )
+                            } else {
+                                val newUsers = like.users.toMutableList()
+                                if(!newUsers.removeAll { it.username == user.username }){
+                                    // 删除其他的，只能留下一个
+                                    post.likes?.forEach {
+                                        val newUsersOther = it.users.toMutableList()
+                                        newUsersOther.removeAll { it.username == user.username }
+                                        it.total = newUsersOther.size
+                                        it.users = newUsersOther
+                                    }
+                                    UserModel.current()?.let { newUsers.add(it) }
+                                }
+                                like.total = newUsers.size
+                                like.users = newUsers
+                            }
+                            topicView.adapter.notifyItemChanged(position)
+                        }
+                    }
                 }
                 R.id.item_del -> {
                     AlertDialog.Builder(context).setMessage(R.string.reply_dialog_remove)

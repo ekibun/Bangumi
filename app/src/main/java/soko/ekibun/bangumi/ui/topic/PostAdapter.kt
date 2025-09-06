@@ -3,6 +3,7 @@ package soko.ekibun.bangumi.ui.topic
 import android.annotation.SuppressLint
 import android.text.Spanned
 import android.text.method.LinkMovementMethod
+import android.util.Log
 import android.util.Size
 import android.view.View
 import android.widget.TextView
@@ -18,6 +19,8 @@ import soko.ekibun.bangumi.R
 import soko.ekibun.bangumi.api.bangumi.Bangumi
 import soko.ekibun.bangumi.api.bangumi.bean.Images
 import soko.ekibun.bangumi.api.bangumi.bean.TopicPost
+import soko.ekibun.bangumi.model.UserModel
+import soko.ekibun.bangumi.ui.view.BaseActivity
 import soko.ekibun.bangumi.ui.view.BaseNodeAdapter
 import soko.ekibun.bangumi.ui.view.FastScrollRecyclerView
 import soko.ekibun.bangumi.ui.web.WebActivity
@@ -47,7 +50,7 @@ class PostAdapter() :
         return "#${item?.floor}"
     }
 
-    class NodeProvider : BaseNodeProvider() {
+    class NodeProvider() : BaseNodeProvider() {
         override val itemViewType: Int = 0
         override val layoutId: Int = R.layout.item_reply
 
@@ -59,6 +62,7 @@ class PostAdapter() :
             (getAdapter() as PostAdapter).let {
                 it.addOnClickListener(helper, R.id.item_del)
                 it.addOnClickListener(helper, R.id.item_reply)
+                it.addOnClickListener(helper, R.id.item_dolike)
                 it.addOnClickListener(helper, R.id.item_edit)
                 it.addOnClickListener(helper, R.id.item_avatar)
             }
@@ -82,10 +86,33 @@ class PostAdapter() :
                 helper.itemView.like_list.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
                 helper.itemView.like_list.isNestedScrollingEnabled = false
             }
-            (helper.itemView.like_list.adapter as LikeAdapter).setList(item.likes)
+            (helper.itemView.like_list.adapter as LikeAdapter).let { adapter ->
+                adapter.setList(item.likes)
+                adapter.setOnItemClickListener { _, _, position ->
+                    val like = item.likes?.getOrNull(position)?: return@setOnItemClickListener
+                    (context as BaseActivity).subscribe {
+                        TopicPost.Like.dolike(item.likeType, like.main_id, item.pst_id, like.value.toString())
+                        val user = UserModel.current()?: return@subscribe
+                        val newUsers = like.users.toMutableList()
+                        if(!newUsers.removeAll { it.username == user.username }) {
+                            // 删除其他的，只能留下一个
+                            item.likes?.forEach {
+                                val newUsersOther = it.users.toMutableList()
+                                newUsersOther.removeAll { it.username == user.username }
+                                it.total = newUsersOther.size
+                                it.users = newUsersOther
+                            }
+                            UserModel.current()?.let { newUsers.add(it) }
+                        }
+                        like.total = newUsers.size
+                        like.users = newUsers
+                        adapter.setList(item.likes)
+                    }
+                }
+            }
 
             helper.itemView.item_expand.visibility = if (item.children.size > 0) View.VISIBLE else View.GONE
-            helper.itemView.item_expand.setText(if (item.isExpanded) R.string.collapse else R.string.expand)
+            helper.itemView.item_expand.rotation = if (item.isExpanded) 90f else -90f
             helper.itemView.item_expand.setOnClickListener {
                 getAdapter()?.expandOrCollapse(helper.layoutPosition)
             }
